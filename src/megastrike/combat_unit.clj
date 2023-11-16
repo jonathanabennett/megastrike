@@ -19,7 +19,9 @@
   (re-seq #"(\d+)\\+\"([a-zA-Z]?)" mv-string))
 
 (defn parse-row
-  [hr row]
+  ([row]
+  (parse-row header-row row))
+  ([hr row]
   (let [mul-row (zipmap hr row)]
     (assoc mul-row
            :mul-id (Integer/parseInt (:mul-id mul-row))
@@ -38,5 +40,16 @@
            :e (Integer/parseInt (:e mul-row))
            :e* (if (= "TRUE" (:e* mul-row)) true false)
            :overheat (Integer/parseInt (:overheat mul-row))
-           :point-value (Integer/parseInt (:point-value mul-row)))))
+           :point-value (Integer/parseInt (:point-value mul-row))))))
 
+(def mul (map parse-row (rest (csv/parse-csv (slurp "resources/mul.csv") :delimiter \tab))))
+
+(defn filter-units
+  ([li]
+   li)
+  ([filter-fn li]
+   (filter filter-fn li)))
+
+(comment
+  (filter #(if (= (:type %) "BM") %) mul)
+  )
