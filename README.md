@@ -1,6 +1,6 @@
 # megastrike
 
-A Clojure library designed to ... well, that part is up to you.
+A Clojure App to play Alphastrike on the computer.
 
 ## Usage
 
