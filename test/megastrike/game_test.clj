@@ -31,5 +31,5 @@
     (t/is (= (sut/get-unit "Not Here") nil)))
   (t/testing "Removing forces"
     (sut/del-unit! "Archer ARC-1S")
-    (t/is (= (sut/get-units) {"DCMS" {:name "DCMS" :color "Red" :deployment "S"}})))
+    (t/is (= (sut/get-units) {"Locust LCT-1V" {:full-name "Locust LCT-1V", :color "DCMS", :deployment "S"}, "Archer ARC-1S #2" {:full-name "Archer ARC-1S", :force "DCMS", :deployment "S"}} {"DCMS" {:name "DCMS", :color "Red", :deployment "S"}})))
   )

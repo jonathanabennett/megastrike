@@ -53,7 +53,7 @@
 (defn del-unit!
   [id]
   (let [units (get-units)]
-    (swap! *game #(remove (fn [u-id] (= u-id id)) units))))
+    (swap! *game #(assoc % :units (dissoc units id)))))
 
 (defn get-unit
   [id]
