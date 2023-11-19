@@ -24,6 +24,7 @@
   ([hr row]
   (let [mul-row (zipmap hr row)]
     (assoc mul-row
+           :full-name (str (:chassis mul-row) " " (:model mul-row))
            :mul-id (Integer/parseInt (:mul-id mul-row))
            :movement (parse-movement (:movement mul-row))
            :size (Integer/parseInt (:size mul-row))
@@ -45,10 +46,25 @@
 (def mul (map parse-row (rest (csv/parse-csv (slurp "resources/mul.csv") :delimiter \tab))))
 
 (defn filter-units
+  "Applies a filter to a list of units."
   ([li]
    li)
   ([filter-fn li]
    (filter filter-fn li)))
+
+(defn create-element
+  "Creates an element for use in the game."
+  ([mul-unit game-data]
+   (merge mul-unit game-data))
+  ([unit force move-info pv-mod current-armor
+    current-structure crits destroyed? target
+    current-heat acted? pilot]
+   (create-element unit {:force force :move-info move-info
+                         :pv-mod pv-mod :current-armor current-armor
+                         :current-structure current-structure
+                         :crits crits :destroyed? destroyed?
+                         :target target :current-heat current-heat
+                         :acted? acted? :pilot pilot})))
 
 (comment
   (filter #(if (= (:type %) "BM") %) mul)
