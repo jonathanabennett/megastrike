@@ -38,6 +38,10 @@
 
 (t/deftest test-pv-mod-calculation
   (t/testing "When the skill is 4, pv-mod is 0"
-    (t/is (= (sut/pv-mod {:point-value 10 :pilot {:skill 4}}) 0))
-    (t/is (= (sut/pv-mod {:point-value 10 :pilot {:skill 3}}) 2))
-    (t/is (= (sut/pv-mod {:point-value 10 :pilot {:skill 5}}) -1))))
+    (t/is (= (:pv-mod (sut/pv-mod {:point-value 10 :pilot {:skill 4}})) 0))
+    (t/is (= (:pv-mod (sut/pv-mod {:point-value 10 :pilot {:skill 3}})) 2))
+    (t/is (= (:pv-mod (sut/pv-mod {:point-value 10 :pilot {:skill 5}})) -1)))
+  (t/testing "Check PV Mod calculation."
+    (t/is (= (sut/pv (sut/pv-mod {:point-value 10 :pilot {:skill 4}})) 10))
+    (t/is (= (sut/pv (sut/pv-mod {:point-value 10 :pilot {:skill 3}})) 12))
+    (t/is (= (sut/pv (sut/pv-mod {:point-value 10 :pilot {:skill 5}})) 9))))

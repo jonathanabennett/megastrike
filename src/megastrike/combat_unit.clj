@@ -68,6 +68,10 @@
   [unit]
   (let [skill-diff (- 4 (:skill (:pilot unit)))]
     (cond
-      (> 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- (:point-value unit) 5) 10)))
-      (< 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- (:point-value unit) 3) 5)))
-      :else 0)))
+      (> 0 skill-diff) (assoc unit :pv-mod (* skill-diff (+ 1 (math/floor-div (- (:point-value unit) 5) 10))))
+      (< 0 skill-diff) (assoc unit :pv-mod (* skill-diff (+ 1 (math/floor-div (- (:point-value unit) 3) 5))))
+      :else (assoc unit :pv-mod 0))))
+
+(defn pv
+  [unit]
+  (+ (:point-value unit) (:pv-mod unit)))
