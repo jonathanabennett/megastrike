@@ -49,18 +49,6 @@
 
 (def mul (map parse-row (rest (csv/parse-csv (slurp "resources/mul.csv") :delimiter \tab))))
 
-(defn filter-by-name
-  ([units]
-   units)
-  ([units name]
-  (filter #(if (= (:full-name %) name) %) units)))
-
-(defn filter-by-pv
-  ([units]
-   units)
-  ([units value comparison]
-   (filter #(if (apply comparison (:point-value %) value) %) units)))
-
 (defn filter-units
   ([units]
    units)
