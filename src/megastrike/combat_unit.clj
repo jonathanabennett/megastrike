@@ -10,13 +10,20 @@
 (def header-row
   "Defines the header row which will serve as the keys for the creation of combat units."
   (map keyword-maker
-       (first (csv/parse-csv
-               (slurp "resources/mul.csv")
-               :delimiter \tab))))
+       (first (csv/parse-csv (slurp "resources/mul.csv") :delimiter \tab))))
+
+(defn move-keyword
+  [mv-type]
+  (let [mv-key (keyword-maker mv-type)]
+    (cond
+      (= mv-key (keyword-maker "")) :walk
+      (= mv-key (keyword-maker "j")) :jump
+      :else (keyword-maker mv-type))))
 
 (defn parse-movement
   [mv-string]
-  (re-seq #"(\d+)\\+\"([a-zA-Z]?)" mv-string))
+  (let [strings (re-seq #"(\d+)\\+\"([a-zA-Z]?)" mv-string)]
+    (into {} (map #(vector (move-keyword (nth % 2)) (/ (Integer/parseInt (second %)) 2)) strings))))
 
 (defn parse-row
   ([row]
