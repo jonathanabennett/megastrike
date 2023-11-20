@@ -52,27 +52,29 @@
 
 (def mul (map parse-row (rest (csv/parse-csv (slurp "resources/mul.csv") :delimiter \tab))))
 
+(defn filter-by-name
+  ([units]
+   units)
+  ([units name]
+  (filter #(if (= (:full-name %) name) %) units)))
+
+(defn filter-by-pv
+  ([units]
+   units)
+  ([units value comparison]
+   (filter #(if (apply comparison (:point-value %) value) %) units)))
+
 (defn filter-units
-  "Applies a filter to a list of units."
-  ([li]
-   li)
-  ([filter-fn li]
-   (filter filter-fn li)))
+  ([units]
+   units)
+  ([units field value comparison]
+   (filter #(if (comparison (field %) value) %) units)))
 
 (defn create-element
   "Creates an element for use in the game."
   ([mul-unit game-data]
-   (merge mul-unit game-data))
-  ([unit force move-info pv-mod current-armor
-    current-structure crits destroyed? target
-    current-heat acted? pilot]
-   (create-element unit {:force force :move-info move-info
-                         :pv-mod pv-mod :current-armor current-armor
-                         :current-structure current-structure
-                         :crits crits :destroyed? destroyed?
-                         :target target :current-heat current-heat
-                         :acted? acted? :pilot pilot})))
+   (merge mul-unit game-data)))
 
-(comment
-  (filter #(if (= (:type %) "BM") %) mul)
-  )
+(defn get-unit
+  [li]
+  (first li))
