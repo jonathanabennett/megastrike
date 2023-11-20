@@ -1,7 +1,8 @@
 (ns megastrike.combat-unit
   (:require [clojure-csv.core :as csv]
             [clojure.string :as string]
-            [megastrike.utils :refer [keyword-maker]]))
+            [megastrike.utils :refer [keyword-maker]]
+            [clojure.math :as math]))
 
 (def header-row
   "Defines the header row which will serve as the keys for the creation of combat units."
@@ -74,3 +75,11 @@
 (defn get-unit
   [li]
   (first li))
+
+(defn pv-mod
+  [unit]
+  (let [skill-diff (- 4 (:skill (:pilot unit)))]
+    (cond
+      (> 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- (:point-value unit) 5) 10)))
+      (< 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- (:point-value unit) 3) 5)))
+      :else 0)))

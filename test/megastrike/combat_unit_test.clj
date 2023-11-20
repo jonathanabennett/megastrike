@@ -35,3 +35,9 @@
   (t/testing "Verify new keys merged."
     (t/is (contains? (sut/create-element (sut/get-unit (sut/filter-units sut/mul :full-name "Archer ARC-2K" =))
                                         {:pilot {:name "Bobby McSkillface" :skill 4}}) :pilot))))
+
+(t/deftest test-pv-mod-calculation
+  (t/testing "When the skill is 4, pv-mod is 0"
+    (t/is (= (sut/pv-mod {:point-value 10 :pilot {:skill 4}}) 0))
+    (t/is (= (sut/pv-mod {:point-value 10 :pilot {:skill 3}}) 2))
+    (t/is (= (sut/pv-mod {:point-value 10 :pilot {:skill 5}}) -1))))
