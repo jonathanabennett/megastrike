@@ -1,11 +1,7 @@
 (ns megastrike.combat-unit
   (:require [clojure-csv.core :as csv]
-            [clojure.string :as string]))
-
-(defn keyword-maker
-  "Take a string with spaces, strips them out, and turns it into a keyword"
-  [str]
-  (keyword (string/lower-case (string/replace str " " "-"))))
+            [clojure.string :as string]
+            [megastrike.utils :refer [keyword-maker]]))
 
 (def header-row
   "Defines the header row which will serve as the keys for the creation of combat units."

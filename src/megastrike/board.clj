@@ -1,6 +1,7 @@
 (ns megastrike.board
   (:require [megastrike.hexagons.hex :as hex]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [megastrike.utils :refer [strip-quotes]]))
 
 (defn create-tile
   ([q r s elevation terrain palette]
@@ -9,10 +10,6 @@
    (create-tile (hex/hex-from-offset x y) elevation terrain palette))
   ([hex elevation terrain palette]
    (merge hex {:elevation elevation :terrain terrain :palette palette})))
-
-(defn strip-quotes
-  [str]
-  (str/replace str #"\"" ""))
 
 (defn parse-hex-line
   [line]
