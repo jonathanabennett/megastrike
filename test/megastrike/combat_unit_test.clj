@@ -8,6 +8,23 @@
     (t/is (= (sut/parse-movement "6\\\"t") {:t 3}))
     (t/is (= (sut/parse-movement "16\\\"/12\\\"j") {:walk 8 :jump 6}))))
 
+(t/deftest test-ability-list-constructor
+  (let [bm-test "IF2"
+        cv-test "IF2, LRM1/2/2, REAR1/-/-, SRCH, TUR(1/1/1)"
+        sv-test "BAR, EE, ENE"
+        pm-test ""
+        ci-test "AM, CAR4, UMU"
+        im-test "BAR, BFC, CT8, EE, ENE, MEL, SAW"
+        ba-test "AM, CAR4, MEC, RCN, RSD1"]
+    (t/testing "Sample MUL rows"
+      (t/is (= (sut/construct-ability-list bm-test) [:if2]))
+      (t/is (= (sut/construct-ability-list cv-test) [:if2 :lrm1-2-2 :rear1-0-0 :srch :tur1-1-1]))
+      (t/is (= (sut/construct-ability-list sv-test) [:bar :ee :ene]))
+      (t/is (= (sut/construct-ability-list pm-test) [nil]))
+      (t/is (= (sut/construct-ability-list ci-test) [:am :car4 :umu]))
+      (t/is (= (sut/construct-ability-list im-test) [:bar :bfc :ct8 :ee :ene :mel :saw]))
+      (t/is (= (sut/construct-ability-list ba-test) [:am :car4 :mec :rcn :rsd1])))))
+
 (t/deftest test-mul-parser
   (let [bm-test "73	Archer	ARC-2K	Missile Boat	BM	3	8\"	1	6	6	-1	2	FALSE	2	FALSE	2	FALSE	0	FALSE	2	34	IF2"
         cv-test "4879	Puma Assault Tank	PAT-001	None	CV	4	6\"t	1	6	5	-1	4	FALSE	5	FALSE	3	FALSE	0	FALSE	0	37	IF2, LRM1/2/2, REAR1/-/-, SRCH, TUR(1/1/1)"

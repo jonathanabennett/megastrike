@@ -2,7 +2,8 @@
   (:require [clojure-csv.core :as csv]
             [clojure.string :as string]
             [megastrike.utils :refer [keyword-maker]]
-            [clojure.math :as math]))
+            [clojure.math :as math]
+            [clojure.string :as str]))
 
 (def header-row
   "Defines the header row which will serve as the keys for the creation of combat units."
@@ -21,6 +22,10 @@
   [mv-string]
   (let [strings (re-seq #"(\d+)\\+\"([a-zA-Z]?)" mv-string)]
     (into {} (map #(vector (move-keyword (nth % 2)) (/ (Integer/parseInt (second %)) 2)) strings))))
+
+(defn construct-ability-list
+  [str]
+  (into [] (map keyword-maker (str/split str #","))))
 
 (defn parse-row
   ([row]
