@@ -13,7 +13,13 @@
     (t/is (= (sut/keyword-maker "TEST KEYWORD") :test-keyword)))
   (t/testing "MUL Keywords"
     (t/is (= (sut/keyword-maker "s*") :s*))
-    (t/is (= (sut/keyword-maker "MUL ID") :mul-id))))
+    (t/is (= (sut/keyword-maker "MUL ID") :mul-id)))
+  (t/testing "Strings beginning and ending with spaces should have the spaces stripped."
+    (t/is (= (sut/keyword-maker " strip") :strip))
+    (t/is (= (sut/keyword-maker " strip me") :strip-me))
+    (t/is (= (sut/keyword-maker "strip-me ") :strip-me)))
+  (t/testing "Empty strings should return nil"
+    (t/is (= (sut/keyword-maker "") nil))))
 
 (t/deftest test-strip-quotes
   (t/testing "Strip quotes"
