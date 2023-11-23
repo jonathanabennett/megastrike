@@ -62,3 +62,39 @@
     (t/is (= (sut/pv (sut/pv-mod {:point-value 10 :pilot {:skill 4}})) 10))
     (t/is (= (sut/pv (sut/pv-mod {:point-value 10 :pilot {:skill 3}})) 12))
     (t/is (= (sut/pv (sut/pv-mod {:point-value 10 :pilot {:skill 5}})) 9))))
+
+(t/deftest test-find-sprite
+  (t/testing "Test searching for a valid sprite."
+    (t/is (= (sut/find-sprite) 1))))
+
+(t/deftest test-move-unit
+  (t/testing "Test searching for a valid sprite."
+    (t/is (= (sut/move-unit) 1))))
+
+(t/deftest test-calculate-attacker-mod
+  (t/testing "Test searching for a valid sprite."
+    (t/is (= (sut/calculate-attacker-mod) 1))))
+
+(t/deftest test-calculate-target-mod
+  (t/testing "Test searching for a valid sprite."
+    (t/is (= (sut/calculate-target-mod) 1))))
+
+(t/deftest test-calculate-other-mod
+  (t/testing "Test searching for a valid sprite."
+    (t/is (= (sut/calculate-other-mod) 1))))
+
+(t/deftest test-calculate-to-hit
+  (t/testing "Test searching for a valid sprite."
+    (t/is (= (sut/calculate-to-hit) 1))))
+
+(t/deftest test-calculate-damagej
+  (t/testing "Test searching for a valid sprite."
+    (t/is (= (sut/calculate-damage) 1))))
+
+(t/deftest test-take-damage
+  (t/testing "Test searching for a valid sprite."
+    (t/is (= (sut/take-damage) 1))))
+
+(t/deftest test-make-attack
+  (t/testing "Test searching for a valid sprite."
+    (t/is (= (sut/make-attack) 1))))

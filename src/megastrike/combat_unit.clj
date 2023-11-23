@@ -80,3 +80,43 @@
 (defn pv
   [unit]
   (+ (:point-value unit) (:pv-mod unit)))
+
+(defn find-sprite
+  []
+  0)
+
+(defn move-unit
+  []
+  0)
+
+(defn calculate-attacker-mod
+  []
+  0)
+
+(defn calculate-target-mod
+  []
+  0)
+
+(defn calculate-other-mod
+  []
+  0)
+
+(defn calculate-range-mod
+  []
+  0)
+
+(defn calculate-to-hit
+  []
+  0)
+
+(defn calculate-damage
+  []
+  0)
+
+(defn take-damage
+  []
+  0)
+
+(defn make-attack
+  []
+  0)
