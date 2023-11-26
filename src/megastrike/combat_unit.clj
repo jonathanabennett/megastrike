@@ -1,7 +1,7 @@
 (ns megastrike.combat-unit
   (:require [clojure-csv.core :as csv]
             [clojure.string :as string]
-            [megastrike.utils :refer [keyword-maker]]
+            [megastrike.utils :refer [keyword-maker strip-quotes]]
             [clojure.math :as math]
             [clojure.string :as str]))
 
@@ -81,17 +81,42 @@
   [unit]
   (+ (:point-value unit) (:pv-mod unit)))
 
-(defn find-sprite
-  []
-  0)
+(defn parse-mechset-line
+  [line]
+  (when-not (or (= (str/index-of line "#") 0)
+                (= line "")
+                (= (str/index-of line "include") 0))
+    (let [first-break (str/index-of line " ")
+          second-break (str/index-of line "\" " (inc first-break))
+          mechset-type (str/trim (subs line 0 first-break))
+          search-term (str/trim (strip-quotes (subs line first-break second-break)))
+          file-path (str/trim (strip-quotes (subs line second-break)))]
+      (vector mechset-type search-term file-path))))
 
-(defn move-unit
+(defn parse-mechset
   []
-  0)
+  (into [] (remove nil? (map #(parse-mechset-line %) (str/split-lines (slurp "resources/images/units/mechset.txt"))))))
+
+(def mechset (parse-mechset))
+
+(defn find-sprite
+  [unit]
+  (let [chassis-match (filter (fn [row] (= (:chassis unit) (second row))) mechset)
+        exact-match (filter (fn [row] (= (:full-name unit) (second row))) mechset)
+        match-row (or (first exact-match) (first chassis-match))]
+    (str "resources/images/units/" (nth match-row 2))))
+
+(defn update-position
+  [unit destination]
+  (merge unit destination))
 
 (defn calculate-attacker-mod
-  []
-  0)
+  [unit]
+  (cond
+    (= (:movement-mode unit) :immobile) -1
+    (= (:movement-mode unit) :standstill) -1
+    (= (:movement-mode unit) :jump) 2
+    :else 0))
 
 (defn calculate-target-mod
   []

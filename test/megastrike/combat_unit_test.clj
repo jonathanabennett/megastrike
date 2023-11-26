@@ -63,17 +63,37 @@
     (t/is (= (sut/pv (sut/pv-mod {:point-value 10 :pilot {:skill 3}})) 12))
     (t/is (= (sut/pv (sut/pv-mod {:point-value 10 :pilot {:skill 5}})) 9))))
 
+(t/deftest test-parse-mechset-line
+  (t/testing "Test comment lines"
+    (t/is (= (sut/parse-mechset-line "#") nil))
+    (t/is (= (sut/parse-mechset-line "# Test comment") nil)))
+  (t/testing "Test empty lines"
+    (t/is (= (sut/parse-mechset-line "") nil)))
+  (t/testing "Test include lines"
+    (t/is (= (sut/parse-mechset-line "include this/file/here.txt") nil)))
+  (t/testing "Test functional lines"
+    (t/is (= (sut/parse-mechset-line "exact \"default_quadvee\" \"defaults/default_quadvee.png\"")
+             ["exact" "default_quadvee" "defaults/default_quadvee.png"]))
+    (t/is (= (sut/parse-mechset-line "chassis \"Ahab\" \"fighter/ahab.png\"")
+             ["chassis" "Ahab" "fighter/ahab.png"]))
+    (t/is (= (sut/parse-mechset-line "exact \"Archer ARC-2K\" \"mechs/Archer_2K.png\"")
+             ["exact" "Archer ARC-2K" "mechs/Archer_2K.png"]))))
+
 (t/deftest test-find-sprite
   (t/testing "Test searching for a valid sprite."
-    (t/is (= (sut/find-sprite) 1))))
+    (t/is (= (sut/find-sprite {:full-name "Archer ARC-2K" :chassis "Archer"}) "resources/images/units/mechs/Archer_2K.png"))
+    (t/is (= (sut/find-sprite {:full-name "Ahab AHB-4" :chassis "Ahab"}) "resources/images/units/fighter/ahab.png"))))
 
-(t/deftest test-move-unit
-  (t/testing "Test searching for a valid sprite."
-    (t/is (= (sut/move-unit) 1))))
+(t/deftest test-update-position
+  (t/testing "Test updating the position of a unit."
+    (t/is (= (sut/update-position {:id "Archer ARC-2K" :q 2 :r 2 :s -4} {:q 4 :r 0 :s -4}) {:id "Archer ARC-2K" :q 4 :r 0 :s -4}))))
 
 (t/deftest test-calculate-attacker-mod
-  (t/testing "Test searching for a valid sprite."
-    (t/is (= (sut/calculate-attacker-mod) 1))))
+  (t/testing "Test valid movement types"
+    (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :immobile}) -1))
+    (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :standstill}) -1))
+    (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :walk}) 0))
+    (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :jump}) 2))))
 
 (t/deftest test-calculate-target-mod
   (t/testing "Test searching for a valid sprite."
