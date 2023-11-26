@@ -1,7 +1,7 @@
 (ns megastrike.combat-unit
   (:require [clojure-csv.core :as csv]
-            [clojure.string :as string]
             [megastrike.utils :refer [keyword-maker strip-quotes]]
+            [megastrike.hexagons.hex :as hexagon]
             [clojure.math :as math]
             [clojure.string :as str]))
 
