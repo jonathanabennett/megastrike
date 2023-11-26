@@ -119,18 +119,32 @@
     :else 0))
 
 (defn calculate-target-mod
-  []
-  0)
+  [unit]
+  (cond
+    (= (:movement-mode unit) :immobile) -4
+    (= (:movement-mode unit) :standstill) 0
+    (= (:movement-mode unit) :jump) (+ (:tmm unit) 1)
+    :else (:tmm unit)))
 
 (defn calculate-other-mod
-  []
+  [unit]
   0)
 
 (defn calculate-range-mod
+  [attacker target]
+  (let [range (hexagon/hex-distance attacker target)]
+    (cond
+      (>= 3 range) 0
+      (>= 12 range) 2
+      (>= 21 range) 4
+      (>= 30 range) 6
+      :else nil)))
+
+(defn calculate-to-hit
   []
   0)
 
-(defn calculate-to-hit
+(defn print-damage
   []
   0)
 

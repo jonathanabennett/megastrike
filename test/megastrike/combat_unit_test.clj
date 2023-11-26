@@ -96,18 +96,36 @@
     (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :jump}) 2))))
 
 (t/deftest test-calculate-target-mod
-  (t/testing "Test searching for a valid sprite."
-    (t/is (= (sut/calculate-target-mod) 1))))
+  (t/testing "Verify target mods are correct."
+    (t/is (= (sut/calculate-target-mod {:movement-mode :jump :role "Missile Boat", :tmm 1, :e* false, :movement {}, :mul-id 73, :l* false, :m 2, :type "BM", :abilities "IF2", :e 0, :s 2, :threshold -1, :l 2, :size 3, :m* false, :point-value 34, :overheat 2, :chassis "Archer", :structure 6, :full-name "Archer ARC-2K", :armor 6, :s* false, :model "ARC-2K"}) 2))
+    (t/is (= (sut/calculate-target-mod {:movement-mode :jump :role "None", :tmm 4, :e* false, :movement {}, :mul-id 3684, :l* false, :m 0, :type "SV", :abilities "BAR, EE, ENE", :e 0, :s 0, :threshold -1, :l 0, :size 2, :m* false, :point-value 6, :overheat 0, :chassis "Air Car", :structure 2, :full-name "Air Car ", :armor 1, :s* false, :model ""}) 5))
+    (t/is (= (sut/calculate-target-mod {:movement-mode :standstill :role "Missile Boat", :tmm 1, :e* false, :movement {}, :mul-id 73, :l* false, :m 2, :type "BM", :abilities "IF2", :e 0, :s 2, :threshold -1, :l 2, :size 3, :m* false, :point-value 34, :overheat 2, :chassis "Archer", :structure 6, :full-name "Archer ARC-2K", :armor 6, :s* false, :model "ARC-2K"}) 0))
+    (t/is (= (sut/calculate-target-mod {:movement-mode :immobile :role "None", :tmm 4, :e* false, :movement {}, :mul-id 3684, :l* false, :m 0, :type "SV", :abilities "BAR, EE, ENE", :e 0, :s 0, :threshold -1, :l 0, :size 2, :m* false, :point-value 6, :overheat 0, :chassis "Air Car", :structure 2, :full-name "Air Car ", :armor 1, :s* false, :model ""}) -4))
+    (t/is (= (sut/calculate-target-mod {:movement-mode :walk :role "Missile Boat", :tmm 1, :e* false, :movement {}, :mul-id 73, :l* false, :m 2, :type "BM", :abilities "IF2", :e 0, :s 2, :threshold -1, :l 2, :size 3, :m* false, :point-value 34, :overheat 2, :chassis "Archer", :structure 6, :full-name "Archer ARC-2K", :armor 6, :s* false, :model "ARC-2K"}) 1))
+    (t/is (= (sut/calculate-target-mod {:movement-mode :walk :role "None", :tmm 4, :e* false, :movement {}, :mul-id 3684, :l* false, :m 0, :type "SV", :abilities "BAR, EE, ENE", :e 0, :s 0, :threshold -1, :l 0, :size 2, :m* false, :point-value 6, :overheat 0, :chassis "Air Car", :structure 2, :full-name "Air Car ", :armor 1, :s* false, :model ""}) 4))
+    ))
 
 (t/deftest test-calculate-other-mod
-  (t/testing "Test searching for a valid sprite."
-    (t/is (= (sut/calculate-other-mod) 1))))
+  (t/testing "Zeroing out this test until I implement terrain."
+    (t/is (= (sut/calculate-other-mod {:id "Dummy unit"}) 0))))
+
+(t/deftest test-calculate-range-mod
+  (t/testing "Test each range mod."
+    (t/is (= (sut/calculate-range-mod {:id "Unit 1" :q 0 :r 0 :s 0}
+                                      {:id "Unit 2" :q 2 :r 0 :s -2}) 0))
+    (t/is (= (sut/calculate-range-mod {:id "Unit 1" :q 0 :r 0 :s 0}
+                                      {:id "Unit 2" :q 2 :r 2 :s -4}) 2))
+    (t/is (= (sut/calculate-range-mod {:id "Unit 1" :q 0 :r 0 :s 0}
+                                      {:id "Unit 2" :q 16 :r 0 :s -16}) 4))
+    (t/is (= (sut/calculate-range-mod {:id "Unit 1" :q 0 :r 0 :s 0}
+                                      {:id "Unit 2" :q 24 :r 0 :s -24}) 6))
+    ))
 
 (t/deftest test-calculate-to-hit
   (t/testing "Test searching for a valid sprite."
     (t/is (= (sut/calculate-to-hit) 1))))
 
-(t/deftest test-calculate-damagej
+(t/deftest test-calculate-damage
   (t/testing "Test searching for a valid sprite."
     (t/is (= (sut/calculate-damage) 1))))
 
