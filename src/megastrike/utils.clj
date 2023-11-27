@@ -32,7 +32,7 @@
 (defn roll-die
   ([mods]
    ;; Rand-int is a half-open range, so we need to add 1 to get 1-6
-   (+ (rand-int 0 6) 1 mods))
+   (+ (rand-int 6) 1 mods))
   ([]
    (roll-die 0)))
 

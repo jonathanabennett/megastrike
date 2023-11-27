@@ -67,4 +67,7 @@
     :middleware (fx/wrap-map-desc root)
     :opts {:fx.opt/map-event-handler map-event-handler}))
 
-(fx/mount-renderer *state renderer)
+
+(defn launch-gui
+  []
+  (fx/mount-renderer *state renderer))

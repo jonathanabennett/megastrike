@@ -110,29 +110,37 @@
     (t/is (= (sut/calculate-other-mod {:id "Dummy unit"}) 0))))
 
 (t/deftest test-calculate-range-mod
-  (t/testing "Test each range mod."
+  (t/testing "Test short range."
     (t/is (= (sut/calculate-range-mod {:id "Unit 1" :q 0 :r 0 :s 0}
-                                      {:id "Unit 2" :q 2 :r 0 :s -2}) 0))
+                                      {:id "Unit 2" :q 2 :r 0 :s -2}) 0)))
+  (t/testing "Testing medium range."
     (t/is (= (sut/calculate-range-mod {:id "Unit 1" :q 0 :r 0 :s 0}
-                                      {:id "Unit 2" :q 2 :r 2 :s -4}) 2))
+                                      {:id "Unit 2" :q 2 :r 2 :s -4}) 2)))
+  (t/testing "Testing long range."
     (t/is (= (sut/calculate-range-mod {:id "Unit 1" :q 0 :r 0 :s 0}
-                                      {:id "Unit 2" :q 16 :r 0 :s -16}) 4))
+                                      {:id "Unit 2" :q 16 :r 0 :s -16}) 4)))
+  (t/testing "Testing extreme range."
     (t/is (= (sut/calculate-range-mod {:id "Unit 1" :q 0 :r 0 :s 0}
-                                      {:id "Unit 2" :q 24 :r 0 :s -24}) 6))
-    ))
+                                      {:id "Unit 2" :q 24 :r 0 :s -24}) 6))))
 
 (t/deftest test-calculate-to-hit
   (t/testing "Test searching for a valid sprite."
-    (t/is (= (sut/calculate-to-hit) 1))))
+    (t/is (= (sut/calculate-to-hit {:id "Unit 1" :q 0 :r 0 :s 0 :pilot {:skill 4}
+                                       :movement-mode :walk :tmm 2}
+                                      {:id "Unit 2" :q 2 :r 0 :s -2 :pilot {:skill 4}
+                                       :movement-mode :walk :tmm 2}) 6))))
 
 (t/deftest test-calculate-damage
   (t/testing "Test searching for a valid sprite."
-    (t/is (= (sut/calculate-damage) 1))))
+    (t/is (= (sut/calculate-damage {:id "Unit 1" :s 4} 2) 1))))
 
 (t/deftest test-take-damage
   (t/testing "Test searching for a valid sprite."
-    (t/is (= (sut/take-damage) 1))))
+    (t/is (= (sut/take-damage {:id "Unit 1" :armor 4 :current-armor 4 :structure 3 :current-structure 3} 2) 1))))
 
 (t/deftest test-make-attack
   (t/testing "Test searching for a valid sprite."
-    (t/is (= (sut/make-attack) 1))))
+    (t/is (= (sut/make-attack {:id "Unit 1" :q 0 :r 0 :s 0 :pilot {:skill 4}
+                                       :movement-mode :walk :tmm 2}
+                              {:id "Unit 2" :q 2 :r 0 :s -2 :pilot {:skill 4}
+                                       :movement-mode :walk :tmm 2}) 1))))

@@ -1,22 +1,22 @@
 (ns megastrike.combat-unit
   (:require [clojure-csv.core :as csv]
-            [megastrike.utils :refer [keyword-maker strip-quotes]]
+            [megastrike.utils :as utils]
             [megastrike.hexagons.hex :as hexagon]
             [clojure.math :as math]
             [clojure.string :as str]))
 
 (def header-row
   "Defines the header row which will serve as the keys for the creation of combat units."
-  (map keyword-maker
+  (map utils/keyword-maker
        (first (csv/parse-csv (slurp "resources/mul.csv") :delimiter \tab))))
 
 (defn move-keyword
   [mv-type]
-  (let [mv-key (keyword-maker mv-type)]
+  (let [mv-key (utils/keyword-maker mv-type)]
     (cond
-      (= mv-key (keyword-maker "")) :walk
-      (= mv-key (keyword-maker "j")) :jump
-      :else (keyword-maker mv-type))))
+      (= mv-key (utils/keyword-maker "")) :walk
+      (= mv-key (utils/keyword-maker "j")) :jump
+      :else (utils/keyword-maker mv-type))))
 
 (defn parse-movement
   [mv-string]
@@ -25,7 +25,7 @@
 
 (defn construct-ability-list
   [str]
-  (into [] (map keyword-maker (str/split str #","))))
+  (into [] (map utils/keyword-maker (str/split str #","))))
 
 (defn parse-row
   ([row]
@@ -81,6 +81,30 @@
   [unit]
   (+ (:point-value unit) (:pv-mod unit)))
 
+(defn print-short
+  [unit]
+  (if (:s* unit)
+    "0*"
+    (:s unit)))
+
+(defn print-medium
+  [unit]
+  (if (:m* unit)
+    "0*"
+    (:m unit)))
+
+(defn print-long
+  [unit]
+  (if (:l* unit)
+    "0*"
+    (:l unit)))
+
+(defn print-extreme
+  [unit]
+  (if (:e* unit)
+    "0*"
+    (:e unit)))
+
 (defn parse-mechset-line
   [line]
   (when-not (or (= (str/index-of line "#") 0)
@@ -89,8 +113,8 @@
     (let [first-break (str/index-of line " ")
           second-break (str/index-of line "\" " (inc first-break))
           mechset-type (str/trim (subs line 0 first-break))
-          search-term (str/trim (strip-quotes (subs line first-break second-break)))
-          file-path (str/trim (strip-quotes (subs line second-break)))]
+          search-term (str/trim (utils/strip-quotes (subs line first-break second-break)))
+          file-path (str/trim (utils/strip-quotes (subs line second-break)))]
       (vector mechset-type search-term file-path))))
 
 (defn parse-mechset
@@ -141,21 +165,41 @@
       :else nil)))
 
 (defn calculate-to-hit
-  []
-  0)
+  [attacker target]
+  (+ (:skill (:pilot attacker))
+     (calculate-attacker-mod attacker)
+     (calculate-target-mod target)
+     (calculate-other-mod target)
+     (calculate-range-mod attacker target)))
 
 (defn print-damage
-  []
-  0)
+  [unit range]
+  (cond
+    (>= 3 range) (print-short unit)
+    (>= 12 range) (print-medium unit)
+    (>= 21 range) (print-long unit)
+    (>= 30 range) (print-extreme unit)))
 
 (defn calculate-damage
-  []
-  0)
+  [unit range]
+  (cond
+    (>= 3 range) (if (and (:s* unit) (<= 4 (utils/roll-die))) 1 (:s unit))
+    (>= 12 range) (if (and (:m* unit) (<= 4 (utils/roll-die))) 1 (:m unit))
+    (>= 21 range) (if (and (:l* unit) (<= 4 (utils/roll-die))) 1 (:l unit))
+    (>= 30 range) (if (and (:e* unit) (<= 4 (utils/roll-die))) 1 (:e unit))))
 
 (defn take-damage
-  []
-  0)
+  [unit damage]
+  (if (= damage 0)
+    unit
+    (if (< 0 (:current-armor unit (:armor unit)))
+      (take-damage (assoc unit :current-armor (dec (:current-armor unit (:armor unit)))) (dec damage))
+      (take-damage (assoc unit :current-structure (dec (:current-structure unit (:structure unit)))) (dec damage)))))
 
 (defn make-attack
-  []
-  0)
+  [attacker target]
+  (let [target-num (calculate-to-hit attacker target)
+        range (hexagon/hex-distance attacker target)
+        to-hit (utils/roll2d)]
+    (when (<= target-num to-hit)
+      (take-damage target (calculate-damage attacker range)))))
