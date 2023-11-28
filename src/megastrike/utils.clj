@@ -1,6 +1,7 @@
 (ns megastrike.utils
-  (:require [clojure.string :as string]
-            [clojure.math :as math]))
+  (:require
+   [clojure.math :as math]
+   [clojure.string :as string]))
 
 (defn strip-quotes
   [str]

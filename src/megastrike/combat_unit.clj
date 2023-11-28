@@ -1,14 +1,25 @@
 (ns megastrike.combat-unit
-  (:require [clojure-csv.core :as csv]
-            [megastrike.utils :as utils]
-            [megastrike.hexagons.hex :as hexagon]
-            [clojure.math :as math]
-            [clojure.string :as str]))
+  (:require
+   [clojure-csv.core :as csv]
+   [clojure.math :as math]
+   [clojure.string :as str]
+   [megastrike.hexagons.hex :as hexagon]
+   [megastrike.utils :as utils]))
 
 (def header-row
   "Defines the header row which will serve as the keys for the creation of combat units."
   (map utils/keyword-maker
        (first (csv/parse-csv (slurp "resources/mul.csv") :delimiter \tab))))
+
+(def all-types ["BM" "IM" "PM" "SV" "CV" "BA" "CI" "SS"
+                "WS" "JS" "DS" "DA" "SC" "CF" "AF"])
+(def ground-units ["BM" "IM" "PM" "SV" "CV" "BA" "CI"])
+(def aero-units ["SS" "WS" "JS" "DS" "DA" "SC" "CF" "AF"])
+(def bm-units ["BM"])
+(def mech-units ["BM" "IM" "PM"])
+(def conventional-units ["SV" "CV" "BA" "CI"])
+(def vehicle-units ["SV" "CV"])
+(def infantry-units ["BA" "CI"])
 
 (defn move-keyword
   [mv-type]

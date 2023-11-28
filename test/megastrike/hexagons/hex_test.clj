@@ -1,6 +1,7 @@
 (ns megastrike.hexagons.hex-test
-  (:require [megastrike.hexagons.hex :as sut]
-            [clojure.test :as t]))
+  (:require
+   [clojure.test :as t]
+   [megastrike.hexagons.hex :as sut]))
 
 
 (t/deftest hexagon-equality
@@ -98,13 +99,14 @@
         (t/is (= (sut/pixel-to-hex {:x 55.0 :y 45.0} layout) (sut/hexagon 0 0 0)))))))
 
 (t/deftest hex-points
-  (let [layout (sut/create-layout)]
+  (let [layout (sut/create-layout)
+        hex-00-correct (list {:x 168.0, :y 65.0}
+                             {:x 125.99999999999997, :y 127.3538290724796}
+                             {:x 42.00000000000002, :y 127.3538290724796}
+                             {:x 0.0, :y 65.00000000000001}
+                             {:x 42.000000000000036, :y 2.6461709275204015}
+                             {:x 125.99999999999994, :y 2.6461709275203873})]
     (t/testing "Find all vertices of a hex"
       (let [test-hex-00 (sut/hexagon 0 0 0)]
         (t/is (= (sut/hex-points test-hex-00 layout)
-                 (list {:x 168.0, :y 65.0}
-                       {:x 125.99999999999997, :y 127.3538290724796}
-                       {:x 42.00000000000002, :y 127.3538290724796}
-                       {:x 0.0, :y 65.00000000000001}
-                       {:x 42.000000000000036, :y 2.6461709275204015}
-                       {:x 125.99999999999994, :y 2.6461709275203873})))))))
+                 hex-00-correct))))))

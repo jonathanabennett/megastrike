@@ -1,6 +1,7 @@
 (ns megastrike.game
-  (:require [megastrike.combat-unit :as unit]
-            [clojure.string :as str]))
+  (:require
+   [clojure.string :as str]
+   [megastrike.combat-unit :as unit]))
 
 (def empty-game
   {:forces {}

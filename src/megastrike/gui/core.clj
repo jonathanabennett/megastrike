@@ -1,5 +1,7 @@
 (ns megastrike.gui.core
-  (:require [cljfx.api :as fx]))
+  (:require
+   [cljfx.api :as fx]
+   [megastrike.combat-unit :as cu]))
 
 
 (defn text-input [{:keys [label]}]

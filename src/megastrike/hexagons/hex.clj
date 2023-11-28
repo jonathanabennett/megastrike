@@ -1,5 +1,6 @@
 (ns megastrike.hexagons.hex
-  (:require [clojure.math :as math]))
+  (:require
+   [clojure.math :as math]))
 
 (defn hexagon
   ([q r]
