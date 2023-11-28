@@ -34,10 +34,18 @@
   (let [strings (re-seq #"(\d+)\\+\"([a-zA-Z]?)" mv-string)]
     (into {} (map #(vector (move-keyword (nth % 2)) (/ (Integer/parseInt (second %)) 2)) strings))))
 
+(defn print-movement-helper
+  [mv-vec]
+  (cond
+    (= (first mv-vec) :walk) (second mv-vec)
+    (= (first mv-vec) :jump) (str (second mv-vec)"j")
+    :else (str (first mv-vec) " " (second mv-vec))
+    ))
+
 (defn print-movement
   [unit]
   (let [mv-map (:movement unit)]
-    (doseq [[type dist] mv-map] (str type " " dist))))
+    (str/join "/" (map print-movement-helper mv-map))))
 
 (defn construct-ability-list
   [str]
