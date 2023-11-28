@@ -36,7 +36,8 @@
 
 (defn print-movement
   [unit]
-  (doseq [[type dist] (:movement unit)] (str type " " dist)))
+  (let [mv-map (:movement unit)]
+    (doseq [[type dist] mv-map] (str type " " dist))))
 
 (defn construct-ability-list
   [str]
