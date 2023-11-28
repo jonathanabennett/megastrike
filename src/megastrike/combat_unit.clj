@@ -82,7 +82,7 @@
   ([units]
    units)
   ([units field value comparison]
-   (filter #(if (comparison (field %) value) %) units)))
+   (filter #(when (comparison (field %) value) %) units)))
 
 (defn filter-membership-helper
   ([unit]
@@ -188,7 +188,7 @@
 
 (defn calculate-other-mod
   [unit]
-  0)
+  unit)
 
 (defn calculate-range-mod
   [attacker target]

@@ -61,7 +61,7 @@
   "Returns the coordinate transformation to select a hex in a given direction"
   [direction]
   (let [dir (mod direction 6)]
-    (nth hex-ordinals direction)))
+    (nth hex-ordinals dir)))
 
 (defn hex-neighbor
   [hex direction]

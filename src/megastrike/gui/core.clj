@@ -3,23 +3,9 @@
    [cljfx.api :as fx]
    [megastrike.combat-unit :as cu]))
 
-
-(defn text-input [{:keys [label]}]
-  {:fx/type :v-box
-   :children [{:fx/type :label :text label}
-              {:fx/type :text-field}]})
-
 (def *state
   (atom {:first-name "Vlad"
          :last-name "Protsenko"}))
-
-(defn text-input [{:keys [label value key]}]
-  {:fx/type :v-box
-   :children [{:fx/type :label
-               :text label}
-              {:fx/type :text-field
-               :on-text-changed {:key key}
-               :text value}]})
 
 (defn mul-display []
   [{:fx/type :label
