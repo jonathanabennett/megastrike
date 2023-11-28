@@ -34,6 +34,10 @@
   (let [strings (re-seq #"(\d+)\\+\"([a-zA-Z]?)" mv-string)]
     (into {} (map #(vector (move-keyword (nth % 2)) (/ (Integer/parseInt (second %)) 2)) strings))))
 
+(defn print-movement
+  [unit]
+  (doseq [[type dist] (:movement unit)] (str type " " dist)))
+
 (defn construct-ability-list
   [str]
   (into [] (map utils/keyword-maker (str/split str #","))))
@@ -70,6 +74,18 @@
    units)
   ([units field value comparison]
    (filter #(if (comparison (field %) value) %) units)))
+
+(defn filter-membership-helper
+  ([unit]
+   unit)
+  ([unit field values]
+   (some #(= (field unit) %) values)))
+
+(defn filter-membership
+  ([units]
+   units)
+  ([units field values]
+   (filter #(filter-membership-helper % field values) units)))
 
 (defn create-element
   "Creates an element for use in the game."
