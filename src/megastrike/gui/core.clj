@@ -57,7 +57,7 @@
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
                               :describe (fn [x]
-                                          {:text (pr-str (cu/print-movement x))})}}
+                                          {:text (cu/print-movement x)})}}
               {:fx/type :table-column
                :text "TMM"
                :cell-value-factory identity
