@@ -4,12 +4,31 @@
    [megastrike.combat-unit :as cu]))
 
 (def *state
-  (atom {:first-name "Vlad"
-         :last-name "Protsenko"}))
+  (atom {:mul cu/mul}))
 
-(defn mul-display []
+(def mul-display
   [{:fx/type :label
-    :text "MUL Setup"}
+    :text "Master Unit List"}
+   {:fx/type :h-box
+    :spacing 5
+    :children [{:fx/type :button
+
+               :text "All Ground Units"}
+              {:fx/type :button
+
+               :text "Battlemechs"}
+              {:fx/type :button
+
+               :text "All Mechs"}
+              {:fx/type :button
+
+               :text "All Conventional Units"}
+              {:fx/type :button
+
+               :text "All vehicles"}
+              {:fx/type :button
+
+               :text "All Infantry"}]}
    {:fx/type :table-view
     :row-factory {:fx/cell-type :table-row
                   :describe (fn [x]
@@ -25,7 +44,7 @@
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
                               :describe (fn[x]
-                                          {:text (pr-str (:type x))})}}
+                                          {:text (:type x)})}}
               {:fx/type :table-column
                :text "PV"
                :cell-value-factory identity
@@ -73,56 +92,38 @@
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
                               :describe (fn [x]
-                                          {:text (pr-str (:s x))})}}
-              {:fx/type :table-column
-               :text "S*"
-               :cell-value-factory identity
-               :cell-factory {:fx/cell-type :table-cell
-                              :describe (fn [x]
-                                          {:text (pr-str (:s* x))})}}
+                                          {:text (cu/print-short x)})}}
               {:fx/type :table-column
                :text "M"
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
                               :describe (fn [x]
-                                          {:text (pr-str (:m x))})}}
-              {:fx/type :table-column
-               :text "M*"
-               :cell-value-factory identity
-               :cell-factory {:fx/cell-type :table-cell
-                              :describe (fn [x]
-                                          {:text (pr-str (:m* x))})}}
+                                          {:text (cu/print-medium x)})}}
               {:fx/type :table-column
                :text "L"
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
                               :describe (fn [x]
-                                          {:text (pr-str (:l x))})}}
-              {:fx/type :table-column
-               :text "L*"
-               :cell-value-factory identity
-               :cell-factory {:fx/cell-type :table-cell
-                              :describe (fn [x]
-                                          {:text (pr-str (:l* x))})}}
+                                          {:text (cu/print-long x)})}}
               {:fx/type :table-column
                :text "E"
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
                               :describe (fn [x]
-                                          {:text (pr-str (:e x))})}}
-              {:fx/type :table-column
-               :text "E*"
-               :cell-value-factory identity
-               :cell-factory {:fx/cell-type :table-cell
-                              :describe (fn [x]
-                                          {:text (pr-str (:e* x))})}}
+                                          {:text (cu/print-extreme x)})}}
               {:fx/type :table-column
                :text "OV"
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
                               :describe (fn [x]
-                                          {:text (pr-str (:overheat x))})}}]
-    :items (cu/filter-membership cu/mul :type cu/bm-units)}])
+                                          {:text (pr-str (:overheat x))})}}
+              {:fx/type :table-column
+               :text "Abilities"
+               :cell-value-factory identity
+               :cell-factory {:fx/cell-type :table-cell
+                              :describe (fn [x]
+                                          {:text (:abilities x)})}}]
+    :items (cu/filter-membership (:mul @*state) :type cu/bm-units)}])
 
 (defn force-creation-display []
   [{:fx/type :label :text "Forces"}
@@ -155,7 +156,7 @@
                  :grid-pane/column 0
                  :grid-pane/hgrow :always
                  :grid-pane/vgrow :always
-                 :children (mul-display)}
+                 :children mul-display}
                 {:fx/type :v-box
                  :spacing 5
                  :fill-width true

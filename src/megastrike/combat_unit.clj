@@ -121,25 +121,25 @@
   [unit]
   (if (:s* unit)
     "0*"
-    (:s unit)))
+    (str (:s unit))))
 
 (defn print-medium
   [unit]
   (if (:m* unit)
     "0*"
-    (:m unit)))
+    (str (:m unit))))
 
 (defn print-long
   [unit]
   (if (:l* unit)
     "0*"
-    (:l unit)))
+    (str (:l unit))))
 
 (defn print-extreme
   [unit]
   (if (:e* unit)
     "0*"
-    (:e unit)))
+    (str (:e unit))))
 
 (defn parse-mechset-line
   [line]
