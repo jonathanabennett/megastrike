@@ -4,34 +4,34 @@
    [megastrike.combat-unit :as cu]))
 
 (def *state
-  (atom {:mul cu/mul}))
+  (atom {:mul (cu/filter-membership cu/mul :type cu/ground-units)}))
 
 (defn ground-units-mul
   [_]
-  (swap! *state #(assoc % :mul (cu/filter-membership cu/mul :type cu/ground-units))))
+  (swap! *state assoc :mul (cu/filter-membership cu/mul :type cu/ground-units)))
 
 (defn bm-units-mul
   [_]
-  (swap! *state #(assoc % :mul (cu/filter-membership cu/mul :type cu/bm-units))))
+  (swap! *state assoc :mul (cu/filter-membership cu/mul :type cu/bm-units)))
 
 (defn mech-units-mul
   [_]
-  (swap! *state #(assoc % :mul (cu/filter-membership cu/mul :type cu/mech-units))))
+  (swap! *state assoc :mul (cu/filter-membership cu/mul :type cu/mech-units)))
 
 (defn conventional-units-mul
   [_]
-  (swap! *state #(assoc % :mul (cu/filter-membership cu/mul :type cu/conventional-units))))
+  (swap! *state assoc :mul (cu/filter-membership cu/mul :type cu/conventional-units)))
 
 (defn vehicle-units-mul
   [_]
-  (swap! *state #(assoc % :mul (cu/filter-membership cu/mul :type cu/vehicle-units))))
+  (swap! *state assoc :mul (cu/filter-membership cu/mul :type cu/vehicle-units)))
 
 (defn infantry-units-mul
   [_]
-  (swap! *state #(assoc % :mul (cu/filter-membership cu/mul :type cu/infantry-units))))
+  (swap! *state assoc :mul (cu/filter-membership cu/mul :type cu/infantry-units)))
 
-(def mul-display
-  [{:fx/type :label
+(defn mul-display [{:keys [mul]}]
+  {:fx/type :label
     :text "Master Unit List"}
    {:fx/type :h-box
     :spacing 5
@@ -55,7 +55,7 @@
                :text "All Infantry"}]}
    {:fx/type :table-view
     :row-factory {:fx/cell-type :table-row
-                  :describe (fn [x]
+                  :describe (fn [_]
                               {:style {:-fx-border-color :black}})}
     :columns [{:fx/type :table-column
                :text "Unit Name"
@@ -147,7 +147,7 @@
                :cell-factory {:fx/cell-type :table-cell
                               :describe (fn [x]
                                           {:text (:abilities x)})}}]
-    :items (cu/filter-membership (:mul @*state) :type cu/bm-units)}])
+    :items mul})
 
 (defn force-creation-display []
   [{:fx/type :label :text "Forces"}
@@ -165,7 +165,7 @@
   [{:fx/type :label
    :text "Map Setup"}])
 
-(defn root [{:keys [first-name last-name]}]
+(defn root [{:keys [mul]}]
   {:fx/type :stage
    :showing true
    :scene
@@ -180,7 +180,8 @@
                  :grid-pane/column 0
                  :grid-pane/hgrow :always
                  :grid-pane/vgrow :always
-                 :children mul-display}
+                 :children [{:fx/type mul-display
+                             :mul mul}]}
                 {:fx/type :v-box
                  :spacing 5
                  :fill-width true
