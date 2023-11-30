@@ -6,28 +6,52 @@
 (def *state
   (atom {:mul cu/mul}))
 
+(defn ground-units-mul
+  [_]
+  (swap! *state #(assoc % :mul (cu/filter-membership cu/mul :type cu/ground-units))))
+
+(defn bm-units-mul
+  [_]
+  (swap! *state #(assoc % :mul (cu/filter-membership cu/mul :type cu/bm-units))))
+
+(defn mech-units-mul
+  [_]
+  (swap! *state #(assoc % :mul (cu/filter-membership cu/mul :type cu/mech-units))))
+
+(defn conventional-units-mul
+  [_]
+  (swap! *state #(assoc % :mul (cu/filter-membership cu/mul :type cu/conventional-units))))
+
+(defn vehicle-units-mul
+  [_]
+  (swap! *state #(assoc % :mul (cu/filter-membership cu/mul :type cu/vehicle-units))))
+
+(defn infantry-units-mul
+  [_]
+  (swap! *state #(assoc % :mul (cu/filter-membership cu/mul :type cu/infantry-units))))
+
 (def mul-display
   [{:fx/type :label
     :text "Master Unit List"}
    {:fx/type :h-box
     :spacing 5
     :children [{:fx/type :button
-
+               :on-action ground-units-mul
                :text "All Ground Units"}
               {:fx/type :button
-
+               :on-action bm-units-mul
                :text "Battlemechs"}
               {:fx/type :button
-
+               :on-action mech-units-mul
                :text "All Mechs"}
               {:fx/type :button
-
+               :on-action conventional-units-mul
                :text "All Conventional Units"}
               {:fx/type :button
-
+               :on-action vehicle-units-mul
                :text "All vehicles"}
               {:fx/type :button
-
+               :on-action infantry-units-mul
                :text "All Infantry"}]}
    {:fx/type :table-view
     :row-factory {:fx/cell-type :table-row
