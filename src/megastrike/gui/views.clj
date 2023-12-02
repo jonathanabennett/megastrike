@@ -29,20 +29,17 @@
                 :text "Name"
                 :cell-value-factory identity
                 :cell-factory {:fx/cell-type :table-cell
-                               :describe (fn [x]
-                                           {:text (:name x)})}}
+                               :describe (fn [x] {:text (:name x)})}}
                 {:fx/type :table-column
                  :text "Deployment"
                  :cell-value-factory identity
                  :cell-factory {:fx/cell-type :table-cell
-                                :describe (fn [x]
-                                            {:text (:deploy x)})}}
+                                :describe (fn [x] {:text (:deploy x)})}}
                 {:fx/type :table-column
                  :text "Unit Count"
                  :cell-value-factory identity
                  :cell-factory {:fx/cell-type :table-cell
-                                :describe (fn [x]
-                                            {:text (prn 0)})}}]
+                                :describe (fn [x] {:text (prn 0)})}}]
      :items (vals forces)})))
 
 (defn unit-selection-display []
@@ -100,92 +97,77 @@
                :text "Unit Name"
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
-                              :describe (fn [x]
-                                          {:text (:full-name x)})}}
+                              :describe (fn [x] {:text (:full-name x)})}}
               {:fx/type :table-column
                :text "Type"
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
-                              :describe (fn[x]
-                                          {:text (:type x)})}}
+                              :describe (fn[x] {:text (:type x)})}}
               {:fx/type :table-column
                :text "PV"
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
-                              :describe (fn [x]
-                                          {:text (pr-str (:point-value x))})}}
+                              :describe (fn [x] {:text (pr-str (:point-value x))})}}
               {:fx/type :table-column
                :text "Size"
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
-                              :describe (fn [x]
-                                          {:text (pr-str (:size x))})}}
+                              :describe (fn [x] {:text (pr-str (:size x))})}}
               {:fx/type :table-column
                :text "Movement"
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
-                              :describe (fn [x]
-                                          {:text (cu/print-movement x)})}}
+                              :describe (fn [x] {:text (cu/print-movement x)})}}
               {:fx/type :table-column
                :text "TMM"
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
-                              :describe (fn [x]
-                                          {:text (pr-str (:tmm x))})}}
+                              :describe (fn [x] {:text (pr-str (:tmm x))})}}
               {:fx/type :table-column
                :text "Armor"
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
-                              :describe (fn [x]
-                                          {:text (pr-str (:armor x))})}}
+                              :describe (fn [x] {:text (pr-str (:armor x))})}}
               {:fx/type :table-column
                :text "Structure"
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
-                              :describe (fn [x]
-                                          {:text (pr-str (:structure x))})}}
+                              :describe (fn [x] {:text (pr-str (:structure x))})}}
               ;; {:fx/type :table-column
               ;;  :text "Threshold"
               ;;  :cell-value-factory identity
               ;;  :cell-factory {:fx/cell-type :table-cell
-              ;;                 :describe (fn [x]
-              ;;                             {:text (pr-str (:threshold x))})}}
+              ;;                 :describe (fn [x] {:text (pr-str (:threshold x))})}}
               {:fx/type :table-column
                :text "S"
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
-                              :describe (fn [x]
-                                          {:text (cu/print-short x)})}}
+                              :describe (fn [x] {:text (cu/print-short x)})}}
               {:fx/type :table-column
                :text "M"
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
-                              :describe (fn [x]
-                                          {:text (cu/print-medium x)})}}
+                              :describe (fn [x] {:text (cu/print-medium x)})}}
               {:fx/type :table-column
                :text "L"
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
-                              :describe (fn [x]
-                                          {:text (cu/print-long x)})}}
+                              :describe (fn [x] {:text (cu/print-long x)})}}
               {:fx/type :table-column
                :text "E"
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
-                              :describe (fn [x]
-                                          {:text (cu/print-extreme x)})}}
+                              :describe (fn [x] {:text (cu/print-extreme x)})}}
               {:fx/type :table-column
                :text "OV"
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
-                              :describe (fn [x]
-                                          {:text (pr-str (:overheat x))})}}
+                              :describe (fn [x] {:text (pr-str (:overheat x))})}}
               {:fx/type :table-column
                :text "Abilities"
                :cell-value-factory identity
                :cell-factory {:fx/cell-type :table-cell
-                              :describe (fn [x]
-                                          {:text (:abilities x)})}}]
+                              :describe (fn [x] {:text (:abilities x)})}}]
     :items (fx/sub-val context :mul)})
 
 (defn root [_]
@@ -233,8 +215,7 @@
                             {:fx/type :button
                              :text "Add Force"
                              :on-action {:event-type ::events/add-force :fx/sync true}}
-                            {:fx/type forces-table}
-                            ]}
+                            {:fx/type forces-table}]}
                 {:fx/type :v-box
                  :spacing 5
                  :fill-width true
@@ -252,5 +233,4 @@
                  :grid-pane/column 1
                  :grid-pane/hgrow :always
                  :grid-pane/vgrow :always
-                 :children (map-selection-display)}
-                ]}}})
+                 :children (map-selection-display)}]}}})
