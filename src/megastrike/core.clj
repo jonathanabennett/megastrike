@@ -4,7 +4,8 @@
    [clojure.core.cache :as cache]
    [megastrike.gui.events :as events]
    [megastrike.gui.views :as views]
-   [megastrike.combat-unit :as cu]))
+   [megastrike.combat-unit :as cu])
+  (:gen-class :main true))
 
 (def *state
   (atom
