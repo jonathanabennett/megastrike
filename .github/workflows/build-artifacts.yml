@@ -10,7 +10,7 @@ jobs:
       - uses: actions/setup-java@v3
         with:
           java-version: '11'
-          distribution: "temurin"
+          distribution: 'temurin'
       - uses: DeLaGuardo/setup-clojure@12.1
         with:
           cli: '1.11.1.1413'
