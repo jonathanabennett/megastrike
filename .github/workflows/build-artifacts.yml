@@ -1,5 +1,6 @@
 name: Build Release Artifacts
 on:
+  workflow_dispatch:
   release:
     types: [created]
 jobs:
