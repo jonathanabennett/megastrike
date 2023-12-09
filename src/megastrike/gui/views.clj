@@ -10,13 +10,6 @@
   []
   "")
 
-(defn launch-game
-  []
-  (let [units? (fx/sub-ctx fx/context sub/units-ready?)
-        forces? (fx/sub-ctx fx/context sub/forces-ready?)]
-    (when (and units? forces?)
-      (game-view))))
-
 (defn text-input
   [{:keys [fx/context label key]}]
   {:fx/type :h-box
@@ -296,8 +289,7 @@
                :label "Map Height"
                :key :map-height}
               {:fx/type :button
-               :text "Launch Game"
-               :on-action (launch-game)}]})
+               :text "Launch Game"}]})
 
 (def lobby
   {:fx/type :grid-pane
