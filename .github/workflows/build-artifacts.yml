@@ -4,7 +4,7 @@ on:
   release:
     types: [created]
 jobs:
-  build-deb:
+  uberjar:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -16,60 +16,85 @@ jobs:
         with:
           cli: '1.11.1.1413'
           lein: '2.10.0'
-          cmd-exe-workaround: 'latest'
       - run: lein uberjar
-      - run: jpackage @jpackage/common @jpackage/linux
-      - uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - name: Set as executable
+        run: chmod +x ./target/megastrike-0.1.0-SNAPSHOT-standalone.jar
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v1
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: cljfx-ms_2.0-0_amd64.deb
-          asset_name: cljfx-ms_2.0-0_amd64.deb
-          asset_content_type: application/vnd.debian.binary-package
-  build-dmg:
-    runs-on: macos-latest
+          name: uberjar
+          path: ./target/megastrike-0.1.0-SNAPSHOT-standalone.jar
+
+  build-deb:
+    needs: uberjar
+    runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
       - uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
-      - uses: DeLaGuardo/setup-clojure@12.1
+      - name: Get Megastrike jar
+        uses: actions/download-artifact@v2
         with:
-          cli: '1.11.1.1413'
-          lein: '2.10.0'
-          cmd-exe-workaround: 'latest'
-      - run: lein uberjar
-      - run: jpackage @jpackage/common @jpackage/mac
-      - uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: uberjar
+      - run: jpackage --name megastrike --input . --main-jar megastrike-0.1.0-SNAPSHOT-standalone.jar --main-class megastrike.core
+      - name: Inspect AppImage
+        run: ls -la
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v1
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: cljfx-ms-2.0.dmg
-          asset_name: cljfx-ms-2.0.dmg
-          asset_content_type: application/x-apple-diskimage
+          name: deb
+          path: megastrike_0.1-0_amd64.deb
+      # - uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ github.event.release.upload_url }}
+      #     asset_path: cljfx-ms_2.0-0_amd64.deb
+      #     asset_name: cljfx-ms_2.0-0_amd64.deb
+      #     asset_content_type: application/vnd.debian.binary-package
+
+  # build-dmg:
+  #   needs: uberjar
+  #   runs-on: macos-latest
+  #   steps:
+  #     - uses: actions/setup-java@v3
+  #       with:
+  #         java-version: '17'
+  #         distribution: 'temurin'
+  #     - uses: DeLaGuardo/setup-clojure@12.1
+  #       with:
+  #         cli: '1.11.1.1413'
+  #         lein: '2.10.0'
+  #         cmd-exe-workaround: 'latest'
+  #     - run: lein uberjar
+  #     - run: jpackage @jpackage/common @jpackage/mac
+  #     - uses: actions/upload-release-asset@v1
+  #       env:
+  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  #       with:
+  #         upload_url: ${{ github.event.release.upload_url }}
+  #         asset_path: cljfx-ms-2.0.dmg
+  #         asset_name: cljfx-ms-2.0.dmg
+  #         asset_content_type: application/x-apple-diskimage
+
   build-exe:
+    needs: uberjar
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
       - uses: actions/setup-java@v3
         with:
           java-version: '17'
           distribution: 'temurin'
-      - uses: DeLaGuardo/setup-clojure@12.1
+      - name: Get Megastrike jar
+        uses: actions/download-artifact@v2
         with:
-          cli: '1.11.1.1413'
-          lein: '2.10.0'
-          cmd-exe-workaround: 'latest'
-      - run: lein uberjar
-      - run: jpackage @jpackage/common @jpackage/windows
-      - uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          name: uberjar
+      - run: jpackage --name megastrike --input . --main-jar megastrike-0.1.0-SNAPSHOT-standalone.jar --main-class megastrike.core --win-menu
+      - name: Inspect Exe
+        run: dir
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v1
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: cljfx-ms-2.0.exe
-          asset_name: cljfx-ms-2.0.exe
-          asset_content_type: application/vnd.microsoft.portable-executable
+          name: exe
+          path: megastrike-0.1.0.exe
