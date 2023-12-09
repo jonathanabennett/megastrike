@@ -10,5 +10,6 @@
                  [clojure-csv/clojure-csv "2.0.1"]]
   :main ^:skip-aot megastrike.core
   :repl-options {:init-ns megastrike.core}
-  :profiles {:uberjar {:aot :all}
+  :profiles {:uberjar {:aot :all
+                       :jvm-opts ["-Dcljfx.skip-javafx-initialization=true"]}
              :dev {:dependencies [[io.github.cljfx/dev "1.0.38"]]}})
