@@ -16,11 +16,13 @@
      :pilot-name "Bob"
      :pilot-skill "4"
      :forces {} ;; Replace with a vector
-     :units [] ;; Replace with a vector
-     :active-unit nil
+     :units []
+     :active-mul nil
      :active-force nil
-     :mul-selection (first (cu/filter-membership cu/mul :type cu/ground-units))
+     :active-unit nil
      :game-board []
+     :map-width "16"
+     :map-height "17"
      :current-phase -1
      :turn-number 0}
     cache/lru-cache-factory)))
@@ -43,6 +45,5 @@
                                         (fx/fn->lifecycle-with-context %))}))
 
 (defn -main
-  "I don't do a whole lot."
   []
   (fx/mount-renderer *state renderer))

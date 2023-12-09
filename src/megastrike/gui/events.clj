@@ -1,7 +1,8 @@
 (ns megastrike.gui.events
   (:require
    [cljfx.api :as fx]
-   [megastrike.combat-unit :as cu]))
+   [megastrike.combat-unit :as cu]
+   [megastrike.gui.subs :as sub]))
 
 (defmulti event-handler :event-type)
 
@@ -28,3 +29,30 @@
     {:context
      (fx/swap-context context assoc-in [:forces name]
                       {:name name :deploy deploy :color color})}))
+
+(defmethod event-handler ::force-selection-changed
+  [{:keys [fx/context fx/event]}]
+  {:context (fx/swap-context context assoc :active-force (:name event))})
+
+(defmethod event-handler ::mul-selection-changed
+  [{:keys [fx/context fx/event]}]
+  {:context (fx/swap-context context assoc :active-mul event)})
+
+(defmethod event-handler ::unit-selection-changed
+  [{:keys [fx/context fx/event]}]
+  {:context (fx/swap-context context assoc :active-unit event)})
+
+(defmethod event-handler ::add-unit
+  [{:keys [fx/context]}]
+  (let [units (fx/sub-val context :units)
+        mul-unit (fx/sub-val context :active-mul)
+        matching-units (filter #(= (:full-name %) (:name mul-unit)) units)
+        unit (merge mul-unit
+                    {:force (fx/sub-val context :active-force)
+                     :pilot {:name (fx/sub-val context :pilot-name)
+                             :skill (Integer/parseInt (fx/sub-val context :pilot-skill))}
+                     :id (if (seq matching-units)
+                           (str (:full-name mul-unit) " #" (inc (count matching-units)))
+                           (str (:full-name mul-unit)))})]
+    {:context (fx/swap-context context assoc :units (conj (fx/sub-val context :units) unit))}))
+

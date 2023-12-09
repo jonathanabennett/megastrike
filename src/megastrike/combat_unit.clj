@@ -78,17 +78,19 @@
 
 (def mul (map parse-row (rest (csv/parse-csv (slurp "resources/mul.csv") :delimiter \tab))))
 
-(defn filter-units
-  ([units]
-   units)
-  ([units field value comparison]
-   (filter #(when (comparison (field %) value) %) units)))
-
 (defn filter-membership-helper
   ([unit]
    unit)
   ([unit field values]
    (some #(= (field unit) %) values)))
+
+(defn filter-units
+  ([units]
+   units)
+  ([units field value comparison]
+   (filter #(when (comparison (field %) value) %) units))
+  ([units field values]
+   (filter #(filter-membership-helper % field values) units)))
 
 (defn filter-membership
   ([units]
