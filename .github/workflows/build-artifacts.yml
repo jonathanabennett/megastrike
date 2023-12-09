@@ -17,7 +17,7 @@ jobs:
           cli: '1.11.1.1413'
           lein: '2.10.0'
           cmd-exe-workaround: 'latest'
-      - run: clojure -A:uberjar
+      - run: lein uberjar
       - run: jpackage @jpackage/common @jpackage/linux
       - uses: actions/upload-release-asset@v1
         env:
@@ -40,7 +40,7 @@ jobs:
           cli: '1.11.1.1413'
           lein: '2.10.0'
           cmd-exe-workaround: 'latest'
-      - run: clojure -A:uberjar
+      - run: lein uberjar
       - run: jpackage @jpackage/common @jpackage/mac
       - uses: actions/upload-release-asset@v1
         env:
@@ -58,8 +58,12 @@ jobs:
         with:
           java-version: '17'
           distribution: 'temurin'
-      - run: iwr -useb download.clojure.org/install/win-install-1.10.1.536.ps1 | iex
-      - run: clojure -A:uberjar
+      - uses: DeLaGuardo/setup-clojure@12.1
+        with:
+          cli: '1.11.1.1413'
+          lein: '2.10.0'
+          cmd-exe-workaround: 'latest'
+      - run: lein uberjar
       - run: jpackage @jpackage/common @jpackage/windows
       - uses: actions/upload-release-asset@v1
         env:
