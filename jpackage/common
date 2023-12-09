@@ -1,0 +1,6 @@
+--input dist
+--main-jar megastrike.jar
+--name "megastrike"
+--main-class clojure.main
+--arguments -m
+--arguments megastrike.core
