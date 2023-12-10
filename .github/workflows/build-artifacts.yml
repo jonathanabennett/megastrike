@@ -34,7 +34,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - name: Get Megastrike jar
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: uberjar
       - run: jpackage --name megastrike --input . --main-jar megastrike-0.1.0-SNAPSHOT-standalone.jar --main-class megastrike.core
@@ -87,7 +87,7 @@ jobs:
           java-version: '17'
           distribution: 'temurin'
       - name: Get Megastrike jar
-        uses: actions/download-artifact@v2
+        uses: actions/download-artifact@v3
         with:
           name: uberjar
       - run: jpackage --name megastrike --input . --main-jar megastrike-0.1.0-SNAPSHOT-standalone.jar --main-class megastrike.core --win-menu
