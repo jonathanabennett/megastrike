@@ -56,3 +56,6 @@
                            (str (:full-name mul-unit)))})]
     {:context (fx/swap-context context assoc :units (conj (fx/sub-val context :units) unit))}))
 
+(defmethod event-handler ::view-changed
+  [{:keys [fx/context view fx/event]}]
+  {:context (fx/swap-context context assoc :display view)})

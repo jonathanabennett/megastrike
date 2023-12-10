@@ -11,6 +11,7 @@
   (atom
    (fx/create-context
     {:mul (cu/filter-membership cu/mul :type cu/ground-units)
+     :display :lobby
      :force-name "AFFS"
      :force-color :gold
      :force-zone "N"

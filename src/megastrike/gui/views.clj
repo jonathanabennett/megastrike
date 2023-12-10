@@ -289,19 +289,30 @@
                :label "Map Height"
                :key :map-height}
               {:fx/type :button
-               :text "Launch Game"}]})
+               :text "Launch Game"
+               :on-action {:event-type ::events/view-changed
+                           :fx/sync true
+                           :view :game}}]})
 
-(def lobby
+(def lobby-view
   {:fx/type :grid-pane
    :children [mul-pane
               force-pane
               unit-pane
               map-pane]})
 
-(defn root [_]
-  {:fx/type :stage
-   :showing true
-   :scene
-   {:fx/type :scene
-    :root
-    lobby}})
+(def game-view
+  {:fx/type :label
+   :text "Game view"})
+
+(defn root [{:keys [fx/context]}]
+  (let [view (fx/sub-val context :display)]
+    {:fx/type :stage
+     :showing true
+     :scene
+     {:fx/type :scene
+      :root
+      (cond
+        (= view :lobby) lobby-view
+        (= view :game) game-view
+        :else lobby-view)}}))
