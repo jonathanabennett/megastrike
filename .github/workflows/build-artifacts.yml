@@ -54,29 +54,26 @@ jobs:
       #     asset_name: cljfx-ms_2.0-0_amd64.deb
       #     asset_content_type: application/vnd.debian.binary-package
 
-  # build-dmg:
-  #   needs: uberjar
-  #   runs-on: macos-latest
-  #   steps:
-  #     - uses: actions/setup-java@v3
-  #       with:
-  #         java-version: '17'
-  #         distribution: 'temurin'
-  #     - uses: DeLaGuardo/setup-clojure@12.1
-  #       with:
-  #         cli: '1.11.1.1413'
-  #         lein: '2.10.0'
-  #         cmd-exe-workaround: 'latest'
-  #     - run: lein uberjar
-  #     - run: jpackage @jpackage/common @jpackage/mac
-  #     - uses: actions/upload-release-asset@v1
-  #       env:
-  #         GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-  #       with:
-  #         upload_url: ${{ github.event.release.upload_url }}
-  #         asset_path: cljfx-ms-2.0.dmg
-  #         asset_name: cljfx-ms-2.0.dmg
-  #         asset_content_type: application/x-apple-diskimage
+  build-dmg:
+    needs: uberjar
+    runs-on: macos-latest
+    steps:
+      - uses: actions/setup-java@v3
+        with:
+          java-version: '17'
+          distribution: 'temurin'
+      - name: Get Megastrike jar
+        uses: actions/download-artifact@v3
+        with:
+          name: uberjar
+      - run: jpackage --name megastrike --input . --main-jar megastrike-0.1.0-SNAPSHOT-standalone.jar --main-class megastrike.core
+      - name: Inspect dmg
+        run: ls -la
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v1
+        with:
+          name: dmg
+          path: megastrike_1.0-1.dmg
 
   build-exe:
     needs: uberjar
