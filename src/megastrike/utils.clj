@@ -1,7 +1,11 @@
 (ns megastrike.utils
   (:require
-   [clojure.math :as math]
-   [clojure.string :as string]))
+   [clojure.string :as string]
+   [clojure.java.io :as io]))
+
+(defn load-resource
+  [name]
+  (-> name io/resource))
 
 (defn strip-quotes
   [str]
