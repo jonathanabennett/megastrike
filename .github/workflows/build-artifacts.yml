@@ -73,7 +73,7 @@ jobs:
         uses: actions/upload-artifact@v1
         with:
           name: dmg
-          path: megastrike_1.0-1.dmg
+          path: megastrike-1.0.dmg
 
   build-exe:
     needs: uberjar
