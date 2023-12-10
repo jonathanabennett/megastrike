@@ -5,6 +5,7 @@
    [megastrike.gui.events :as events]
    [megastrike.gui.views :as views]
    [megastrike.combat-unit :as cu])
+  (:import [javafx.application Platform])
   (:gen-class :main true))
 
 (def *state
@@ -48,4 +49,5 @@
 
 (defn -main
   []
+  (Platform/setImplicitExit true)
   (fx/mount-renderer *state renderer))
