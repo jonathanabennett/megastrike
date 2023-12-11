@@ -2,7 +2,23 @@
   (:require
    [cljfx.api :as fx]
    [megastrike.gui.events :as events]
+   [megastrike.combat-unit :as cu]
    [megastrike.gui.subs :as sub]))
+
+(defn draw-sprite
+  [{:keys [unit force]}]
+  {:fx/type :image-view
+   :image (cu/find-sprite unit)
+   :effect {:fx/type :blend
+            :top-input {:fx/type :color-input
+                        :paint (:color force)
+                        :x 0 :y 0 :width 100 :height 100}
+            :bottom-input {:fx/type :image-input
+                           :source (cu/find-sprite unit)}
+            :mode :src-atop
+            :opacity 0.5}
+   :x 0
+   :y 0})
 
 (defn text-input
   [{:keys [fx/context label key]}]

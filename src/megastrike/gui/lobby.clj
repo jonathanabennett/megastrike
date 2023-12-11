@@ -5,7 +5,9 @@
    [megastrike.gui.events :as events]
    [megastrike.gui.common :as common]
    [megastrike.combat-unit :as cu]
-   [megastrike.gui.subs :as sub]))
+   [megastrike.gui.subs :as sub]
+   [megastrike.utils :as utils]
+   [clojure.java.io :as io]))
 
 (def mul-filter-buttons
   {:fx/type :h-box
@@ -180,7 +182,7 @@
                           :text "Unit Count"
                           :cell-value-factory identity
                           :cell-factory {:fx/cell-type :table-cell
-                                         :describe (fn [x] {:text (:name x)})}}]
+                                         :describe (fn [x] {:text (prn-str ((utils/keyword-maker (:name x)) counts))})}}]
               :items (vals forces)}})))
 
 (def force-pane
@@ -228,15 +230,14 @@
                        :text "Image"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:graphic {:fx/type :blend
-                                                                   :bottom-input {:fx/type :image-viewer
-                                                                                  :image (cu/find-sprite x)}
-                                                                   :mode :multiply
-                                                                   :top-input (:color (find forces (:force x)))}})}}]
+                                      :describe (fn [x] {:graphic {:fx/type common/draw-sprite
+                                                                   :unit x
+                                                                   :force ((:force x) forces)}})}}]
             :items units}}))
 
+
 (def unit-pane
-  {:fx/type :v-box
+   {:fx/type :v-box
    :spacing 5
    :fill-width true
    :alignment :top-center

@@ -2,7 +2,8 @@
   (:require
    [cljfx.api :as fx]
    [megastrike.combat-unit :as cu]
-   [megastrike.gui.subs :as sub]))
+   [megastrike.gui.subs :as sub]
+   [megastrike.utils :as utils]))
 
 (defmulti event-handler :event-type)
 
@@ -27,12 +28,12 @@
         deploy (fx/sub-val context :force-zone)
         color (fx/sub-val context :force-color)]
     {:context
-     (fx/swap-context context assoc-in [:forces name]
+     (fx/swap-context context assoc-in [:forces (utils/keyword-maker name)]
                       {:name name :deploy deploy :color color})}))
 
 (defmethod event-handler ::force-selection-changed
   [{:keys [fx/context fx/event]}]
-  {:context (fx/swap-context context assoc :active-force (:name event))})
+  {:context (fx/swap-context context assoc :active-force (utils/keyword-maker (:name event)))})
 
 (defmethod event-handler ::mul-selection-changed
   [{:keys [fx/context fx/event]}]

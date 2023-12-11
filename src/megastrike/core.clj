@@ -18,7 +18,7 @@
      :force-zone "N"
      :pilot-name "Bob"
      :pilot-skill "4"
-     :forces {} ;; Replace with a vector
+     :forces {}
      :units []
      :active-mul nil
      :active-force nil
