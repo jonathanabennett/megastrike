@@ -156,7 +156,7 @@
   [{:keys [fx/context]}]
   (let [forces (fx/sub-val context :forces)
         selected (fx/sub-val context :active-force)
-        counts (fx/sub-ctx context sub/unit-counts)]
+        counts (fx/sub-ctx context sub/units-by-force)]
     (if (empty? forces)
       {:fx/type :label
        :text "Add a force."}
@@ -182,7 +182,12 @@
                           :text "Unit Count"
                           :cell-value-factory identity
                           :cell-factory {:fx/cell-type :table-cell
-                                         :describe (fn [x] {:text (prn-str ((utils/keyword-maker (:name x)) counts))})}}]
+                                         :describe (fn [x] {:text (prn-str (count ((utils/keyword-maker (:name x)) counts)))})}}
+                        {:fx/type :table-column
+                         :text "Total PV"
+                         :cell-value-factory identity
+                         :cell-factory {:fx/cell-type :table-cell
+                                        :describe (fn [x] {:text (prn-str (reduce + (map #(cu/pv %) ((utils/keyword-maker (:name x)) counts))))})}}]
               :items (vals forces)}})))
 
 (def force-pane
@@ -232,7 +237,17 @@
                        :cell-factory {:fx/cell-type :table-cell
                                       :describe (fn [x] {:graphic {:fx/type common/draw-sprite
                                                                    :unit x
-                                                                   :force ((:force x) forces)}})}}]
+                                                                   :force ((:force x) forces)}})}}
+                      {:fx/type :table-column
+                       :text "Pilot"
+                       :cell-value-factory identity
+                       :cell-factory {:fx/cell-type :table-cell
+                                      :describe (fn [x] {:text (str (:name (:pilot x)) " (" (:skill (:pilot x)) ")")})}}
+                      {:fx/type :table-column
+                       :text "PV"
+                       :cell-value-factory identity
+                       :cell-factory {:fx/cell-type :table-cell
+                                      :describe (fn [x] {:text (prn-str (cu/pv x))})}}]
             :items units}}))
 
 

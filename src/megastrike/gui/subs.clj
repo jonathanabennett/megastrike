@@ -1,12 +1,11 @@
 (ns megastrike.gui.subs
   (:require
-   [cljfx.api :as fx]))
+   [cljfx.api :as fx]
+   [megastrike.combat-unit :as cu]))
 
-(defn unit-counts
+(defn units
   [context]
-  (let [units (fx/sub-val context :units)]
-    (when (seq units)
-      (frequencies (map :force units)))))
+  (fx/sub-val context :units))
 
 (defn units-ready?
   [context]
@@ -15,3 +14,7 @@
 (defn forces-ready?
   [context]
   (> (count (fx/sub-val context :forces)) 1))
+
+(defn units-by-force
+  [context]
+  (group-by :force (fx/sub-val context :units)))
