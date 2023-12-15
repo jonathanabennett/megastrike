@@ -1,9 +1,11 @@
 (ns megastrike.gui.events
   (:require
    [cljfx.api :as fx]
+   [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
-   [megastrike.gui.subs :as sub]
-   [megastrike.utils :as utils]))
+   [megastrike.utils :as utils]
+   [megastrike.initiative :as initiative]
+   [megastrike.gui.subs :as sub]))
 
 (defmulti event-handler :event-type)
 

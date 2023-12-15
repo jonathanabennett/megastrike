@@ -1,12 +1,15 @@
 (ns megastrike.core
+  (:gen-class
+   :main true)
   (:require
    [cljfx.api :as fx]
    [clojure.core.cache :as cache]
+   [megastrike.combat-unit :as cu]
    [megastrike.gui.events :as events]
    [megastrike.gui.views :as views]
-   [megastrike.combat-unit :as cu])
-  (:import [javafx.application Platform])
-  (:gen-class :main true))
+   [megastrike.hexagons.hex :as hex])
+  (:import
+   (javafx.application Platform)))
 
 (def *state
   (atom
@@ -24,6 +27,7 @@
      :active-force nil
      :active-unit nil
      :game-board []
+     :layout (hex/create-layout)
      :map-width "16"
      :map-height "17"
      :current-phase -1

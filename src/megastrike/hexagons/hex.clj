@@ -124,17 +124,17 @@
 (defn find-hex-corner
   [center corner layout]
   (let [angle (* 2.0 math/PI (/ (+ (:start-angle layout) corner) 6))]
-    {:x (+ (* (:x-size layout)
+    [(+ (* (:x-size layout)
               (math/cos angle))
            (:x center))
-     :y (+ (* (:y-size layout)
+     (+ (* (:y-size layout)
               (math/sin angle))
-           (:y center))}))
+           (:y center))]))
 
 (defn hex-points
   [hex layout]
   (let [center (hex-to-pixel hex layout)]
-    (map #(find-hex-corner center % layout) (list 0 1 2 3 4 5))))
+    (flatten (map #(find-hex-corner center % layout) (list 0 1 2 3 4 5)))))
 
 (defn linear-interpolation
   [a b step]

@@ -2,12 +2,11 @@
   (:require
    [cljfx.api :as fx]
    [cljfx.ext.table-view :as tables]
-   [megastrike.gui.events :as events]
-   [megastrike.gui.common :as common]
    [megastrike.combat-unit :as cu]
+   [megastrike.gui.common :as common]
+   [megastrike.gui.events :as events]
    [megastrike.gui.subs :as sub]
-   [megastrike.utils :as utils]
-   [clojure.java.io :as io]))
+   [megastrike.utils :as utils]))
 
 (def mul-filter-buttons
   {:fx/type :h-box

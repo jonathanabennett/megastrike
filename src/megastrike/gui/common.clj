@@ -1,12 +1,11 @@
 (ns megastrike.gui.common
   (:require
    [cljfx.api :as fx]
-   [megastrike.gui.events :as events]
    [megastrike.combat-unit :as cu]
-   [megastrike.gui.subs :as sub]))
+   [megastrike.gui.events :as events]))
 
 (defn draw-sprite
-  [{:keys [unit force]}]
+  [{:keys [unit force x y]}]
   {:fx/type :image-view
    :image (cu/find-sprite unit)
    :effect {:fx/type :blend
