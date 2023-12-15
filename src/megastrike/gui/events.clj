@@ -61,4 +61,13 @@
 
 (defmethod event-handler ::view-changed
   [{:keys [fx/context view fx/event]}]
-  {:context (fx/swap-context context assoc :display view)})
+  (let [new-board (board/create-board
+                   (Integer/parseInt (fx/sub-val context :map-width))
+                   (Integer/parseInt (fx/sub-val context :map-height)))]
+    {:context (fx/swap-context context assoc :game-board new-board :display view)}))
+
+(defmethod event-handler ::initiative-phase
+  [{:keys [fx/context fx/event]}]
+  (let [initiatives (sort-by :roll (initiative/roll-initiative))
+        units (sub/units-by-force context)]
+     ))

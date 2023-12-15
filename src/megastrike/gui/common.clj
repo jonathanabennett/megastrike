@@ -16,8 +16,8 @@
                            :source (cu/find-sprite unit)}
             :mode :src-atop
             :opacity 0.5}
-   :x 0
-   :y 0})
+   :x x
+   :y y})
 
 (defn text-input
   [{:keys [fx/context label key]}]

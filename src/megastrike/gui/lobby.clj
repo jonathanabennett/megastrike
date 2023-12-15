@@ -236,7 +236,9 @@
                        :cell-factory {:fx/cell-type :table-cell
                                       :describe (fn [x] {:graphic {:fx/type common/draw-sprite
                                                                    :unit x
-                                                                   :force ((:force x) forces)}})}}
+                                                                   :force ((:force x) forces)
+                                                                   :x 0
+                                                                   :y 0}})}}
                       {:fx/type :table-column
                        :text "Pilot"
                        :cell-value-factory identity
