@@ -47,9 +47,12 @@
     :middleware (comp
                   fx/wrap-context-desc
                   (fx/wrap-map-desc (fn [_] {:fx/type views/root})))
+    :error-handler (bound-fn [^Throwable ex]
+                     (.printStackTrace ^Throwable ex *err*))
     :opts {:fx.opt/map-event-handler event-handler
            :fx.opt/type->lifecycle #(or (fx/keyword->lifecycle %)
-                                        (fx/fn->lifecycle-with-context %))}))
+                                        (fx/fn->lifecycle-with-context %))
+           }))
 
 (defn -main
   []

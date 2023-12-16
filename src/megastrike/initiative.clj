@@ -1,16 +1,25 @@
 (ns megastrike.initiative
-  (:require [megastrike.utils :as utils]))
+  (:require
+   [clojure.math :as math]
+   [megastrike.utils :as utils]))
 
-;; Let's handle initiative by storing the initiative roll in
-;; the force map and adding an `acted?` key to units. We can then
-;; just select whose next.
-
-(defn roll-initiative
-  [forces]
-  (merge (for [f forces] {:name (:name f) :roll (utils/roll2d)})))
-
-(defn frob [forces]
-  (let [rolls (zipmap forces (repeatedly utils/roll2d))]
+(defn roll-initiative [forces]
+  (let [rolls (zipmap (map :name forces) (repeatedly utils/roll2d))]
     (if-not (apply distinct? (vals rolls))
       (recur forces)
-      rolls)))
+      (map #(assoc % :initiative ((:name %) rolls)) forces))))
+
+(defn generate-turn-order [forces units]
+  (let [forces (sort-by :initiative forces)]
+    (loop [turn-order []
+           unit-counts (frequencies (map :force units))
+           current-force 0]
+      (if (= (reduce + unit-counts) 0)
+        turn-order
+        (let [f-name (:name (nth forces current-force))
+              num (math/floor-div
+                   (f-name unit-counts)
+                   (first (sort (vals unit-counts))))]
+          (recur (conj turn-order (take num (repeat current-force)))
+                 (assoc unit-counts current-force (- (current-force unit-counts) num))
+                 (mod (inc current-force) (count forces))))))))
