@@ -64,7 +64,6 @@
 
 (defn unit-stat-block [{:keys [unit]}]
   {:fx/type :v-box
-   :min-width 400
    :spacing 5
    :children [{:fx/type :h-box
               :spacing 5
@@ -126,25 +125,63 @@
                :children [{:fx/type :label
                            :text (str "Armor: " (:current-armor unit) "/" (:armor unit))}
                           {:fx/type :h-box
+                           :spacing 5
                            :children (concat (for [a (range (:armor unit))]
                                                (if (< a (:current-armor unit))
                                                  {:fx/type :rectangle
                                                   :x 0 :y 0
                                                   :width 20 :height 10
+                                                  :stroke :black
                                                   :fill :green}
                                                  {:fx/type :rectangle
                                                   :x 0 :y 0
                                                   :width 20 :height 10
-                                                  :fill :black})))}
-                          ]}]})
+                                                  :stroke :black
+                                                  :fill :transparent})))}]}
+              {:fx/type :v-box
+               :spacing 3
+               :children [{:fx/type :label
+                           :text (str "Structure: " (:current-structure unit) "/" (:structure unit))}
+                          {:fx/type :h-box
+                           :spacing 5
+                           :children (concat (for [a (range (:structure unit))]
+                                               (if (< a (:current-structure unit))
+                                                 {:fx/type :rectangle
+                                                  :x 0 :y 0
+                                                  :width 20 :height 10
+                                                  :stroke :black
+                                                  :fill :green}
+                                                 {:fx/type :rectangle
+                                                  :x 0 :y 0
+                                                  :width 20 :height 10
+                                                  :stroke :black
+                                                  :fill :transparent})))}]}
+              {:fx/type :v-box
+               :spacing 3
+               :children [{:fx/type :label
+                           :text (str "Heat: " (:current-heat unit) "/" 4)}
+                          {:fx/type :h-box
+                           :spacing 5
+                           :children (concat (for [a (range 5)]
+                                               (if (< a (:current-heat unit))
+                                                 {:fx/type :rectangle
+                                                  :x 0 :y 0
+                                                  :width 20 :height 10
+                                                  :stroke :black
+                                                  :fill :red}
+                                                 {:fx/type :rectangle
+                                                  :x 0 :y 0
+                                                  :width 20 :height 10
+                                                  :stroke :black
+                                                  :fill :aliceblue})))}]}]})
 
 (defn stat-blocks [{:keys [fx/context]}]
   {:fx/type :scroll-pane
+   :min-width 400
    :content {:fx/type :v-box
-   :spacing 10
-   :children (for [u (fx/sub-val context :units)]
-               {:fx/type unit-stat-block
-                :unit u})}})
+             :spacing 15
+             :children (for [u (fx/sub-val context :units)]
+                         {:fx/type unit-stat-block :unit u})}})
 
 (defn game-view [{:keys [fx/context]}]
   {:fx/type :grid-pane

@@ -58,6 +58,7 @@
                              :skill (Integer/parseInt (fx/sub-val context :pilot-skill))}
                      :current-armor (:armor mul-unit)
                      :current-structure (:structure mul-unit)
+                     :current-heat 0
                      :id (if (seq matching-units)
                            (str (:full-name mul-unit) " #" (inc (count matching-units)))
                            (str (:full-name mul-unit)))})]
