@@ -122,6 +122,17 @@
                                       :describe (fn [x] {:text (:abilities x)})}}]
              :items mul}}))
 
+(def mul-chassis-search
+  {:fx/type :h-box
+   :spacing 5
+   :alignment :top-center
+   :children [{:fx/type common/text-input
+               :label "Search:"
+               :key :mul-search-term}
+              {:fx/type :button
+               :text "Search by name"
+               :on-action {:event-type ::events/filter-mul :fx/sync true :field :full-name}}]})
+
 (def new-unit-buttons
   {:fx/type :h-box
    :spacing 5
@@ -148,6 +159,7 @@
    :children [{:fx/type :label
                :text "Master Unit List"}
               mul-filter-buttons
+              mul-chassis-search
               {:fx/type mul-table}
               new-unit-buttons]})
 

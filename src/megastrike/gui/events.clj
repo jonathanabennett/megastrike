@@ -66,8 +66,27 @@
                    (Integer/parseInt (fx/sub-val context :map-height)))]
     {:context (fx/swap-context context assoc :game-board new-board :display view)}))
 
-(defmethod event-handler ::initiative-phase
+(defmethod event-handler ::auto-save
   [{:keys [fx/context fx/event]}]
-  (let [initiatives (sort-by :roll (initiative/roll-initiative))
-        units (sub/units-by-force context)]
-     ))
+  (let [save {:game-board (fx/sub-val context :game-board)
+              :units (fx/sub-val context :units)
+              :forces (fx/sub-val context :forces)}]
+    (spit "save.edn" save)))
+
+;; (defmethod event-handler ::initiative-phase
+;;   [{:keys [fx/context fx/event]}]
+;;   (let [initiatives (sort-by :roll (initiative/roll-initiative))
+;;         units (sub/units-by-force context)]
+;;      ))
+
+
+(defmethod event-handler ::filter-mul
+  [{:keys [fx/context fx/event field]}]
+  (let [term (fx/sub-val context :mul-search-term)
+        mul (fx/sub-val context :mul)]
+    {:context (fx/swap-context context assoc :mul (cu/filter-units mul field term str/includes?))}))
+
+(defmethod event-handler ::load-save
+  [{:keys [fx/context fx/event]}]
+   (let [save-data (edn/read-string (slurp "save.edn"))]
+     {:context (fx/swap-context context merge context save-data {:display :game})}))
