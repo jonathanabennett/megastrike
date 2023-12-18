@@ -1,11 +1,13 @@
 (ns megastrike.gui.events
   (:require
+   [clojure.edn :as edn]
    [cljfx.api :as fx]
    [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
    [megastrike.utils :as utils]
    [megastrike.initiative :as initiative]
-   [megastrike.gui.subs :as sub]))
+   [megastrike.gui.subs :as sub]
+   [clojure.string :as str]))
 
 (defmulti event-handler :event-type)
 
@@ -54,6 +56,8 @@
                     {:force (fx/sub-val context :active-force)
                      :pilot {:name (fx/sub-val context :pilot-name)
                              :skill (Integer/parseInt (fx/sub-val context :pilot-skill))}
+                     :current-armor (:armor mul-unit)
+                     :current-structure (:structure mul-unit)
                      :id (if (seq matching-units)
                            (str (:full-name mul-unit) " #" (inc (count matching-units)))
                            (str (:full-name mul-unit)))})]

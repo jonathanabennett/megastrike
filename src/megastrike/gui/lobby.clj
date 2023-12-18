@@ -295,10 +295,11 @@
                :label "Map Height"
                :key :map-height}
               {:fx/type :button
+               :text "Load Test Game"
+               :on-action {:event-type ::events/load-save :fx/sync true}}
+              {:fx/type :button
                :text "Launch Game"
-               :on-action {:event-type ::events/view-changed
-                           :fx/sync true
-                           :view :game}}]})
+               :on-action {:event-type ::events/view-changed :fx/sync true :view :game}}]})
 
 (def view
   {:fx/type :grid-pane
