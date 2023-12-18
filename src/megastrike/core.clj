@@ -3,6 +3,7 @@
    :main true)
   (:require
    [cljfx.api :as fx]
+   [cljfx.dev :as dev]
    [clojure.core.cache :as cache]
    [megastrike.combat-unit :as cu]
    [megastrike.gui.events :as events]
@@ -15,6 +16,7 @@
   (atom
    (fx/create-context
     {:mul (cu/filter-membership cu/mul :type cu/ground-units)
+     :mul-search-term ""
      :display :lobby
      :force-name "AFFS"
      :force-color :gold
@@ -47,8 +49,6 @@
     :middleware (comp
                   fx/wrap-context-desc
                   (fx/wrap-map-desc (fn [_] {:fx/type views/root})))
-    :error-handler (bound-fn [^Throwable ex]
-                     (.printStackTrace ^Throwable ex *err*))
     :opts {:fx.opt/map-event-handler event-handler
            :fx.opt/type->lifecycle #(or (fx/keyword->lifecycle %)
                                         (fx/fn->lifecycle-with-context %))
