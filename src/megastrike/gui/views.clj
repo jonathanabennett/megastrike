@@ -41,62 +41,130 @@
         layout (fx/sub-val context :layout)
         units (fx/sub-val context :units)]
     {:fx/type :scroll-pane
-     :grid-pane/row 0
-     :grid-pane/column 0
-     :grid-pane/hgrow :always
-     :grid-pane/vgrow :always
      :content {:fx/type :group
-               :children (;; concat
+               :children (concat
                           (for [h gb]
                             {:fx/type draw-hex
                              :hex h
                              :layout layout})
-                          ;; (for [u units]
-                          ;;   (when (:q u)
-                          ;;     {:fx/type draw-unit
-                          ;;      :unit u
-                          ;;      :layout layout}))
+                          ;; (or (for [u units]
+                          ;;       (when (:q u)
+                          ;;         {:fx/type draw-unit
+                          ;;          :unit u
+                          ;;          :layout layout}))
+                          ;;     [])
                           )}}))
 
 (defn command-palette [{:keys [fx/context]}]
   (let [phase (fx/sub-val context :current-phase)
         turn (fx/sub-val context :turn-number)]
-    {:fx/type :label
-     :grid-pane/row 1
-     :grid-pane/column 0
-     :grid-pane/hgrow :always
-     :grid-pane/vgrow :always
-     :text "Command Buttons"}))
+    {:fx/type :button
+     :text "Save Game"
+     :on-action {:event-type ::events/auto-save :fx/sync true}}))
 
 (defn unit-stat-block [{:keys [unit]}]
   {:fx/type :v-box
+   :min-width 400
    :spacing 5
-   :children[{:fx/type :h-box
+   :children [{:fx/type :h-box
               :spacing 5
               :children [{:fx/type :label
-                          :text (str "Unit: " (:full-name unit))}
+                          :text (str "Unit: " (:id unit))}
                          {:fx/type :label
                           :text (str "Type: " (:type unit))}
                          {:fx/type :label
-                          :text (str "Role: " (:role unit))}
-                         {:fx/type :label
-                          :text (str "Size: " (:size unit))}
-                         {:fx/type :label
-                          :text (str "TMM: " (:tmm unit))}
-                         {:fx/type :label
                           :text (str "Mv: " (cu/print-movement unit))}
                          {:fx/type :label
-                          :text (str "Pilot: " (:pilot/name unit) " (" (:pilot/skill unit) ")")}]}
-             ]})
+                          :text (str "Pilot: " (:name (:pilot unit)) " (" (:skill (:pilot unit)) ")")}]}
+              {:fx/type :h-box
+               :spacing 5
+               :children [{:fx/type :label
+                           :text (str "Role: " (:role unit))}
+                          {:fx/type :label
+                           :text (str "Size: " (:size unit))}
+                          {:fx/type :label
+                           :text (str "TMM: " (:tmm unit))}]}
+              {:fx/type :v-box
+               :spacing 5
+               :children [{:fx/type :label
+                           :text "Attacks"}
+                          {:fx/type :grid-pane
+                           :children [{:fx/type :label
+                                       :grid-pane/row 0
+                                       :grid-pane/column 0
+                                       :text "S(+0)"}
+                                      {:fx/type :label
+                                       :grid-pane/row 0
+                                       :grid-pane/column 1
+                                       :text "M(+2)"}
+                                      {:fx/type :label
+                                       :grid-pane/row 0
+                                       :grid-pane/column 2
+                                       :text "L(+4)"}
+                                      {:fx/type :label
+                                       :grid-pane/row 0
+                                       :grid-pane/column 3
+                                       :text "E(+6)"}
+                                      {:fx/type :label
+                                       :grid-pane/row 1
+                                       :grid-pane/column 0
+                                       :text (cu/print-short unit)}
+                                      {:fx/type :label
+                                       :grid-pane/row 1
+                                       :grid-pane/column 1
+                                       :text (cu/print-medium unit)}
+                                      {:fx/type :label
+                                       :grid-pane/row 1
+                                       :grid-pane/column 2
+                                       :text (cu/print-long unit)}
+                                      {:fx/type :label
+                                       :grid-pane/row 1
+                                       :grid-pane/column 3
+                                       :text (cu/print-extreme unit)}]}]}
+              {:fx/type :v-box
+               :spacing 3
+               :children [{:fx/type :label
+                           :text (str "Armor: " (:current-armor unit) "/" (:armor unit))}
+                          {:fx/type :h-box
+                           :children (concat (for [a (range (:armor unit))]
+                                               (if (< a (:current-armor unit))
+                                                 {:fx/type :rectangle
+                                                  :x 0 :y 0
+                                                  :width 20 :height 10
+                                                  :fill :green}
+                                                 {:fx/type :rectangle
+                                                  :x 0 :y 0
+                                                  :width 20 :height 10
+                                                  :fill :black})))}
+                          ]}]})
 
-(def game-view
-  {:fx/type :grid-view
-   :children [{:fx/type :label
+(defn stat-blocks [{:keys [fx/context]}]
+  {:fx/type :scroll-pane
+   :content {:fx/type :v-box
+   :spacing 10
+   :children (for [u (fx/sub-val context :units)]
+               {:fx/type unit-stat-block
+                :unit u})}})
+
+(defn game-view [{:keys [fx/context]}]
+  {:fx/type :grid-pane
+   :children [{:fx/type game-board
                :grid-pane/row 0
                :grid-pane/column 0
-               :text "Game View"}
-              ;;{:fx/type game-board}
-              ;;(:fx/type command-palette)
+               ;; :grid-pane/hgrow :always
+               ;; :grid-pane/vgrow :always
+               }
+              {:fx/type command-palette
+               :grid-pane/row 1
+               :grid-pane/column 0
+               :grid-pane/hgrow :always
+               :grid-pane/vgrow :always
+               }
+              {:fx/type stat-blocks
+               :grid-pane/row 0
+               :grid-pane/column 1
+               :grid-pane/hgrow :always
+               :grid-pane/vgrow :always}
               ]})
 
 (defn root [{:keys [fx/context]}]
@@ -108,5 +176,5 @@
       :root
       (cond
         (= view :lobby) lobby/view
-        (= view :game) game-view
+        (= view :game) {:fx/type game-view}
         :else lobby/view)}}))
