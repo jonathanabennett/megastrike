@@ -64,62 +64,69 @@
 
 (defn unit-stat-block [{:keys [unit]}]
   {:fx/type :v-box
+   :border {:strokes [{:stroke :black :style :solid :widths 2}]}
+   :padding 5
    :spacing 5
    :children [{:fx/type :h-box
               :spacing 5
-              :children [{:fx/type :label
-                          :text (str "Unit: " (:id unit))}
-                         {:fx/type :label
-                          :text (str "Type: " (:type unit))}
-                         {:fx/type :label
-                          :text (str "Mv: " (cu/print-movement unit))}
-                         {:fx/type :label
-                          :text (str "Pilot: " (:name (:pilot unit)) " (" (:skill (:pilot unit)) ")")}]}
+              :children [{:fx/type common/prop-label
+                          :label "Unit: "
+                          :value (:id unit)}
+                         {:fx/type common/prop-label
+                          :label "Type: "
+                          :value (:type unit)}
+                         {:fx/type common/prop-label
+                          :label "Mv: "
+                          :value (cu/print-movement unit)}
+                         ]}
               {:fx/type :h-box
                :spacing 5
-               :children [{:fx/type :label
-                           :text (str "Role: " (:role unit))}
-                          {:fx/type :label
-                           :text (str "Size: " (:size unit))}
-                          {:fx/type :label
-                           :text (str "TMM: " (:tmm unit))}]}
+               :children [
+                          {:fx/type common/prop-label
+                           :label "Role: "
+                           :value (:role unit)}
+                          {:fx/type common/prop-label
+                           :label "Size: "
+                           :value (str (:size unit))}
+                          {:fx/type common/prop-label
+                           :label "TMM: "
+                           :value (str (:tmm unit))}]}
+              {:fx/type common/prop-label
+               :label "Pilot (skill): "
+               :value (str (:name (:pilot unit)) " (" (:skill (:pilot unit)) ")")}
               {:fx/type :v-box
                :spacing 5
                :children [{:fx/type :label
                            :text "Attacks"}
-                          {:fx/type :grid-pane
-                           :children [{:fx/type :label
-                                       :grid-pane/row 0
-                                       :grid-pane/column 0
-                                       :text "S(+0)"}
-                                      {:fx/type :label
-                                       :grid-pane/row 0
-                                       :grid-pane/column 1
-                                       :text "M(+2)"}
-                                      {:fx/type :label
-                                       :grid-pane/row 0
-                                       :grid-pane/column 2
-                                       :text "L(+4)"}
-                                      {:fx/type :label
-                                       :grid-pane/row 0
-                                       :grid-pane/column 3
-                                       :text "E(+6)"}
-                                      {:fx/type :label
-                                       :grid-pane/row 1
-                                       :grid-pane/column 0
-                                       :text (cu/print-short unit)}
-                                      {:fx/type :label
-                                       :grid-pane/row 1
-                                       :grid-pane/column 1
-                                       :text (cu/print-medium unit)}
-                                      {:fx/type :label
-                                       :grid-pane/row 1
-                                       :grid-pane/column 2
-                                       :text (cu/print-long unit)}
-                                      {:fx/type :label
-                                       :grid-pane/row 1
-                                       :grid-pane/column 3
-                                       :text (cu/print-extreme unit)}]}]}
+                          {:fx/type :h-box
+                           :children [{:fx/type :v-box
+                                       :border {:strokes [{:stroke :black :style :solid :widths 1}]}
+                                       :padding {:left 5 :right 5}
+                                       :children [{:fx/type :label
+                                                   :text "S(+0)"}
+                                                  {:fx/type :label
+                                                   :text (cu/print-short unit)}]}
+                                     {:fx/type :v-box
+                                       :border {:strokes [{:stroke :black :style :solid :widths 1}]}
+                                       :padding {:left 5 :right 5}
+                                       :children [{:fx/type :label
+                                                   :text "M(+2)"}
+                                                  {:fx/type :label
+                                                   :text (cu/print-medium unit)}]}
+                                      {:fx/type :v-box
+                                       :border {:strokes [{:stroke :black :style :solid :widths 1}]}
+                                       :padding {:left 5 :right 5}
+                                       :children [{:fx/type :label
+                                                   :text "L(+4)"}
+                                                  {:fx/type :label
+                                                   :text (cu/print-long unit)}]}
+                                      {:fx/type :v-box
+                                       :border {:strokes [{:stroke :black :style :solid :widths 1}]}
+                                       :padding {:left 5 :right 5}
+                                       :children [{:fx/type :label
+                                                   :text "E(+6)"}
+                                                  {:fx/type :label
+                                                   :text (cu/print-extreme unit)}]}]}]}
               {:fx/type :v-box
                :spacing 3
                :children [{:fx/type :label
@@ -162,7 +169,7 @@
                            :text (str "Heat: " (:current-heat unit) "/" 4)}
                           {:fx/type :h-box
                            :spacing 5
-                           :children (concat (for [a (range 5)]
+                           :children (concat (for [a (range 4)]
                                                (if (< a (:current-heat unit))
                                                  {:fx/type :rectangle
                                                   :x 0 :y 0

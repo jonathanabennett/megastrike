@@ -4,6 +4,16 @@
    [megastrike.combat-unit :as cu]
    [megastrike.gui.events :as events]))
 
+(defn prop-label
+  [{:keys [label value]}]
+  {:fx/type :text-flow
+   :children [{:fx/type :text
+               :style "-fx-font-weight: bold;"
+               :text label}
+              {:fx/type :text
+               :style "-fx-font-size: 14"
+               :text value}]})
+
 (defn draw-sprite
   [{:keys [unit force x y]}]
   {:fx/type :image-view
