@@ -15,7 +15,7 @@
   (prn event))
 
 (defmethod event-handler ::filter-changed
-  [{:keys [fx/context field values fx/event]}]
+  [{:keys [fx/context field values]}]
   {:context (fx/swap-context context assoc :mul (cu/filter-membership cu/mul field values))})
 
 (defmethod event-handler ::text-input
@@ -27,7 +27,7 @@
   {:context (fx/swap-context context assoc :force-color event)})
 
 (defmethod event-handler ::add-force
-  [{:keys [fx/context fx/event]}]
+  [{:keys [fx/context]}]
   (let [name (fx/sub-val context :force-name)
         deploy (fx/sub-val context :force-zone)
         color (fx/sub-val context :force-color)]
@@ -65,14 +65,14 @@
     {:context (fx/swap-context context assoc :units (conj (fx/sub-val context :units) unit))}))
 
 (defmethod event-handler ::view-changed
-  [{:keys [fx/context view fx/event]}]
+  [{:keys [fx/context view]}]
   (let [new-board (board/create-board
                    (Integer/parseInt (fx/sub-val context :map-width))
                    (Integer/parseInt (fx/sub-val context :map-height)))]
     {:context (fx/swap-context context assoc :game-board new-board :display view)}))
 
 (defmethod event-handler ::auto-save
-  [{:keys [fx/context fx/event]}]
+  [{:keys [fx/context]}]
   (let [save {:game-board (fx/sub-val context :game-board)
               :units (fx/sub-val context :units)
               :forces (fx/sub-val context :forces)}]
@@ -86,12 +86,16 @@
 
 
 (defmethod event-handler ::filter-mul
-  [{:keys [fx/context fx/event field]}]
-  (let [term (fx/sub-val context :mul-search-term)
-        mul (fx/sub-val context :mul)]
-    {:context (fx/swap-context context assoc :mul (cu/filter-units mul field term str/includes?))}))
+  [{:keys [fx/context field]}]
+  (let [term (fx/sub-val context :mul-search-term)]
+    {:context (fx/swap-context context assoc :mul (cu/filter-units cu/mul field term str/includes?))}))
 
 (defmethod event-handler ::load-save
-  [{:keys [fx/context fx/event]}]
+  [{:keys [fx/context]}]
    (let [save-data (edn/read-string (slurp "save.edn"))]
-     {:context (fx/swap-context context merge context save-data {:display :game})}))
+     {:context (fx/swap-context context merge context save-data {:display :game
+                                                                 :mul []})}))
+
+(defmethod event-handler ::stats-clicked
+  [{:keys [fx/context fx/event]}]
+  {:context (fx/swap-context context assoc :active-unit nil)})
