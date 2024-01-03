@@ -184,7 +184,7 @@
 
 (defn stat-blocks [{:keys [fx/context]}]
   {:fx/type :scroll-pane
-   :min-width 400
+   :min-width :use-pref-size
    :content {:fx/type :v-box
              :spacing 15
              :children (for [u (fx/sub-val context :units)]
@@ -194,13 +194,11 @@
   {:fx/type :grid-pane
    :children [{:fx/type game-board
                :grid-pane/row 0
-               :grid-pane/column 0
-               ;; :grid-pane/hgrow :always
-               ;; :grid-pane/vgrow :always
-               }
+               :grid-pane/column 0}
               {:fx/type command-palette
                :grid-pane/row 1
                :grid-pane/column 0
+               :grid-pane/column-span 2
                :grid-pane/hgrow :always
                :grid-pane/vgrow :always
                }
