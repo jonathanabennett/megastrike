@@ -74,6 +74,7 @@
    :border {:strokes [{:stroke :black :style :solid :widths 2}]}
    :padding 5
    :spacing 5
+   :on-mouse-clicked {:event-type ::events/stats-clicked :fx/sync true}
    :children [{:fx/type :h-box
               :spacing 5
               :children [{:fx/type common/prop-label
