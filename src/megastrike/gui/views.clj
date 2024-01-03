@@ -39,7 +39,18 @@
 (defn game-board [{:keys [fx/context]}]
   (let [gb (fx/sub-val context :game-board)
         layout (fx/sub-val context :layout)
-        units (fx/sub-val context :units)]
+        units (fx/sub-val context :units)
+        tokens (loop [i 0
+                      tokens []]
+                 (if (= (count units) i)
+                   tokens
+                   (recur
+                    (inc i)
+                    (if (:q (units i))
+                      (conj tokens {:fx/type draw-unit
+                                    :unit (units i)
+                                    :layout layout})
+                      tokens))))]
     {:fx/type :scroll-pane
      :content {:fx/type :group
                :children (concat
@@ -47,12 +58,8 @@
                             {:fx/type draw-hex
                              :hex h
                              :layout layout})
-                          ;; (or (for [u units]
-                          ;;       (when (:q u)
-                          ;;         {:fx/type draw-unit
-                          ;;          :unit u
-                          ;;          :layout layout}))
-                          ;;     [])
+                          ;; TODO Remove Units which haven't been placed
+                          tokens
                           )}}))
 
 (defn command-palette [{:keys [fx/context]}]
