@@ -51,7 +51,7 @@
   [{:keys [fx/context]}]
   (let [units (fx/sub-val context :units)
         mul-unit (fx/sub-val context :active-mul)
-        matching-units (filter #(= (:full-name %) (:name mul-unit)) units)
+        matching-units (filter #(= (:full-name %) (:full-name mul-unit)) units)
         unit (merge mul-unit
                     {:force (fx/sub-val context :active-force)
                      :pilot {:name (fx/sub-val context :pilot-name)
