@@ -25,7 +25,7 @@
    :mul-id 2425, :l* false, :m 2, :type "BM", :front-arc "", :current-structure 3,
    :abilities "", :e 0, :s 2, :threshold -1, :l 1, :size 1, :m* false, :rear-arc "",
    :point-value 19, :overheat 0, :current-heat 0, :chassis "Panther", :structure 3,
-   :id "Panther PNT-9R", :full-name "Panther PNT-9R", :armor 3, :current-armor 3,
+   :id "Panther PNT-9R #2", :full-name "Panther PNT-9R", :armor 3, :current-armor 3,
    :s* false, :model "PNT-9R"}
   {:role "Sniper", :tmm 2, :left-arc "", :e* false, :movement {:jump 5},
    :right-arc "", :pilot {:name "Peter Fizer", :skill 3}, :force :davion,
