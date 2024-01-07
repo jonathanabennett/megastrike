@@ -97,5 +97,17 @@
                                                                  :mul []})}))
 
 (defmethod event-handler ::stats-clicked
-  [{:keys [fx/context fx/event]}]
-  {:context (fx/swap-context context assoc :active-unit nil)})
+  [{:keys [fx/context unit]}]
+  {:context (fx/swap-context context assoc :active-unit unit)})
+
+(defmethod event-handler ::unit-clicked
+  [{:keys [fx/context unit]}]
+   (prn unit))
+
+(defmethod event-handler ::hex-clicked
+  [{:keys [fx/context hex]}]
+   (prn hex))
+
+(defmethod event-handler ::roll-initiative
+  [{:keys [fx/context]}]
+  {:context (fx/swap-context context assoc )})

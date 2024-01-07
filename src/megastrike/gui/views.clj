@@ -11,6 +11,7 @@
   (let [points (hex/hex-points hex layout)
         offset (hex/offset-from-hex hex)]
     {:fx/type :group
+     :on-mouse-clicked {:event-type ::events/hex-clicked :hex hex}
      :children [{:fx/type :polygon
                  :points points
                  :fill :green
@@ -22,14 +23,13 @@
                  :font 16
                  :translate-x 10
                  :translate-y -20}]
-     :on-mouse-clicked {:event-type ::events/hex-clicked
-                        :fx/sync true
-                        :hex hex}}))
+                        }))
 
 (defn draw-unit [{:keys [fx/context unit layout]}]
   (let [hex (hex/hex-points unit layout)
         force (first (filter #(= (:name %) (:force unit)) (fx/sub-val context :forces)))]
     {:fx/type :group
+     :on-mouse-clicked {:event-type ::events/unit-clicked :unit unit}
      :children [:fx/type common/draw-sprite
                 :unit unit
                 :force force
