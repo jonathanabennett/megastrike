@@ -65,130 +65,140 @@
 (defn command-palette [{:keys [fx/context]}]
   (let [phase (fx/sub-val context :current-phase)
         turn (fx/sub-val context :turn-number)]
-    {:fx/type :button
-     :text "Save Game"
-     :on-action {:event-type ::events/auto-save :fx/sync true}}))
+    {:fx/type :h-box
+     :children [{:fx/type :button
+                 :text "Roll Initiative"
+                 :on-action {:event-type ::events/roll-initiative :fx/sync true}}
+                {:fx/type :button
+                 :text "Deploy Unit"
+                 :on-action {:event-type ::events/deploy-unit :fx/sync true}}
+                {:fx/type :button
+                 :text "Save Game"
+                 :on-action {:event-type ::events/auto-save :fx/sync true}}]}
+    ))
 
-(defn unit-stat-block [{:keys [unit]}]
-  {:fx/type :v-box
-   :border {:strokes [{:stroke :black :style :solid :widths 2}]}
-   :padding 5
-   :spacing 5
-   :on-mouse-clicked {:event-type ::events/stats-clicked :fx/sync true}
-   :children [{:fx/type :h-box
-              :spacing 5
-              :children [{:fx/type common/prop-label
-                          :label "Unit: "
-                          :value (:id unit)}
-                         {:fx/type common/prop-label
-                          :label "Type: "
-                          :value (:type unit)}
-                         {:fx/type common/prop-label
-                          :label "Mv: "
-                          :value (cu/print-movement unit)}
-                         ]}
-              {:fx/type :h-box
-               :spacing 5
-               :children [
-                          {:fx/type common/prop-label
-                           :label "Role: "
-                           :value (:role unit)}
-                          {:fx/type common/prop-label
-                           :label "Size: "
-                           :value (str (:size unit))}
-                          {:fx/type common/prop-label
-                           :label "TMM: "
-                           :value (str (:tmm unit))}]}
-              {:fx/type common/prop-label
-               :label "Pilot (skill): "
-               :value (str (:name (:pilot unit)) " (" (:skill (:pilot unit)) ")")}
-              {:fx/type :v-box
-               :spacing 5
-               :children [{:fx/type :label
-                           :text "Attacks"}
-                          {:fx/type :h-box
-                           :children [{:fx/type :v-box
-                                       :border {:strokes [{:stroke :black :style :solid :widths 1}]}
-                                       :padding {:left 5 :right 5}
-                                       :children [{:fx/type :label
-                                                   :text "S(+0)"}
-                                                  {:fx/type :label
-                                                   :text (cu/print-short unit)}]}
-                                     {:fx/type :v-box
-                                       :border {:strokes [{:stroke :black :style :solid :widths 1}]}
-                                       :padding {:left 5 :right 5}
-                                       :children [{:fx/type :label
-                                                   :text "M(+2)"}
-                                                  {:fx/type :label
-                                                   :text (cu/print-medium unit)}]}
-                                      {:fx/type :v-box
-                                       :border {:strokes [{:stroke :black :style :solid :widths 1}]}
-                                       :padding {:left 5 :right 5}
-                                       :children [{:fx/type :label
-                                                   :text "L(+4)"}
-                                                  {:fx/type :label
-                                                   :text (cu/print-long unit)}]}
-                                      {:fx/type :v-box
-                                       :border {:strokes [{:stroke :black :style :solid :widths 1}]}
-                                       :padding {:left 5 :right 5}
-                                       :children [{:fx/type :label
-                                                   :text "E(+6)"}
-                                                  {:fx/type :label
-                                                   :text (cu/print-extreme unit)}]}]}]}
-              {:fx/type :v-box
-               :spacing 3
-               :children [{:fx/type :label
-                           :text (str "Armor: " (:current-armor unit) "/" (:armor unit))}
-                          {:fx/type :h-box
-                           :spacing 5
-                           :children (concat (for [a (range (:armor unit))]
-                                               (if (< a (:current-armor unit))
-                                                 {:fx/type :rectangle
-                                                  :x 0 :y 0
-                                                  :width 20 :height 10
-                                                  :stroke :black
-                                                  :fill :green}
-                                                 {:fx/type :rectangle
-                                                  :x 0 :y 0
-                                                  :width 20 :height 10
-                                                  :stroke :black
-                                                  :fill :transparent})))}]}
-              {:fx/type :v-box
-               :spacing 3
-               :children [{:fx/type :label
-                           :text (str "Structure: " (:current-structure unit) "/" (:structure unit))}
-                          {:fx/type :h-box
-                           :spacing 5
-                           :children (concat (for [a (range (:structure unit))]
-                                               (if (< a (:current-structure unit))
-                                                 {:fx/type :rectangle
-                                                  :x 0 :y 0
-                                                  :width 20 :height 10
-                                                  :stroke :black
-                                                  :fill :green}
-                                                 {:fx/type :rectangle
-                                                  :x 0 :y 0
-                                                  :width 20 :height 10
-                                                  :stroke :black
-                                                  :fill :transparent})))}]}
-              {:fx/type :v-box
-               :spacing 3
-               :children [{:fx/type :label
-                           :text (str "Heat: " (:current-heat unit) "/" 4)}
-                          {:fx/type :h-box
-                           :spacing 5
-                           :children (concat (for [a (range 4)]
-                                               (if (< a (:current-heat unit))
-                                                 {:fx/type :rectangle
-                                                  :x 0 :y 0
-                                                  :width 20 :height 10
-                                                  :stroke :black
-                                                  :fill :red}
-                                                 {:fx/type :rectangle
-                                                  :x 0 :y 0
-                                                  :width 20 :height 10
-                                                  :stroke :black
-                                                  :fill :aliceblue})))}]}]})
+(defn unit-stat-block [{:keys [fx/context unit]}]
+  (let [background (if (= unit (fx/sub-val context :active-unit))
+                     "-fx-background-color: #AAAAAA;"
+                     "-fx-background-color: #DDDDDD;")]
+    {:fx/type :v-box
+     :border {:strokes [{:stroke :black :style :solid :widths 2}]}
+     :style background
+     :padding 5
+     :spacing 5
+     :on-mouse-clicked {:event-type ::events/stats-clicked :fx/sync true :unit unit}
+     :children [{:fx/type :h-box
+                :spacing 5
+                :children [{:fx/type common/prop-label
+                            :label "Unit: "
+                            :value (:id unit)}
+                           {:fx/type common/prop-label
+                            :label "Type: "
+                            :value (:type unit)}
+                           {:fx/type common/prop-label
+                            :label "Mv: "
+                            :value (cu/print-movement unit)}]}
+                {:fx/type :h-box
+                 :spacing 5
+                 :children [{:fx/type common/prop-label
+                             :label "Role: "
+                             :value (:role unit)}
+                            {:fx/type common/prop-label
+                             :label "Size: "
+                             :value (str (:size unit))}
+                            {:fx/type common/prop-label
+                             :label "TMM: "
+                             :value (str (:tmm unit))}]}
+                {:fx/type common/prop-label
+                 :label "Pilot (skill): "
+                 :value (str (:name (:pilot unit)) " (" (:skill (:pilot unit)) ")")}
+                {:fx/type :v-box
+                 :spacing 5
+                 :children [{:fx/type :label
+                             :text "Attacks"}
+                            {:fx/type :h-box
+                             :children [{:fx/type :v-box
+                                         :border {:strokes [{:stroke :black :style :solid :widths 1}]}
+                                         :padding {:left 5 :right 5}
+                                         :children [{:fx/type :label
+                                                     :text "S(+0)"}
+                                                    {:fx/type :label
+                                                     :text (cu/print-short unit)}]}
+                                        {:fx/type :v-box
+                                         :border {:strokes [{:stroke :black :style :solid :widths 1}]}
+                                         :padding {:left 5 :right 5}
+                                         :children [{:fx/type :label
+                                                     :text "M(+2)"}
+                                                    {:fx/type :label
+                                                     :text (cu/print-medium unit)}]}
+                                        {:fx/type :v-box
+                                         :border {:strokes [{:stroke :black :style :solid :widths 1}]}
+                                         :padding {:left 5 :right 5}
+                                         :children [{:fx/type :label
+                                                     :text "L(+4)"}
+                                                    {:fx/type :label
+                                                     :text (cu/print-long unit)}]}
+                                        {:fx/type :v-box
+                                         :border {:strokes [{:stroke :black :style :solid :widths 1}]}
+                                         :padding {:left 5 :right 5}
+                                         :children [{:fx/type :label
+                                                     :text "E(+6)"}
+                                                    {:fx/type :label
+                                                     :text (cu/print-extreme unit)}]}]}]}
+                {:fx/type :v-box
+                 :spacing 3
+                 :children [{:fx/type :label
+                             :text (str "Armor: " (:current-armor unit) "/" (:armor unit))}
+                            {:fx/type :h-box
+                             :spacing 5
+                             :children (concat (for [a (range (:armor unit))]
+                                                 (if (< a (:current-armor unit))
+                                                   {:fx/type :rectangle
+                                                    :x 0 :y 0
+                                                    :width 20 :height 10
+                                                    :stroke :black
+                                                    :fill :green}
+                                                   {:fx/type :rectangle
+                                                    :x 0 :y 0
+                                                    :width 20 :height 10
+                                                    :stroke :black
+                                                    :fill :transparent})))}]}
+                {:fx/type :v-box
+                 :spacing 3
+                 :children [{:fx/type :label
+                             :text (str "Structure: " (:current-structure unit) "/" (:structure unit))}
+                            {:fx/type :h-box
+                             :spacing 5
+                             :children (concat (for [a (range (:structure unit))]
+                                                 (if (< a (:current-structure unit))
+                                                   {:fx/type :rectangle
+                                                    :x 0 :y 0
+                                                    :width 20 :height 10
+                                                    :stroke :black
+                                                    :fill :green}
+                                                   {:fx/type :rectangle
+                                                    :x 0 :y 0
+                                                    :width 20 :height 10
+                                                    :stroke :black
+                                                    :fill :transparent})))}]}
+                {:fx/type :v-box
+                 :spacing 3
+                 :children [{:fx/type :label
+                             :text (str "Heat: " (:current-heat unit) "/" 4)}
+                            {:fx/type :h-box
+                             :spacing 5
+                             :children (concat (for [a (range 4)]
+                                                 (if (< a (:current-heat unit))
+                                                   {:fx/type :rectangle
+                                                    :x 0 :y 0
+                                                    :width 20 :height 10
+                                                    :stroke :black
+                                                    :fill :red}
+                                                   {:fx/type :rectangle
+                                                    :x 0 :y 0
+                                                    :width 20 :height 10
+                                                    :stroke :black
+                                                    :fill :aliceblue})))}]}]}))
 
 (defn stat-blocks [{:keys [fx/context]}]
   {:fx/type :scroll-pane
