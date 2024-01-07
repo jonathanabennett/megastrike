@@ -8,6 +8,7 @@
    [megastrike.combat-unit :as cu]
    [megastrike.gui.events :as events]
    [megastrike.gui.views :as views]
+   [megastrike.initiative :as initiative]
    [megastrike.hexagons.hex :as hex])
   (:import
    (javafx.application Platform)))
