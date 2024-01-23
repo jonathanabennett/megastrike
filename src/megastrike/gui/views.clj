@@ -64,17 +64,22 @@
 
 (defn command-palette [{:keys [fx/context]}]
   (let [phase (fx/sub-val context :current-phase)
-        turn (fx/sub-val context :turn-number)]
-    {:fx/type :h-box
-     :children [{:fx/type :button
-                 :text "Roll Initiative"
-                 :on-action {:event-type ::events/roll-initiative :fx/sync true}}
-                {:fx/type :button
-                 :text "Deploy Unit"
-                 :on-action {:event-type ::events/deploy-unit :fx/sync true}}
-                {:fx/type :button
-                 :text "Save Game"
-                 :on-action {:event-type ::events/auto-save :fx/sync true}}]}
+        turn (fx/sub-val context :turn-number)
+        turn-order (fx/sub-val context :turn-order)]
+    {:fx/type :v-box
+     :spacing 5
+     :children [{:fx/type :label
+                 :text (prn-str turn-order)}
+                 {:fx/type :h-box
+                 :children [{:fx/type :button
+                             :text "Roll Initiative"
+                             :on-action {:event-type ::events/roll-initiative :fx/sync true}}
+                            {:fx/type :button
+                             :text "Deploy Unit"
+                             :on-action {:event-type ::events/deploy-unit :fx/sync true}}
+                            {:fx/type :button
+                             :text "Save Game"
+                             :on-action {:event-type ::events/auto-save :fx/sync true}}]}]}
     ))
 
 (defn unit-stat-block [{:keys [fx/context unit]}]

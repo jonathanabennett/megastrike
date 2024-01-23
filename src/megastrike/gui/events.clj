@@ -110,4 +110,8 @@
 
 (defmethod event-handler ::roll-initiative
   [{:keys [fx/context]}]
-  {:context (fx/swap-context context assoc )})
+  (prn context)
+  (let [forces (initiative/roll-initiative (fx/sub-val context :forces))
+        units (fx/sub-val context :units)
+        turn-order (initiative/generate-turn-order forces units)]
+    {:context (fx/swap-context context assoc :forces forces :turn-order turn-order)}))
