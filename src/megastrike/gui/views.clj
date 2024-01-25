@@ -5,7 +5,8 @@
    [megastrike.hexagons.hex :as hex]
    [megastrike.gui.common :as common]
    [megastrike.gui.events :as events]
-   [megastrike.combat-unit :as cu]))
+   [megastrike.combat-unit :as cu]
+   [clojure.string :as str]))
 
 (defn draw-hex [{:keys [hex layout]}]
   (let [points (hex/hex-points hex layout)
@@ -97,6 +98,9 @@
                 :children [{:fx/type common/prop-label
                             :label "Unit: "
                             :value (:id unit)}
+                           {:fx/type common/prop-label
+                            :label "Force: "
+                            :value (str/capitalize (name (:force unit)))}
                            {:fx/type common/prop-label
                             :label "Type: "
                             :value (:type unit)}
@@ -205,13 +209,21 @@
                                                     :stroke :black
                                                     :fill :aliceblue})))}]}]}))
 
+(defn force-block [{:keys [units]}]
+  {:fx/type :v-box
+   :spacing 15
+   :border {:strokes [{:stroke :black :style :solid :widths 2}]}
+   :children (for [u units]
+               {:fx/type unit-stat-block :unit u})})
+
 (defn stat-blocks [{:keys [fx/context]}]
-  {:fx/type :scroll-pane
-   :min-width :use-pref-size
-   :content {:fx/type :v-box
-             :spacing 15
-             :children (for [u (fx/sub-val context :units)]
-                         {:fx/type unit-stat-block :unit u})}})
+  (let [units (group-by :force (fx/sub-val context :units))]
+    {:fx/type :scroll-pane
+     :min-width :use-pref-size
+     :content {:fx/type :v-box
+               :spacing 30
+               :children (for [force units]
+                           {:fx/type force-block :units force})}}))
 
 (defn game-view [{:keys [fx/context]}]
   {:fx/type :grid-pane
