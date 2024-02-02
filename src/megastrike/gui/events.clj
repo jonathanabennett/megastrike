@@ -113,7 +113,7 @@
          unit (active units)
          next-force (first (fx/sub-val context :turn-order))]
      (when (and (= phase :deployment) (not active nil) (= (:force active) next-force))
-       (let [updated (merge unit hex)
+       (let [updated (merge unit (select-keys hex [:q :r :s]))
              units (assoc units active updated)]
          {:context (fx/swap-context context assoc :units units)}))))
 
