@@ -107,12 +107,20 @@
 
 (defmethod event-handler ::hex-clicked
   [{:keys [fx/context hex]}]
-   (prn hex))
+   (let [phase (fx/sub-val context :phase)
+         active (fx/sub-val context :active-unit)
+         units (fx/sub-val context :units)
+         unit (active units)
+         next-force (first (fx/sub-val context :turn-order))]
+     (when (and (= phase :deployment) (not active nil) (= (:force active) next-force))
+       (let [updated (merge unit hex)
+             units (assoc units active updated)]
+         {:context (fx/swap-context context assoc :units units)}))))
 
 (defmethod event-handler ::roll-initiative
   [{:keys [fx/context]}]
   (prn context)
   (let [forces (initiative/roll-initiative (fx/sub-val context :forces))
-        units (fx/sub-val context :units)
+        units (vals (fx/sub-val context :units))
         turn-order (initiative/generate-turn-order forces units)]
     {:context (fx/swap-context context assoc :forces forces :turn-order turn-order)}))
