@@ -45,13 +45,16 @@
 
 (defmethod event-handler ::unit-selection-changed
   [{:keys [fx/context fx/event]}]
-  {:context (fx/swap-context context assoc :active-unit event)})
+  {:context (fx/swap-context context assoc :active-unit (:id event))})
 
 (defmethod event-handler ::add-unit
   [{:keys [fx/context]}]
   (let [units (fx/sub-val context :units)
         mul-unit (fx/sub-val context :active-mul)
         matching-units (filter #(= (:full-name %) (:full-name mul-unit)) units)
+        id (if (seq matching-units)
+                           (str (:full-name mul-unit) " #" (inc (count matching-units)))
+                           (str (:full-name mul-unit)))
         unit (merge mul-unit
                     {:force (fx/sub-val context :active-force)
                      :pilot {:name (fx/sub-val context :pilot-name)
@@ -59,10 +62,8 @@
                      :current-armor (:armor mul-unit)
                      :current-structure (:structure mul-unit)
                      :current-heat 0
-                     :id (if (seq matching-units)
-                           (str (:full-name mul-unit) " #" (inc (count matching-units)))
-                           (str (:full-name mul-unit)))})]
-    {:context (fx/swap-context context assoc :units (conj (fx/sub-val context :units) unit))}))
+                     :id id})]
+    {:context (fx/swap-context context assoc :units (assoc (fx/sub-val context :units) id unit))}))
 
 (defmethod event-handler ::view-changed
   [{:keys [fx/context view]}]

@@ -232,12 +232,16 @@
   (let [units (fx/sub-val context :units)
         forces (fx/sub-val context :forces)
         selected nil]
-    {:fx/type tables/with-selection-props
+    (if (empty? units)
+      {:fx/type :label
+       :text "Please add a unit."}
+      {:fx/type tables/with-selection-props
      :props {:selection-mode :single
              :on-selected-item-changed {:event-type ::events/unit-selection-changed :fx/sync true}
              :selected-item selected}
      :desc {:fx/type :table-view
-            :columns [{:fx/type :table-column
+            :columns [
+                      {:fx/type :table-column
                        :text "Unit"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
@@ -261,7 +265,8 @@
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
                                       :describe (fn [x] {:text (prn-str (cu/pv x))})}}]
-            :items units}}))
+            :items (vals units)}})
+    ))
 
 
 (def unit-pane

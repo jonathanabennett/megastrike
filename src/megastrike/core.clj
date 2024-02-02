@@ -25,7 +25,7 @@
      :pilot-name "Bob"
      :pilot-skill "4"
      :forces {}
-     :units []
+     :units {}
      :active-mul nil
      :active-force nil
      :active-unit nil

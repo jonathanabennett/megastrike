@@ -40,14 +40,14 @@
 (defn game-board [{:keys [fx/context]}]
   (let [gb (fx/sub-val context :game-board)
         layout (fx/sub-val context :layout)
-        units (fx/sub-val context :units)
+        units (vals (fx/sub-val context :units))
         tokens (loop [i 0
                       tokens []]
                  (if (= (count units) i)
                    tokens
                    (recur
                     (inc i)
-                    (if (:q (units i))
+                    (if (:q (nth units i))
                       (conj tokens {:fx/type draw-unit
                                     :unit (units i)
                                     :layout layout})
@@ -80,11 +80,10 @@
                              :on-action {:event-type ::events/deploy-unit :fx/sync true}}
                             {:fx/type :button
                              :text "Save Game"
-                             :on-action {:event-type ::events/auto-save :fx/sync true}}]}]}
-    ))
+                             :on-action {:event-type ::events/auto-save :fx/sync true}}]}]}))
 
 (defn unit-stat-block [{:keys [fx/context unit]}]
-  (let [background (if (= unit (fx/sub-val context :active-unit))
+  (let [background (if (= (:id unit) (fx/sub-val context :active-unit))
                      "-fx-background-color: #AAAAAA;"
                      "-fx-background-color: #DDDDDD;")]
     {:fx/type :v-box
@@ -92,7 +91,7 @@
      :style background
      :padding 5
      :spacing 5
-     :on-mouse-clicked {:event-type ::events/stats-clicked :fx/sync true :unit unit}
+     :on-mouse-clicked {:event-type ::events/stats-clicked :fx/sync true :unit (:id unit)}
      :children [{:fx/type :h-box
                 :spacing 5
                 :children [{:fx/type common/prop-label
@@ -100,7 +99,10 @@
                             :value (:id unit)}
                            {:fx/type common/prop-label
                             :label "Force: "
-                            :value (str/capitalize (name (:force unit)))}
+                            :value (-> unit
+                                       :force
+                                       name
+                                       str/capitalize)}
                            {:fx/type common/prop-label
                             :label "Type: "
                             :value (:type unit)}
@@ -217,13 +219,13 @@
                {:fx/type unit-stat-block :unit u})})
 
 (defn stat-blocks [{:keys [fx/context]}]
-  (let [units (group-by :force (fx/sub-val context :units))]
+  (let [units (group-by :force (vals (fx/sub-val context :units)))]
     {:fx/type :scroll-pane
      :min-width :use-pref-size
      :content {:fx/type :v-box
                :spacing 30
                :children (for [force units]
-                           {:fx/type force-block :units force})}}))
+                           {:fx/type force-block :units (val force)})}}))
 
 (defn game-view [{:keys [fx/context]}]
   {:fx/type :grid-pane

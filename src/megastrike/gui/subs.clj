@@ -17,4 +17,4 @@
 
 (defn units-by-force
   [context]
-  (group-by :force (fx/sub-val context :units)))
+  (group-by :force (vals (fx/sub-val context :units))))
