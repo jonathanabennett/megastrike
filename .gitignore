@@ -14,3 +14,6 @@ pom.xml.asc
 /.DS_Store
 .DS_Store
 /.clj-kondo/
+.test-data.end.swp
+.calva/*
+.lsp/.cache/db.transit.json
