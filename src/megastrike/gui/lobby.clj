@@ -254,7 +254,8 @@
                                                                    :unit x
                                                                    :force ((:force x) forces)
                                                                    :x 0
-                                                                   :y 0}})}}
+                                                                   :y 0
+                                                                   :shift 0}})}}
                       {:fx/type :table-column
                        :text "Pilot"
                        :cell-value-factory identity

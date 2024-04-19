@@ -15,19 +15,21 @@
                :text value}]})
 
 (defn draw-sprite
-  [{:keys [unit force x y]}]
+  [{:keys [unit force x y shift]}]
   {:fx/type :image-view
    :image (cu/find-sprite unit)
    :effect {:fx/type :blend
             :top-input {:fx/type :color-input
-                        :paint (:color force)
+                        :paint (force :color)
                         :x 0 :y 0 :width 100 :height 100}
             :bottom-input {:fx/type :image-input
                            :source (cu/find-sprite unit)}
             :mode :src-atop
             :opacity 0.5}
-   :x x
-   :y y})
+   :translate-x x
+   :translate-y (+ y shift)
+   :x 0
+   :y 0})
 
 (defn text-input
   [{:keys [fx/context label key]}]
