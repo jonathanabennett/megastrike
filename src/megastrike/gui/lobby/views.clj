@@ -7,7 +7,7 @@
    [megastrike.gui.events :as events]
    [megastrike.gui.lobby.events :as lobby-events]
    [megastrike.gui.subs :as sub]
-   [megastrike.utils]))
+   [megastrike.utils :as utils]))
 
 (def mul-filter-buttons
   {:fx/type :h-box
@@ -43,7 +43,7 @@
          selected (fx/sub-val context :active-mul)]
      {:fx/type tables/with-selection-props
       :props {:selection-mode :single
-              :on-selected-item-changed {:event-type ::events/mul-selection-changed :fx/sync true}
+              :on-selected-item-changed {:event-type ::lobby-events/mul-selection-changed :fx/sync true}
               :selected-item selected}
       :desc {:fx/type :table-view
              :columns [{:fx/type :table-column
@@ -132,7 +132,7 @@
                :key :mul-search-term}
               {:fx/type :button
                :text "Search by name"
-               :on-action {:event-type ::events/filter-mul :fx/sync true :field :full-name}}]})
+               :on-action {:event-type ::lobby-events/filter-mul :fx/sync true :field :full-name}}]})
 
 (def new-unit-buttons
   {:fx/type :h-box
@@ -146,7 +146,7 @@
                :key :pilot-skill}
               {:fx/type :button
                :text "Add Unit"
-               :on-action {:event-type ::events/add-unit :fx/sync true}}]})
+               :on-action {:event-type ::lobby-events/add-unit :fx/sync true}}]})
 
 (def mul-pane
   {:fx/type :v-box
@@ -226,7 +226,7 @@
                            :value :gold}]}
               {:fx/type :button
                :text "Add Force"
-               :on-action {:event-type ::events/add-force :fx/sync true}}
+               :on-action {:event-type ::lobby-events/add-force :fx/sync true}}
               {:fx/type forces-table}]})
 
 (defn units-table [{:keys [fx/context]}]
@@ -303,7 +303,7 @@
                :key :map-height}
               {:fx/type :button
                :text "Load Test Game"
-               :on-action {:event-type ::events/load-save :fx/sync true}}
+               :on-action {:event-type ::lobby-events/load-save :fx/sync true}}
               {:fx/type :button
                :text "Launch Game"
                :on-action {:event-type ::events/view-changed :fx/sync true :view :game}}]})
