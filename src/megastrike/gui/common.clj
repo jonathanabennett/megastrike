@@ -50,3 +50,60 @@
                :fx/sync true
                :field field
                :values values}})
+
+(defn attack-table
+  [{:keys [unit]}]
+  {:fx/type :v-box
+                 :spacing 5
+                 :children [{:fx/type :label
+                             :text "Attacks"}
+                            {:fx/type :h-box
+                             :children [{:fx/type :v-box
+                                         :border {:strokes [{:stroke :black :style :solid :widths 1}]}
+                                         :padding {:left 5 :right 5}
+                                         :children [{:fx/type :label
+                                                     :text "S(+0)"}
+                                                    {:fx/type :label
+                                                     :text (cu/print-short unit)}]}
+                                        {:fx/type :v-box
+                                         :border {:strokes [{:stroke :black :style :solid :widths 1}]}
+                                         :padding {:left 5 :right 5}
+                                         :children [{:fx/type :label
+                                                     :text "M(+2)"}
+                                                    {:fx/type :label
+                                                     :text (cu/print-medium unit)}]}
+                                        {:fx/type :v-box
+                                         :border {:strokes [{:stroke :black :style :solid :widths 1}]}
+                                         :padding {:left 5 :right 5}
+                                         :children [{:fx/type :label
+                                                     :text "L(+4)"}
+                                                    {:fx/type :label
+                                                     :text (cu/print-long unit)}]}
+                                        {:fx/type :v-box
+                                         :border {:strokes [{:stroke :black :style :solid :widths 1}]}
+                                         :padding {:left 5 :right 5}
+                                         :children [{:fx/type :label
+                                                     :text "E(+6)"}
+                                                    {:fx/type :label
+                                                     :text (cu/print-extreme unit)}]}]}]})
+
+(defn draw-pips
+  [{:keys [filled max text fill-one fill-two]}]
+  {:fx/type :v-box
+   :spacing 3
+   :children [{:fx/type :label
+               :text text}
+              {:fx/type :h-box
+               :spacing 5 
+               :children (concat (for [a (range max)] 
+                                   (if (< a filled)
+                                   {:fx/type :rectangle
+                                    :x 0 :y 0
+                                    :width 20 :height 10
+                                    :stroke :black
+                                    :fill fill-one}
+                                   {:fx/type :rectangle 
+                                    :x 0 :y 0
+                                    :width 20 :height 10
+                                    :stroke :black 
+                                    :fill fill-two})))}]})
