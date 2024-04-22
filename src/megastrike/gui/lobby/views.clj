@@ -1,12 +1,13 @@
-(ns megastrike.gui.lobby
+(ns megastrike.gui.lobby.views
   (:require
    [cljfx.api :as fx]
    [cljfx.ext.table-view :as tables]
    [megastrike.combat-unit :as cu]
    [megastrike.gui.common :as common]
    [megastrike.gui.events :as events]
+   [megastrike.gui.lobby.events :as lobby-events]
    [megastrike.gui.subs :as sub]
-   [megastrike.utils :as utils]))
+   [megastrike.utils]))
 
 (def mul-filter-buttons
   {:fx/type :h-box
@@ -269,6 +270,7 @@
             :items (vals units)}})
     ))
 
+
 (def unit-pane
    {:fx/type :v-box
    :spacing 5
@@ -312,3 +314,4 @@
               force-pane
               unit-pane
               map-pane]})
+

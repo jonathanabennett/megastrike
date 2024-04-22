@@ -1,7 +1,7 @@
 (ns megastrike.gui.views
   (:require
    [cljfx.api :as fx]
-   [megastrike.gui.lobby :as lobby]
+   [megastrike.gui.lobby.views :as lobby]
    [megastrike.hexagons.hex :as hex]
    [megastrike.gui.common :as common]
    [megastrike.gui.events :as events]
@@ -28,14 +28,22 @@
 
 (defn draw-unit [{:keys [fx/context unit layout]}]
   (let [hex (hex/hex-points unit layout)
-        force (first (filter #(= (:name %) (:force unit)) (fx/sub-val context :forces)))]
+        forces (fx/sub-val context :forces)
+        force (forces (unit :force))] 
     {:fx/type :group
      :on-mouse-clicked {:event-type ::events/unit-clicked :unit unit}
-     :children [:fx/type common/draw-sprite
-                :unit unit
-                :force force
-                :x (nth hex 8)
-                :y (nth hex 9)]}))
+     :children [{:fx/type common/draw-sprite 
+                 :unit unit 
+                 :force force 
+                 :x (nth hex 8)
+                 :y (nth hex 9)
+                 :shift (/ (layout :y-size) 3)}
+                {:fx/type :label
+                 :text (unit :full-name)
+                 :layout-x (nth hex 8)
+                 :layout-y (nth hex 9)
+                 :font 16
+                 :translate-y (/ (layout :y-size) 3)}]}))
 
 (defn game-board [{:keys [fx/context]}]
   (let [gb (fx/sub-val context :game-board)
@@ -48,10 +56,8 @@
                    (recur
                     (inc i)
                     (if (:q (nth units i))
-                      (conj tokens {:fx/type draw-unit
-                                    :unit (units i)
-                                    :layout layout})
-                      tokens))))]
+                      (conj tokens (nth units i))
+                      tokens))))] 
     {:fx/type :scroll-pane
      :content {:fx/type :group
                :children (concat
@@ -60,7 +66,10 @@
                              :hex h
                              :layout layout})
                           ;; TODO Remove Units which haven't been placed
-                          tokens
+                          (for [t tokens]
+                            {:fx/type draw-unit
+                             :unit t
+                             :layout layout })
                           )}}))
 
 (defn command-palette [{:keys [fx/context]}]
