@@ -269,7 +269,6 @@
             :items (vals units)}})
     ))
 
-
 (def unit-pane
    {:fx/type :v-box
    :spacing 5
