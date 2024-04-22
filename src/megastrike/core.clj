@@ -52,8 +52,7 @@
                   (fx/wrap-map-desc (fn [_] {:fx/type views/root})))
     :opts {:fx.opt/map-event-handler event-handler
            :fx.opt/type->lifecycle #(or (fx/keyword->lifecycle %)
-                                        (fx/fn->lifecycle-with-context %))
-           }))
+                                        (fx/fn->lifecycle-with-context %))}))
 
 (defn -main
   []
