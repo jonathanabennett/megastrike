@@ -1,12 +1,12 @@
 (ns megastrike.gui.views
   (:require
    [cljfx.api :as fx]
-   [megastrike.gui.lobby.views :as lobby]
-   [megastrike.hexagons.hex :as hex]
+   [clojure.string :as str]
+   [megastrike.combat-unit :as cu]
    [megastrike.gui.common :as common]
    [megastrike.gui.events :as events]
-   [megastrike.combat-unit :as cu]
-   [clojure.string :as str]))
+   [megastrike.gui.lobby.views :as lobby]
+   [megastrike.hexagons.hex :as hex]))
 
 (defn draw-hex [{:keys [hex layout]}]
   (let [points (hex/hex-points hex layout)
@@ -23,8 +23,7 @@
                  :layout-y (nth points 5)
                  :font 16
                  :translate-x 10
-                 :translate-y -20}]
-                        }))
+                 :translate-y -20}]}))
 
 (defn draw-unit [{:keys [fx/context unit layout]}]
   (let [hex (hex/hex-points unit layout)
@@ -65,12 +64,10 @@
                             {:fx/type draw-hex
                              :hex h
                              :layout layout})
-                          ;; TODO Remove Units which haven't been placed
                           (for [t tokens]
                             {:fx/type draw-unit
                              :unit t
-                             :layout layout })
-                          )}}))
+                             :layout layout }))}}))
 
 (defn command-palette [{:keys [fx/context]}]
   (let [phase (fx/sub-val context :current-phase)
@@ -246,14 +243,12 @@
                :grid-pane/column 0
                :grid-pane/column-span 2
                :grid-pane/hgrow :always
-               :grid-pane/vgrow :always
-               }
+               :grid-pane/vgrow :always}
               {:fx/type stat-blocks
                :grid-pane/row 0
                :grid-pane/column 1
                :grid-pane/hgrow :always
-               :grid-pane/vgrow :always}
-              ]})
+               :grid-pane/vgrow :always}]})
 
 (defn root [{:keys [fx/context]}]
   (let [view (fx/sub-val context :display)]
