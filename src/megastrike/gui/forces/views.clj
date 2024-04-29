@@ -88,4 +88,3 @@
                :spacing 30
                :children (for [force units]
                            {:fx/type force-block :units (val force)})}}))
-
