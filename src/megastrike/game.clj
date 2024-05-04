@@ -25,9 +25,8 @@
     [3 "Combat Phase"]
     [4 "End Phase"]))
 
-(defn next-phase
-  [phase]
-  (if (= 5 inc (:current-phase phase))
-    {:current-phase 0}
-    {:current-phase (inc (:current-phase phase))
-     :turn-number (inc (:turn-number phase))}))
+(defn make-title
+  [force phase turn]
+  (str "Megastrike " force " " phase " Phase | Turn " turn)
+  []
+  (str "Megastrike"))

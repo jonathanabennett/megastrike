@@ -19,6 +19,7 @@
     {:mul (cu/filter-membership cu/mul :type cu/ground-units)
      :mul-search-term ""
      :display :lobby
+     :title "Megastrike"
      :force-name "AFFS"
      :force-color :gold
      :force-zone "N"
