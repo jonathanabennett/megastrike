@@ -9,31 +9,40 @@
    [megastrike.gui.subs :as sub]
    [megastrike.utils :as utils]))
 
+(defn filter-button
+  [{:keys [field values text]}]
+  {:fx/type :button
+   :text text
+   :on-action {:event-type ::lobby-events/filter-changed
+               :fx/sync true
+               :field field
+               :values values}})
+
 (def mul-filter-buttons
   {:fx/type :h-box
    :spacing 5
    :alignment :top-center
-   :children [{:fx/type common/filter-button
+   :children [{:fx/type filter-button
                :field :type
                :values cu/ground-units
                :text "All Ground Units"}
-              {:fx/type common/filter-button
+              {:fx/type filter-button
                :field :type
                :values cu/bm-units
                :text "Battlemechs"}
-              {:fx/type common/filter-button
+              {:fx/type filter-button
                :field :type
                :values cu/mech-units
                :text "All Mechs"}
-              {:fx/type common/filter-button
+              {:fx/type filter-button
                :field :type
                :values cu/conventional-units
                :text "All Conventional Units"}
-              {:fx/type common/filter-button
+              {:fx/type filter-button
                :field :type
                :values cu/vehicle-units
                :text "All vehicles"}
-              {:fx/type common/filter-button
+              {:fx/type filter-button
                :field :type
                :values cu/infantry-units
                :text "All Infantry"}]})
@@ -174,7 +183,7 @@
        :text "Add a force."}
       {:fx/type tables/with-selection-props
        :props {:selection-mode :single
-               :on-selected-item-changed {:event-type ::events/force-selection-changed}
+               :on-selected-item-changed {:event-type ::lobby-events/force-selection-changed}
                :selected-item selected}
        :desc {:fx/type :table-view
               :row-factory {:fx/cell-type :table-row
@@ -306,7 +315,7 @@
                :on-action {:event-type ::lobby-events/load-save :fx/sync true}}
               {:fx/type :button
                :text "Launch Game"
-               :on-action {:event-type ::launch-game :fx/sync true :view :game}}]})
+               :on-action {:event-type ::lobby-events/launch-game :fx/sync true :view :game}}]})
 
 (def view
   {:fx/type :grid-pane

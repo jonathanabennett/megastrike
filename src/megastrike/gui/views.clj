@@ -47,9 +47,11 @@
                :grid-pane/vgrow :always}]})
 
 (defn root [{:keys [fx/context]}]
-  (let [view (fx/sub-val context :display)]
+  (let [view (fx/sub-val context :display)
+        title (fx/sub-val context :title)]
     {:fx/type :stage
      :showing true
+     :title title
      :scene
      {:fx/type :scene
       :root

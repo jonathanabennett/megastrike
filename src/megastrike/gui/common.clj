@@ -42,15 +42,6 @@
                                  :key key}
                :text (fx/sub-val context key)}]})
 
-(defn filter-button
-  [{:keys [field values text]}]
-  {:fx/type :button
-   :text text
-   :on-action {:event-type ::events/filter-changed
-               :fx/sync true
-               :field field
-               :values values}})
-
 (defn attack-table
   [{:keys [unit]}]
   {:fx/type :v-box

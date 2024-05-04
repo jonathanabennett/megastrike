@@ -5,24 +5,32 @@
    [clojure.string :as str]
    [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
+   [megastrike.initiative :as initiative]
    [megastrike.gui.events :as e]
    [megastrike.gui.subs :as sub]
    [megastrike.utils :as utils]))
 
-(defmethod event-handler ::filter-changed
+(defmethod e/event-handler ::filter-changed
   [{:keys [fx/context field values]}]
   {:context (fx/swap-context context assoc :mul (cu/filter-membership cu/mul field values))})
 
-(defmethod event-handler ::color-changed
+(defmethod e/event-handler ::color-changed
   [{:keys [fx/context fx/event]}]
   {:context (fx/swap-context context assoc :force-color event)})
 
-(defmethod event-handler ::launch-game
+(defmethod e/event-handler ::launch-game
   [{:keys [fx/context view]}]
   (let [new-board (board/create-board
                    (Integer/parseInt (fx/sub-val context :map-width))
-                   (Integer/parseInt (fx/sub-val context :map-height)))]
-    {:context (fx/swap-context context assoc :game-board new-board :display view)}))
+                   (Integer/parseInt (fx/sub-val context :map-height)))
+        forces (initiative/roll-initiative (fx/sub-val context :forces))
+        units (vals (fx/sub-val context :units))
+        turn-order (initiative/generate-turn-order forces units)]
+    {:context (fx/swap-context context assoc :game-board new-board 
+                                             :display view 
+                                             :forces forces
+                                             :turn-order turn-order
+                                             :current-phase :deployment)}))
 
 (defmethod e/event-handler ::add-force
   [{:keys [fx/context]}]
