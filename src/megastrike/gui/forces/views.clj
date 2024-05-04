@@ -70,7 +70,6 @@
 (defn force-block [{:keys [fx/context units]}]
   (let [forces (fx/sub-val context :forces)
         force ((:force (first units)) forces)]
-    (prn force)
     {:fx/type :v-box
      :spacing 5
      :border {:strokes [{:stroke (:color force) :style :solid :width 5}]}
