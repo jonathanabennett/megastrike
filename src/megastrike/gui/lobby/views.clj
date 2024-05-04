@@ -306,7 +306,7 @@
                :on-action {:event-type ::lobby-events/load-save :fx/sync true}}
               {:fx/type :button
                :text "Launch Game"
-               :on-action {:event-type ::events/view-changed :fx/sync true :view :game}}]})
+               :on-action {:event-type ::launch-game :fx/sync true :view :game}}]})
 
 (def view
   {:fx/type :grid-pane

@@ -14,17 +14,9 @@
 (defmethod event-handler :default [event]
   (prn event))
 
-(defmethod event-handler ::filter-changed
-  [{:keys [fx/context field values]}]
-  {:context (fx/swap-context context assoc :mul (cu/filter-membership cu/mul field values))})
-
 (defmethod event-handler ::text-input
   [{:keys [fx/context key fx/event]}]
   {:context (fx/swap-context context assoc key event)})
-
-(defmethod event-handler ::color-changed
-  [{:keys [fx/context fx/event]}]
-  {:context (fx/swap-context context assoc :force-color event)})
 
 (defmethod event-handler ::force-selection-changed
   [{:keys [fx/context fx/event]}]
@@ -33,13 +25,6 @@
 (defmethod event-handler ::unit-selection-changed
   [{:keys [fx/context fx/event]}]
   {:context (fx/swap-context context assoc :active-unit (:id event))})
-
-(defmethod event-handler ::view-changed
-  [{:keys [fx/context view]}]
-  (let [new-board (board/create-board
-                   (Integer/parseInt (fx/sub-val context :map-width))
-                   (Integer/parseInt (fx/sub-val context :map-height)))]
-    {:context (fx/swap-context context assoc :game-board new-board :display view)}))
 
 (defmethod event-handler ::auto-save
   [{:keys [fx/context]}]

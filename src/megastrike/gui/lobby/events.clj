@@ -9,6 +9,20 @@
    [megastrike.gui.subs :as sub]
    [megastrike.utils :as utils]))
 
+(defmethod event-handler ::filter-changed
+  [{:keys [fx/context field values]}]
+  {:context (fx/swap-context context assoc :mul (cu/filter-membership cu/mul field values))})
+
+(defmethod event-handler ::color-changed
+  [{:keys [fx/context fx/event]}]
+  {:context (fx/swap-context context assoc :force-color event)})
+
+(defmethod event-handler ::launch-game
+  [{:keys [fx/context view]}]
+  (let [new-board (board/create-board
+                   (Integer/parseInt (fx/sub-val context :map-width))
+                   (Integer/parseInt (fx/sub-val context :map-height)))]
+    {:context (fx/swap-context context assoc :game-board new-board :display view)}))
 
 (defmethod e/event-handler ::add-force
   [{:keys [fx/context]}]
