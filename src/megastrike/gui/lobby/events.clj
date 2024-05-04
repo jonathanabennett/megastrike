@@ -23,14 +23,20 @@
   (let [new-board (board/create-board
                    (Integer/parseInt (fx/sub-val context :map-width))
                    (Integer/parseInt (fx/sub-val context :map-height)))
+        phase :deployment
+        turn (fx/sub-val context :turn-number) 
         forces (initiative/roll-initiative (fx/sub-val context :forces))
-        units (vals (fx/sub-val context :units))
-        turn-order (initiative/generate-turn-order forces units)]
-    {:context (fx/swap-context context assoc :game-board new-board 
-                                             :display view 
-                                             :forces forces
-                                             :turn-order turn-order
-                                             :current-phase :deployment)}))
+        turn-order (initiative/generate-turn-order forces (sub/units context))]
+    {:context (fx/swap-context context merge {:game-board new-board 
+                                              :forces forces 
+                                              :turn-order turn-order 
+                                              :current-phase :deployment 
+                                              :display view})}))
+
+(defmethod e/event-handler ::load-save
+  [{:keys [fx/context]}]
+   (let [save-data (edn/read-string (slurp "save.edn"))]
+     {:context (fx/swap-context context merge save-data)}))
 
 (defmethod e/event-handler ::add-force
   [{:keys [fx/context]}]
@@ -67,9 +73,3 @@
   [{:keys [fx/context field]}]
   (let [term (fx/sub-val context :mul-search-term)]
     {:context (fx/swap-context context assoc :mul (cu/filter-units cu/mul field term str/includes?))}))
-
-(defmethod e/event-handler ::load-save
-  [{:keys [fx/context]}]
-   (let [save-data (edn/read-string (slurp "save.edn"))]
-     {:context (fx/swap-context context merge context save-data {:display :game
-                                                                 :mul []})}))

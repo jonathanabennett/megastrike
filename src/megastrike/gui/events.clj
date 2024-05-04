@@ -50,6 +50,9 @@
 (defmethod event-handler ::roll-initiative
   [{:keys [fx/context]}]
   (let [forces (initiative/roll-initiative (fx/sub-val context :forces))
-        units (vals (fx/sub-val context :units))
-        turn-order (initiative/generate-turn-order forces units)]
-    {:context (fx/swap-context context assoc :forces forces :turn-order turn-order :current-phase :deployment)}))
+        turn-order (initiative/generate-turn-order forces (sub/units context))
+        phase :deployment
+        turn (fx/sub-val context :turn-number) ]
+    {:context (fx/swap-context context merge {:forces forces 
+                                              :turn-order turn-order 
+                                              :current-phase phase })}))

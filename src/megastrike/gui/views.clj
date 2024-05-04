@@ -5,6 +5,7 @@
    [megastrike.combat-unit :as cu]
    [megastrike.gui.common :as common]
    [megastrike.gui.events :as events]
+   [megastrike.gui.subs :as sub]
    [megastrike.gui.lobby.views :as lobby]
    [megastrike.gui.board.views :as board]
    [megastrike.gui.forces.views :as force]
@@ -47,11 +48,11 @@
                :grid-pane/vgrow :always}]})
 
 (defn root [{:keys [fx/context]}]
-  (let [view (fx/sub-val context :display)
-        title (fx/sub-val context :title)]
+  (let [view (fx/sub-val context :display)]
+        
     {:fx/type :stage
      :showing true
-     :title title
+     :title (sub/title-string context)
      :scene
      {:fx/type :scene
       :root
