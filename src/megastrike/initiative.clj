@@ -1,7 +1,6 @@
 (ns megastrike.initiative
-  (:require
-   [clojure.math :as math]
-   [megastrike.utils :as utils]))
+  (:require [clojure.math :as math]
+            [megastrike.utils :as utils]))
 
 ;; TODO This currently isn't applying the initiative roll to both forces equally.
 ;; So when I call this, I get a seq of n maps, where each map has one of the force's

@@ -1,8 +1,7 @@
 (ns megastrike.gui.common
-  (:require
-   [cljfx.api :as fx]
-   [megastrike.combat-unit :as cu]
-   [megastrike.gui.events :as events]))
+  (:require [cljfx.api :as fx]
+            [megastrike.combat-unit :as cu]
+            [megastrike.gui.events :as events]))
 
 (defn prop-label
   [{:keys [label value]}]

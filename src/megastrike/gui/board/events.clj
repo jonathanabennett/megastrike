@@ -1,12 +1,6 @@
 (ns megastrike.gui.board.events
   (:require [cljfx.api :as fx]
-            [megastrike.board :as board]
-            [megastrike.combat-unit :as cu]
-            [megastrike.utils :as utils]
-            [megastrike.initiative :as initiative]
-            [megastrike.gui.events :as events]
-            [megastrike.gui.subs :as sub]
-            [clojure.string :as str]))
+            [megastrike.gui.events :as events]))
 
 (defmethod events/event-handler ::hex-clicked
   [{:keys [fx/context hex]}]

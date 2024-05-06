@@ -1,10 +1,9 @@
 (ns megastrike.gui.forces.views
-  (:require
-   [cljfx.api :as fx]
-   [clojure.string :as str]
-   [megastrike.combat-unit :as cu]
-   [megastrike.gui.common :as common]
-   [megastrike.gui.events :as events]))
+  (:require [cljfx.api :as fx]
+            [clojure.string :as str]
+            [megastrike.combat-unit :as cu]
+            [megastrike.gui.common :as common]
+            [megastrike.gui.events :as events]))
 
 (defn unit-stat-block [{:keys [fx/context unit]}]
   (let [background (if (= (:id unit) (fx/sub-val context :active-unit))

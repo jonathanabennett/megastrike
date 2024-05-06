@@ -1,15 +1,10 @@
 (ns megastrike.gui.views
-  (:require
-   [cljfx.api :as fx]
-   [clojure.string :as str]
-   [megastrike.combat-unit :as cu]
-   [megastrike.gui.common :as common]
-   [megastrike.gui.events :as events]
-   [megastrike.gui.subs :as sub]
-   [megastrike.gui.lobby.views :as lobby]
-   [megastrike.gui.board.views :as board]
-   [megastrike.gui.forces.views :as force]
-   [megastrike.hexagons.hex :as hex]))
+  (:require [cljfx.api :as fx]
+            [megastrike.gui.board.views :as board]
+            [megastrike.gui.events :as events]
+            [megastrike.gui.forces.views :as force]
+            [megastrike.gui.lobby.views :as lobby]
+            [megastrike.gui.subs :as sub]))
 
 (defn command-palette [{:keys [fx/context]}]
   (let [phase (fx/sub-val context :current-phase)
@@ -30,7 +25,7 @@
                              :text "Save Game"
                              :on-action {:event-type ::events/auto-save :fx/sync true}}]}]}))
 
-(defn game-view [{:keys [fx/context]}]
+(defn game-view []
   {:fx/type :grid-pane
    :children [{:fx/type board/game-board
                :grid-pane/row 0

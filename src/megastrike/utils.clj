@@ -1,7 +1,6 @@
 (ns megastrike.utils
-  (:require
-   [clojure.java.io :as io]
-   [clojure.string :as string]))
+  (:require [clojure.java.io :as io]
+            [clojure.string :as string]))
 
 (defn load-resource
   [name]

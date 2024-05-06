@@ -1,14 +1,13 @@
 (ns megastrike.gui.lobby.events
-  (:require 
-   [cljfx.api :as fx]
-   [clojure.edn :as edn]
-   [clojure.string :as str]
-   [megastrike.board :as board]
-   [megastrike.combat-unit :as cu]
-   [megastrike.initiative :as initiative]
-   [megastrike.gui.events :as e]
-   [megastrike.gui.subs :as sub]
-   [megastrike.utils :as utils]))
+  (:require [cljfx.api :as fx]
+            [clojure.edn :as edn]
+            [clojure.string :as str]
+            [megastrike.board :as board]
+            [megastrike.combat-unit :as cu]
+            [megastrike.gui.events :as e]
+            [megastrike.gui.subs :as sub]
+            [megastrike.initiative :as initiative]
+            [megastrike.utils :as utils]))
 
 (defmethod e/event-handler ::filter-changed
   [{:keys [fx/context field values]}]

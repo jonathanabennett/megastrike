@@ -1,17 +1,13 @@
 (ns megastrike.core
   (:gen-class
    :main true)
-  (:require
-   [cljfx.api :as fx]
-   [cljfx.dev :as dev]
-   [clojure.core.cache :as cache]
-   [megastrike.combat-unit :as cu]
-   [megastrike.gui.events :as events]
-   [megastrike.gui.views :as views]
-   [megastrike.initiative :as initiative]
-   [megastrike.hexagons.hex :as hex])
-  (:import
-   (javafx.application Platform)))
+  (:require [cljfx.api :as fx]
+            [clojure.core.cache :as cache]
+            [megastrike.combat-unit :as cu]
+            [megastrike.gui.events :as events]
+            [megastrike.gui.views :as views]
+            [megastrike.hexagons.hex :as hex])
+  (:import (javafx.application Platform)))
 
 (def *state
   (atom

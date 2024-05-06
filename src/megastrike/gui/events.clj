@@ -1,13 +1,8 @@
 (ns megastrike.gui.events
-  (:require
-   [clojure.edn :as edn]
-   [cljfx.api :as fx]
-   [megastrike.board :as board]
-   [megastrike.combat-unit :as cu]
-   [megastrike.utils :as utils]
-   [megastrike.initiative :as initiative]
-   [megastrike.gui.subs :as sub]
-   [clojure.string :as str]))
+  (:require [cljfx.api :as fx]
+            [megastrike.gui.subs :as sub]
+            [megastrike.initiative :as initiative]
+            [megastrike.utils :as utils]))
 
 (defmulti event-handler :event-type)
 

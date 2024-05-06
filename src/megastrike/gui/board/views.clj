@@ -1,11 +1,9 @@
 (ns megastrike.gui.board.views
-  (:require
-   [cljfx.api :as fx]
-   [megastrike.combat-unit :as cu]
-   [megastrike.gui.common :as common]
-   [megastrike.gui.events :as events]
-   [megastrike.gui.board.events :as board-events]
-   [megastrike.hexagons.hex :as hex]))
+  (:require [cljfx.api :as fx]
+            [megastrike.gui.board.events :as board-events]
+            [megastrike.gui.common :as common]
+            [megastrike.gui.events :as events]
+            [megastrike.hexagons.hex :as hex]))
 
 (defn draw-hex [{:keys [hex layout]}]
   (let [points (hex/hex-points hex layout)
