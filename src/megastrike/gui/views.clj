@@ -13,17 +13,20 @@
     {:fx/type :v-box
      :spacing 5
      :children [{:fx/type :label
-                 :text (prn-str turn-order)}
+                 :text (str phase " Phase | Turn " turn " | "(prn-str turn-order))}
                  {:fx/type :h-box
                  :children [{:fx/type :button
                              :text "Roll Initiative"
                              :on-action {:event-type ::events/roll-initiative :fx/sync true}}
-                            {:fx/type :button
+                            {:fx/type :button ;; TODO Disable button when no units to deploy
                              :text "Deploy Unit"
                              :on-action {:event-type ::events/deploy-unit :fx/sync true}}
                             {:fx/type :button
                              :text "Save Game"
-                             :on-action {:event-type ::events/auto-save :fx/sync true}}]}]}))
+                             :on-action {:event-type ::events/auto-save :fx/sync true}}
+                            {:fx/type :button ;; TODO Disable button when units left to deploy
+                             :text "Next Phase"
+                             :on-action {:event-type ::events/next-phase :fx/sync true}}]}]}))
 
 (defn game-view [{:keys [fx/context]}]
   {:fx/type :grid-pane
