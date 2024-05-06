@@ -6,15 +6,16 @@
             [megastrike.gui.events :as events]))
 
 (defn unit-stat-block [{:keys [fx/context unit]}]
-  (let [background (if (= (:id unit) (fx/sub-val context :active-unit))
-                     "-fx-background-color: #AAAAAA;"
-                     "-fx-background-color: #DDDDDD;")]
+  (let [active (fx/sub-val context :active-unit) ]
     {:fx/type :titled-pane
      :text (:id unit)
      :border {:strokes [{:stroke :black :style :solid :width 2}]}
      :padding 5
      :content {:fx/type :v-box 
-               :style background
+               :style (cond 
+                     (= (:id unit) active) "-fx-background-color: #BBBBBB;"
+                     (not (:acted unit)) "-fx-background-color: 999999"
+                     :else "-fx-background-color: #DDDDDD;")
                :spacing 5 
                :on-mouse-clicked {:event-type ::events/stats-clicked :fx/sync true :unit (:id unit)} 
                :children [{:fx/type :h-box 

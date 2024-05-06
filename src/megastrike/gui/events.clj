@@ -38,7 +38,9 @@
 
 (defmethod event-handler ::stats-clicked
   [{:keys [fx/context unit]}]
-  {:context (fx/swap-context context assoc :active-unit unit)})
+  (let [u (get (fx/sub-val context :units) unit)]
+    (when-not (:acted u) 
+      {:context (fx/swap-context context assoc :active-unit unit)})))
 
 (defmethod event-handler ::unit-clicked
   [{:keys [fx/context unit]}]
@@ -53,3 +55,8 @@
     {:context (fx/swap-context context merge {:forces forces 
                                               :turn-order turn-order 
                                               :current-phase phase })}))
+
+(defmethod event-handler ::deploy-unit 
+  [{:keys [fx/context]}]
+  (let [turn-order (fx/sub-val context :turn-order)]
+    {:context (fx/swap-context context assoc :turn-order (rest turn-order))}))
