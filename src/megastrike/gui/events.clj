@@ -50,11 +50,14 @@
   [{:keys [fx/context]}]
   (let [forces (initiative/roll-initiative (fx/sub-val context :forces))
         turn-order (initiative/generate-turn-order forces (sub/units context))
-        phase :deployment
         turn (fx/sub-val context :turn-number) ]
     {:context (fx/swap-context context merge {:forces forces 
                                               :turn-order turn-order 
-                                              :current-phase phase })}))
+                                              :current-phase :deployment})}))
+
+(defmethod event-handler ::next-phase 
+  [{:keys [fx/context]}]
+  (prn (fx/sub-val context :current-phase)))
 
 (defmethod event-handler ::deploy-unit 
   [{:keys [fx/context]}]

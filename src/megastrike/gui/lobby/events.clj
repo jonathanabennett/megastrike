@@ -22,8 +22,6 @@
   (let [new-board (board/create-board
                    (Integer/parseInt (fx/sub-val context :map-width))
                    (Integer/parseInt (fx/sub-val context :map-height)))
-        phase :deployment
-        turn (fx/sub-val context :turn-number) 
         forces (initiative/roll-initiative (fx/sub-val context :forces))
         turn-order (initiative/generate-turn-order forces (sub/units context))]
     {:context (fx/swap-context context merge {:game-board new-board 
