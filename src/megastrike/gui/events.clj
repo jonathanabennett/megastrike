@@ -1,5 +1,7 @@
 (ns megastrike.gui.events
   (:require [cljfx.api :as fx]
+            [clojure.java.io :as io]
+            [clojure.pprint :as pprint]
             [megastrike.gui.subs :as sub]
             [megastrike.initiative :as initiative]
             [megastrike.utils :as utils]))
@@ -26,7 +28,7 @@
   (let [save {:game-board (fx/sub-val context :game-board)
               :units (fx/sub-val context :units)
               :forces (fx/sub-val context :forces)}]
-    (spit "save.edn" save)))
+    (pprint/pprint save (io/writer "save.edn"))))
 
 ;; (defmethod event-handler ::initiative-phase
 ;;   [{:keys [fx/context fx/event]}]

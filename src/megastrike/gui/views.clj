@@ -25,7 +25,7 @@
                              :text "Save Game"
                              :on-action {:event-type ::events/auto-save :fx/sync true}}]}]}))
 
-(defn game-view []
+(defn game-view [{:keys [fx/context]}]
   {:fx/type :grid-pane
    :children [{:fx/type board/game-board
                :grid-pane/row 0
