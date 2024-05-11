@@ -30,12 +30,6 @@
               :forces (fx/sub-val context :forces)}]
     (pprint/pprint save (io/writer "save.edn"))))
 
-;; (defmethod event-handler ::initiative-phase
-;;   [{:keys [fx/context fx/event]}]
-;;   (let [initiatives (sort-by :roll (initiative/roll-initiative))
-;;         units (sub/units-by-force context)]
-;;      ))
-
 (defmethod event-handler ::stats-clicked
   [{:keys [fx/context unit]}]
   (let [u (get (fx/sub-val context :units) unit)]
@@ -49,8 +43,7 @@
 (defmethod event-handler ::roll-initiative
   [{:keys [fx/context]}]
   (let [forces (initiative/roll-initiative (fx/sub-val context :forces))
-        turn-order (initiative/generate-turn-order forces (sub/units context))
-        turn (fx/sub-val context :turn-number) ]
+        turn-order (initiative/generate-turn-order forces (sub/units context)) ]
     {:context (fx/swap-context context merge 
                                {:forces forces 
                                 :turn-order turn-order 
