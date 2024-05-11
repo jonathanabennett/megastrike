@@ -3,7 +3,7 @@
             [clojure.java.io :as io]
             [clojure.pprint :as pprint]
             [megastrike.gui.subs :as sub]
-            [megastrike.initiative :as initiative]
+            [megastrike.phases :as initiative]
             [megastrike.utils :as utils]))
 
 (defmulti event-handler :event-type)
@@ -51,13 +51,22 @@
   (let [forces (initiative/roll-initiative (fx/sub-val context :forces))
         turn-order (initiative/generate-turn-order forces (sub/units context))
         turn (fx/sub-val context :turn-number) ]
-    {:context (fx/swap-context context merge {:forces forces 
-                                              :turn-order turn-order 
-                                              :current-phase :deployment})}))
+    {:context (fx/swap-context context merge 
+                               {:forces forces 
+                                :turn-order turn-order 
+                                :current-phase :deployment})}))
 
 (defmethod event-handler ::next-phase 
   [{:keys [fx/context]}]
-  (prn (fx/sub-val context :current-phase)))
+  (let [phase (fx/sub-val context :current-phase)
+        turn-number (fx/sub-val context :turn-number)
+        forces (fx/sub-val context :forces)
+        units (sub/units context)]
+    {:context (fx/swap-context context merge 
+                               (initiative/next-phase {:current-phase phase 
+                                                       :turn-number turn-number
+                                                       :forces forces
+                                                       :units units}))}))
 
 (defmethod event-handler ::deploy-unit 
   [{:keys [fx/context]}]
