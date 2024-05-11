@@ -6,7 +6,7 @@
             [megastrike.combat-unit :as cu]
             [megastrike.gui.events :as e]
             [megastrike.gui.subs :as sub]
-            [megastrike.initiative :as initiative]
+            [megastrike.phases :as phases]
             [megastrike.utils :as utils]))
 
 (defmethod e/event-handler ::filter-changed
@@ -22,8 +22,8 @@
   (let [new-board (board/create-board
                    (Integer/parseInt (fx/sub-val context :map-width))
                    (Integer/parseInt (fx/sub-val context :map-height)))
-        forces (initiative/roll-initiative (fx/sub-val context :forces))
-        turn-order (initiative/generate-turn-order forces (sub/units context))]
+        forces (phases/roll-initiative (fx/sub-val context :forces))
+        turn-order (phases/generate-turn-order forces (sub/units context))]
     {:context (fx/swap-context context merge {:game-board new-board 
                                               :forces forces 
                                               :turn-order turn-order 

@@ -28,7 +28,7 @@
                              :text "Next Phase"
                              :on-action {:event-type ::events/next-phase :fx/sync true}}]}]}))
 
-(defn game-view [{:keys [fx/context]}]
+(def game-view
   {:fx/type :grid-pane
    :children [{:fx/type board/game-board
                :grid-pane/row 0
@@ -56,5 +56,5 @@
       :root
       (cond
         (= view :lobby) lobby/view
-        (= view :game) {:fx/type game-view}
+        (= view :game) game-view
         :else lobby/view)}}))
