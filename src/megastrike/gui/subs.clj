@@ -13,15 +13,23 @@
 
 (defn units
   [context]
-  (vals (fx/sub-val context :units)))
+  (fx/sub-val context :units))
 
-(defn units-ready?
+(defn forces 
   [context]
-  (> (count (fx/sub-val context :units)) 1))
+  (vals (fx/sub-val context :forces)))
 
-(defn forces-ready?
+(defn turn-number
   [context]
-  (> (count (fx/sub-val context :forces)) 1))
+  (fx/sub-val context :turn-number))
+
+(defn phase 
+  [context]
+  (fx/sub-val context :current-phase))
+
+(defn turn-order
+  [context]
+  (fx/sub-val context :turn-order))
 
 (defn units-by-force
   [context]

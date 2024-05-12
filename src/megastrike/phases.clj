@@ -33,26 +33,29 @@
 
 (defn start-initiative-phase [{:keys [turn-number forces units]}]
   (let [forces (roll-initiative forces)
-        turn-order (generate-turn-order forces units)]
-    {:current-phase :initiative :turn-number (inc turn-number) :forces forces :turn-order turn-order}))
+        turn-order (generate-turn-order forces (vals units))]
+    {:current-phase :initiative :turn-number (inc turn-number) :forces forces :turn-order turn-order :units units}))
 
 (defn start-deployment-phase [{:keys [forces units]}]
-  {:current-phase :deployment :turn-order (generate-turn-order forces (filter #(not (:q %)) units))})
+  {:current-phase :deployment :turn-order (generate-turn-order forces (filter #(not (:q %)) (vals units))) :units units})
 
 (defn start-movement-phase [{:keys [forces units]}]
-  {:current-phase :movement :turn-order (generate-turn-order forces units)})
+  (prn units)
+  {:current-phase :movement :turn-order (generate-turn-order forces (vals units)) :units units})
 
 (defn start-combat-phase [{:keys [forces units]}]
-  {:current-phase :combat :turn-order (generate-turn-order forces units)})
+  {:current-phase :combat :turn-order (generate-turn-order forces (vals units)) :units units})
 
 (defn start-end-phase [{:keys [forces units]}]
-  {:current-phase :end :turn-order (generate-turn-order forces units)})
+  {:current-phase :end :turn-order (generate-turn-order forces (vals units)) :units units})
 
 (defn next-phase [{:keys [current-phase turn-number forces units]}]
-  (cond 
-    (= current-phase :initiative) (start-deployment-phase {:forces forces :units units})
-    (= current-phase :deployment) (start-movement-phase {:forces forces :units units})
-    (= current-phase :movement)   (start-combat-phase {:forces forces :units units})
-    (= current-phase :combat)     (start-end-phase {:forces forces :units units})
-    (= current-phase :end)        (start-initiative-phase {:forces forces :turn-number turn-number :units units})
-    :else {}))
+  (prn units)
+  (let [new-units (into {} (for [[k unit] units] [k (assoc unit :acted nil)]))]
+    (cond 
+     (= current-phase :initiative) (start-deployment-phase {:forces forces :units new-units})
+     (= current-phase :deployment) (start-movement-phase {:forces forces :units new-units})
+     (= current-phase :movement)   (start-combat-phase {:forces forces :units new-units})
+     (= current-phase :combat)     (start-end-phase {:forces forces :units new-units})
+     (= current-phase :end)        (start-initiative-phase {:forces forces :turn-number turn-number :units new-units})
+     :else {})))
