@@ -170,9 +170,11 @@
         match-row (or (first exact-match) (first chassis-match))]
     (str "images/units/" (nth match-row 2))))
 
-(defn update-position
+(defn can-move?
   [unit destination]
-  (merge unit destination))
+  (if (:movement-mode unit)
+    (> (get-in unit [:movement (:movement-mode unit)]) (hexagon/hex-distance unit destination))
+    (> (get-in unit [:movement :walk]) (hexagon/hex-distance unit destination))))
 
 (defn calculate-attacker-mod
   [unit]

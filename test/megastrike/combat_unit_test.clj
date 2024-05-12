@@ -84,10 +84,6 @@
     (t/is (= (sut/find-sprite {:full-name "Archer ARC-2K" :chassis "Archer"}) "resources/images/units/mechs/Archer_2K.png"))
     (t/is (= (sut/find-sprite {:full-name "Ahab AHB-4" :chassis "Ahab"}) "resources/images/units/fighter/ahab.png"))))
 
-(t/deftest test-update-position
-  (t/testing "Test updating the position of a unit."
-    (t/is (= (sut/update-position {:id "Archer ARC-2K" :q 2 :r 2 :s -4} {:q 4 :r 0 :s -4}) {:id "Archer ARC-2K" :q 4 :r 0 :s -4}))))
-
 (t/deftest test-calculate-attacker-mod
   (t/testing "Test valid movement types"
     (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :immobile}) -1))
