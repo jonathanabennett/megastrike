@@ -3,6 +3,7 @@
             [megastrike.gui.board.events :as board-events]
             [megastrike.gui.common :as common]
             [megastrike.gui.events :as events]
+            [megastrike.gui.subs :as subs]
             [megastrike.hexagons.hex :as hex]))
 
 (defn draw-hex [{:keys [hex layout]}]
@@ -44,7 +45,7 @@
 (defn game-board [{:keys [fx/context]}]
   (let [gb (fx/sub-val context :game-board)
         layout (fx/sub-val context :layout)
-        units (vals (fx/sub-val context :units))
+        units (vals (subs/units context))
         tokens (loop [i 0
                       tokens []]
                  (if (= (count units) i)
