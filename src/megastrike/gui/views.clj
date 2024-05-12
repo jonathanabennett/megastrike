@@ -32,19 +32,26 @@
   (let [active (fx/sub-val context :active-unit)
         units (subs/units context)
         unit (get units active)
-        move-types (keys (:movement unit))
-        buttons (for [[m] move-types] 
-                       {:fx/type :button 
-                        :text (str/capitalize (name m)) 
-                        :on-action {:event-type ::events/set-movement-mode :mode m :fx/sync true}})]
+        movement (:movement unit)
+        buttons (if (contains? movement :jump)
+                  [{:fx/type :button
+                    :text "Walk"
+                    :on-action {:event-type ::events/set-movement-mode :mode :walk :fx/sync true}}
+                   {:fx/type :button
+                    :text "Jump"
+                    :on-action {:event-type ::events/set-movement-mode :mode :jump :fx/sync true}}]
+                  [{:fx/type :button
+                    :text "Walk"
+                    :on-action {:event-type ::events/set-movement-mode :mode :jump :fx/sync true}}])] 
     {:fx/type :h-box
-     :children (conj [{:fx/type :button
-                       :text "Stand Still"
-                       :on-action {:event-type ::events/set-movement-mode :mode :standstill :fx/sync true}}]
-                     buttons
-                     [{:fx/type :button
-                       :text "Confirm Move"
-                       :on-action {:event-type ::events/move-unit :fx/sync true}}])}))
+     :children ((comp vec flatten vector) 
+                [{:fx/type :button 
+                  :text "Stand Still" 
+                  :on-action {:event-type ::events/set-movement-mode :mode :stand-still :fx/sync true}}]
+                buttons
+                [{:fx/type :button 
+                  :text "Confirm Move" 
+                  :on-action {:event-type ::events/move-unit :fx/sync true}}])}))
 
 (defn command-palette [{:keys [fx/context]}]
   (let [phase (fx/sub-val context :current-phase)
@@ -53,13 +60,16 @@
     {:fx/type :v-box
      :spacing 5
      :children [{:fx/type :label
-                 :text (str phase " Phase | Turn " turn " | "(prn-str turn-order))}
-                (cond 
-                  (= phase :deployment){:fx/type deploy-buttons}
-                  (= phase :movement) {:fx/type move-buttons}
-                  :else {:fx/type :button
-                         :text "Exit"
-                         :on-action {:event-type ::events/quit-game :fx/sync true}})]}))
+                 :text (str (str/capitalize (name phase)) " Phase | Turn " turn " | " (prn-str turn-order))}
+                {:fx/type deploy-buttons}
+                {:fx/type move-buttons}
+                ;; (cond 
+                ;;   (= phase :deployment){:fx/type deploy-buttons}
+                ;;   (= phase :movement) {:fx/type move-buttons}
+                ;;   :else {:fx/type :button
+                ;;          :text "Exit"
+                ;;          :on-action {:event-type ::events/quit-game :fx/sync true}})
+                ]}))
 
 (def game-view
   {:fx/type :grid-pane
