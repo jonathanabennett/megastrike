@@ -40,7 +40,6 @@
   {:current-phase :deployment :turn-order (generate-turn-order forces (filter #(not (:q %)) (vals units))) :units units})
 
 (defn start-movement-phase [{:keys [forces units]}]
-  (prn units)
   {:current-phase :movement :turn-order (generate-turn-order forces (vals units)) :units units})
 
 (defn start-combat-phase [{:keys [forces units]}]
@@ -50,7 +49,6 @@
   {:current-phase :end :turn-order (generate-turn-order forces (vals units)) :units units})
 
 (defn next-phase [{:keys [current-phase turn-number forces units]}]
-  (prn units)
   (let [new-units (into {} (for [[k unit] units] [k (assoc unit :acted nil)]))]
     (cond 
      (= current-phase :initiative) (start-deployment-phase {:forces forces :units new-units})
