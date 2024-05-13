@@ -7,7 +7,8 @@
 
 (defn unit-stat-block [{:keys [fx/context unit]}]
   (let [active (fx/sub-val context :active-unit) ]
-    {:fx/type :titled-pane
+    {:fx/type :titled-pane 
+     :on-mouse-clicked {:event-type ::events/stats-clicked :fx/sync true :unit (:id unit)} 
      :text (:id unit)
      :border {:strokes [{:stroke :black :style :solid :width 2}]}
      :padding 5
@@ -17,7 +18,6 @@
                      (not (:acted unit)) "-fx-background-color: 999999"
                      :else "-fx-background-color: #DDDDDD;")
                :spacing 5 
-               :on-mouse-clicked {:event-type ::events/stats-clicked :fx/sync true :unit (:id unit)} 
                :children [{:fx/type :h-box 
                            :spacing 5 
                            :children [{:fx/type common/prop-label 
