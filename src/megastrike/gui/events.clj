@@ -74,3 +74,21 @@
                                :turn-order (rest turn-order)
                                :units (assoc units active unit)
                                :active-unit nil)}))
+
+(defmethod event-handler ::set-movement-mode
+  [{:keys [fx/context mode unit]}]
+  (let [units (subs/units context)
+        u (merge unit {:movement-mode mode})
+        upd (assoc units (:id u) u)]
+    {:context (fx/swap-context context assoc :units upd)}))
+
+(defmethod event-handler ::confirm-move
+  [{:keys [fx/context unit]}]
+  (let [turn-order (subs/turn-order context)
+        units (subs/units context)
+        active (fx/sub-val context :active-unit)
+        unit (get units active)]
+    ;; Set acted to true. 
+    ;; Replace "old" location with new
+    ;; Clear "new" location
+    ))
