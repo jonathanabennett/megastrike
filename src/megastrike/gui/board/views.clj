@@ -40,7 +40,15 @@
                  :layout-x (nth hex 8)
                  :layout-y (nth hex 9)
                  :font 16
-                 :translate-y (/ (layout :y-size) 3)}]}))
+                 :translate-y (/ (layout :y-size) 3)}
+                {:fx/type :label 
+                 :text (if (:movement-mode unit)
+                         (name (:movement-mode unit))
+                         "Did not move")
+                 :layout-x (nth hex 4)
+                 :layout-y (nth hex 5)
+                 :font 16
+                 :translate-y (* (/ (layout :y-size) 3) -2)}]}))
 
 (defn game-board [{:keys [fx/context]}]
   (let [gb (fx/sub-val context :game-board)
