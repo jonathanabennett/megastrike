@@ -5,7 +5,7 @@
             [megastrike.board :as board]
             [megastrike.combat-unit :as cu]
             [megastrike.gui.events :as e]
-            [megastrike.gui.subs :as sub]
+            [megastrike.gui.subs :as subs]
             [megastrike.phases :as phases]
             [megastrike.utils :as utils]))
 
@@ -22,8 +22,8 @@
   (let [new-board (board/create-board
                    (Integer/parseInt (fx/sub-val context :map-width))
                    (Integer/parseInt (fx/sub-val context :map-height)))
-        forces (phases/roll-initiative (fx/sub-val context :forces))
-        turn-order (phases/generate-turn-order forces (vals (sub/units context)))]
+        forces (phases/roll-initiative (subs/forces context))
+        turn-order (phases/generate-turn-order forces (vals (subs/units context)))]
     {:context (fx/swap-context context merge {:game-board new-board 
                                               :forces forces 
                                               :turn-order turn-order 
@@ -39,10 +39,11 @@
   [{:keys [fx/context]}]
   (let [name (fx/sub-val context :force-name)
         deploy (fx/sub-val context :force-zone)
-        color (fx/sub-val context :force-color)]
+        color (fx/sub-val context :force-color)
+        new-forces (merge (subs/forces context) {(utils/keyword-maker name) {:name name :deploy deploy :color color}})] 
+    (prn new-forces)
     {:context
-     (fx/swap-context context assoc-in [:forces (utils/keyword-maker name)]
-                      {:name name :deploy deploy :color color})}))
+     (fx/swap-context context assoc :forces new-forces)}))
 
 (defmethod e/event-handler ::mul-selection-changed
   [{:keys [fx/context fx/event]}]
@@ -70,3 +71,11 @@
   [{:keys [fx/context field]}]
   (let [term (fx/sub-val context :mul-search-term)]
     {:context (fx/swap-context context assoc :mul (cu/filter-units cu/mul field term str/includes?))}))
+
+(defmethod e/event-handler ::force-selection-changed
+  [{:keys [fx/context fx/event]}]
+  {:context (fx/swap-context context assoc :active-force (utils/keyword-maker (:name event)))})
+
+(defmethod e/event-handler ::unit-selection-changed
+  [{:keys [fx/context fx/event]}]
+  {:context (fx/swap-context context assoc :active-unit (:id event))})

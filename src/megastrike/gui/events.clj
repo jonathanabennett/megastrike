@@ -15,14 +15,6 @@
   [{:keys [fx/context key fx/event]}]
   {:context (fx/swap-context context assoc key event)})
 
-(defmethod event-handler ::force-selection-changed
-  [{:keys [fx/context fx/event]}]
-  {:context (fx/swap-context context assoc :active-force (utils/keyword-maker (:name event)))})
-
-(defmethod event-handler ::unit-selection-changed
-  [{:keys [fx/context fx/event]}]
-  {:context (fx/swap-context context assoc :active-unit (:id event))})
-
 (defmethod event-handler ::auto-save
   [{:keys [fx/context]}]
   (let [save {:game-board (fx/sub-val context :game-board)
@@ -87,8 +79,9 @@
   (let [turn-order (subs/turn-order context)
         units (subs/units context)
         active (fx/sub-val context :active-unit)
-        unit (get units active)]
-    ;; Set acted to true. 
-    ;; Replace "old" location with new
-    ;; Clear "new" location
-    ))
+        unit (get units active)
+        upd (merge unit (:destination unit) {:acted true} {:destination nil})]
+    {:context (fx/swap-context context assoc
+                               :turn-order (rest turn-order)
+                               :unis (assoc units active upd)
+                               :active-unit nil)}))

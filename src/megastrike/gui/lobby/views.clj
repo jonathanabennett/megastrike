@@ -230,7 +230,7 @@
                :spacing 5
                :children [{:fx/type :label :text "Color:"}
                           {:fx/type :color-picker
-                           :on-value-changed {:event-type ::events/color-changed :fx/sync true}
+                           :on-value-changed {:event-type ::lobby-events/color-changed :fx/sync true}
                            :value :gold}]}
               {:fx/type :button
                :text "Add Force"
@@ -246,7 +246,7 @@
        :text "Please add a unit."}
       {:fx/type tables/with-selection-props
      :props {:selection-mode :single
-             :on-selected-item-changed {:event-type ::events/unit-selection-changed :fx/sync true}
+             :on-selected-item-changed {:event-type ::lobby-events/unit-selection-changed :fx/sync true}
              :selected-item selected}
      :desc {:fx/type :table-view
             :columns [
