@@ -18,6 +18,6 @@
          {:context (fx/swap-context context assoc :units new-units)})
        (and (= phase :movement) (not (nil? unit)) (not (get unit :acted)) (= (get unit :force) next-force)) 
        (when (cu/can-move? unit hex)
-         (let [updated (merge unit (select-keys hex [:p :q :r]))
+         (let [updated (assoc unit :destination (select-keys hex [:p :q :r]))
                new-units (assoc units active updated)]
            {:context (fx/swap-context context assoc :units new-units)})))))
