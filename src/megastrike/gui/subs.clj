@@ -15,9 +15,21 @@
   [context]
   (fx/sub-val context :units))
 
+(defn undeployed-units
+  [context]
+  (filter #(not (:q %)) (vals (units context))))
+
+(defn deployed-units 
+  [context]
+  (filter #(:q %) (vals (units context))))
+
+(defn unit-ghosts 
+  [context]
+  (filter #(:destination %) (vals (units context))))
+
 (defn forces 
   [context]
-  (vals (fx/sub-val context :forces)))
+  (fx/sub-val context :forces))
 
 (defn turn-number
   [context]
@@ -33,4 +45,4 @@
 
 (defn units-by-force
   [context]
-  (group-by :force (vals (fx/sub-val context :units))))
+  (group-by :force (vals (units context))))

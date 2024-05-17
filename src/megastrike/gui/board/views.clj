@@ -71,25 +71,8 @@
 (defn game-board [{:keys [fx/context]}]
   (let [gb (fx/sub-val context :game-board)
         layout (fx/sub-val context :layout)
-        units (vals (subs/units context))
-        unit-locations (loop [i 0
-                      unit-locations []]
-                 (if (= (count units) i)
-                   unit-locations
-                   (recur
-                    (inc i)
-                    (if (:q (nth units i))
-                      (conj unit-locations (nth units i))
-                      unit-locations))))
-        destinations (loop [i 0
-                            destinations []]
-                       (if (= (count units) i)
-                         destinations
-                         (recur 
-                          (inc i)
-                          (if (:destination (nth units i))
-                            (conj destinations (nth units i))
-                            destinations))))] 
+        unit-locations (subs/deployed-units context)
+        destinations (subs/unit-ghosts context)] 
     {:fx/type :scroll-pane
      :content {:fx/type :group
                :children (concat
