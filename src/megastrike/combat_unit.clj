@@ -172,9 +172,10 @@
 
 (defn can-move?
   [unit destination]
-  (if (:movement-mode unit)
-    (> (get-in unit [:movement (:movement-mode unit)]) (hexagon/hex-distance unit destination))
-    (> (get-in unit [:movement :walk]) (hexagon/hex-distance unit destination))))
+  (cond 
+    (and (= (:movement-mode unit) :walk) (not (contains? (:movement unit) :walk)))
+    (> (first (vals (:movement unit))) (hexagon/hex-distance unit destination))
+    :else (> (get-in unit [:movement (:movement-mode unit)]) (hexagon/hex-distance unit destination))))
 
 (defn calculate-attacker-mod
   [unit]
