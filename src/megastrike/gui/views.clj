@@ -42,7 +42,7 @@
                     :on-action {:event-type ::events/set-movement-mode :mode :jump :unit unit :fx/sync true}}]
                   [{:fx/type :button
                     :text "Walk"
-                    :on-action {:event-type ::events/set-movement-mode :mode :jump :unit unit :fx/sync true}}])] 
+                    :on-action {:event-type ::events/set-movement-mode :mode :walk :unit unit :fx/sync true}}])] 
     {:fx/type :h-box
      :children ((comp vec flatten vector) 
                 [{:fx/type :button 
@@ -51,7 +51,7 @@
                 buttons
                 [{:fx/type :button 
                   :text "Confirm Move" 
-                  :on-action {:event-type ::events/move-unit :unit unit :fx/sync true}}])}))
+                  :on-action {:event-type ::events/confirm-move :unit unit :fx/sync true}}])}))
 
 (defn command-palette [{:keys [fx/context]}]
   (let [phase (fx/sub-val context :current-phase)

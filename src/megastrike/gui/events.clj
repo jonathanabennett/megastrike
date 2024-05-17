@@ -79,7 +79,6 @@
   (let [turn-order (subs/turn-order context)
         units (subs/units context)
         active (fx/sub-val context :active-unit)
-        unit (get units active)
         upd (merge unit (:destination unit) {:acted true} {:destination nil})]
     {:context (fx/swap-context context assoc
                                :turn-order (rest turn-order)
