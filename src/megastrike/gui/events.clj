@@ -79,8 +79,16 @@
   (let [turn-order (subs/turn-order context)
         units (subs/units context)
         active (fx/sub-val context :active-unit)
-        upd (merge unit (:destination unit) {:acted true} {:destination nil})]
+        ghost (some #(and (= (:id unit) (:id %)) %) (subs/unit-ghosts context))
+        upd (assoc unit 
+                   :p (:p ghost)
+                   :q (:q ghost)
+                   :r (:r ghost)
+                   :acted true)] 
+    (prn active)
+    (prn (assoc units active upd))
     {:context (fx/swap-context context assoc
                                :turn-order (rest turn-order)
-                               :unis (assoc units active upd)
+                               :units (assoc units active upd)
+                               :ghosts (remove #(and (= (:id unit) (:id %)) %) (subs/unit-ghosts context))
                                :active-unit nil)}))

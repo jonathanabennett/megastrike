@@ -51,9 +51,9 @@
                  :translate-y (* (/ (layout :y-size) 3) -2)}]}))
 
 (defn draw-destination-token [{:keys [fx/context unit layout]}]
-  (let [hex (hex/hex-points (:destination unit) layout)
+  (let [hex (hex/hex-points unit layout)
         forces (fx/sub-val context :forces)
-        force (forces (unit :force))]
+        force (forces (unit :force))] 
     {:fx/type :group 
      :children [{:fx/type common/draw-sprite 
                  :unit unit

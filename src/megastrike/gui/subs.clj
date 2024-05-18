@@ -25,7 +25,7 @@
 
 (defn unit-ghosts 
   [context]
-  (filter #(:destination %) (vals (units context))))
+  (fx/sub-val context :ghosts))
 
 (defn forces 
   [context]

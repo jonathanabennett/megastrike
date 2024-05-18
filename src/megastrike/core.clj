@@ -23,6 +23,7 @@
      :pilot-skill "4"
      :forces {}
      :units {}
+     :ghosts []
      :active-mul nil
      :active-force nil
      :active-unit nil
