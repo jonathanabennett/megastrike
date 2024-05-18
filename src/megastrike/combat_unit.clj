@@ -174,8 +174,8 @@
   [unit destination]
   (cond 
     (and (= (:movement-mode unit) :walk) (not (contains? (:movement unit) :walk)))
-    (> (first (vals (:movement unit))) (hexagon/hex-distance unit destination))
-    :else (> (get-in unit [:movement (:movement-mode unit)]) (hexagon/hex-distance unit destination))))
+    (>= (first (vals (:movement unit))) (hexagon/hex-distance unit destination))
+    :else (>= (get-in unit [:movement (:movement-mode unit)]) (hexagon/hex-distance unit destination))))
 
 (defn calculate-attacker-mod
   [unit]
