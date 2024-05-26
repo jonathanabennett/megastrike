@@ -1,4 +1,4 @@
---input dist
+--input target
 --main-jar megastrike.jar
 --name "megastrike"
 --main-class clojure.main
