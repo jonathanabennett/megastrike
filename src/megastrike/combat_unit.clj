@@ -238,12 +238,12 @@
     (loop [armor (:current-armor unit (:armor unit))
            structure (:current-structure unit (:structure unit))
            damage damage]
-      (if (= damage 0)
+      (if (zero? damage)
         (assoc unit :current-armor armor :current-structure structure)
         (let [arm (dec armor)
               str (dec structure)
               dmg (dec damage)]
-          (if (>= 0 arm)
+          (if (pos? arm)
             (recur arm structure dmg)
             (recur 0 str dmg)))))))
 
