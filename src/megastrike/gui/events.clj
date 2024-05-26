@@ -4,7 +4,8 @@
             [clojure.pprint :as pprint]
             [megastrike.gui.subs :as subs]
             [megastrike.phases :as initiative]
-            [megastrike.utils :as utils]))
+            [megastrike.utils :as utils]
+            [megastrike.combat-unit :as cu]))
 
 (defmulti event-handler :event-type)
 
@@ -86,13 +87,12 @@
         units (subs/units context)
         active (fx/sub-val context :active-unit)
         ghost (some #(and (= (:id unit) (:id %)) %) (subs/unit-ghosts context))
-        upd (assoc unit 
-                   :p (:p ghost)
-                   :q (:q ghost)
-                   :r (:r ghost)
-                   :acted true)] 
-    (prn active)
-    (prn (assoc units active upd))
+        upd (merge unit 
+                   (when ghost 
+                     {:p (:p ghost) 
+                      :q (:q ghost) 
+                      :r (:r ghost)})
+                   {:acted true})] 
     {:context (fx/swap-context context assoc
                                :turn-order (rest turn-order)
                                :units (assoc units active upd)
