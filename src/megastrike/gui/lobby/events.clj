@@ -41,7 +41,6 @@
         deploy (fx/sub-val context :force-zone)
         color (fx/sub-val context :force-color)
         new-forces (merge (subs/forces context) {(utils/keyword-maker name) {:name name :deploy deploy :color color}})] 
-    (prn new-forces)
     {:context
      (fx/swap-context context assoc :forces new-forces)}))
 

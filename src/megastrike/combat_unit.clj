@@ -252,7 +252,6 @@
   (let [target-num (calculate-to-hit attacker target)
         range (hexagon/hex-distance attacker target)
         to-hit (utils/roll2d)] 
-    (prn target-num)
     (if (<= target-num to-hit)
       (take-damage target (calculate-damage attacker range))
       target)))
