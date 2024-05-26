@@ -53,6 +53,18 @@
                   :text "Confirm Move" 
                   :on-action {:event-type ::events/confirm-move :unit unit :fx/sync true}}])}))
 
+(defn attack-buttons [{:keys [fx/context]}]
+  (let [active (fx/sub-val context :active-unit)
+        units (subs/units context)
+        unit (get units active)
+        target (fx/sub-val context :target)] 
+    [{:fx/type :button 
+      :text "Select Target"
+      :on-action {:event-type ::events/set-target :target target}}
+     {:fx/type :button 
+      :text "Fire"
+      :on-action {:event-type ::events/make-attack}}]))
+
 (defn command-palette [{:keys [fx/context]}]
   (let [phase (fx/sub-val context :current-phase)
         turn (fx/sub-val context :turn-number)
