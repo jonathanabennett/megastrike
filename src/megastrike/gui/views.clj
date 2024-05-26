@@ -14,7 +14,10 @@
       {:fx/type :button
        :text "Deploy Unit"
        :disable finished-deployment
-       :on-action {:event-type ::events/deploy-unit :fx/sync true}}])
+       :on-action {:event-type ::events/deploy-unit :fx/sync true}}
+      {:fx/type :button
+       :text "Undeploy Unit"
+       :on-action {:event-type ::events/undeploy-unit :fx/sync true}}])
 
 (defn move-buttons [unit]
   (let [ movement (:movement unit)

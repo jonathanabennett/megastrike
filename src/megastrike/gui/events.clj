@@ -74,6 +74,13 @@
                                :units (assoc units active unit)
                                :active-unit nil)}))
 
+(defmethod event-handler ::undeploy-unit
+  [{:keys [fx/context]}]
+  (let [units (subs/units context)
+        active (fx/sub-val context :active-unit)
+        unit (merge (get units active) {:p nil :q nil :r nil})]
+    {:context (fx/swap-context context assoc :units (assoc units active unit))}))
+
 (defmethod event-handler ::set-movement-mode
   [{:keys [fx/context mode unit]}]
   (let [units (subs/units context)
