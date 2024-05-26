@@ -7,32 +7,17 @@
             [megastrike.gui.subs :as subs]
             [clojure.string :as str]))
 
-(defn deploy-buttons [{:keys [fx/context]}]
-  (let [finished-deployment (empty? (subs/turn-order context))]
-    {:fx/type :h-box
-     :children [{:fx/type :button
-                 :text "Roll Initiative"
-                 :on-action {:event-type ::events/roll-initiative :fx/sync true}}
-                {:fx/type :button ;; TODO Disable button when no units to deploy
-                 :text "Deploy Unit"
-                 :disable finished-deployment
-                 :on-action {:event-type ::events/deploy-unit :fx/sync true}}
-                {:fx/type :button ;; TODO Disable button when units left to deploy
-                 :text "Next Phase"
-                 :disable (not finished-deployment)
-                 :on-action {:event-type ::events/next-phase :fx/sync true}}
-                {:fx/type :separator
-                 :orientation :vertical
-                 :padding 15}
-                {:fx/type :button
-                 :text "Save Game"
-                 :on-action {:event-type ::events/auto-save :fx/sync true}}]}))
+(defn deploy-buttons [finished-deployment]
+     [{:fx/type :button
+       :text "Roll Initiative"
+       :on-action {:event-type ::events/roll-initiative :fx/sync true}}
+      {:fx/type :button
+       :text "Deploy Unit"
+       :disable finished-deployment
+       :on-action {:event-type ::events/deploy-unit :fx/sync true}}])
 
-(defn move-buttons [{:keys [fx/context]}]
-  (let [active (fx/sub-val context :active-unit)
-        units (subs/units context)
-        unit (get units active)
-        movement (:movement unit)
+(defn move-buttons [unit]
+  (let [ movement (:movement unit)
         buttons (if (contains? movement :jump)
                   [{:fx/type :button
                     :text "Walk"
@@ -42,16 +27,16 @@
                     :on-action {:event-type ::events/set-movement-mode :mode :jump :unit unit :fx/sync true}}]
                   [{:fx/type :button
                     :text "Walk"
-                    :on-action {:event-type ::events/set-movement-mode :mode :walk :unit unit :fx/sync true}}])] 
-    {:fx/type :h-box
-     :children ((comp vec flatten vector) 
-                [{:fx/type :button 
-                  :text "Stand Still" 
-                  :on-action {:event-type ::events/set-movement-mode :mode :stand-still :unit unit :fx/sync true}}]
-                buttons
-                [{:fx/type :button 
-                  :text "Confirm Move" 
-                  :on-action {:event-type ::events/confirm-move :unit unit :fx/sync true}}])}))
+                    :on-action {:event-type ::events/set-movement-mode :mode :walk :unit unit :fx/sync true}
+                    }])] 
+     ((comp vec flatten vector) 
+      [{:fx/type :button 
+        :text "Stand Still" 
+        :on-action {:event-type ::events/set-movement-mode :mode :stand-still :unit unit :fx/sync true}}] 
+      buttons 
+      [{:fx/type :button 
+        :text "Confirm Move" 
+        :on-action {:event-type ::events/confirm-move :unit unit :fx/sync true}}])))
 
 (defn attack-buttons [] 
   [{:fx/type :button 
