@@ -35,12 +35,13 @@
    (into [] (map #(utils/keyword-maker (:name %)) (sort-by :initiative (vals forces))))))
 
 (defn start-initiative-phase [{:keys [turn-number forces units]}]
-  (let [forces (roll-initiative forces)
-        turn-order (generate-turn-order forces (vals units))]
-    {:current-phase :initiative :turn-number (inc turn-number) :forces forces :turn-order turn-order :units units}))
+  (let [forces (roll-initiative forces)]
+    {:current-phase :initiative :turn-number (inc turn-number) :forces forces :turn-order nil :units units}))
 
-(defn start-deployment-phase [{:keys [forces units]}]
-  {:current-phase :deployment :turn-order (generate-turn-order forces (filter #(not (:q %)) (vals units))) :units units})
+(defn start-deployment-phase [{:keys [forces units]}] 
+  (let [deployable-units (filter #(number? (:q %)) units)
+        turn-order (generate-turn-order forces deployable-units)] 
+    {:current-phase :deployment :turn-order turn-order :units units}))
 
 (defn start-movement-phase [{:keys [forces units]}]
   {:current-phase :movement :turn-order (generate-turn-order forces (vals units)) :units units})
@@ -48,12 +49,14 @@
 (defn start-combat-phase [{:keys [forces units]}]
   {:current-phase :combat :turn-order (generate-turn-order forces) :units units})
 
-(defn start-end-phase [{:keys [forces units]}]
-
-  {:current-phase :end :turn-order (generate-turn-order forces (vals units)) :units units})
+(defn start-end-phase [{:keys [forces units]}] 
+  (let [targeting-removed (into {} (for [[k unit] units] (if (not-any? #(= (:target unit) %) (keys units)) [k (assoc unit :target nil)]
+                                                             [k unit])))] 
+    {:current-phase :end :turn-order nil :units targeting-removed}))
 
 (defn next-phase [{:keys [current-phase turn-number forces units]}]
-  (let [new-units (into {} (for [[k unit] units] [k (assoc unit :acted nil)]))]
+  (let [remaining (into {} (for [[k unit] units] (when (pos? (get unit :current-structure (get unit :structure))) [k unit])))
+        new-units (into {} (for [[k unit] remaining] [k (assoc unit :acted nil)]))]
     (cond 
      (= current-phase :initiative) (start-deployment-phase {:forces forces :units new-units})
      (= current-phase :deployment) (start-movement-phase {:forces forces :units new-units})
