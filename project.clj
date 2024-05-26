@@ -1,4 +1,4 @@
-(defproject megastrike ""
+(defproject megastrike "0.1.0-SNAPSHOT"
   :description "This is an implementation of the Alpha Strike board game for the computer."
   :url "http://example.com/FIXME"
   :plugins [[lein-cloverage "1.2.2"]]
