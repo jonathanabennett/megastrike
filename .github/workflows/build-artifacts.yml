@@ -39,14 +39,17 @@ jobs:
       - run: lein uberjar
       - run: mv ./target/megastrike-0.1.0-SNAPSHOT-standalone.jar ./target/megastrike.jar
       - run: jpackage @jpackage/common @jpackage/linux
-      - uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v4
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: megastrike-0.1-1_amd64.deb
-          asset_name: megastrike-0.1-1_amd64.deb
-          asset_content_type: application/vnd.debian.binary-package
+          name: megastrike-0.1-1_amd64.deb
+      # - uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ github.event.release.upload_url }}
+      #     asset_path: megastrike-0.1-1_amd64.deb
+      #     asset_name: megastrike-0.1-1_amd64.deb
+      #     asset_content_type: application/vnd.debian.binary-package
 
   build-dmg:
     runs-on: macos-latest
@@ -62,14 +65,17 @@ jobs:
       - run: lein uberjar
       - run: mv ./target/megastrike-0.1.0-SNAPSHOT-standalone.jar ./target/megastrike.jar
       - run: jpackage @jpackage/common @jpackage/mac
-      - uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v4
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: megastrike-0.1.0.dmg
-          asset_name: megastrike-0.1.0.dmg
-          asset_content_type: application/x-apple-diskimage
+          name: megastrike-0.1-1.dmg
+      # - uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ github.event.release.upload_url }}
+      #     asset_path: megastrike-0.1.0.dmg
+      #     asset_name: megastrike-0.1.0.dmg
+      #     asset_content_type: application/x-apple-diskimage
 
   build-exe:
     runs-on: windows-latest
@@ -84,11 +90,14 @@ jobs:
           lein: '2.10.0'
       - run: lein uberjar
       - run: jpackage @jpackage/common @jpackage/windows
-      - uses: actions/upload-release-asset@v1
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      - uses: actions/upload-artifact@v4
         with:
-          upload_url: ${{ github.event.release.upload_url }}
-          asset_path: megastrike-0.1.0.exe
-          asset_name: megastrike-0.1.0.exe
-          asset_content_type: application/vnd.microsoft.portable-executable
+          name: megastrike-0.1.0.exe
+      # - uses: actions/upload-release-asset@v1
+      #   env:
+      #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      #   with:
+      #     upload_url: ${{ github.event.release.upload_url }}
+      #     asset_path: megastrike-0.1.0.exe
+      #     asset_name: megastrike-0.1.0.exe
+      #     asset_content_type: application/vnd.microsoft.portable-executable
