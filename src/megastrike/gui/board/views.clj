@@ -4,7 +4,8 @@
             [megastrike.gui.common :as common]
             [megastrike.gui.events :as events]
             [megastrike.gui.subs :as subs]
-            [megastrike.hexagons.hex :as hex]))
+            [megastrike.hexagons.hex :as hex]
+            [megastrike.combat-unit :as cu]))
 
 (defn draw-hex [{:keys [hex layout]}]
   (let [points (hex/hex-points hex layout)
@@ -50,6 +51,24 @@
                  :font 16
                  :translate-y (* (/ (layout :y-size) 3) -2)}]}))
 
+(defn draw-target-line [{:keys [fx/context unit layout]}]
+  (let [origin-hex (hex/hex-to-pixel unit layout)
+        target (get (subs/units context) (:target unit))
+        target-hex (hex/hex-to-pixel target layout)
+        range (hex/hex-distance unit target)
+        to-hit (cu/calculate-to-hit unit target)]
+    {:fx/type :group
+     :children [{:fx/type :line 
+                 :start-x (:x origin-hex)
+                 :start-y (:y origin-hex)
+                 :end-x (:x target-hex)
+                 :end-y (:x target-hex)}
+                {:fx/type :label
+                 :text (str "Range: " range "; " to-hit "+ To Hit")
+                 :layout-x (/ (+ (:x origin-hex) (:x target-hex)) 2)
+                 :layout-y (/ (+ (:x origin-hex) (:x target-hex)) 2)
+                 :font 16}]}))
+
 (defn draw-destination-token [{:keys [fx/context unit layout]}]
   (let [hex (hex/hex-points unit layout)
         forces (fx/sub-val context :forces)
@@ -71,8 +90,10 @@
 (defn game-board [{:keys [fx/context]}]
   (let [gb (fx/sub-val context :game-board)
         layout (fx/sub-val context :layout)
+        active-force (first (subs/turn-order context))
         unit-locations (subs/deployed-units context)
-        destinations (subs/unit-ghosts context)] 
+        destinations (subs/unit-ghosts context)
+        target-lines (filter #(and (= active-force (:force %)) (:target %)) unit-locations)] 
     {:fx/type :scroll-pane
      :content {:fx/type :group
                :children (concat
@@ -87,5 +108,9 @@
                           (for [t destinations]
                             {:fx/type draw-destination-token 
                              :unit t
-                             :layout layout}))}}))
-
+                             :layout layout})
+                          (when (= (subs/phase context) :combat)
+                            (for [t target-lines] 
+                              {:fx/type draw-target-line 
+                               :unit t 
+                               :layout layout})))}}))

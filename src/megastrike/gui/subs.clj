@@ -44,6 +44,10 @@
   [context]
   (fx/sub-val context :turn-order))
 
+(defn current-forces
+  [context]
+  (filter #(= (:force %) (first (turn-order context))) (vals (units context))))
+
 (defn units-by-force
   [context]
   (group-by :force (vals (units context))))

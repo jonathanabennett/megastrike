@@ -14,22 +14,25 @@
                   [f (assoc force :initiative (f rolls))]))
            (into {})))))
 
-(defn generate-turn-order [forces units]
-  (let [forces (sort-by :initiative (vals forces))]
-    (loop [turn-order []
-           unit-counts (frequencies (map :force units))
-           current-force 0]
-      (if (= (reduce + (vals unit-counts)) 0)
-        (flatten turn-order)
-        (let [fname (utils/keyword-maker (:name (nth forces current-force)))
-              num (if (= (first (sort > (vals unit-counts))) 0)
-                    (fname unit-counts)
-                    (math/floor-div
+(defn generate-turn-order 
+  ([forces units]
+   (let [forces (sort-by :initiative (vals forces))]
+     (loop [turn-order []
+            unit-counts (frequencies (map :force units))
+            current-force 0]
+       (if (= (reduce + (vals unit-counts)) 0)
+         (flatten turn-order)
+         (let [fname (utils/keyword-maker (:name (nth forces current-force)))
+               num (if (= (first (sort > (vals unit-counts))) 0)
                      (fname unit-counts)
-                     (first (sort > (vals unit-counts)))))]
-          (recur (conj turn-order (take num (repeat fname)))
-                 (assoc unit-counts fname (- (fname unit-counts) num))
-                 (mod (inc current-force) (count forces))))))))
+                     (math/floor-div
+                      (fname unit-counts)
+                      (first (sort > (vals unit-counts)))))]
+           (recur (conj turn-order (take num (repeat fname)))
+                  (assoc unit-counts fname (- (fname unit-counts) num))
+                  (mod (inc current-force) (count forces))))))))
+  ([forces]
+   (into [] (map #(utils/keyword-maker (:name %)) (sort-by :initiative (vals forces))))))
 
 (defn start-initiative-phase [{:keys [turn-number forces units]}]
   (let [forces (roll-initiative forces)
@@ -43,9 +46,10 @@
   {:current-phase :movement :turn-order (generate-turn-order forces (vals units)) :units units})
 
 (defn start-combat-phase [{:keys [forces units]}]
-  {:current-phase :combat :turn-order (generate-turn-order forces (vals units)) :units units})
+  {:current-phase :combat :turn-order (generate-turn-order forces) :units units})
 
 (defn start-end-phase [{:keys [forces units]}]
+
   {:current-phase :end :turn-order (generate-turn-order forces (vals units)) :units units})
 
 (defn next-phase [{:keys [current-phase turn-number forces units]}]

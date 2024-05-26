@@ -194,8 +194,8 @@
     :else (:tmm unit)))
 
 (defn calculate-other-mod
-  [unit]
-  unit)
+  [attacker target]
+  (:current-heat attacker))
 
 (defn calculate-range-mod
   [attacker target]
@@ -212,7 +212,7 @@
   (+ (:skill (:pilot attacker))
      (calculate-attacker-mod attacker)
      (calculate-target-mod target)
-     (calculate-other-mod target)
+     (calculate-other-mod attacker target)
      (calculate-range-mod attacker target)))
 
 (defn print-damage
@@ -235,14 +235,24 @@
   [unit damage]
   (if (= damage 0)
     unit
-    (if (< 0 (:current-armor unit (:armor unit)))
-      (take-damage (assoc unit :current-armor (dec (:current-armor unit (:armor unit)))) (dec damage))
-      (take-damage (assoc unit :current-structure (dec (:current-structure unit (:structure unit)))) (dec damage)))))
+    (loop [armor (:current-armor unit (:armor unit))
+           structure (:current-structure unit (:structure unit))
+           damage damage]
+      (if (= damage 0)
+        (assoc unit :current-armor armor :current-structure structure)
+        (let [arm (dec armor)
+              str (dec structure)
+              dmg (dec damage)]
+          (if (>= 0 arm)
+            (recur arm structure dmg)
+            (recur 0 str dmg)))))))
 
 (defn make-attack
   [attacker target]
   (let [target-num (calculate-to-hit attacker target)
         range (hexagon/hex-distance attacker target)
-        to-hit (utils/roll2d)]
-    (when (<= target-num to-hit)
-      (take-damage target (calculate-damage attacker range)))))
+        to-hit (utils/roll2d)] 
+    (prn target-num)
+    (if (<= target-num to-hit)
+      (take-damage target (calculate-damage attacker range))
+      target)))

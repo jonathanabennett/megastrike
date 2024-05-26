@@ -53,34 +53,48 @@
                   :text "Confirm Move" 
                   :on-action {:event-type ::events/confirm-move :unit unit :fx/sync true}}])}))
 
-(defn attack-buttons [{:keys [fx/context]}]
-  (let [active (fx/sub-val context :active-unit)
-        units (subs/units context)
-        unit (get units active)
-        target (fx/sub-val context :target)] 
-    [{:fx/type :button 
-      :text "Select Target"
-      :on-action {:event-type ::events/set-target :target target}}
-     {:fx/type :button 
-      :text "Fire"
-      :on-action {:event-type ::events/make-attack}}]))
+(defn attack-buttons [] 
+  [{:fx/type :button 
+    :text "Overheat +1" 
+    :on-action {:event-type ::events/overheat :value 1}} 
+   {:fx/type :button 
+    :text "Overheat -1"
+    :on-action {:event-type ::events/overheat :value -1}} 
+   {:fx/type :button 
+    :text "Resolve Attacks" 
+    :on-action {:event-type ::events/make-attacks}}])
 
 (defn command-palette [{:keys [fx/context]}]
   (let [phase (fx/sub-val context :current-phase)
         turn (fx/sub-val context :turn-number)
-        turn-order (fx/sub-val context :turn-order)]
+        turn-order (fx/sub-val context :turn-order) 
+        units (subs/units context)
+        active (fx/sub-val context :active-unit)
+        unit (get units active)
+        common-buttons [{:fx/type :button
+                         :text "Next Phase"
+                         :disable (not (empty? turn-order))
+                         :on-action {:event-type ::events/next-phase :fx/sync true}}
+                        {:fx/type :separator
+                         :orientation :vertical 
+                         :padding 15}
+                        {:fx/type :button 
+                         :text "Save Game"
+                         :on-action {:event-type ::events/auto-save :fx/sync true}}
+                        {:fx/type :button :text "Exit"
+                         :on-action {:event-type ::events/quit-game}}]
+        phase-buttons (cond 
+                        (= phase :deployment) (deploy-buttons (empty? turn-order))
+                        (= phase :movement) (move-buttons unit)
+                        (= phase :combat) (attack-buttons)
+                        :else []) 
+        buttons ((comp vec flatten vector) phase-buttons common-buttons)]
     {:fx/type :v-box
      :spacing 5
      :children [{:fx/type :label
-                 :text (str (str/capitalize (name phase)) " Phase | Turn " turn " | " (prn-str turn-order))}
-                {:fx/type deploy-buttons}
-                {:fx/type move-buttons}
-                ;; (cond 
-                ;;   (= phase :deployment){:fx/type deploy-buttons}
-                ;;   (= phase :movement) {:fx/type move-buttons}
-                ;;   :else {:fx/type :button
-                ;;          :text "Exit"
-                ;;          :on-action {:event-type ::events/quit-game :fx/sync true}})
+                 :text (str (str/capitalize (name phase)) " Phase | Turn " turn " | " (prn-str turn-order))} 
+                {:fx/type :h-box 
+                 :children buttons}
                 ]}))
 
 (def game-view

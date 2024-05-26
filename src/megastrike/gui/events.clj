@@ -31,9 +31,15 @@
 (defmethod event-handler ::unit-clicked
   [{:keys [fx/context unit]}]
    (let [phase (subs/phase context)
-         active-force (first (subs/turn-order context))]
-     (when (and (= phase :movement) (= active-force (:force unit)))
-       {:context (fx/swap-context context assoc :active-unit (:id unit))})))
+         active-force (first (subs/turn-order context))
+         active-unit (get (subs/units context) (fx/sub-val context :active-unit))]
+     (when (and (= active-force (:force unit)) 
+                (not (:acted unit)))
+       {:context (fx/swap-context context assoc :active-unit (:id unit))})
+     (when (and (= phase :combat) 
+                (not (= active-force (:force unit))))
+       (let [upd (assoc (subs/units context) (:id active-unit) (assoc active-unit :target (:id unit)))]
+         {:context (fx/swap-context context assoc :units upd)}))))
 
 (defmethod event-handler ::roll-initiative
   [{:keys [fx/context]}]
@@ -92,3 +98,18 @@
                                :units (assoc units active upd)
                                :ghosts (remove #(and (= (:id unit) (:id %)) %) (subs/unit-ghosts context))
                                :active-unit nil)}))
+
+(defmethod event-handler ::make-attacks 
+  [{:keys [fx/context]}]
+    (loop [units (subs/units context)
+           attackers (filter #(:target %) (subs/current-forces context))]
+      (if (empty? attackers)
+        {:context (fx/swap-context context assoc
+                                   :units units 
+                                   :active-unit nil
+                                   :turn-order (rest (subs/turn-order context)))}
+        (let [attacker (first attackers)
+              target (get units (:target attacker))
+              upd (cu/make-attack attacker target)]
+          (recur (assoc units (:id target) upd)
+                 (rest attackers))))))
