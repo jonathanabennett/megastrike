@@ -3,6 +3,7 @@
    [clojure.math :as math]))
 
 (defn hexagon
+  "Creates a Hexagon using a 3d addressing system."
   ([p q]
    (hexagon p q (* (+ p q) -1)))
   ([p q r]
@@ -10,6 +11,7 @@
       {:p p :q q :r r})))
 
 (defn hex-from-offset
+  "Calculates a hex based on an 'offset' hex address. The input in in the format of [x y]."
   ([col row]
   (let [p col
         q (int (- row (math/floor (/ (+ col (* (mod (abs col) 2) -1)) 2))))
@@ -19,12 +21,14 @@
    (hex-from-offset (:x offset) (:y offset))))
 
 (defn offset-from-hex
+  "Calculates an offset address (x,y) based on a 3D address."
   [hex]
   (let [row (int (+ (:q hex) (math/floor (/ (+ (:p hex) (* (mod (abs (:p hex)) 2) -1)) 2))))
         col (:p hex)]
     {:x col :y row}))
 
 (defn same-hex
+  "A hex is the same if the p,q, and r addresses are the same."
   [hex1 hex2]
   (and (= (:p hex1) (:p hex2))
        (= (:q hex1) (:q hex2))
@@ -46,16 +50,19 @@
   (hexagon (* (:p hex) x) (* (:q hex) x) (* (:r hex) x)))
 
 (defn hex-distance
+  "The distance between two hexes using 3d addresses is half of the sum of the differences of the address hexes."
   [hex1 hex2]
   (let [length (hex-subtraction hex1 hex2)]
     (/ (+ (abs (:p length)) (abs (:q length)) (abs (:r length))) 2)))
 
-(def hex-ordinals (list {:p 1  :q 0  :r -1}
-                        {:p 1  :q -1 :r 0}
-                        {:p 0  :q -1 :r 1}
-                        {:p -1 :q 0  :r 1}
-                        {:p -1 :q 0  :r 1}
-                        {:p 0  :q 1  :r -1}))
+(def hex-ordinals
+  "Defines the neighbors in each direction."
+  (list {:p 1  :q 0  :r -1} 
+        {:p 1  :q -1 :r 0} 
+        {:p 0  :q -1 :r 1} 
+        {:p -1 :q 0  :r 1} 
+        {:p -1 :q 0  :r 1} 
+        {:p 0  :q 1  :r -1}))
 
 (defn hex-direction
   "Returns the coordinate transformation to select a hex in a given direction"
@@ -64,10 +71,12 @@
     (nth hex-ordinals dir)))
 
 (defn hex-neighbor
+  "The neighbor in a given direction."
   [hex direction]
   (hex-addition hex (hex-direction direction)))
 
 (defn create-layout
+  "Creates a layout. Populated with the default layout."
   []
   {:hex-to-pixel-matrix [(/ 3.0 2.0) 0 (/ (math/sqrt 3.0) 2.0) (math/sqrt 3.0)]
    :pixel-to-hex-matrix [(/ 2.0 3.0) 0 (/ -1.0 3.0) (/ (math/sqrt 3.0) 3.0)]
@@ -78,6 +87,7 @@
    :y-origin 65})
 
 (defn hex-to-pixel
+  "Converts a given hex address to the pixel at the center of the hex."
   [hex layout]
   (let [htp (:hex-to-pixel-matrix layout)]
     {:x (+ (* (+ (* (get htp 0) (:p hex))
@@ -89,42 +99,8 @@
               (:y-size layout))
            (:y-origin layout))}))
 
-(defn hex-round
-  [p q r]
-  (let [p-int (math/round p)
-        q-int (math/round q)
-        r-int (math/round r)
-        p-diff (abs (- p p-int))
-        q-diff (abs (- q q-int))
-        r-diff (abs (- r r-int))]
-    (cond
-      (and (> p-diff q-diff)
-            (> p-diff r-diff))
-       (hexagon (* (+ q-int r-int) -1) q-int r-int)
-      (and (> q-diff r-diff)
-            (> q-diff p-diff))
-       (hexagon p-int (* (+ p-int r-int) -1) r-int)
-      :else (hexagon p-int q-int (* (+ p-int q-int) -1)))))
-
-;; Commented out in case I need it later. I believe that cljfx
-;; has given me this feature for "free" when I added a click event
-;; to the hexagons.
-;; (defn pixel-to-hex
-;;   [pt layout]
-;;   (let [pth (:pixel-to-hex-matrix layout)
-;;         modified-point {:x (/ (- (:x pt)
-;;                                  (:x-origin layout))
-;;                               (:x-size layout))
-;;                         :y (/ (- (:y pt)
-;;                                  (:y-origin layout))
-;;                               (:y-size layout))}
-;;         p (+ (* (:x modified-point) (get pth 0))
-;;              (* (:y modified-point) (get pth 1)))
-;;         q (+ (* (:x modified-point) (get pth 2))
-;;              (* (:y modified-point) (get pth 3)))]
-;;     (hex-round p q (* (+ p q) -1))))
-
 (defn find-hex-corner
+  "Calculates the corner of a hex based on the center."
   [center corner layout]
   (let [angle (* 2.0 math/PI (/ (+ (:start-angle layout) corner) 6))]
     [(+ (* (:x-size layout)
@@ -135,11 +111,12 @@
            (:y center))]))
 
 (defn hex-points
+  "Returns a list of all the corners of a hex."
   [hex layout]
   (let [center (hex-to-pixel hex layout)]
     (flatten (map #(find-hex-corner center % layout) (list 0 1 2 3 4 5)))))
 
-(defn linear-interpolation
+(defn linear-interpolation 
   [a b step]
   (+ a (* (- b a) step)))
 
@@ -154,3 +131,38 @@
   (let [distance (hex-distance hex1 hex2)
         step (/ 1.0 (max distance 1))]
     [{:p 0 :q 0 :r 0}]))
+
+;; Commented out in case I need it later. I believe that cljfx
+;; has given me this feature for "free" when I added a click event
+;; to the hexagons.
+;; (defn hex-round
+;;   [p q r]
+;;   (let [p-int (math/round p)
+;;         q-int (math/round q)
+;;         r-int (math/round r)
+;;         p-diff (abs (- p p-int))
+;;         q-diff (abs (- q q-int))
+;;         r-diff (abs (- r r-int))]
+;;     (cond
+;;       (and (> p-diff q-diff)
+;;             (> p-diff r-diff))
+;;        (hexagon (* (+ q-int r-int) -1) q-int r-int)
+;;       (and (> q-diff r-diff)
+;;             (> q-diff p-diff))
+;;        (hexagon p-int (* (+ p-int r-int) -1) r-int)
+;;       :else (hexagon p-int q-int (* (+ p-int q-int) -1)))))
+
+;; (defn pixel-to-hex
+;;   [pt layout]
+;;   (let [pth (:pixel-to-hex-matrix layout)
+;;         modified-point {:x (/ (- (:x pt)
+;;                                  (:x-origin layout))
+;;                               (:x-size layout))
+;;                         :y (/ (- (:y pt)
+;;                                  (:y-origin layout))
+;;                               (:y-size layout))}
+;;         p (+ (* (:x modified-point) (get pth 0))
+;;              (* (:y modified-point) (get pth 1)))
+;;         q (+ (* (:x modified-point) (get pth 2))
+;;              (* (:y modified-point) (get pth 3)))]
+;;     (hex-round p q (* (+ p q) -1))))
