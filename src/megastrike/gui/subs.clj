@@ -61,3 +61,7 @@
 (defn units-by-force
   [context]
   (group-by :force (vals (units context))))
+
+(defn get-view
+  [context]
+  (fx/sub-val context :display))
