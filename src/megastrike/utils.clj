@@ -3,22 +3,27 @@
             [clojure.string :as string]))
 
 (defn load-resource
+  "Helper function to use `io/resource` to get files."
   [name]
   (-> name io/resource))
 
 (defn strip-quotes
+  "Strips out stray escaped quotes."
   [str]
   (string/replace str #"\"" ""))
 
 (defn replace-spaces
+  "Replace spaces with `-'."
   [str]
   (string/replace str " " "-"))
 
 (defn correct-range-brackets
+  "Changes range brackets to be in a format which can be read by combat_unit.clj"
   [str]
   (string/replace (string/replace str "/-" "-0") "/" "-"))
 
 (defn remove-parens
+  "Removes all parents from a string."
   [str]
   (string/replace str #"[\(\)]" ""))
 
@@ -34,13 +39,14 @@
       ret)))
 
 (defn roll-die
+  "Rolls a random die. Rand-int is a half-open range, so we need to add 1 to get a 6 sided die."
   ([mods]
-   ;; Rand-int is a half-open range, so we need to add 1 to get 1-6
    (+ (rand-int 6) 1 mods))
   ([]
    (roll-die 0)))
 
 (defn roll2d
+  "Rolls 2d6. With no argument, it rolls with no mods. With an argument, it applies that as a mod to the roll."
   ([mods]
    (+ (roll-die) (roll-die) mods))
   ([]
