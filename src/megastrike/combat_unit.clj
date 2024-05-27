@@ -21,6 +21,7 @@
 (def infantry-units ["BA" "CI"])
 
 (defn move-keyword
+  "Creates a move keyword from a stat line imported from the mul export."
   [mv-type]
   (let [mv-key (utils/keyword-maker mv-type)]
     (cond
@@ -29,71 +30,71 @@
       :else (utils/keyword-maker mv-type))))
 
 (defn parse-movement
+  "Parses a string like 8\"/5\"j into a map of all the possible movement modes the unit has and their distance in hexes."
   [mv-string]
   (let [strings (re-seq #"(\d+)\\+\"([a-zA-Z]?)" mv-string)]
     (into {} (map #(vector (move-keyword (nth % 2)) (/ (Integer/parseInt (second %)) 2)) strings))))
 
 (defn print-movement-helper
+  "Consumes a vector containing a move type as a keyword and a distance and prints it for human consumption."
   [mv-vec]
   (cond
     (= (first mv-vec) :walk) (second mv-vec)
-    (= (first mv-vec) :jump) (str (second mv-vec)"j")
-    :else (str (first mv-vec) " " (second mv-vec))
-    ))
+    (= (first mv-vec) :jump) (str (second mv-vec) "j")
+    :else (str (first mv-vec) " " (second mv-vec))))
 
 (defn print-movement
+  "Loops over all movements a unit has a pretty prints them."
   [unit]
   (let [mv-map (:movement unit)]
     (str/join "/" (map print-movement-helper mv-map))))
 
 (defn construct-ability-list
+  "Loops over all abilitys a unit has a converts them to Keywords."
   [str]
   (into [] (map utils/keyword-maker (str/split str #","))))
 
 (defn parse-row
+  "Parses a single row of the MUL file."
   ([row]
-  (parse-row header-row row))
+   (parse-row header-row row))
   ([hr row]
-  (let [mul-row (zipmap hr row)]
-    (assoc mul-row
-           :full-name (str (:chassis mul-row) " " (:model mul-row))
-           :mul-id (Integer/parseInt (:mul-id mul-row))
-           :movement (parse-movement (:movement mul-row))
-           :size (Integer/parseInt (:size mul-row))
-           :tmm (Integer/parseInt (:tmm mul-row))
-           :armor (Integer/parseInt (:armor mul-row))
-           :structure (Integer/parseInt (:structure mul-row))
-           :threshold (Integer/parseInt (:threshold mul-row))
-           :s (Integer/parseInt (:s mul-row))
-           :s* (if (= "TRUE" (:s* mul-row)) true false)
-           :m (Integer/parseInt (:m mul-row))
-           :m* (if (= "TRUE" (:m* mul-row)) true false)
-           :l (Integer/parseInt (:l mul-row))
-           :l* (if (= "TRUE" (:l* mul-row)) true false)
-           :e (Integer/parseInt (:e mul-row))
-           :e* (if (= "TRUE" (:e* mul-row)) true false)
-           :overheat (Integer/parseInt (:overheat mul-row))
-           :point-value (Integer/parseInt (:point-value mul-row))))))
+   (let [mul-row (zipmap hr row)]
+     (assoc mul-row
+            :full-name (str (:chassis mul-row) " " (:model mul-row))
+            :mul-id (Integer/parseInt (:mul-id mul-row))
+            :movement (parse-movement (:movement mul-row))
+            :size (Integer/parseInt (:size mul-row))
+            :tmm (Integer/parseInt (:tmm mul-row))
+            :armor (Integer/parseInt (:armor mul-row))
+            :structure (Integer/parseInt (:structure mul-row))
+            :threshold (Integer/parseInt (:threshold mul-row))
+            :s (Integer/parseInt (:s mul-row))
+            :s* (if (= "TRUE" (:s* mul-row)) true false)
+            :m (Integer/parseInt (:m mul-row))
+            :m* (if (= "TRUE" (:m* mul-row)) true false)
+            :l (Integer/parseInt (:l mul-row))
+            :l* (if (= "TRUE" (:l* mul-row)) true false)
+            :e (Integer/parseInt (:e mul-row))
+            :e* (if (= "TRUE" (:e* mul-row)) true false)
+            :overheat (Integer/parseInt (:overheat mul-row))
+            :point-value (Integer/parseInt (:point-value mul-row))))))
 
 (def mul (map parse-row (rest (csv/parse-csv (slurp (utils/load-resource "mul.csv")) :delimiter \tab))))
 
 (defn filter-membership-helper
+  "Returns true if a unit matches one of the types."
   ([unit]
    unit)
   ([unit field values]
    (some #(= (field unit) %) values)))
 
 (defn filter-units
+  "Filters units based on either a string or a seq of unit type."
   ([units]
    units)
   ([units field value comparison]
    (filter #(when (comparison (field %) value) %) units))
-  ([units field values]
-   (filter #(filter-membership-helper % field values) units)))
-
-(defn filter-membership
-  ([units]
-   units)
   ([units field values]
    (filter #(filter-membership-helper % field values) units)))
 
@@ -102,11 +103,8 @@
   ([mul-unit game-data]
    (merge mul-unit game-data)))
 
-(defn get-unit
-  [li]
-  (first li))
-
 (defn pv-mod
+  "Calculates the skill-based mod for PV based on the algorithm provided in the book."
   [unit]
   (let [skill-diff (- 4 (:skill (:pilot unit)))]
     (cond
@@ -115,6 +113,7 @@
       :else 0)))
 
 (defn pv
+  "Returns the modified PV."
   [unit]
   (+ (:point-value unit) (pv-mod unit)))
 
@@ -143,6 +142,7 @@
     (str (:e unit))))
 
 (defn parse-mechset-line
+  "Parses a single line from a mechset file. Mechset files define which images match which units."
   [line]
   (when-not (or (= (str/index-of line "#") 0)
                 (= line "")
@@ -155,6 +155,7 @@
       (vector mechset-type search-term file-path))))
 
 (defn parse-mechset
+  "Parses a full Mechset file."
   []
   (into [] (remove
             nil?
@@ -164,6 +165,7 @@
 (def mechset (parse-mechset))
 
 (defn find-sprite
+  "Searches a the mechset to determine which images to use and returns the path to that image."
   [unit]
   (let [chassis-match (filter (fn [row] (= (:chassis unit) (second row))) mechset)
         exact-match (filter (fn [row] (= (:full-name unit) (second row))) mechset)
@@ -171,13 +173,15 @@
     (str "images/units/" (nth match-row 2))))
 
 (defn can-move?
+  "Checks whether or not a unit can move from its location to a destination."
   [unit destination]
-  (cond 
+  (cond
     (and (= (:movement-mode unit) :walk) (not (contains? (:movement unit) :walk)))
     (>= (first (vals (:movement unit))) (hexagon/hex-distance unit destination))
     :else (>= (get-in unit [:movement (:movement-mode unit)]) (hexagon/hex-distance unit destination))))
 
 (defn calculate-attacker-mod
+  "Returns the mod for a given to hit due to the attacker's movement mode this turn."
   [unit]
   (cond
     (= (:movement-mode unit) :immobile) -1
@@ -186,6 +190,7 @@
     :else 0))
 
 (defn calculate-target-mod
+  "Calculates the mod for the to hit to an attack based on the target's condition."
   [unit]
   (cond
     (= (:movement-mode unit) :immobile) -4
@@ -194,10 +199,12 @@
     :else (:tmm unit)))
 
 (defn calculate-other-mod
+  "Calculate 'other' modifiers to the to hit. Terrain, heat, etc."
   [attacker target]
   (:current-heat attacker))
 
 (defn calculate-range-mod
+  "Calculates the mod to hit based on the range."
   [attacker target]
   (let [range (hexagon/hex-distance attacker target)]
     (cond
@@ -208,6 +215,7 @@
       :else nil)))
 
 (defn calculate-to-hit
+  "Calculates the to hit for an attack using the SATOR method from the book."
   [attacker target]
   (+ (:skill (:pilot attacker))
      (calculate-attacker-mod attacker)
@@ -215,15 +223,8 @@
      (calculate-other-mod attacker target)
      (calculate-range-mod attacker target)))
 
-(defn print-damage
-  [unit range]
-  (cond
-    (>= 3 range) (print-short unit)
-    (>= 12 range) (print-medium unit)
-    (>= 21 range) (print-long unit)
-    (>= 30 range) (print-extreme unit)))
-
 (defn calculate-damage
+  "Returns the damage done by a unit at a given range. Calculates 0* damage correctly."
   [unit range]
   (cond
     (>= 3 range) (if (and (:s* unit) (<= 4 (utils/roll-die))) 1 (:s unit))
@@ -232,6 +233,7 @@
     (>= 30 range) (if (and (:e* unit) (<= 4 (utils/roll-die))) 1 (:e unit))))
 
 (defn take-damage
+  "Applies damage 1 point at a time, checking to see if there armor remaining."
   [unit damage]
   (if (= damage 0)
     unit
@@ -248,10 +250,11 @@
             (recur 0 str dmg)))))))
 
 (defn make-attack
+  "Rolls a full attack. Calculating the to-hit, rolling the dice, and then applying the damage and returning the targeted unit."
   [attacker target]
   (let [target-num (calculate-to-hit attacker target)
         range (hexagon/hex-distance attacker target)
-        to-hit (utils/roll2d)] 
+        to-hit (utils/roll2d)]
     (if (<= target-num to-hit)
       (take-damage target (calculate-damage attacker range))
       target)))

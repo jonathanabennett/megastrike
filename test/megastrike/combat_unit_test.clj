@@ -44,13 +44,13 @@
 
 (t/deftest test-filters
   (t/testing "Filter by name"
-    (t/is (= (:point-value (sut/get-unit (sut/filter-units sut/mul :full-name "Archer ARC-2K" =))) 34)))
+    (t/is (= (:point-value (first (sut/filter-units sut/mul :full-name "Archer ARC-2K" =))) 34)))
   (t/testing "Empty filters return unaltered lists."
     (t/is (= (sut/filter-units sut/mul) sut/mul))))
 
 (t/deftest test-create-element
   (t/testing "Verify new keys merged."
-    (t/is (contains? (sut/create-element (sut/get-unit (sut/filter-units sut/mul :full-name "Archer ARC-2K" =))
+    (t/is (contains? (sut/create-element (first (sut/filter-units sut/mul :full-name "Archer ARC-2K" =))
                                         {:pilot {:name "Bobby McSkillface" :skill 4}}) :pilot))))
 
 (t/deftest test-pv-mod-calculation
