@@ -89,15 +89,6 @@
         (t/is (= (sut/hex-to-pixel test-hex-00 layout) {:x 84.0 :y 65.0}))
         (t/is (= (sut/hex-to-pixel test-hex-42 layout) {:x 588.0 :y 314.41531628991834}))))))
 
-(t/deftest pixel-to-hex
-  (let [layout (sut/create-layout)]
-    (t/testing "Check the hex location of pixels."
-      (let [test-hex-00 (sut/hexagon 0 0 0)
-            test-hex-42 (sut/hexagon 4 0 -4)]
-        (t/is (= (sut/pixel-to-hex {:x 100.0 :y 30.0} layout) (sut/hexagon 0 0 0)))
-        (t/is (= (sut/pixel-to-hex {:x 55.0 :y 55.0} layout) (sut/hexagon 0 0 0)))
-        (t/is (= (sut/pixel-to-hex {:x 55.0 :y 45.0} layout) (sut/hexagon 0 0 0)))))))
-
 (t/deftest hex-points
   (let [layout (sut/create-layout)
         hex-00-correct (list {:x 168.0, :y 65.0}

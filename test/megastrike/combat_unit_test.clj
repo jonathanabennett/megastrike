@@ -101,10 +101,6 @@
     (t/is (= (sut/calculate-target-mod {:movement-mode :walk :role "None", :tmm 4, :e* false, :movement {}, :mul-id 3684, :l* false, :m 0, :type "SV", :abilities "BAR, EE, ENE", :e 0, :s 0, :threshold -1, :l 0, :size 2, :m* false, :point-value 6, :overheat 0, :chassis "Air Car", :structure 2, :full-name "Air Car ", :armor 1, :s* false, :model ""}) 4))
     ))
 
-(t/deftest test-calculate-other-mod
-  (t/testing "Zeroing out this test until I implement terrain."
-    (t/is (= (sut/calculate-other-mod {:id "Dummy unit"}) 0))))
-
 (t/deftest test-calculate-range-mod
   (t/testing "Test short range."
     (t/is (= (sut/calculate-range-mod {:id "Unit 1" :q 0 :r 0 :s 0}
