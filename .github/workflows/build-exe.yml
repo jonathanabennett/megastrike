@@ -18,7 +18,7 @@ jobs:
         run: lein uberjar
       - name: Rename file
         shell: cmd
-        run: ren "D:\a\megastrike\megastrike\target\megastrike-0.1.0-SNAPSHOT-standalone.jar" "D:\a\megastrike\megastrike\target\megastrike.jar"
+        run: ren "D:\a\megastrike\megastrike\target\megastrike-0.1.0-SNAPSHOT-standalone.jar" megastrike.jar
       - run: jpackage @jpackage/common @jpackage/windows
       - uses: actions/upload-artifact@v4
         with:
