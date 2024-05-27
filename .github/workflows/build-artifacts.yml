@@ -5,7 +5,7 @@ on:
     types: [created]
 jobs:
   build-deb:
-    uses: ./.github.workflows/build-deb.yml
+    uses: ./.github/workflows/build-deb.yml@dev
   deploy-deb:
     runs-on: ubuntu-latest
     steps:
