@@ -63,7 +63,7 @@
                  :start-x (:x origin-hex)
                  :start-y (:y origin-hex)
                  :end-x (:x target-hex)
-                 :end-y (:x target-hex)}
+                 :end-y (:y target-hex)}
                 {:fx/type :label
                  :text (str "Range: " range "; " to-hit "+ To Hit")
                  :layout-x (/ (+ (:x origin-hex) (:x target-hex)) 2)

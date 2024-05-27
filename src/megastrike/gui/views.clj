@@ -59,7 +59,7 @@
         unit (subs/active-unit context)
         common-buttons [{:fx/type :button
                          :text "Next Phase"
-                         :disable (seq? turn-order)
+                         :disable (not (empty? turn-order))
                          :on-action {:event-type ::events/next-phase :fx/sync true}}
                         {:fx/type :separator
                          :orientation :vertical 
