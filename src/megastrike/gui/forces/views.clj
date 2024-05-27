@@ -3,6 +3,7 @@
             [clojure.string :as str]
             [megastrike.combat-unit :as cu]
             [megastrike.gui.common :as common]
+            [megastrike.gui.subs :as subs]
             [megastrike.gui.events :as events]))
 
 (defn attack-table
@@ -64,7 +65,7 @@
                                     :stroke :black 
                                     :fill fill-two})))}]})
 (defn unit-stat-block [{:keys [fx/context unit]}]
-  (let [active (fx/sub-val context :active-unit) ]
+  (let [active (subs/active-id context) ]
     {:fx/type :titled-pane 
      :on-mouse-clicked {:event-type ::events/stats-clicked :fx/sync true :unit (:id unit)} 
      :text (:id unit)
@@ -126,7 +127,7 @@
                            :fill-two :aliceblue}]}}))
 
 (defn force-block [{:keys [fx/context units]}]
-  (let [forces (fx/sub-val context :forces)
+  (let [forces (subs/forces context)
         force ((:force (first units)) forces)]
     {:fx/type :v-box
      :spacing 5
@@ -138,7 +139,7 @@
                           {:fx/type unit-stat-block :unit u})}]}))
 
 (defn stat-blocks [{:keys [fx/context]}]
-  (let [units (group-by :force (vals (fx/sub-val context :units)))]
+  (let [units (group-by :force (vals (subs/units context)))]
     {:fx/type :scroll-pane
      :min-width :use-pref-size
      :content {:fx/type :v-box
