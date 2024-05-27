@@ -41,10 +41,10 @@ jobs:
       - run: jpackage @jpackage/common @jpackage/linux
       - uses: actions/upload-artifact@v4
         with:
-          name: megastrike-0.1-1_amd64.deb
+          name: megastrike-0.1-1_linux
           path: | 
             *.deb
-            ./target/
+            save.edn
       # - uses: actions/upload-release-asset@v1
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -70,10 +70,10 @@ jobs:
       - run: jpackage @jpackage/common @jpackage/mac
       - uses: actions/upload-artifact@v4
         with:
-          name: megastrike-0.1-1.dmg
+          name: megastrike-0.1-1_macos
           path: | 
             *.dmg
-            ./target/
+            save.edn
       # - uses: actions/upload-release-asset@v1
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
