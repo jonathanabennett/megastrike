@@ -20,6 +20,16 @@
   [context]
   (filter #(not (:q %)) (vals (units context))))
 
+(defn active-id 
+  "Returns the ID of the active unit. For use in lookups."
+  [context]
+  (fx/sub-val context :active-unit))
+
+(defn active-unit
+  "Returns the actual unit which corresponds to the ID returned by `active-id'."
+  [context]
+  (get (units context) (active-id context)))
+
 (defn deployed-units 
   [context]
   (filter #(:q %) (vals (units context))))

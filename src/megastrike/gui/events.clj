@@ -33,7 +33,7 @@
   [{:keys [fx/context unit]}]
    (let [phase (subs/phase context)
          active-force (first (subs/turn-order context))
-         active-unit (get (subs/units context) (fx/sub-val context :active-unit))]
+         active-unit (subs/active-unit context)]
      (when (and (= active-force (:force unit)) 
                 (not (:acted unit)))
        {:context (fx/swap-context context assoc :active-unit (:id unit))})
@@ -55,7 +55,7 @@
   [{:keys [fx/context]}]
   (let [phase (subs/phase context)
         turn-number (subs/turn-number context)
-        forces (fx/sub-val context :forces)
+        forces (subs/forces context)
         units (subs/units context)]
     {:context (fx/swap-context context merge 
                                (initiative/next-phase {:current-phase phase 
@@ -67,8 +67,8 @@
   [{:keys [fx/context]}]
   (let [turn-order (subs/turn-order context) 
         units (subs/units context)
-        active (fx/sub-val context :active-unit)
-        unit (merge (get units active) {:acted true})]
+        active (subs/active-id context)
+        unit (merge (subs/active-unit context) {:acted true})]
     {:context (fx/swap-context context assoc 
                                :turn-order (rest turn-order)
                                :units (assoc units active unit)
@@ -77,8 +77,8 @@
 (defmethod event-handler ::undeploy-unit
   [{:keys [fx/context]}]
   (let [units (subs/units context)
-        active (fx/sub-val context :active-unit)
-        unit (merge (get units active) {:p nil :q nil :r nil})]
+        active (subs/active-id context)
+        unit (merge (subs/active-unit context) {:p nil :q nil :r nil})]
     {:context (fx/swap-context context assoc :units (assoc units active unit))}))
 
 (defmethod event-handler ::set-movement-mode
@@ -92,7 +92,7 @@
   [{:keys [fx/context unit]}]
   (let [turn-order (subs/turn-order context)
         units (subs/units context)
-        active (fx/sub-val context :active-unit)
+        active (subs/active-id context)
         ghost (some #(and (= (:id unit) (:id %)) %) (subs/unit-ghosts context))
         upd (merge unit 
                    (when ghost 
@@ -108,15 +108,15 @@
 
 (defmethod event-handler ::make-attacks 
   [{:keys [fx/context]}]
-    (loop [units (subs/units context)
-           attackers (filter #(:target %) (subs/current-forces context))]
-      (if (empty? attackers)
-        {:context (fx/swap-context context assoc
-                                   :units units 
-                                   :active-unit nil
-                                   :turn-order (rest (subs/turn-order context)))}
-        (let [attacker (first attackers)
-              target (get units (:target attacker))
-              upd (cu/make-attack attacker target)]
-          (recur (assoc units (:id target) upd)
-                 (rest attackers))))))
+  (loop [units (subs/units context)
+         attackers (filter #(:target %) (subs/current-forces context))]
+    (if (empty? attackers)
+      {:context (fx/swap-context context assoc
+                                 :units units 
+                                 :active-unit nil
+                                 :turn-order (rest (subs/turn-order context)))}
+      (let [attacker (first attackers)
+            target (get units (:target attacker))
+            upd (cu/make-attack attacker target)]
+        (recur (assoc units (:id target) upd)
+               (rest attackers))))))
