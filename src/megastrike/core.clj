@@ -12,7 +12,7 @@
 (def *state
   (atom
    (fx/create-context
-    {:mul (cu/filter-membership cu/mul :type cu/ground-units)
+    {:mul (cu/filter-units cu/mul :type cu/ground-units)
      :mul-search-term ""
      :display :lobby
      :title "Megastrike"
@@ -53,6 +53,7 @@
                                         (fx/fn->lifecycle-with-context %))}))
 
 (defn -main
+  "The main entry point for the game."
   []
   (Platform/setImplicitExit true)
   (fx/mount-renderer *state renderer))
