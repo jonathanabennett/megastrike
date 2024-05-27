@@ -106,20 +106,23 @@
        (hexagon p-int (* (+ p-int r-int) -1) r-int)
       :else (hexagon p-int q-int (* (+ p-int q-int) -1)))))
 
-(defn pixel-to-hex
-  [pt layout]
-  (let [pth (:pixel-to-hex-matrix layout)
-        modified-point {:x (/ (- (:x pt)
-                                 (:x-origin layout))
-                              (:x-size layout))
-                        :y (/ (- (:y pt)
-                                 (:y-origin layout))
-                              (:y-size layout))}
-        p (+ (* (:x modified-point) (get pth 0))
-             (* (:y modified-point) (get pth 1)))
-        q (+ (* (:x modified-point) (get pth 2))
-             (* (:y modified-point) (get pth 3)))]
-    (hex-round p q (* (+ p q) -1))))
+;; Commented out in case I need it later. I believe that cljfx
+;; has given me this feature for "free" when I added a click event
+;; to the hexagons.
+;; (defn pixel-to-hex
+;;   [pt layout]
+;;   (let [pth (:pixel-to-hex-matrix layout)
+;;         modified-point {:x (/ (- (:x pt)
+;;                                  (:x-origin layout))
+;;                               (:x-size layout))
+;;                         :y (/ (- (:y pt)
+;;                                  (:y-origin layout))
+;;                               (:y-size layout))}
+;;         p (+ (* (:x modified-point) (get pth 0))
+;;              (* (:y modified-point) (get pth 1)))
+;;         q (+ (* (:x modified-point) (get pth 2))
+;;              (* (:y modified-point) (get pth 3)))]
+;;     (hex-round p q (* (+ p q) -1))))
 
 (defn find-hex-corner
   [center corner layout]

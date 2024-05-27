@@ -49,7 +49,7 @@
 (defn start-combat-phase [{:keys [forces units]}]
   {:current-phase :combat :turn-order (generate-turn-order forces) :units units})
 
-(defn start-end-phase [{:keys [forces units]}] 
+(defn start-end-phase [{:keys [units]}] 
   (let [targeting-removed (into {} (for [[k unit] units] (if (not-any? #(= (:target unit) %) (keys units)) [k (assoc unit :target nil)]
                                                              [k unit])))] 
     {:current-phase :end :turn-order nil :units targeting-removed}))
@@ -61,6 +61,6 @@
      (= current-phase :initiative) (start-deployment-phase {:forces forces :units new-units})
      (= current-phase :deployment) (start-movement-phase {:forces forces :units new-units})
      (= current-phase :movement)   (start-combat-phase {:forces forces :units new-units})
-     (= current-phase :combat)     (start-end-phase {:forces forces :units new-units})
+     (= current-phase :combat)     (start-end-phase {:units new-units})
      (= current-phase :end)        (start-initiative-phase {:forces forces :turn-number turn-number :units new-units})
      :else {})))
