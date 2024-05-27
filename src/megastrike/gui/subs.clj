@@ -65,3 +65,11 @@
 (defn get-view
   [context]
   (fx/sub-val context :display))
+
+(defn layout 
+  [context]
+  (fx/sub-val context :layout))
+
+(defn board 
+  [context]
+  (fx/sub-val context :game-board))

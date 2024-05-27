@@ -7,9 +7,9 @@
 (defmethod events/event-handler ::hex-clicked
   [{:keys [fx/context hex]}]
    (let [phase (subs/phase context)
-         active (fx/sub-val context :active-unit)
-         units (fx/sub-val context :units)
-         unit (get units active)
+         active (subs/active-id context)
+         units (subs/units context)
+         unit (subs/active-unit context)
          next-force (first (subs/turn-order context))] 
      (cond 
        (and (= phase :deployment) (not (nil? unit)) (not (get unit :acted)) (= (get unit :force) next-force)) 
