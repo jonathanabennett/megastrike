@@ -42,7 +42,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: megastrike-0.1-1_amd64.deb
-          path: megastrike-0.1-1_amd64.deb
+          path: | 
+            *.deb
+            ./target/
       # - uses: actions/upload-release-asset@v1
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -69,7 +71,9 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: megastrike-0.1-1.dmg
-          path: megastrike-0.1-1.dmg
+          path: | 
+            *.dmg
+            ./target/
       # - uses: actions/upload-release-asset@v1
       #   env:
       #     GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
