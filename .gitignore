@@ -17,3 +17,6 @@ pom.xml.asc
 .test-data.end.swp
 .calva/*
 .lsp/*
+*.dmg
+*.deb
+*.exe

@@ -32,7 +32,7 @@
 
 (defmethod e/event-handler ::load-save
   [{:keys [fx/context]}]
-   (let [save-data (edn/read-string (slurp "save.edn"))]
+   (let [save-data (edn/read-string (slurp (utils/load-resource "save.edn")))]
      {:context (fx/swap-context context merge save-data)}))
 
 (defmethod e/event-handler ::add-force

@@ -21,7 +21,7 @@
   (let [save {:game-board (fx/sub-val context :game-board)
               :units (subs/units context)
               :forces (fx/sub-val context :forces)}]
-    (pprint/pprint save (io/writer "save.edn"))))
+    (pprint/pprint save (io/writer (utils/load-resource "save.edn")))))
 
 (defmethod event-handler ::stats-clicked
   [{:keys [fx/context unit]}]
