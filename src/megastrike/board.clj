@@ -11,23 +11,28 @@
   ([hex elevation terrain palette]
    (merge hex {:elevation elevation :terrain terrain :palette palette})))
 
-(defn parse-hex-line
-  [line]
-  (let [line-str (str/split line #" ")
-        x (Integer/parseInt (subs (nth line-str 1) 0 2))
-        y (Integer/parseInt (subs (nth line-str 1) 2 4))
-        elevation (Integer/parseInt (nth line-str 2))
-        terrain (nth line-str 3)
-        style (nth line-str 4)]
-    (create-tile x y elevation (strip-quotes terrain) (strip-quotes style))))
+(defn parse-hex-line 
+  ([line x-offset y-offset]
+   (let [line-str (str/split line #" ")
+         x (+ (Integer/parseInt (subs (nth line-str 1) 0 2)) x-offset)
+         y (+ (Integer/parseInt (subs (nth line-str 1) 2 4)) y-offset)
+         elevation (Integer/parseInt (nth line-str 2))
+         terrain (nth line-str 3)
+         style (nth line-str 4)]
+     (create-tile x y elevation (strip-quotes terrain) (strip-quotes style))))
+  ([line] 
+   (parse-hex-line line 0 0)))
 
 (defn create-board
-  ([filename]
+  ([filename x-offset y-offset]
    (let [f (slurp filename)]
      (vec (remove nil?
                   (for [line (str/split-lines f)]
                     (when (str/includes? line "hex")
-                      (parse-hex-line line)))))))
+                      (parse-hex-line line x-offset y-offset)))))))
+  ([filename]
+   (create-board filename 0 0))
+  
   ([width height]
    (vec (for [x (vec (range 1 (inc width))) y (vec (range 1 (inc height)))]
          (create-tile x y 0 "" "grass")))))
