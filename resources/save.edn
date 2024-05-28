@@ -550,12 +550,12 @@
    :deploy "NE",
    :color :gold,
    :camo
-   "file:/Users/jonathanbennett/src/megastrike/resources/images/camo/Faction Camouflage/Difference Clouds/Federated Suns.png",
+   "file:resources/images/camo/Faction Camouflage/Difference Clouds/Federated Suns.png",
    :initiative 5},
   :kurita
   {:name "Kurita",
    :deploy "SW",
    :color :gold,
    :camo
-   "file:/Users/jonathanbennett/src/megastrike/resources/images/camo/Faction Camouflage/Difference Clouds/Draconis Combine.png",
+   "file:resources/images/camo/Faction Camouflage/Difference Clouds/Draconis Combine.png",
    :initiative 6}}}
