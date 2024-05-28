@@ -5,14 +5,14 @@ on:
     types: [created]
 jobs:
   build-deb:
-    uses: ./.github/workflows/build-deb.yml@dev
+    uses: ./.github/workflows/build-deb.yml
   deploy-deb:
     runs-on: ubuntu-latest
     steps:
       - name: Download deb file
         uses: actions/download-artifact@v4
         with:
-          name: magstrike_linux
+          name: megastrike_linux
       - uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -23,51 +23,37 @@ jobs:
           asset_content_type: application/vnd.debian.binary-package
 
   build-dmg:
+    uses: ./.github/workflows/build-deb.yml
+  deploy-dmg:
     runs-on: macos-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-java@v1
-        with:
-          java-version: '14'
-      - uses: DeLaGuardo/setup-clojure@12.5
-        with:
-          cli: '1.11.1.1413'
-          lein: '2.10.0'
-      - run: lein uberjar
-      - run: mv ./target/megastrike-0.1.0-SNAPSHOT-standalone.jar ./target/megastrike.jar
-      - run: jpackage @jpackage/common @jpackage/mac
+      - name: Download dmg
+        uses: actions/download-artifact@v4 
+        with: 
+          name: megastrike_macos
       - uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: megastrike-1.0.dmg
-          asset_name: megastrike-1.0.dmg
+          asset_path: megastrike_macos
+          asset_name: megastrike-${{ github.event.release.tag_name }}.dmg
           asset_content_type: application/x-apple-diskimage
 
   build-exe:
+    uses: ./.github/workflows/build-exe.yml
+  deploy-exe:
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v1
-      - uses: actions/setup-java@v1
+      - name: Download exe
+        uses: actions/download-artifact@v4
         with:
-          java-version: '14'
-      - uses: DeLaGuardo/setup-clojure@12.5
-        with:
-          cli: '1.11.1.1413'
-          lein: '2.10.0'
-      - name: Create Uberjar
-        shell: cmd
-        run: lein uberjar
-      - name: Rename file
-        shell: cmd
-        run: ren "D:\a\megastrike\megastrike\target\megastrike-0.1.0-SNAPSHOT-standalone.jar" megastrike.jar
-      - run: jpackage @jpackage/common @jpackage/windows
+          name: megastrike-windows
       - uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: megastrike-1.0.exe
-          asset_name: megastrike-1.0.exe
+          asset_path: megastrike-windows
+          asset_name: megastrike-${{ github.event.release.tag_name }}.exe
           asset_content_type: application/vnd.microsoft.portable-executable
