@@ -7,6 +7,7 @@ jobs:
   build-deb:
     uses: ./.github/workflows/build-deb.yml
   deploy-deb:
+    needs: build-deb
     runs-on: ubuntu-latest
     steps:
       - name: Download deb file
@@ -25,6 +26,7 @@ jobs:
   build-dmg:
     uses: ./.github/workflows/build-deb.yml
   deploy-dmg:
+    needs: build-dmg
     runs-on: macos-latest
     steps:
       - name: Download dmg
@@ -43,6 +45,7 @@ jobs:
   build-exe:
     uses: ./.github/workflows/build-exe.yml
   deploy-exe:
+    needs: build-exe
     runs-on: windows-latest
     steps:
       - name: Download exe
