@@ -5,7 +5,8 @@
             [megastrike.gui.subs :as subs]
             [megastrike.phases :as initiative]
             [megastrike.utils :as utils]
-            [megastrike.combat-unit :as cu]))
+            [megastrike.combat-unit :as cu])
+  (:import (javafx.application Platform)))
 
 (defmulti event-handler :event-type)
 
@@ -22,6 +23,10 @@
               :units (subs/units context)
               :forces (fx/sub-val context :forces)}]
     (pprint/pprint save (io/writer (utils/load-resource "save.edn")))))
+
+(defmethod event-handler ::quit-game
+  [{:keys [fx/context]}]
+  (Platform/exit))
 
 (defmethod event-handler ::stats-clicked
   [{:keys [fx/context unit]}]
