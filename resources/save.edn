@@ -545,6 +545,17 @@
    :s* false,
    :model "WVR-6K"}},
  :forces
- {:davion {:name "Davion", :deploy "NE", :color :gold},
+ {:davion
+  {:name "Davion",
+   :deploy "NE",
+   :color :gold,
+   :camo
+   "file:/Users/jonathanbennett/src/megastrike/resources/images/camo/Faction Camouflage/Difference Clouds/Federated Suns.png",
+   :initiative 5},
   :kurita
-  {:name "Kurita", :deploy "SW", :color "0xff0000ff"}}}
+  {:name "Kurita",
+   :deploy "SW",
+   :color :gold,
+   :camo
+   "file:/Users/jonathanbennett/src/megastrike/resources/images/camo/Faction Camouflage/Difference Clouds/Draconis Combine.png",
+   :initiative 6}}}
