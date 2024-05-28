@@ -31,7 +31,7 @@
 (defmethod event-handler ::stats-clicked
   [{:keys [fx/context unit]}]
   (let [u (get (subs/units context) unit)]
-    (when-not (:acted u) 
+    (when (and (= (:force u) (first (subs/turn-order context))) (not (:acted u))) 
       {:context (fx/swap-context context assoc :active-unit unit)})))
 
 (defmethod event-handler ::unit-clicked
