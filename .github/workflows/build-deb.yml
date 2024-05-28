@@ -21,4 +21,4 @@ jobs:
       - uses: actions/upload-artifact@v4
         with:
           name: megastrike_linux
-          path: megastrike-1.0.deb
+          path: '*.deb'

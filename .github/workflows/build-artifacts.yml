@@ -38,7 +38,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: megastrike-1.0.deb
+          asset_path: megastrike-1.0.dmg
           asset_name: megastrike-${{ github.event.release.tag_name }}.dmg
           asset_content_type: application/x-apple-diskimage
 
