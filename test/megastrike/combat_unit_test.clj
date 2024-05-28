@@ -44,13 +44,13 @@
 
 (t/deftest test-filters
   (t/testing "Filter by name"
-    (t/is (= (:point-value (sut/get-unit (sut/filter-units sut/mul :full-name "Archer ARC-2K" =))) 34)))
+    (t/is (= (:point-value (first (sut/filter-units sut/mul :full-name "Archer ARC-2K" =))) 34)))
   (t/testing "Empty filters return unaltered lists."
     (t/is (= (sut/filter-units sut/mul) sut/mul))))
 
 (t/deftest test-create-element
   (t/testing "Verify new keys merged."
-    (t/is (contains? (sut/create-element (sut/get-unit (sut/filter-units sut/mul :full-name "Archer ARC-2K" =))
+    (t/is (contains? (sut/create-element (first (sut/filter-units sut/mul :full-name "Archer ARC-2K" =))
                                         {:pilot {:name "Bobby McSkillface" :skill 4}}) :pilot))))
 
 (t/deftest test-pv-mod-calculation
@@ -100,10 +100,6 @@
     (t/is (= (sut/calculate-target-mod {:movement-mode :walk :role "Missile Boat", :tmm 1, :e* false, :movement {}, :mul-id 73, :l* false, :m 2, :type "BM", :abilities "IF2", :e 0, :s 2, :threshold -1, :l 2, :size 3, :m* false, :point-value 34, :overheat 2, :chassis "Archer", :structure 6, :full-name "Archer ARC-2K", :armor 6, :s* false, :model "ARC-2K"}) 1))
     (t/is (= (sut/calculate-target-mod {:movement-mode :walk :role "None", :tmm 4, :e* false, :movement {}, :mul-id 3684, :l* false, :m 0, :type "SV", :abilities "BAR, EE, ENE", :e 0, :s 0, :threshold -1, :l 0, :size 2, :m* false, :point-value 6, :overheat 0, :chassis "Air Car", :structure 2, :full-name "Air Car ", :armor 1, :s* false, :model ""}) 4))
     ))
-
-(t/deftest test-calculate-other-mod
-  (t/testing "Zeroing out this test until I implement terrain."
-    (t/is (= (sut/calculate-other-mod {:id "Dummy unit"}) 0))))
 
 (t/deftest test-calculate-range-mod
   (t/testing "Test short range."

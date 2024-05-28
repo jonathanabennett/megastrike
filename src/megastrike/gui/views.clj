@@ -53,12 +53,10 @@
     :on-action {:event-type ::events/make-attacks}}])
 
 (defn command-palette [{:keys [fx/context]}]
-  (let [phase (fx/sub-val context :current-phase)
-        turn (fx/sub-val context :turn-number)
-        turn-order (fx/sub-val context :turn-order) 
-        units (subs/units context)
-        active (fx/sub-val context :active-unit)
-        unit (get units active)
+  (let [phase (subs/phase context)
+        turn (subs/turn-number context)
+        turn-order (subs/turn-order context) 
+        unit (subs/active-unit context)
         common-buttons [{:fx/type :button
                          :text "Next Phase"
                          :disable (not (empty? turn-order))
@@ -103,7 +101,7 @@
                :grid-pane/vgrow :always}]})
 
 (defn root [{:keys [fx/context]}]
-  (let [view (fx/sub-val context :display)]
+  (let [view (subs/get-view context)]
         
     {:fx/type :stage
      :showing true

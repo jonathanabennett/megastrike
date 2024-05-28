@@ -11,7 +11,7 @@
 
 (defmethod e/event-handler ::filter-changed
   [{:keys [fx/context field values]}]
-  {:context (fx/swap-context context assoc :mul (cu/filter-membership cu/mul field values))})
+  {:context (fx/swap-context context assoc :mul (cu/filter-units cu/mul field values))})
 
 (defmethod e/event-handler ::color-changed
   [{:keys [fx/context fx/event]}]
@@ -56,14 +56,14 @@
         id (if (seq matching-units)
                            (str (:full-name mul-unit) " #" (inc (count matching-units)))
                            (str (:full-name mul-unit)))
-        unit (merge mul-unit
-                    {:force (fx/sub-val context :active-force)
-                     :pilot {:name (fx/sub-val context :pilot-name)
-                             :skill (Integer/parseInt (fx/sub-val context :pilot-skill))}
-                     :current-armor (:armor mul-unit)
-                     :current-structure (:structure mul-unit)
-                     :current-heat 0
-                     :id id})]
+        unit (cu/create-element mul-unit 
+                                {:force (fx/sub-val context :active-force) 
+                                 :pilot {:name (fx/sub-val context :pilot-name) 
+                                         :skill (Integer/parseInt (fx/sub-val context :pilot-skill))} 
+                                 :current-armor (:armor mul-unit) 
+                                 :current-structure (:structure mul-unit) 
+                                 :current-heat 0 
+                                 :id id})]
     {:context (fx/swap-context context assoc :units (assoc (fx/sub-val context :units) id unit))}))
 
 (defmethod e/event-handler ::filter-mul

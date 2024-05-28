@@ -3,7 +3,6 @@
             [cljfx.ext.table-view :as tables]
             [megastrike.combat-unit :as cu]
             [megastrike.gui.common :as common]
-            [megastrike.gui.events :as events]
             [megastrike.gui.lobby.events :as lobby-events]
             [megastrike.gui.subs :as sub]
             [megastrike.utils :as utils]))

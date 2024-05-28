@@ -26,7 +26,7 @@
 
 (defn draw-unit [{:keys [fx/context unit layout]}]
   (let [hex (hex/hex-points unit layout)
-        forces (fx/sub-val context :forces)
+        forces (subs/forces context)
         force (forces (unit :force))] 
     {:fx/type :group
      :on-mouse-clicked {:event-type ::events/unit-clicked :unit unit}
@@ -56,13 +56,14 @@
         target (get (subs/units context) (:target unit))
         target-hex (hex/hex-to-pixel target layout)
         range (hex/hex-distance unit target)
-        to-hit (cu/calculate-to-hit unit target)]
+        to-hit (cu/calculate-to-hit unit target)] 
+    (prn target-hex)
     {:fx/type :group
      :children [{:fx/type :line 
                  :start-x (:x origin-hex)
                  :start-y (:y origin-hex)
                  :end-x (:x target-hex)
-                 :end-y (:x target-hex)}
+                 :end-y (:y target-hex)}
                 {:fx/type :label
                  :text (str "Range: " range "; " to-hit "+ To Hit")
                  :layout-x (/ (+ (:x origin-hex) (:x target-hex)) 2)
@@ -71,7 +72,7 @@
 
 (defn draw-destination-token [{:keys [fx/context unit layout]}]
   (let [hex (hex/hex-points unit layout)
-        forces (fx/sub-val context :forces)
+        forces (subs/forces context)
         force (forces (unit :force))] 
     {:fx/type :group 
      :children [{:fx/type common/draw-sprite 
@@ -88,8 +89,8 @@
                  :translate-y (/ (layout :y-size) 3)}]}))
 
 (defn game-board [{:keys [fx/context]}]
-  (let [gb (fx/sub-val context :game-board)
-        layout (fx/sub-val context :layout)
+  (let [gb (subs/board context)
+        layout (subs/layout context)
         active-force (first (subs/turn-order context))
         unit-locations (subs/deployed-units context)
         destinations (subs/unit-ghosts context)
