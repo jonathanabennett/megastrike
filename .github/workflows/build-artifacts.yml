@@ -19,7 +19,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: megastrike_linux
+          asset_path: megastrike-1.0.deb
           asset_name: megastrike_${{ github.event.release.tag_name }}_amd64.deb
           asset_content_type: application/vnd.debian.binary-package
 
@@ -38,7 +38,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: megastrike_macos
+          asset_path: megastrike-1.0.deb
           asset_name: megastrike-${{ github.event.release.tag_name }}.dmg
           asset_content_type: application/x-apple-diskimage
 
@@ -51,12 +51,12 @@ jobs:
       - name: Download exe
         uses: actions/download-artifact@v4
         with:
-          name: megastrike-windows
+          name: megastrike_windows
       - uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: megastrike_windows
-          asset_name: megastrike-${{ github.event.release.tag_name }}.exe
+          asset_path: megastrike_1.0.exe
+          asset_name: megastrike_${{ github.event.release.tag_name }}.exe
           asset_content_type: application/vnd.microsoft.portable-executable

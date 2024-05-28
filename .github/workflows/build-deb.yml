@@ -17,10 +17,8 @@ jobs:
           cli: '1.11.1.1413'
           lein: '2.10.0'
       - run: lein uberjar
-      - run: mv ./target/megastrike-0.1.0-SNAPSHOT-standalone.jar ./target/megastrike.jar
       - run: jpackage @jpackage/common @jpackage/linux
       - uses: actions/upload-artifact@v4
         with:
           name: megastrike_linux
-          path: | 
-            *.deb
+          path: megastrike-1.0.deb

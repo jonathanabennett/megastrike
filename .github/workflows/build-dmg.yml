@@ -16,10 +16,8 @@ jobs:
           cli: '1.11.1.1413'
           lein: '2.10.0'
       - run: lein uberjar
-      - run: mv ./target/megastrike-0.1.0-SNAPSHOT-standalone.jar ./target/megastrike.jar
       - run: jpackage @jpackage/common @jpackage/mac
       - uses: actions/upload-artifact@v4
         with:
           name: megastrike_macos
-          path: | 
-            *.dmg
+          path: megastrike-1.0.dmg

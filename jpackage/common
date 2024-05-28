@@ -1,6 +1,6 @@
 --input target
 --main-jar megastrike.jar
---name "megastrike"
+--name megastrike
 --main-class clojure.main
 --arguments -m
 --arguments megastrike.core
