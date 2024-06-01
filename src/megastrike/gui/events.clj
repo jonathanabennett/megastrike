@@ -22,7 +22,7 @@
   (let [save {:game-board (fx/sub-val context :game-board)
               :units (subs/units context)
               :forces (fx/sub-val context :forces)}]
-    (pprint/pprint save (io/writer (utils/load-resource "save.edn")))))
+    (pprint/pprint save (io/writer (utils/load-resource :data "save.edn")))))
 
 (defmethod event-handler ::quit-game
   [{:keys [fx/context]}]

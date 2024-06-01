@@ -19,7 +19,6 @@
         chooser (doto (FileChooser.)
                   (.setTitle "Select Camo"))]
     (when-let [camo (.showOpenDialog chooser window)] 
-      (prn (.getPath camo))
       {:context (fx/swap-context context assoc :force-camo (str "file:" (.getPath camo)))})))
 
 (defmethod e/event-handler ::filter-changed
@@ -45,7 +44,7 @@
 
 (defmethod e/event-handler ::load-save
   [{:keys [fx/context]}]
-   (let [save-data (edn/read-string (slurp (utils/load-resource "save.edn")))]
+   (let [save-data (edn/read-string (slurp (utils/load-resource :resources "save.edn")))]
      {:context (fx/swap-context context merge save-data)}))
 
 (defmethod e/event-handler ::add-force

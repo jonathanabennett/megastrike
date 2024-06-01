@@ -8,7 +8,7 @@
 (def header-row
   "Defines the header row which will serve as the keys for the creation of combat units."
   (map utils/keyword-maker
-       (first (csv/parse-csv (slurp (utils/load-resource "mul.csv")) :delimiter \tab))))
+       (first (csv/parse-csv (slurp (utils/load-resource :resources "mul.csv")) :delimiter \tab))))
 
 (def all-types ["BM" "IM" "PM" "SV" "CV" "BA" "CI" "SS"
                 "WS" "JS" "DS" "DA" "SC" "CF" "AF"])
@@ -80,7 +80,7 @@
             :overheat (Integer/parseInt (:overheat mul-row))
             :point-value (Integer/parseInt (:point-value mul-row))))))
 
-(def mul (map parse-row (rest (csv/parse-csv (slurp (utils/load-resource "mul.csv")) :delimiter \tab))))
+(def mul (map parse-row (rest (csv/parse-csv (slurp (utils/load-resource :resources "mul.csv")) :delimiter \tab))))
 
 (defn filter-membership-helper
   "Returns true if a unit matches one of the types."
@@ -160,7 +160,7 @@
   (into [] (remove
             nil?
             (map #(parse-mechset-line %)
-                 (str/split-lines (slurp (utils/load-resource "images/units/mechset.txt")))))))
+                 (str/split-lines (slurp (utils/load-resource :data "images/units/mechset.txt")))))))
 
 (def mechset (parse-mechset))
 
@@ -170,7 +170,7 @@
   (let [chassis-match (filter (fn [row] (= (:chassis unit) (second row))) mechset)
         exact-match (filter (fn [row] (= (:full-name unit) (second row))) mechset)
         match-row (or (first exact-match) (first chassis-match))]
-    (str "images/units/" (nth match-row 2))))
+    (utils/load-resource :data (str "images/units/" (nth match-row 2)))))
 
 (defn can-move?
   "Checks whether or not a unit can move from its location to a destination."

@@ -20,7 +20,7 @@
   (let [color (force :color)
         camo (force :camo)]
     {:fx/type :image-view
-     :image (cu/find-sprite unit)
+     :image (str (.toURI (cu/find-sprite unit)))
      :effect {:fx/type :blend
               :top-input (if camo
                            {:fx/type :image-input 
@@ -29,7 +29,7 @@
                             :paint color
                             :x 0 :y 0 :width 100 :height 100})
               :bottom-input {:fx/type :image-input
-                             :source (cu/find-sprite unit)}
+                             :source (str (.toURI (cu/find-sprite unit)))}
               :mode :src-atop
               :opacity 0.5}
      :translate-x x
