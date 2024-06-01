@@ -1,5 +1,6 @@
 (ns megastrike.scenario
   (:require [clojure.string :as str]
+            [megastrike.combat-unit :as cu]
             [megastrike.utils :as utils]))
 
 (defn initialize-forces
@@ -34,8 +35,24 @@
   [state line value]
   (update-force state line :camo value))
 
-(defn add-unit
-  [state line value])
+(defn parse-unit-string [s]
+  (let [[_ faction number data] (re-matches #"Unit_(\w+)_(\d+)[=_](.+)" s)]
+      [faction (Integer/parseInt number) data]))
+
+(defn configure-unit
+  [state line]
+  (let [[faction num data] (parse-unit-string line)
+        [unit pilot pskill gskill direction x y] (str/split data #",")
+        mul (first (cu/filter-units cu/mul :full-name unit str/includes?))]
+    (prn (utils/keyword-maker faction))
+    (prn mul)
+    (prn pilot)
+    (prn pskill)
+    (prn gskill)
+    (prn direction)
+    (prn x)
+    (prn y)
+    ))
 
 (defn parse-line 
   [line state]
@@ -50,9 +67,7 @@
       (str/includes? line "Location") (set-location state line value)
       (str/includes? line "Team") (set-team state line value) 
       (str/includes? line "Camo") (set-camo state line value) 
-      (str/includes? line "Unit") (add-unit state line value)
-      :else state)))
-
+      (str/includes? line "Unit") (configure-unit state line) :else state)))
 ;; Use helper methods where if we see "Camo" or "Unit" or the other player
 ;; specific indicators, we kick out to a helper method to parse that line
 ;; based on the data in state.
