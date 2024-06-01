@@ -7,7 +7,7 @@ jobs:
   build-deb:
     uses: ./.github/workflows/build-deb.yml
   deploy-deb:
-    needs: build-deb
+    needs: build-linux
     runs-on: ubuntu-latest
     steps:
       - name: Download deb file
@@ -19,14 +19,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: megastrike_1.0-1_amd64.deb
+          asset_path: ./*
           asset_name: megastrike_${{ github.event.release.tag_name }}_amd64.deb
-          asset_content_type: application/vnd.debian.binary-package
 
   build-dmg:
     uses: ./.github/workflows/build-dmg.yml
   deploy-dmg:
-    needs: build-dmg
+    needs: build-mac
     runs-on: macos-latest
     steps:
       - name: Download dmg
@@ -38,14 +37,13 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: megastrike-1.0.dmg
+          asset_path: ./*
           asset_name: megastrike-${{ github.event.release.tag_name }}.dmg
-          asset_content_type: application/x-apple-diskimage
 
   build-exe:
     uses: ./.github/workflows/build-exe.yml
   deploy-exe:
-    needs: build-exe
+    needs: build-win
     runs-on: windows-latest
     steps:
       - name: Download exe
@@ -57,6 +55,5 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: megastrike-1.0.exe
+          asset_path: ./*
           asset_name: megastrike-${{ github.event.release.tag_name }}.exe
-          asset_content_type: application/vnd.microsoft.portable-executable

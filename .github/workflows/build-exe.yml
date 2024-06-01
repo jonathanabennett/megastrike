@@ -4,7 +4,7 @@ on:
   workflow_call:
 
 jobs:
-  build-exe:
+  build-win-uberjar:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v1
@@ -18,8 +18,26 @@ jobs:
       - name: Create Uberjar
         shell: cmd
         run: lein uberjar
-      - run: jpackage @jpackage/common @jpackage/windows
       - uses: actions/upload-artifact@v4
         with:
-          name: megastrike_windows
-          path: megastrike-1.0.exe
+          name: megastrike_win_jar
+          path: ./*
+  # build-exe:
+  #   runs-on: windows-latest
+  #   steps:
+  #     - uses: actions/checkout@v1
+  #     - uses: actions/setup-java@v1
+  #       with:
+  #         java-version: '14'
+  #     - uses: DeLaGuardo/setup-clojure@12.5
+  #       with:
+  #         cli: '1.11.1.1413'
+  #         lein: '2.10.0'
+  #     - name: Create Uberjar
+  #       shell: cmd
+  #       run: lein uberjar
+  #     - run: jpackage @jpackage/common @jpackage/windows
+  #     - uses: actions/upload-artifact@v4
+  #       with:
+  #         name: megastrike_windows
+  #         path: megastrike-1.0.exe
