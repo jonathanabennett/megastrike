@@ -101,7 +101,14 @@
 (defn create-element
   "Creates an element for use in the game."
   ([mul-unit game-data]
-   (merge mul-unit game-data)))
+   (merge mul-unit game-data))
+  ([units mul-unit game-data]
+   (let [matching-units (filter #(= (:full-name %) (:full-name mul-unit)) units)
+         id (if (seq matching-units)
+              (str (:full-name mul-unit) " #" (inc (count matching-units)))
+              (str (:full-name mul-unit)))
+         unit (merge mul-unit {:id id} game-data)]
+     (merge units {id unit}))))
 
 (defn pv-mod
   "Calculates the skill-based mod for PV based on the algorithm provided in the book."

@@ -65,19 +65,13 @@
   [{:keys [fx/context]}]
   (let [units (fx/sub-val context :units)
         mul-unit (fx/sub-val context :active-mul)
-        matching-units (filter #(= (:full-name %) (:full-name mul-unit)) units)
-        id (if (seq matching-units)
-                           (str (:full-name mul-unit) " #" (inc (count matching-units)))
-                           (str (:full-name mul-unit)))
-        unit (cu/create-element mul-unit 
-                                {:force (fx/sub-val context :active-force) 
-                                 :pilot {:name (fx/sub-val context :pilot-name) 
-                                         :skill (Integer/parseInt (fx/sub-val context :pilot-skill))} 
-                                 :current-armor (:armor mul-unit) 
-                                 :current-structure (:structure mul-unit) 
-                                 :current-heat 0 
-                                 :id id})]
-    {:context (fx/swap-context context assoc :units (assoc (fx/sub-val context :units) id unit))}))
+        game-data {:force (fx/sub-val context :active-force) 
+                   :pilot {:name (fx/sub-val context :pilot-name) 
+                           :skill (Integer/parseInt (fx/sub-val context :pilot-skill))} 
+                   :current-armor (:armor mul-unit) 
+                   :current-structure (:structure mul-unit) 
+                   :current-heat 0}]
+    {:context (fx/swap-context context assoc :units (cu/create-element units mul-unit game-data))}))
 
 (defmethod e/event-handler ::filter-mul
   [{:keys [fx/context field]}]

@@ -1,7 +1,10 @@
 (ns megastrike.scenario
-  (:require [clojure.string :as str]
+  (:require [clojure.java.io :as io]
+            [clojure.math :as math]
+            [clojure.string :as str]
             [megastrike.combat-unit :as cu]
-            [megastrike.utils :as utils]))
+            [megastrike.utils :as utils]
+            [megastrike.hexagons.hex :as hex]))
 
 (defn initialize-forces
   [forces]
@@ -14,7 +17,7 @@
 
 (defn extract-name [input]
   (let [pattern #"_(.*?)="]
-    (utils/keyword-maker (re-find pattern input))))
+    (utils/keyword-maker (str (second (re-find pattern input))))))
 
 (defn update-force
   [state line key value]
@@ -41,22 +44,27 @@
 
 (defn configure-unit
   [state line]
-  (let [[faction num data] (parse-unit-string line)
-        [unit pilot pskill gskill direction x y] (str/split data #",")
-        mul (first (cu/filter-units cu/mul :full-name unit str/includes?))]
-    (prn (utils/keyword-maker faction))
-    (prn mul)
-    (prn pilot)
-    (prn pskill)
-    (prn gskill)
-    (prn direction)
-    (prn x)
-    (prn y)
-    ))
+  (if (re-find #"\d+=" line)
+    (let [[faction num data] (parse-unit-string line)
+          [unit pilot pskill gskill direction x y] (str/split data #",")
+          loc (if (and x y) (hex/hex-from-offset x y) {})
+          skill (int (math/floor (/ (+ (Integer/parseInt pskill) (Integer/parseInt gskill)) 2)))
+          mul (first (cu/filter-units cu/mul :full-name unit str/includes?))] 
+      (prn skill)
+      (cu/create-element (get state :units {}) 
+                         mul
+                         (merge loc {:force faction 
+                                     :pilot 
+                                     {:name pilot 
+                                      :skill skill} 
+                                     :current-armor (:armor mul) 
+                                     :current-structure (:structure mul) 
+                                     :current-heat 0})))
+    (:units state)))
 
 (defn parse-line 
-  [line state]
-  (let [value (second (str/split line #"="))]
+  [state line]
+  (let [value (second (str/split line #"="))] 
     (cond 
       (= (str/index-of line "#") 0) state 
       (str/includes? line "BoardWidth") (merge state {:board-width (Integer/parseInt value)})
@@ -67,7 +75,17 @@
       (str/includes? line "Location") (set-location state line value)
       (str/includes? line "Team") (set-team state line value) 
       (str/includes? line "Camo") (set-camo state line value) 
-      (str/includes? line "Unit") (configure-unit state line) :else state)))
+      (str/includes? line "Unit") (assoc state :units (configure-unit state line)) 
+      :else state)))
 ;; Use helper methods where if we see "Camo" or "Unit" or the other player
 ;; specific indicators, we kick out to a helper method to parse that line
 ;; based on the data in state.
+
+(defn parse-scenario-file
+  [file]
+  (loop [state {}
+         f (str/split-lines (slurp (io/file file)))] 
+    (if (empty? f)
+      state
+      (recur (parse-line state (first f))
+             (rest f)))))
