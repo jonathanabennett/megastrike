@@ -2,9 +2,10 @@
   (:require [clojure.java.io :as io]
             [clojure.math :as math]
             [clojure.string :as str]
+            [megastrike.board :as board]
             [megastrike.combat-unit :as cu]
-            [megastrike.utils :as utils]
-            [megastrike.hexagons.hex :as hex]))
+            [megastrike.hexagons.hex :as hex]
+            [megastrike.utils :as utils]))
 
 (defn initialize-forces
   [forces]
@@ -81,6 +82,25 @@
 ;; specific indicators, we kick out to a helper method to parse that line
 ;; based on the data in state.
 
+(defn board-files [dirs]
+  (let [is-board-file? #(-> % .getName (str/ends-with? ".board"))
+        board-files-in-dir (fn [dir]
+                             (filter is-board-file? (file-seq (io/file dir))))]
+    (vec (mapcat board-files-in-dir dirs))))
+
+(defn pick-map
+  [loc map-dirs]
+  (let [map-list (board-files map-dirs)]
+    (board/create-board ((rand-nth map-list) (* (first loc) ) (second loc)))))
+
+(defn set-maps
+  [scenario]
+  (let [map-dirs []
+        maps (for [x (range (:board-width scenario))
+                   y (range (:board-wideth scenario))]
+               [x y])]
+    (into [] (map #(pick-map % map-dirs) maps))))
+
 (defn parse-scenario-file
   [file]
   (loop [state {}
@@ -89,3 +109,10 @@
       state
       (recur (parse-line state (first f))
              (rest f)))))
+
+(defn setup-scenario
+  [file]
+  (let [scenario (parse-scenario-file file)
+        map-layout (set-maps scenario)
+        ]
+    (select-keys [:factions :units :game-board] (merge scenario map-layout))))

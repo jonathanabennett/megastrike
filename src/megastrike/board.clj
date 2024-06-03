@@ -36,3 +36,11 @@
   ([width height]
    (vec (for [x (vec (range 1 (inc width))) y (vec (range 1 (inc height)))]
          (create-tile x y 0 "" "grass")))))
+
+(defn get-width
+  [board]
+  (first (hex/offset-from-hex (last board))))
+
+(defn get-height
+  [board]
+  (second (hex/offset-from-hex (last board))))
