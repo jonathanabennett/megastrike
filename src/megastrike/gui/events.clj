@@ -5,7 +5,8 @@
             [megastrike.gui.subs :as subs]
             [megastrike.phases :as initiative]
             [megastrike.utils :as utils]
-            [megastrike.combat-unit :as cu]))
+            [megastrike.combat-unit :as cu])
+  (:import (javafx.application Platform)))
 
 (defmulti event-handler :event-type)
 
@@ -21,12 +22,16 @@
   (let [save {:game-board (fx/sub-val context :game-board)
               :units (subs/units context)
               :forces (fx/sub-val context :forces)}]
-    (pprint/pprint save (io/writer (utils/load-resource "save.edn")))))
+    (pprint/pprint save (io/writer (utils/load-resource :data "save.edn")))))
+
+(defmethod event-handler ::quit-game
+  [{:keys [fx/context]}]
+  (Platform/exit))
 
 (defmethod event-handler ::stats-clicked
   [{:keys [fx/context unit]}]
   (let [u (get (subs/units context) unit)]
-    (when-not (:acted u) 
+    (when (and (= (:force u) (first (subs/turn-order context))) (not (:acted u))) 
       {:context (fx/swap-context context assoc :active-unit unit)})))
 
 (defmethod event-handler ::unit-clicked
@@ -68,11 +73,12 @@
   (let [turn-order (subs/turn-order context) 
         units (subs/units context)
         active (subs/active-id context)
-        unit (merge (subs/active-unit context) {:acted true})]
-    {:context (fx/swap-context context assoc 
-                               :turn-order (rest turn-order)
-                               :units (assoc units active unit)
-                               :active-unit nil)}))
+        unit (subs/active-unit context)]
+    (when (:q unit)
+      {:context (fx/swap-context context assoc 
+                                :turn-order (rest turn-order)
+                                :units (assoc units active (merge unit {:acted true}))
+                                :active-unit nil)})))
 
 (defmethod event-handler ::undeploy-unit
   [{:keys [fx/context]}]
@@ -93,18 +99,18 @@
   (let [turn-order (subs/turn-order context)
         units (subs/units context)
         active (subs/active-id context)
-        ghost (some #(and (= (:id unit) (:id %)) %) (subs/unit-ghosts context))
-        upd (merge unit 
-                   (when ghost 
-                     {:p (:p ghost) 
-                      :q (:q ghost) 
-                      :r (:r ghost)})
-                   {:acted true})] 
-    {:context (fx/swap-context context assoc
-                               :turn-order (rest turn-order)
-                               :units (assoc units active upd)
-                               :ghosts (remove #(and (= (:id unit) (:id %)) %) (subs/unit-ghosts context))
-                               :active-unit nil)}))
+        ghost (some #(and (= (:id unit) (:id %)) %) (subs/unit-ghosts context))] 
+    (when (or (= (:movement-mode unit) :stand-still) (:p ghost))
+      (let [upd (merge unit (when (:p ghost)
+                              {:p (:p ghost)
+                               :q (:q ghost)
+                               :r (:r ghost)})
+                       {:acted true})] 
+        {:context (fx/swap-context context assoc 
+                                   :turn-order (rest turn-order)
+                                   :units (assoc units active upd)
+                                   :ghosts (remove #(and (= (:id unit) (:id %)) %) (subs/unit-ghosts context))
+                                   :active-unit nil)}))))
 
 (defmethod event-handler ::make-attacks 
   [{:keys [fx/context]}]

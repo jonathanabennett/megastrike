@@ -7,7 +7,19 @@
             [megastrike.gui.events :as e]
             [megastrike.gui.subs :as subs]
             [megastrike.phases :as phases]
-            [megastrike.utils :as utils]))
+            [megastrike.utils :as utils])
+  (:import [javafx.stage FileChooser]
+           [javafx.event ActionEvent]
+           [javafx.scene Node]))
+
+;; Make camo separate from color and, in the event of a camo being supplied, select a color from the camo.
+(defmethod e/event-handler ::select-camo 
+  [{:keys [^ActionEvent fx/context fx/event]}]
+  (let [window (.getWindow (.getScene ^Node (.getTarget event)))
+        chooser (doto (FileChooser.)
+                  (.setTitle "Select Camo"))]
+    (when-let [camo (.showOpenDialog chooser window)] 
+      {:context (fx/swap-context context assoc :force-camo (str "file:" (.getPath camo)))})))
 
 (defmethod e/event-handler ::filter-changed
   [{:keys [fx/context field values]}]
@@ -32,7 +44,7 @@
 
 (defmethod e/event-handler ::load-save
   [{:keys [fx/context]}]
-   (let [save-data (edn/read-string (slurp (utils/load-resource "save.edn")))]
+   (let [save-data (edn/read-string (slurp (utils/load-resource :resources "save.edn")))]
      {:context (fx/swap-context context merge save-data)}))
 
 (defmethod e/event-handler ::add-force
@@ -40,9 +52,10 @@
   (let [name (fx/sub-val context :force-name)
         deploy (fx/sub-val context :force-zone)
         color (fx/sub-val context :force-color)
-        new-forces (merge (subs/forces context) {(utils/keyword-maker name) {:name name :deploy deploy :color color}})] 
+        camo (fx/sub-val context :force-camo)
+        new-forces (merge (subs/forces context) {(utils/keyword-maker name) {:name name :deploy deploy :color color :camo camo}})] 
     {:context
-     (fx/swap-context context assoc :forces new-forces)}))
+     (fx/swap-context context assoc :forces new-forces :force-camo nil :force-color :white)}))
 
 (defmethod e/event-handler ::mul-selection-changed
   [{:keys [fx/context fx/event]}]
@@ -52,19 +65,13 @@
   [{:keys [fx/context]}]
   (let [units (fx/sub-val context :units)
         mul-unit (fx/sub-val context :active-mul)
-        matching-units (filter #(= (:full-name %) (:full-name mul-unit)) units)
-        id (if (seq matching-units)
-                           (str (:full-name mul-unit) " #" (inc (count matching-units)))
-                           (str (:full-name mul-unit)))
-        unit (cu/create-element mul-unit 
-                                {:force (fx/sub-val context :active-force) 
-                                 :pilot {:name (fx/sub-val context :pilot-name) 
-                                         :skill (Integer/parseInt (fx/sub-val context :pilot-skill))} 
-                                 :current-armor (:armor mul-unit) 
-                                 :current-structure (:structure mul-unit) 
-                                 :current-heat 0 
-                                 :id id})]
-    {:context (fx/swap-context context assoc :units (assoc (fx/sub-val context :units) id unit))}))
+        game-data {:force (fx/sub-val context :active-force) 
+                   :pilot {:name (fx/sub-val context :pilot-name) 
+                           :skill (Integer/parseInt (fx/sub-val context :pilot-skill))} 
+                   :current-armor (:armor mul-unit) 
+                   :current-structure (:structure mul-unit) 
+                   :current-heat 0}]
+    {:context (fx/swap-context context assoc :units (cu/create-element units mul-unit game-data))}))
 
 (defmethod e/event-handler ::filter-mul
   [{:keys [fx/context field]}]

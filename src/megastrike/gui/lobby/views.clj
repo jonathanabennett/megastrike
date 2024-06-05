@@ -209,15 +209,12 @@
                                         :describe (fn [x] {:text (prn-str (reduce + (map #(cu/pv %) ((utils/keyword-maker (:name x)) counts))))})}}]
               :items (vals forces)}})))
 
-(def force-pane
+(defn force-pane
+  [{:keys [fx/context]}]
   {:fx/type :v-box
    :spacing 5
    :fill-width true
    :alignment :top-center
-   :grid-pane/row 0
-   :grid-pane/column 1
-   :grid-pane/hgrow :always
-   :grid-pane/vgrow :always
    :children [{:fx/type :label :text "Forces"}
               {:fx/type common/text-input
                :label "Force Name"
@@ -230,7 +227,15 @@
                :children [{:fx/type :label :text "Color:"}
                           {:fx/type :color-picker
                            :on-value-changed {:event-type ::lobby-events/color-changed :fx/sync true}
-                           :value :gold}]}
+                           :value :gold} ]}
+              (if (fx/sub-val context :force-camo) 
+                {:fx/type :button 
+                 :background {:images (list (fx/sub-val context :force-camo))} 
+                 :text "Change Camo" 
+                 :on-action {:event-type ::lobby-events/select-camo :fx/sync true}} 
+                {:fx/type :button 
+                 :text "Select Camo" 
+                 :on-action {:event-type ::lobby-events/select-camo :fx/sync true}})
               {:fx/type :button
                :text "Add Force"
                :on-action {:event-type ::lobby-events/add-force :fx/sync true}}
@@ -318,7 +323,11 @@
 (def view
   {:fx/type :grid-pane
    :children [mul-pane
-              force-pane
+              {:fx/type force-pane 
+               :grid-pane/row 0 
+               :grid-pane/column 1 
+               :grid-pane/hgrow :always 
+               :grid-pane/vgrow :always}
               unit-pane
               map-pane]})
 

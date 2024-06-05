@@ -17,20 +17,25 @@
 (defn draw-sprite
   "Draws a sprite. Used for both the map and the lobby."
   [{:keys [unit force x y shift]}]
-  {:fx/type :image-view
-   :image (cu/find-sprite unit)
-   :effect {:fx/type :blend
-            :top-input {:fx/type :color-input
-                        :paint (force :color)
-                        :x 0 :y 0 :width 100 :height 100}
-            :bottom-input {:fx/type :image-input
-                           :source (cu/find-sprite unit)}
-            :mode :src-atop
-            :opacity 0.5}
-   :translate-x x
-   :translate-y (+ y shift)
-   :x 0
-   :y 0})
+  (let [color (force :color)
+        camo (force :camo)]
+    {:fx/type :image-view
+     :image (str (.toURI (cu/find-sprite unit)))
+     :effect {:fx/type :blend
+              :top-input (if camo
+                           {:fx/type :image-input 
+                            :source camo}
+                           {:fx/type :color-input
+                            :paint color
+                            :x 0 :y 0 :width 100 :height 100})
+              :bottom-input {:fx/type :image-input
+                             :source (str (.toURI (cu/find-sprite unit)))}
+              :mode :src-atop
+              :opacity 0.5}
+     :translate-x x
+     :translate-y (+ y shift)
+     :x 0
+     :y 0}))
 
 (defn text-input
   "Helper method to create a text input box which automatically updates the atom as the text is edited."

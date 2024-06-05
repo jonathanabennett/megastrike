@@ -1,11 +1,18 @@
 (ns megastrike.utils
   (:require [clojure.java.io :as io]
-            [clojure.string :as string]))
+            [clojure.string :as string])
+  )
+
+(def application-directory (.getAbsolutePath (io/file ".")))
+
+(def data-directory (io/file application-directory "data/"))
 
 (defn load-resource
   "Helper function to use `io/resource` to get files."
-  [name]
-  (-> name io/resource))
+  [location name]
+  (if (= location :resources)
+    (io/resource name)
+    (io/file data-directory name)))
 
 (defn strip-quotes
   "Strips out stray escaped quotes."
