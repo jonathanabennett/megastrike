@@ -23,16 +23,38 @@
   ([line] 
    (parse-hex-line line 0 0)))
 
-(defn create-board
-  ([filename x-offset y-offset]
-   (let [f (slurp filename)]
-     (vec (remove nil?
-                  (for [line (str/split-lines f)]
-                    (when (str/includes? line "hex")
-                      (parse-hex-line line x-offset y-offset)))))))
+(defn create-mapsheet 
   ([filename]
-   (create-board filename 0 0))
-  
+   (loop [mapsheet {:height 0 :width 0 :tiles []}
+          lines (str/split-lines (slurp filename))]
+     (if (empty? lines)
+         mapsheet
+         (recur (let [line (first lines)]
+                  (cond 
+                    (str/includes? line "size") (merge mapsheet {:width (Integer/parseInt (second (str/split line #" "))) 
+                                                                          :height (Integer/parseInt (nth (str/split line #" ") 2))})
+                    (str/includes? line "hex") (assoc mapsheet :tiles (conj (:tiles mapsheet) (parse-hex-line line)))
+                    :else mapsheet))
+                (rest lines))))))
+
+(defn create-board
+  ([filename]
+   (:tiles (create-mapsheet filename)))
+  ([mapsheet-array width height]
+     (loop [mapsheets mapsheet-array 
+            hexes []
+            x 0 
+            y 0] 
+       (if (empty? mapsheets)
+         hexes
+         (recur (rest mapsheets) 
+                (into [] (flatten (conj hexes (:tiles (first mapsheets)))))
+                (if (= (inc x) width)
+                  0
+                  (inc x))
+                (if (= (inc x) width)
+                  (inc y)
+                  y)))))
   ([width height]
    (vec (for [x (vec (range 1 (inc width))) y (vec (range 1 (inc height)))]
          (create-tile x y 0 "" "grass")))))
