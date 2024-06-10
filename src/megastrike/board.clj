@@ -40,7 +40,7 @@
 (defn create-board
   ([filename]
    (:tiles (create-mapsheet filename)))
-  ([mapsheet-array width height]
+  ([mapsheet-array width _]
      (loop [mapsheets mapsheet-array 
             hexes []
             x 0 
