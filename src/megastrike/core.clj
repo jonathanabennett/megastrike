@@ -4,7 +4,6 @@
   (:require [cljfx.api :as fx]
             [clojure.core.cache :as cache]
             [megastrike.combat-unit :as cu]
-            [megastrike.scenario :as scenario]
             [megastrike.gui.events :as events]
             [megastrike.gui.views :as views]
             [megastrike.hexagons.hex :as hex])
@@ -28,6 +27,7 @@
      :active-mul nil
      :active-force nil
      :active-unit nil
+     :map-boards []
      :game-board []
      :layout (hex/create-layout)
      :map-width "16"
