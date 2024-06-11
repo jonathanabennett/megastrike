@@ -1,5 +1,6 @@
 (ns megastrike.board
-  (:require [clojure.string :as str]
+  (:require [clojure.java.io :as io]
+            [clojure.string :as str]
             [megastrike.hexagons.hex :as hex]
             [megastrike.utils :refer [strip-quotes]]))
 
@@ -25,7 +26,7 @@
 
 (defn create-mapsheet 
   ([filename]
-   (loop [mapsheet {:height 0 :width 0 :tiles []}
+   (loop [mapsheet {:name (.getName (io/file filename)) :height 0 :width 0 :tiles []}
           lines (str/split-lines (slurp filename))]
      (if (empty? lines)
          mapsheet

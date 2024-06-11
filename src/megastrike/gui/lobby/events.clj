@@ -1,6 +1,7 @@
 (ns megastrike.gui.lobby.events
   (:require [cljfx.api :as fx]
             [clojure.edn :as edn]
+            [clojure.java.io :as io]
             [clojure.string :as str]
             [megastrike.board :as board]
             [megastrike.combat-unit :as cu]
@@ -8,18 +9,29 @@
             [megastrike.gui.subs :as subs]
             [megastrike.phases :as phases]
             [megastrike.utils :as utils])
-  (:import [javafx.stage FileChooser]
-           [javafx.event ActionEvent]
-           [javafx.scene Node]))
+  (:import [javafx.event ActionEvent]
+           [javafx.scene Node]
+           [javafx.stage FileChooser]))
 
 ;; Make camo separate from color and, in the event of a camo being supplied, select a color from the camo.
 (defmethod e/event-handler ::select-camo 
   [{:keys [^ActionEvent fx/context fx/event]}]
   (let [window (.getWindow (.getScene ^Node (.getTarget event)))
         chooser (doto (FileChooser.)
-                  (.setTitle "Select Camo"))]
+                  (.setTitle "Select Camo")
+                  (.setInitialDirectory (io/file "data/images/camo")))]
     (when-let [camo (.showOpenDialog chooser window)] 
       {:context (fx/swap-context context assoc :force-camo (str "file:" (.getPath camo)))})))
+
+(defmethod e/event-handler ::load-mapboard
+  [{:keys [^ActionEvent fx/context fx/event id]}]
+  (let [window (.getWindow (.getScene ^Node (.getTarget event)))
+        chooser (doto (FileChooser.)
+                  (.setTitle "Select Mapboard")
+                  (.setInitialDirectory (io/file "data/boards")))
+        boards (fx/sub-val context :map-boards)]
+    (when-let [board (.showOpenDialog chooser window)]
+      {:context (fx/swap-context context assoc :map-boards (assoc boards id (board/create-mapsheet (str "file:" (.getPath board)))))})))
 
 (defmethod e/event-handler ::filter-changed
   [{:keys [fx/context field values]}]
@@ -31,12 +43,12 @@
 
 (defmethod e/event-handler ::launch-game
   [{:keys [fx/context view]}]
-  (let [new-board (board/create-board
-                   (Integer/parseInt (fx/sub-val context :map-width))
-                   (Integer/parseInt (fx/sub-val context :map-height)))
-        forces (phases/roll-initiative (subs/forces context))
+  (let [forces (phases/roll-initiative (subs/forces context)) 
+        width (fx/sub-val context :width)
+        height (fx/sub-val context :width)
+        map-boards (fx/sub-val context :map-boards)
         turn-order (phases/generate-turn-order forces (vals (subs/units context)))]
-    {:context (fx/swap-context context merge {:game-board new-board 
+    {:context (fx/swap-context context merge {:game-board (board/create-board map-boards width height)
                                               :forces forces 
                                               :turn-order turn-order 
                                               :current-phase :deployment 

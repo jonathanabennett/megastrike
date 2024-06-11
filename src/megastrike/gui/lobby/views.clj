@@ -1,6 +1,7 @@
 (ns megastrike.gui.lobby.views
   (:require [cljfx.api :as fx]
             [cljfx.ext.table-view :as tables]
+            [megastrike.board :as board]
             [megastrike.combat-unit :as cu]
             [megastrike.gui.common :as common]
             [megastrike.gui.lobby.events :as lobby-events]
@@ -296,6 +297,21 @@
                :text "Unit List"}
               {:fx/type units-table}]})
 
+(defn map-grid
+  [{:keys [fx/context]}]
+  (let [width (Integer/parseInt (fx/sub-val context :map-width))
+        height (Integer/parseInt (fx/sub-val context :map-height))
+        boards (fx/sub-val context :map-boards)]
+    {:fx/type :grid-pane
+     :children (for [x (range width) 
+                     y (range height)] 
+                       {:fx/type :button 
+                        :grid-pane/column x 
+                        :grid-pane/row y 
+                        :text (:name (nth boards (+ (* y width) x) {:name "None"})) 
+                        :id (str (+ (* y width) x)) 
+                        :on-action {:event-type ::lobby-events/load-mapboard :id (+ (* y width) x)}})}))
+
 (def map-pane
   {:fx/type :v-box
    :spacing 5
@@ -308,11 +324,12 @@
    :children [{:fx/type :label
                :text "Map Setup"}
               {:fx/type common/text-input
-               :label "Map Width"
+               :label "Map Width (in boards)"
                :key :map-width}
               {:fx/type common/text-input
-               :label "Map Height"
-               :key :map-height}
+               :label "Map Height (in boards)"
+               :key :map-height} 
+              {:fx/type map-grid}
               {:fx/type :button
                :text "Load Test Game"
                :on-action {:event-type ::lobby-events/load-save :fx/sync true}}
