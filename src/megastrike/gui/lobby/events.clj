@@ -8,6 +8,7 @@
             [megastrike.gui.events :as e]
             [megastrike.gui.subs :as subs]
             [megastrike.phases :as phases]
+            [megastrike.scenario :as scenario]
             [megastrike.utils :as utils])
   (:import [javafx.event ActionEvent]
            [javafx.scene Node]
@@ -22,6 +23,16 @@
                   (.setInitialDirectory (io/file "data/images/camo")))]
     (when-let [camo (.showOpenDialog chooser window)] 
       {:context (fx/swap-context context assoc :force-camo (str "file:" (.getPath camo)))})))
+
+(defmethod e/event-handler ::load-scenario
+  [{:keys [^ActionEvent fx/context fx/event]}]
+  (let [window (.getWindow (.getScene ^Node (.getTarget event)))
+        chooser (doto (FileChooser.)
+                  (.setTitle "Select Scenario")
+                  (.setInitialDirectory (io/file "data/scenarios")))]
+    (when-let [s (.showOpenDialog chooser window)] 
+      (let [scenario (select-keys (scenario/setup-scenario s) [:units :forces :map-boards :map-width :map-height])]
+        {:context (fx/swap-context context merge scenario)}))))
 
 (defmethod e/event-handler ::load-mapboard
   [{:keys [^ActionEvent fx/context fx/event id]}]
@@ -45,7 +56,7 @@
   [{:keys [fx/context view]}]
   (let [forces (phases/roll-initiative (subs/forces context)) 
         width (fx/sub-val context :width)
-        height (fx/sub-val context :width)
+        height (fx/sub-val context :height)
         map-boards (fx/sub-val context :map-boards)
         turn-order (phases/generate-turn-order forces (vals (subs/units context)))]
     {:context (fx/swap-context context merge {:game-board (if (empty? (subs/board context))
@@ -94,7 +105,10 @@
 
 (defmethod e/event-handler ::force-selection-changed
   [{:keys [fx/context fx/event]}]
-  {:context (fx/swap-context context assoc :active-force (utils/keyword-maker (:name event)))})
+  {:context (fx/swap-context context assoc 
+                             :active-force (utils/keyword-maker (:name event))
+                             :force-name (:name event)
+                             :force-zone (:deployment event))})
 
 (defmethod e/event-handler ::unit-selection-changed
   [{:keys [fx/context fx/event]}]

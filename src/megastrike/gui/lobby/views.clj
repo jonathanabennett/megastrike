@@ -334,6 +334,9 @@
                :text "Load Test Game"
                :on-action {:event-type ::lobby-events/load-save :fx/sync true}}
               {:fx/type :button
+               :text "Load Scenario"
+               :on-action {:event-type ::lobby-events/load-scenario :fx/sync true}}
+              {:fx/type :button
                :text "Launch Game"
                :on-action {:event-type ::lobby-events/launch-game :fx/sync true :view :game}}]})
 
