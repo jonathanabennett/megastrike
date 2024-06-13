@@ -76,7 +76,7 @@
       (str/includes? line "BoardWidth") (merge state {:map-width (Integer/parseInt value)})
       (str/includes? line "BoardHeight") (merge state {:map-height (Integer/parseInt value)})
       (str/includes? line "RandomDirs") (merge state {:map-dirs (set-map-dirs value)})
-      (str/includes? line "Maps") (merge state {:maps value})
+      (str/includes? line "Maps") (merge state {:maps (str/split value #",")})
       (str/includes? line "Factions") (merge state {:forces (initialize-forces value)})
       (str/includes? line "Location") (set-location state line value)
       (str/includes? line "Team") (set-team state line value) 
@@ -101,12 +101,16 @@
 
 (defn set-maps
   [scenario]
-  (let [boards (board-files (:map-dirs scenario))
-        map-size (first (str/split (.getName (rand-nth boards)) #" "))
-        maps (for [x (range (:map-width scenario)) 
-                   y (range (:map-height scenario))] 
-               [x y])]
-    {:map-boards (into [] (map #(pick-map % boards map-size) maps))}))
+  (if (:map-dirs scenario)
+    (let [boards (board-files (:map-dirs scenario))
+          map-size (first (str/split (.getName (rand-nth boards)) #" "))
+          maps (for [x (range (:map-width scenario)) 
+                     y (range (:map-height scenario))] 
+                 [x y])]
+      {:map-boards (into [] (map #(pick-map % boards map-size) maps))}) 
+    (let [maps (:maps scenario)]
+      (prn maps)
+      {:map-boards (into [] (map #(board/create-mapsheet (utils/load-resource :data (str "boards/" % ".board"))) maps))})))
 
 (defn parse-scenario-file
   [file]
@@ -120,6 +124,5 @@
 (defn setup-scenario
   [file]
   (let [scenario (parse-scenario-file file)
-        map-layout (set-maps scenario)
-        ] 
+        map-layout (set-maps scenario)] 
     (merge scenario map-layout {:map-width (str (:map-width scenario)) :map-height (str (:map-height scenario))})))
