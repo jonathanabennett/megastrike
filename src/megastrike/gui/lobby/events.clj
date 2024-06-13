@@ -48,7 +48,9 @@
         height (fx/sub-val context :width)
         map-boards (fx/sub-val context :map-boards)
         turn-order (phases/generate-turn-order forces (vals (subs/units context)))]
-    {:context (fx/swap-context context merge {:game-board (board/create-board map-boards width height)
+    {:context (fx/swap-context context merge {:game-board (if (empty? (subs/board context))
+                                                            (board/create-board map-boards width height)
+                                                            (subs/board context))
                                               :forces forces 
                                               :turn-order turn-order 
                                               :current-phase :deployment 
