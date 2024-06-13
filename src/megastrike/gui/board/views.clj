@@ -57,7 +57,6 @@
         target-hex (hex/hex-to-pixel target layout)
         range (hex/hex-distance unit target)
         to-hit (cu/calculate-to-hit unit target)] 
-    (prn target-hex)
     {:fx/type :group
      :children [{:fx/type :line 
                  :start-x (:x origin-hex)
