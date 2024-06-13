@@ -3,7 +3,7 @@
             [clojure.string :as string])
   )
 
-(def application-directory (.getAbsolutePath (io/file ".")))
+(def application-directory (subs (.getAbsolutePath (io/file ".")) 0 (dec (.length (.getAbsolutePath (io/file "."))))))
 
 (def data-directory (io/file application-directory "data/"))
 

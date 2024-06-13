@@ -48,13 +48,12 @@
   (if (re-find #"\d+=" line)
     (let [[faction num data] (parse-unit-string line)
           [unit pilot pskill gskill direction x y] (str/split data #",")
-          loc (if (and x y) (hex/hex-from-offset x y) {})
+          loc (if (and x y) (hex/hex-from-offset (Integer/parseInt (str/trim x)) (Integer/parseInt (str/trim y))) {})
           skill (int (math/floor (/ (+ (Integer/parseInt pskill) (Integer/parseInt gskill)) 2)))
           mul (first (cu/filter-units cu/mul :full-name unit str/includes?))] 
-      (prn skill)
       (cu/create-element (get state :units {}) 
                          mul
-                         (merge loc {:force faction 
+                         (merge loc {:force (utils/keyword-maker faction) 
                                      :pilot 
                                      {:name pilot 
                                       :skill skill} 
@@ -63,14 +62,20 @@
                                      :current-heat 0})))
     (:units state)))
 
+(defn set-map-dirs
+  [line]
+  (let [dirs (str/split line #",")]
+    (for [d dirs] (io/file (str utils/application-directory "/data/boards/" d)))))
+
+
 (defn parse-line 
   [state line]
   (let [value (second (str/split line #"="))] 
     (cond 
       (= (str/index-of line "#") 0) state 
-      (str/includes? line "BoardWidth") (merge state {:board-width (Integer/parseInt value)})
-      (str/includes? line "BoardHeight") (merge state {:board-height (Integer/parseInt value)})
-      (str/includes? line "RandomDirs") (merge state {:map-dirs value})
+      (str/includes? line "BoardWidth") (merge state {:map-width (Integer/parseInt value)})
+      (str/includes? line "BoardHeight") (merge state {:map-height (Integer/parseInt value)})
+      (str/includes? line "RandomDirs") (merge state {:map-dirs (set-map-dirs value)})
       (str/includes? line "Maps") (merge state {:maps value})
       (str/includes? line "Factions") (merge state {:forces (initialize-forces value)})
       (str/includes? line "Location") (set-location state line value)
@@ -85,21 +90,23 @@
 (defn board-files [dirs]
   (let [is-board-file? #(-> % .getName (str/ends-with? ".board"))
         board-files-in-dir (fn [dir]
-                             (filter is-board-file? (file-seq (io/file dir))))]
-    (vec (mapcat board-files-in-dir dirs))))
+                             (filter is-board-file? (file-seq (io/file dir))))
+        boards (vec (mapcat board-files-in-dir dirs))]
+    boards))
 
 (defn pick-map
-  [loc map-dirs]
-  (let [map-list (board-files map-dirs)]
-    (board/create-board ((rand-nth map-list) (* (first loc) ) (second loc)))))
+  [loc board-files map-size]
+  (let [map-list (filter #(str/includes? (str (.getName %)) map-size) board-files)]
+    (board/create-mapsheet (str "file:" (.getPath (rand-nth map-list))))))
 
 (defn set-maps
   [scenario]
-  (let [map-dirs []
-        maps (for [x (range (:board-width scenario))
-                   y (range (:board-wideth scenario))]
+  (let [boards (board-files (:map-dirs scenario))
+        map-size (first (str/split (.getName (rand-nth boards)) #" "))
+        maps (for [x (range (:map-width scenario)) 
+                   y (range (:map-height scenario))] 
                [x y])]
-    (into [] (map #(pick-map % map-dirs) maps))))
+    {:map-boards (into [] (map #(pick-map % boards map-size) maps))}))
 
 (defn parse-scenario-file
   [file]
@@ -114,5 +121,5 @@
   [file]
   (let [scenario (parse-scenario-file file)
         map-layout (set-maps scenario)
-        ]
-    (select-keys [:factions :units :game-board] (merge scenario map-layout))))
+        ] 
+    (merge scenario map-layout {:map-width (str (:map-width scenario)) :map-height (str (:map-height scenario))})))
