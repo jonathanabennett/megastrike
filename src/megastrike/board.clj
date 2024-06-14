@@ -14,6 +14,8 @@
 
 (defn parse-hex-line 
   ([line x-offset y-offset]
+  (prn x-offset)
+   (prn y-offset)
    (let [line-str (str/split line #" ")
          x (+ (Integer/parseInt (subs (nth line-str 1) 0 2)) x-offset)
          y (+ (Integer/parseInt (subs (nth line-str 1) 2 4)) y-offset)
@@ -25,7 +27,7 @@
    (parse-hex-line line 0 0)))
 
 (defn create-mapsheet 
-  ([filename]
+  ([filename x-offset y-offset]
    (loop [mapsheet {:name (.getName (io/file filename)) :height 0 :width 0 :tiles []}
           lines (str/split-lines (slurp filename))]
      (if (empty? lines)
@@ -34,9 +36,11 @@
                   (cond 
                     (str/includes? line "size") (merge mapsheet {:width (Integer/parseInt (second (str/split line #" "))) 
                                                                           :height (Integer/parseInt (nth (str/split line #" ") 2))})
-                    (str/includes? line "hex") (assoc mapsheet :tiles (conj (:tiles mapsheet) (parse-hex-line line)))
+                    (str/includes? line "hex") (assoc mapsheet :tiles (conj (:tiles mapsheet) (parse-hex-line line x-offset y-offset)))
                     :else mapsheet))
-                (rest lines))))))
+                (rest lines)))))
+  ([filename]
+   (create-mapsheet filename 0 0)))
 
 (defn create-board
   ([filename]

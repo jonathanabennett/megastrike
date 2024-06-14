@@ -1,5 +1,6 @@
 (ns megastrike.scenario
   (:require [clojure.java.io :as io]
+            [clojure.pprint :as pprint]
             [clojure.math :as math]
             [clojure.string :as str]
             [megastrike.board :as board]
@@ -96,8 +97,10 @@
 
 (defn pick-map
   [loc board-files map-size]
-  (let [map-list (filter #(str/includes? (str (.getName %)) map-size) board-files)]
-    (board/create-mapsheet (str "file:" (.getPath (rand-nth map-list))))))
+  (let [map-list (filter #(str/includes? (str (.getName %)) map-size) board-files)
+        width (* (first loc) (Integer/parseInt (first (str/split map-size #"x"))))
+        height (* (second loc) (Integer/parseInt (second (str/split map-size #"x"))))]
+    (board/create-mapsheet (str "file:" (.getPath (rand-nth map-list)) width height))))
 
 (defn set-maps
   [scenario]
@@ -108,9 +111,18 @@
                      y (range (:map-height scenario))] 
                  [x y])]
       {:map-boards (into [] (map #(pick-map % boards map-size) maps))}) 
-    (let [maps (:maps scenario)]
-      (prn maps)
-      {:map-boards (into [] (map #(board/create-mapsheet (utils/load-resource :data (str "boards/" % ".board"))) maps))})))
+    (let [maps (map #(utils/load-resource :data (str "boards/" % ".board")) (:maps scenario)) 
+          size-string (first (str/split (.getName (first maps)) #" ")) 
+          width (Integer/parseInt (first (str/split size-string #"x")))
+          height (Integer/parseInt (second (str/split size-string #"x")))
+          offsets (for [x (range (:map-width scenario))
+                        y (range (:map-height scenario))]
+                    [(* width x) 
+                     (* height y)])] 
+      (prn offsets)
+      ;; I need parallel loops over maps and offsets in order get the offsets into the map below.
+      ;; Turn maps into a seq of maps which have all the data.
+      {:map-boards (into [] (map #(board/create-mapsheet % (first offsets) (second offsets)) maps))})))
 
 (defn parse-scenario-file
   [file]
@@ -125,4 +137,5 @@
   [file]
   (let [scenario (parse-scenario-file file)
         map-layout (set-maps scenario)] 
+    ;;(pprint/pprint map-layout)
     (merge scenario map-layout {:map-width (str (:map-width scenario)) :map-height (str (:map-height scenario))})))
