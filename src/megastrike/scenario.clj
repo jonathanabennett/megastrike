@@ -102,6 +102,12 @@
         height (* (second loc) (Integer/parseInt (second (str/split map-size #"x"))))]
     (board/create-mapsheet (str "file:" (.getPath (rand-nth map-list))) width height)))
 
+(defn map-rotator
+  [filename]
+  (if (str/includes? filename "rotate:")
+    {:board (utils/load-resource :data (str "boards/" (second (str/split filename #":")) ".board")) :rotate true}
+    {:board (utils/load-resource :data (str "boards/" filename ".board")) :rotate nil}))
+
 (defn set-maps
   [scenario]
   (if (:map-dirs scenario)
@@ -111,8 +117,8 @@
                      y (range (:map-height scenario))] 
                  [x y])]
       {:map-boards (into [] (map #(pick-map % boards map-size) maps))}) 
-    (let [ maps (map #(utils/load-resource :data (str "boards/" % ".board")) (:maps scenario)) 
-          size-string (first (str/split (.getName (first maps)) #" ")) 
+    (let [maps (map #(map-rotator %) (:maps scenario)) 
+          size-string (first (str/split (.getName (:board (first maps))) #" ")) 
           width (Integer/parseInt (first (str/split size-string #"x")))
           height (Integer/parseInt (second (str/split size-string #"x")))
           offsets (for [x (range (:map-width scenario))
@@ -126,7 +132,7 @@
           (let [test 0]
             (prn (nth maps n))
             (prn (nth offsets n))
-            (recur (conj ret (board/create-mapsheet (nth maps n) (first (nth offsets n)) (second (nth offsets n))))
+            (recur (conj ret (board/create-mapsheet (:board (nth maps n)) (first (nth offsets n)) (second (nth offsets n))))
                    (inc n))))))))
 
 (defn parse-scenario-file
