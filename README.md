@@ -4,9 +4,23 @@ A Clojure App to play Alphastrike on the computer.
 
 ## Usage
 
+1. Have Java 17 installed
+2. Make the appropriate `startup` file executable for your OS
+3. Execute the file
+
 ## What works
 
-Right now (v0.1), the game allows you to simulate combat between armies of any size using units exported from Megamek via their AlphaStrike stat generator. While the game won't stop you from using them, note that *FLYING UNITS DO NOT FLY* and none of the rules for them have been implemented yet. I am currently hiding all the Aero elements and many of the conventional fighters, but VTOLs and Support Vehicles which fly are still in the lists, so you could "use" them. The combat happens on a featureless plain.
+Right now (v0.2), the game allows you to simulate combat between armies of any size using units exported from Megamek via their AlphaStrike stat generator. While the game won't stop you from using them, note that *FLYING UNITS DO NOT FLY* and none of the rules for them have been implemented yet. I am currently hiding all the Aero elements and many of the conventional fighters, but VTOLs and Support Vehicles which fly are still in the lists, so you could "use" them.
+
+Terrain displays as of v0.2.0, but it has no impact on movement or combat. Terrain is the major feature being worked on for the remainder of the v0.2.x series, with movement coming first and then combat.
+
+Scenario reading (from MegaMek Scenario files, .mms) works but not everything works. Things known not to work include:
+
+1. Rotating the boards
+2. Applying damage to unit
+3. Anything to do with teams (it will be a free for all)
+4. Minefields
+5. Planetary Conditions
 
 ## How to Play
 
@@ -15,27 +29,27 @@ Right now (v0.1), the game allows you to simulate combat between armies of any s
 When you first launch the game, it will launch into a lobby screen. In this lobby screen, you will see 4 window spaces. These windows are the Unit Selection window, the Force Creation window, the Unit list window, and the Map setup window.
 
 **Quickstart**
-If you want to test it out right away, click the "Load Test Game" button, followed by the "Launch Game" button to load a 4v4 of AFFS vs. DCMS units adapted from the Fox and the Dragon scenario.
+If you want to test it out right away, click the "Load Scenario" button, select a scenario from the folder. Then click each force in the list above that button, give them a Camo (You'll know you've done it when the mech sprites change color) and click Launch game.
 
 #### Adding Forces
 
-Forces need a name, a deployment zone (Same options as Megamek, N, NE, E, SE, S, SW, W, NW, EDG, CTR), and a color. Note that the deployment zone is not enforced as of 0.1.
+Forces need a name, a deployment zone (Same options as Megamek, N, NE, E, SE, S, SW, W, NW, EDG, CTR), and a camo. Note that the deployment zone is not enforced as of 0.2.
 
-**NOTE: The game currenly only supports 2 forces in a head to head, do not add more than two forces.**
+**NOTE: Behavior is undefined when using more than two forces, it should work, but I make no promises. Teams are not implemented at all.**
 
-Once you have added a force, you can select it by clicking on its name. You'll need both forces before you can select one.
+Once you have added a force, you can select it by clicking on its name. When you click it, you will see the force's information appear in the boxes above. If you need to change their camo, you can click on the force, change the camo, and then add it again to change the info. 
 
 #### Adding Units
 
-To add a unit, you need to have a force selected and a mek selected. Enter the pilot data and click the Add Unit button. You should see the unit appear in the Army Unit List window to the bottom left. You can add as many units as you want. Currently (as of 0.1), there is no way to remove a unit added by mistake, be sure to click carefully.
+To add a unit, you need to have a force selected and a mek selected. Enter the pilot data and click the Add Unit button. You should see the unit appear in the Army Unit List window to the bottom left. You can add as many units as you want. Currently (as of 0.2), there is no way to remove a unit added by mistake, be sure to click carefully.
 
 #### Setting Up the Map
 
-Finally, initialize the map by entering the width and height of the map. Once you are happy with the map size, click "Update Map Size".
+Finally, initialize the map by entering number of boards wide by high you want the map to be. This will populate a grid of buttons. Click each button and select a board to fill that space.
 
 #### Ready to Play
 
-If you have completed all of these steps, you will see the "Game Not Ready" button change to "Game Ready". Click it to begin playing.
+If you have completed all of these steps, click the "Launch Game" button.
 
 ### Initiative Phase
 
@@ -65,29 +79,31 @@ Initiative for the next round should roll automatically! If it does not, click "
 
 ## What's coming
 
-### 0.1.0 This release
+### 0.1.0 Previous Release
 
 This, the first "functional" release, is a very primitive implementation of the rules, allowing a hot-seat 2v2. The map is a featureless plain. Facing will not be calculated. Critical hits will not be applied. Only standard attack types will work. Basically, you will be able to build two forces, and then have them move, shoot, and lose armor/structure until everyone dies.
 
-### 0.2.0
+### 0.2.0 This release
 
-Bugfixes for 0.1 and simpler installation. Add support for saving and loading multiple games.
+This release focuses on adding support for Scenarios. The scenario files that ship with MegaMek provide a super convenient "test bank" to ensure that everything is working. Assuming every scenario can load and run, everything is working. Therefore, I prioritized getting scenarios working.
 
-### 0.3.0
+The next step is to make the terrain on the map actually mean something and make the map easier to read. 
+
+### Next Release
 
 Initial implementation of terrain rules for movement (line of sight and attacks will not be implemented).
 
-### 0.4.0
+### R+2
 
 Initial implementation of terrain rules for attacks.
 
-### 0.5.0
+### R+3
 
 Implementation of physical attacks, heat, and criticals.
 
-### 0.6.0
+### R+4
 
-Cleanup and bugfixes before the 1.0 release, which will cover a subset of the rules required to play 
+Cleanup and bugfixes
 - Any specials not directly related to damage will not be implemented.
 - Flying and aerial movement will not be implemented.
 

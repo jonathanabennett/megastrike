@@ -103,7 +103,8 @@
   ([mul-unit game-data]
    (merge mul-unit game-data))
   ([units mul-unit game-data]
-   (let [matching-units (filter #(= (:full-name %) (:full-name mul-unit)) units)
+   (let [matching-units (filter (fn [x] (when (and (:id x) (:full-name mul-unit)) 
+                                   (str/includes? (:id x) (:full-name mul-unit)))) (vals units))
          id (if (seq matching-units)
               (str (:full-name mul-unit) " #" (inc (count matching-units)))
               (str (:full-name mul-unit)))
@@ -174,9 +175,9 @@
 (defn find-sprite
   "Searches a the mechset to determine which images to use and returns the path to that image."
   [unit]
-  (let [chassis-match (filter (fn [row] (= (:chassis unit) (second row))) mechset)
-        exact-match (filter (fn [row] (= (:full-name unit) (second row))) mechset)
-        match-row (or (first exact-match) (first chassis-match))]
+  (let [chassis-match (filter (fn [row] (str/includes? (second row) (:chassis unit))) mechset)
+        exact-match (filter (fn [row] (str/includes? (second row) (:full-name unit))) mechset)
+        match-row (or (first exact-match) (first chassis-match))] 
     (utils/load-resource :data (str "images/units/" (nth match-row 2)))))
 
 (defn can-move?

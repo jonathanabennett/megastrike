@@ -25,7 +25,7 @@
     (pprint/pprint save (io/writer (utils/load-resource :data "save.edn")))))
 
 (defmethod event-handler ::quit-game
-  [{:keys [fx/context]}]
+  [_]
   (Platform/exit))
 
 (defmethod event-handler ::stats-clicked
