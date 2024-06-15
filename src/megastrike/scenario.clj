@@ -100,7 +100,7 @@
   (let [map-list (filter #(str/includes? (str (.getName %)) map-size) board-files)
         width (* (first loc) (Integer/parseInt (first (str/split map-size #"x"))))
         height (* (second loc) (Integer/parseInt (second (str/split map-size #"x"))))]
-    (board/create-mapsheet (str "file:" (.getPath (rand-nth map-list)) width height))))
+    (board/create-mapsheet (str "file:" (.getPath (rand-nth map-list))) width height)))
 
 (defn set-maps
   [scenario]
