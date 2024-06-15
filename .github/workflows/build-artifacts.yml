@@ -4,7 +4,7 @@ on:
   release:
     types: [created]
 jobs:
-  build-deb:
+  build-linux-uberjar:
     uses: ./.github/workflows/build-deb.yml
   deploy-deb:
     needs: build-linux-uberjar
@@ -22,7 +22,7 @@ jobs:
           asset_path: ./*
           asset_name: megastrike_${{ github.event.release.tag_name }}_amd64
 
-  build-dmg:
+  build-mac-uberjar:
     uses: ./.github/workflows/build-dmg.yml
   deploy-dmg:
     needs: build-mac-uberjar
@@ -40,7 +40,7 @@ jobs:
           asset_path: ./*
           asset_name: megastrike-${{ github.event.release.tag_name }}_macos
 
-  build-exe:
+  build-win-uberjar:
     uses: ./.github/workflows/build-exe.yml
   deploy-exe:
     needs: build-win-uberjar
