@@ -1,6 +1,6 @@
 (ns megastrike.hexagons.hex
-  (:require
-   [clojure.math :as math]))
+  (:require [clojure.math :as math]
+            [clojure.string :as str]))
 
 (defn hexagon
   "Creates a Hexagon using a 3d addressing system."
@@ -75,6 +75,11 @@
   [hex direction]
   (hex-addition hex (hex-direction direction)))
 
+(defn hex-neighbors
+  [hex]
+  (for [i (range 6)]
+    (hex-neighbor hex i)))
+
 (defn create-layout
   "Creates a layout. Populated with the default layout."
   []
@@ -119,6 +124,17 @@
 (defn linear-interpolation 
   [a b step]
   (+ a (* (- b a) step)))
+
+(defn step-cost
+  [hex neighbor mv-type]
+  (let [terrain (:terrain neighbor)
+        lvl-change (- (:elevation neighbor) (:elevation hex))]
+    (cond 
+      (= mv-type :jump) 1
+      (str/includes? terrain "woods") (+ (abs lvl-change) 2)
+      (str/includes? terrain "rough") (+ (abs lvl-change) 2)
+      (str/includes? terrain "rubble") (+ (abs lvl-change) 2)
+      (str/includes? terrain "water") (+ (abs lvl-change) 2))))
 
 (defn hex-lerp
   [hex1 hex2 step]
