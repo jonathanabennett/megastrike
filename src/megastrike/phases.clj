@@ -16,9 +16,15 @@
 (defn move-generator
   "Takes a map containing {:force-name count} pairs and returns the number which
    should move this round"
-  [unit-count]
-  (let [smallest-count (first (sort < (vals unit-count)))]
-    (into {} (map (fn [[key value]] [key (max 1 (math/floor-div value smallest-count))]) unit-count))))
+  [unit-count force-list]
+  (let [smallest-count (first (sort < (vals unit-count)))] 
+    (loop [ret {}
+           forces force-list]
+      (if (empty? forces)
+        ret
+        (let [f (utils/keyword-maker (:name (first forces)))]
+          (recur (assoc ret f (max 1 (math/floor-div (f unit-count) smallest-count))) 
+                 (rest forces)))))))
 
 (defn generate-turn-order 
   "Given forces with an initiative rolled and units, it generates a turn order which respects the initiative order algorithm from Alpha Strike."
@@ -28,7 +34,7 @@
             unit-totals (frequencies (map :force units))] 
        (if (= (reduce + (vals unit-totals)) 0)
          (flatten turn-order) 
-         (let [unit-pairs (move-generator unit-totals)]
+         (let [unit-pairs (move-generator unit-totals forces)]
            (recur (conj turn-order (map (fn [[key value]] (take value (repeat key))) unit-pairs))
                   (into {} (map (fn [[key value]] [key (- value (get unit-pairs key))]) unit-totals))))))))
   ([forces]
