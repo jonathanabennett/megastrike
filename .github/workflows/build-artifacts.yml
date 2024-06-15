@@ -21,6 +21,7 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./*
           asset_name: megastrike_${{ github.event.release.tag_name }}_amd64
+          asset_content_type: application/gzip
 
   build-mac-uberjar:
     uses: ./.github/workflows/build-dmg.yml
@@ -39,6 +40,7 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./*
           asset_name: megastrike-${{ github.event.release.tag_name }}_macos
+          asset_content_type: application/gzip
 
   build-win-uberjar:
     uses: ./.github/workflows/build-exe.yml
@@ -57,3 +59,4 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./*
           asset_name: megastrike-${{ github.event.release.tag_name }}
+          asset_content_type: application/zip
