@@ -7,7 +7,7 @@ jobs:
   build-deb:
     uses: ./.github/workflows/build-deb.yml
   deploy-deb:
-    needs: build-linux
+    needs: build-linux-uberjar
     runs-on: ubuntu-latest
     steps:
       - name: Download deb file
@@ -25,7 +25,7 @@ jobs:
   build-dmg:
     uses: ./.github/workflows/build-dmg.yml
   deploy-dmg:
-    needs: build-mac
+    needs: build-mac-uberjar
     runs-on: macos-latest
     steps:
       - name: Download dmg
@@ -43,7 +43,7 @@ jobs:
   build-exe:
     uses: ./.github/workflows/build-exe.yml
   deploy-exe:
-    needs: build-win
+    needs: build-win-uberjar
     runs-on: windows-latest
     steps:
       - name: Download exe
