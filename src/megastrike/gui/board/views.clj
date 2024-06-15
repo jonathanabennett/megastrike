@@ -1,28 +1,45 @@
 (ns megastrike.gui.board.views
-  (:require [cljfx.api :as fx]
+  (:require [clojure.string :as str]
+            [megastrike.combat-unit :as cu]
             [megastrike.gui.board.events :as board-events]
             [megastrike.gui.common :as common]
             [megastrike.gui.events :as events]
             [megastrike.gui.subs :as subs]
-            [megastrike.hexagons.hex :as hex]
-            [megastrike.combat-unit :as cu]))
+            [megastrike.hexagons.hex :as hex]))
 
 (defn draw-hex [{:keys [hex layout]}]
   (let [points (hex/hex-points hex layout)
-        offset (hex/offset-from-hex hex)] 
+        offset (hex/offset-from-hex hex)
+        elevation (:elevation hex)
+        terrain (:terrain hex)
+        sprite (cond
+                 (str/includes? terrain "woods") :darkgreen
+                 (str/includes? terrain "rough") :brown
+                 (str/includes? terrain "road") :lightgrey
+                 (str/includes? terrain "pavement") :grey 
+                 (str/includes? terrain "rubble") :darkgrey
+                 (str/includes? terrain "water") :blue
+                 :else :green)] 
     {:fx/type :group
      :on-mouse-clicked {:event-type ::board-events/hex-clicked :hex hex}
      :children [{:fx/type :polygon
                  :points points
-                 :fill :green
+                 :fill sprite
                  :stroke :black}
                 {:fx/type :label
-                 :text (format "%02d%02d" (:x offset) (:y offset))
+                 :text (format "Lvl %s %s" elevation (first (str/split terrain #":")))
                  :layout-x (nth points 4)
                  :layout-y (nth points 5)
                  :font 16
                  :translate-x 10
-                 :translate-y -20}]}))
+                 :translate-y -20}
+                {:fx/type :label
+                 :text (format "%02d%02d" (:x offset) (:y offset))
+                 :layout-x (nth points 8)
+                 :layout-y (nth points 9)
+                 :font 16
+                 :translate-x 10
+                 :translate-y 10}]}))
 
 (defn draw-unit [{:keys [fx/context unit layout]}]
   (let [hex (hex/hex-points unit layout)

@@ -69,3 +69,4 @@
 (defn get-height
   [board]
   (second (hex/offset-from-hex (last board))))
+
