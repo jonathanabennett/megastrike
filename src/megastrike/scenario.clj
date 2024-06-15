@@ -1,6 +1,5 @@
 (ns megastrike.scenario
   (:require [clojure.java.io :as io]
-            [clojure.pprint :as pprint]
             [clojure.math :as math]
             [clojure.string :as str]
             [megastrike.board :as board]
@@ -128,12 +127,9 @@
       (loop [ret []
              n 0]
         (if (= (count maps) n)
-          {:map-boards ret}
-          (let [test 0]
-            (prn (nth maps n))
-            (prn (nth offsets n))
-            (recur (conj ret (board/create-mapsheet (:board (nth maps n)) (first (nth offsets n)) (second (nth offsets n))))
-                   (inc n))))))))
+          {:map-boards ret} 
+          (recur (conj ret (board/create-mapsheet (:board (nth maps n)) (first (nth offsets n)) (second (nth offsets n))))
+                   (inc n)))))))
 
 (defn parse-scenario-file
   [file]
@@ -148,5 +144,4 @@
   [file]
   (let [scenario (parse-scenario-file file)
         map-layout (set-maps scenario)] 
-    ;;(pprint/pprint map-layout)
     (merge scenario map-layout {:map-width (str (:map-width scenario)) :map-height (str (:map-height scenario))})))
