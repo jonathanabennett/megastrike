@@ -18,20 +18,17 @@
    should move this round"
   [unit-count]
   (let [smallest-count (first (sort < (vals unit-count)))]
-    (prn unit-count)
     (into {} (map (fn [[key value]] [key (max 1 (math/floor-div value smallest-count))]) unit-count))))
 
 (defn generate-turn-order 
   "Given forces with an initiative rolled and units, it generates a turn order which respects the initiative order algorithm from Alpha Strike."
   ([forces units]
    (let [forces (sort-by :initiative (vals forces))] 
-     (prn forces)
      (loop [turn-order []
             unit-totals (frequencies (map :force units))] 
        (if (= (reduce + (vals unit-totals)) 0)
          (flatten turn-order) 
          (let [unit-pairs (move-generator unit-totals)]
-           (prn unit-pairs)
            (recur (conj turn-order (map (fn [[key value]] (take value (repeat key))) unit-pairs))
                   (into {} (map (fn [[key value]] [key (- value (get unit-pairs key))]) unit-totals))))))))
   ([forces]
