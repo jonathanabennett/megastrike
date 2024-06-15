@@ -13,14 +13,14 @@ jobs:
       - name: Download deb file
         uses: actions/download-artifact@v4
         with:
-          name: megastrike_linux
+          name: megastrike_linux_jar
       - uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./*
-          asset_name: megastrike_${{ github.event.release.tag_name }}_amd64.deb
+          asset_name: megastrike_${{ github.event.release.tag_name }}_amd64
 
   build-dmg:
     uses: ./.github/workflows/build-dmg.yml
@@ -31,14 +31,14 @@ jobs:
       - name: Download dmg
         uses: actions/download-artifact@v4 
         with: 
-          name: megastrike_macos
+          name: megastrike_macos_jar
       - uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./*
-          asset_name: megastrike-${{ github.event.release.tag_name }}.dmg
+          asset_name: megastrike-${{ github.event.release.tag_name }}_macos
 
   build-exe:
     uses: ./.github/workflows/build-exe.yml
@@ -49,11 +49,11 @@ jobs:
       - name: Download exe
         uses: actions/download-artifact@v4
         with:
-          name: megastrike_windows
+          name: megastrike_win_jar
       - uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./*
-          asset_name: megastrike-${{ github.event.release.tag_name }}.exe
+          asset_name: megastrike-${{ github.event.release.tag_name }}

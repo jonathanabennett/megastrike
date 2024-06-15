@@ -1,6 +1,6 @@
-(defproject megastrike "0.1.0-SNAPSHOT"
+(defproject megastrike "0.2.0"
   :description "This is an implementation of the Alpha Strike board game for the computer."
-  :url "http://example.com/FIXME"
+  :url ""
   :plugins [[lein-cloverage "1.2.2"]]
   :license {:name "GPL-2.0-or-later WITH Classpath-exception-2.0"
             :url "https://www.eclipse.org/legal/epl-2.0/"}
