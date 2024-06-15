@@ -9,7 +9,7 @@
 
 (defn draw-hex [{:keys [hex layout]}]
   (let [points (hex/hex-points hex layout)
-        offset (hex/offset-from-hex hex)]
+        offset (hex/offset-from-hex hex)] 
     {:fx/type :group
      :on-mouse-clicked {:event-type ::board-events/hex-clicked :hex hex}
      :children [{:fx/type :polygon

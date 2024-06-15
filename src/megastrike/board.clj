@@ -14,8 +14,6 @@
 
 (defn parse-hex-line 
   ([line x-offset y-offset]
-  (prn x-offset)
-   (prn y-offset)
    (let [line-str (str/split line #" ")
          x (+ (Integer/parseInt (subs (nth line-str 1) 0 2)) x-offset)
          y (+ (Integer/parseInt (subs (nth line-str 1) 2 4)) y-offset)

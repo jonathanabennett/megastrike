@@ -111,7 +111,7 @@
                      y (range (:map-height scenario))] 
                  [x y])]
       {:map-boards (into [] (map #(pick-map % boards map-size) maps))}) 
-    (let [maps (map #(utils/load-resource :data (str "boards/" % ".board")) (:maps scenario)) 
+    (let [ maps (map #(utils/load-resource :data (str "boards/" % ".board")) (:maps scenario)) 
           size-string (first (str/split (.getName (first maps)) #" ")) 
           width (Integer/parseInt (first (str/split size-string #"x")))
           height (Integer/parseInt (second (str/split size-string #"x")))
@@ -119,10 +119,15 @@
                         y (range (:map-height scenario))]
                     [(* width x) 
                      (* height y)])] 
-      (prn offsets)
-      ;; I need parallel loops over maps and offsets in order get the offsets into the map below.
-      ;; Turn maps into a seq of maps which have all the data.
-      {:map-boards (into [] (map #(board/create-mapsheet % (first offsets) (second offsets)) maps))})))
+      (loop [ret []
+             n 0]
+        (if (= (count maps) n)
+          {:map-boards ret}
+          (let [test 0]
+            (prn (nth maps n))
+            (prn (nth offsets n))
+            (recur (conj ret (board/create-mapsheet (nth maps n) (first (nth offsets n)) (second (nth offsets n))))
+                   (inc n))))))))
 
 (defn parse-scenario-file
   [file]
