@@ -103,7 +103,8 @@
   ([mul-unit game-data]
    (merge mul-unit game-data))
   ([units mul-unit game-data]
-   (let [matching-units (filter #(= (:full-name %) (:full-name mul-unit)) units)
+   (let [matching-units (filter (fn [x] (when (and (:id x) (:full-name mul-unit)) 
+                                   (str/includes? (:id x) (:full-name mul-unit)))) (vals units))
          id (if (seq matching-units)
               (str (:full-name mul-unit) " #" (inc (count matching-units)))
               (str (:full-name mul-unit)))
