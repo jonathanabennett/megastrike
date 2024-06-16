@@ -1,5 +1,6 @@
 (ns megastrike.gui.board.views
   (:require [clojure.string :as str]
+            [megastrike.board :as board]
             [megastrike.combat-unit :as cu]
             [megastrike.gui.board.events :as board-events]
             [megastrike.gui.common :as common]
@@ -105,7 +106,7 @@
                  :translate-y (/ (layout :y-size) 3)}]}))
 
 (defn game-board [{:keys [fx/context]}]
-  (let [gb (subs/board context)
+  (let [gb (vals (board/nodes (subs/board context)))
         layout (subs/layout context)
         active-force (first (subs/turn-order context))
         unit-locations (subs/deployed-units context)
