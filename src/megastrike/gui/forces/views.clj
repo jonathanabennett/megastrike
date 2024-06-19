@@ -1,6 +1,5 @@
 (ns megastrike.gui.forces.views
-  (:require [cljfx.api :as fx]
-            [clojure.string :as str]
+  (:require [clojure.string :as str]
             [megastrike.combat-unit :as cu]
             [megastrike.gui.common :as common]
             [megastrike.gui.subs :as subs]
