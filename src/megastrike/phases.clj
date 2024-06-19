@@ -22,7 +22,7 @@
            forces force-list]
       (if (empty? forces)
         ret
-        (let [f (utils/keyword-maker (:name (first forces)))]
+        (let [f (utils/keyword-maker (:name (first forces)))] 
           (recur (assoc ret f (max 1 (math/floor-div (f unit-count) smallest-count))) 
                  (rest forces)))))))
 
@@ -49,9 +49,9 @@
 (defn start-deployment-phase 
   "Generates the turn order based on the number of units who haven't been deployed yet."
   [{:keys [forces units]}] 
-  (let [deployable-units (filter #(number? (:q %)) units)
-        turn-order (generate-turn-order forces deployable-units)] 
-    {:current-phase :deployment :turn-order turn-order :units units}))
+  (let [deployable-units (remove (fn [unit] (number? (:q unit))) (vals units))]
+  (prn deployable-units)
+    {:current-phase :deployment :turn-order (generate-turn-order forces deployable-units) :units units}))
 
 (defn start-movement-phase 
   "Regenerates the turn order. Nothing else special is required."
@@ -81,4 +81,4 @@
      (= current-phase :movement)   (start-combat-phase {:forces forces :units new-units})
      (= current-phase :combat)     (start-end-phase {:units new-units})
      (= current-phase :end)        (start-initiative-phase {:forces forces :turn-number turn-number :units new-units})
-     :else {})))
+     :else (start-initiative-phase {:forces forces :turn-number turn-number :units new-units}))))

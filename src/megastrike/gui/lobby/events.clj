@@ -54,18 +54,17 @@
 
 (defmethod e/event-handler ::launch-game
   [{:keys [fx/context view]}]
-  (let [forces (phases/roll-initiative (subs/forces context)) 
-        width (fx/sub-val context :width)
+  (let [ width (fx/sub-val context :width)
         height (fx/sub-val context :height)
-        map-boards (fx/sub-val context :map-boards)
-        turn-order (phases/generate-turn-order forces (vals (subs/units context)))]
+        map-boards (fx/sub-val context :map-boards)]
     {:context (fx/swap-context context merge {:game-board (if (empty? (subs/board context))
                                                             (board/create-board map-boards width height)
                                                             (subs/board context))
-                                              :forces forces 
-                                              :turn-order turn-order 
-                                              :current-phase :deployment 
-                                              :display view})}))
+                                              :display view}
+                               (phases/next-phase {:current-phase (subs/phase context)
+                                                   :turn-number (subs/turn-number context)
+                                                   :forces (subs/forces context) 
+                                                   :units (subs/units context)}))}))
 
 (defmethod e/event-handler ::load-save
   [{:keys [fx/context]}]

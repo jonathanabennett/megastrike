@@ -9,9 +9,6 @@
 
 (defn deploy-buttons [finished-deployment]
      [{:fx/type :button
-       :text "Roll Initiative"
-       :on-action {:event-type ::events/roll-initiative :fx/sync true}}
-      {:fx/type :button
        :text "Deploy Unit"
        :disable finished-deployment
        :on-action {:event-type ::events/deploy-unit :fx/sync true}}
@@ -78,7 +75,7 @@
     {:fx/type :v-box
      :spacing 5
      :children [{:fx/type :label
-                 :text (str (str/capitalize (name phase)) " Phase | Turn " turn " | " (prn-str turn-order))} 
+                 :text (str (str/capitalize (name phase)) " Phase | Turn " (str turn) " | " (prn-str turn-order))} 
                 {:fx/type :h-box 
                  :children buttons}
                 ]}))
