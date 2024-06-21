@@ -34,6 +34,10 @@
        (= (:q hex1) (:q hex2))
        (= (:r hex1) (:r hex2))))
 
+(defn find-hex 
+  [h board]
+  (first (filter #(same-hex h %) board)))
+
 (defn hex-addition
   "Use Cartesian addition to add two hexagons together."
   [hex1 hex2]
@@ -134,7 +138,8 @@
       (str/includes? terrain "woods") (+ (abs lvl-change) 2)
       (str/includes? terrain "rough") (+ (abs lvl-change) 2)
       (str/includes? terrain "rubble") (+ (abs lvl-change) 2)
-      (str/includes? terrain "water") (+ (abs lvl-change) 2))))
+      (str/includes? terrain "water") (+ (abs lvl-change) 2)
+      :else (+ (abs lvl-change) 1))))
 
 (defn hex-lerp
   [hex1 hex2 step]
