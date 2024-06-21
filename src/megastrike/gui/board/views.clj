@@ -87,7 +87,7 @@
                  :layout-y (/ (+ (:x origin-hex) (:x target-hex)) 2)
                  :font 16}]}))
 
-(defn draw-movement-cost [{:keys [fx/context origin destination layout cost]}]
+(defn draw-movement-cost [{:keys [origin destination layout cost]}]
   (let [origin-pixel (hex/hex-to-pixel origin layout)
         dest-pixel (hex/hex-to-pixel destination layout)]
     {:fx/type :group
