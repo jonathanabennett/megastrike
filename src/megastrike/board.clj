@@ -3,7 +3,8 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [megastrike.hexagons.hex :as hex]
-            [megastrike.utils :refer [strip-quotes]]))
+            [megastrike.utils :refer [strip-quotes]]
+            [megastrike.hexagons.hex :as hexagon]))
 
 (defn create-tile
   "Returns a map with the {:q :r :s} address as the key and the full hex map 
@@ -13,7 +14,7 @@
   ([x y elevation terrain palette]
    (create-tile (hex/hex-from-offset x y) elevation terrain palette))
   ([hex elevation terrain palette]
-   {hex (merge hex {:elevation elevation :terrain terrain :palette palette})}))
+   (merge hex {:elevation elevation :terrain terrain :palette palette})))
 
 (defn parse-hex-line 
   "Parses a line from a .board file and returns a map created by `create-tile`."
@@ -47,7 +48,7 @@
 
 (defn create-mapsheet 
   ([filename x-offset y-offset]
-   (loop [mapsheet {:name (.getName (io/file filename)) :height 0 :width 0 :tiles {}}
+   (loop [mapsheet {:name (.getName (io/file filename)) :height 0 :width 0 :tiles []}
           lines (str/split-lines (slurp filename))]
      (if (empty? lines)
          mapsheet
@@ -55,13 +56,13 @@
                   (cond 
                     (str/includes? line "size") (merge mapsheet {:width (Integer/parseInt (second (str/split line #" "))) 
                                                                           :height (Integer/parseInt (nth (str/split line #" ") 2))})
-                    (str/includes? line "hex") (assoc mapsheet :tiles (merge (:tiles mapsheet) (parse-hex-line line x-offset y-offset)))
+                    (str/includes? line "hex") (assoc mapsheet :tiles (conj (:tiles mapsheet) (parse-hex-line line x-offset y-offset)))
                     :else mapsheet))
                 (rest lines)))))
   ([filename]
    (create-mapsheet filename 0 0))
   ([width height]
-   {:name "Generated" :height height :width width :tiles (into {} (for [x (range 1 (inc width))
+   {:name "Generated" :height height :width width :tiles (into [] (for [x (range 1 (inc width))
                                                                         y (range 1 (inc height))]
                                                                     (create-tile x y 0 "" "grass")))}))
 
@@ -69,51 +70,52 @@
   (nodes [board])
   (neighbors [board node])
   (mapsheets [board])
-  (weight [board from to]))
+  (weight [board from to mv-type]))
 
 (defn neighbors% 
   [graph node]
-  (into [] (remove nil? (map #(get graph % nil) (hex/hex-neighbors node)))))
+  (into [] (remove nil? (map #(hex/find-hex % (graph)) (hex/hex-neighbors node)))))
 
 (defn create-board
   ([filename]
    (let [mapsheet (create-mapsheet filename)]
      (reify BOARD
        (nodes [_] (:tiles mapsheet))
-       (neighbors [_ node] (neighbors% nodes node))
+       (neighbors [_ node] (into [] (remove nil? (map #(hex/find-hex % (:tiles mapsheet)) (hex/hex-neighbors node)))))
        (mapsheets [_] [[mapsheet]])
-       (weight [_ from to] (hex/hex-distance from to)))))
+       (weight [_ from to mv-type] (hex/step-cost from to mv-type)))))
   ([mapsheet-array _ _]
-     (reify BOARD
-       (nodes [_] (apply merge (for [m mapsheet-array] (:tiles m nil))))
-       (neighbors [_ node] (neighbors% nodes node))
-       (mapsheets [_] mapsheet-array)
-       (weight [_ from to] (hex/hex-distance from to))))
+     (let [tiles ((comp vec flatten vector) (for [m mapsheet-array] (:tiles m nil)))]
+       (reify BOARD
+        (nodes [_] tiles)
+        (neighbors [_ node] (into [] (remove nil? (map #(hex/find-hex % tiles) (hex/hex-neighbors node)))))
+        (mapsheets [_] mapsheet-array)
+        (weight [_ from to mv-type] (hex/step-cost from to mv-type)))))
   ([width height]
    (let [mapsheet (create-mapsheet width height)]
      (reify BOARD
        (nodes [_] (:tiles mapsheet))
-       (neighbors [_ node] (neighbors% nodes node))
+       (neighbors [_ node] (into [] (remove nil? (map #(hex/find-hex % (:tiles mapsheet)) (hex/hex-neighbors node)))))
        (mapsheets [_] [[mapsheet]])
-       (weight [_ from to] (hex/hex-distance from to))))))
+       (weight [_ from to mv-type] (hex/step-cost from to mv-type))))))
 
 (defn- calc-approx-dist [h dist]
-  (for [[node d] dist]
+  (for [[node d] dist] 
     [node (+ d (h node))]))
 
 (defn astar
-  [start goal graph heuristic]
+  [start goal graph heuristic mv-type]
   (let [guess-goal-dist #(heuristic % goal)
         nodes (nodes graph)
         neighbors #(neighbors graph %)
-        weight #(weight graph %1 %2)]
+        weight #(weight graph %1 %2 mv-type)]
     (loop [known-dist (merge (into {} (for [x nodes] [x ##Inf]))
                              {start 0})
            guess-unseen-dist (into (priority-map/priority-map)
                                    (calc-approx-dist guess-goal-dist known-dist))
            visited? #{}
            path {start []}]
-      (let [[best-unseen _] (peek guess-unseen-dist)]
+      (let [[best-unseen _] (peek guess-unseen-dist)] 
         (if (or (= (known-dist best-unseen) ##Inf)
                 (visited? goal)
                 (empty? guess-unseen-dist))
@@ -124,7 +126,7 @@
                                   :when (< new-known-dist (known-dist nbr))]
                               [nbr new-known-dist])
                 closer-paths (for [[nbr _ ] closer-nbrs]
-                               [nbr (conj (path best-unseen) nbr)])]
+                               [nbr (conj (path best-unseen) nbr)])] 
             (recur (into known-dist closer-nbrs)
                    (into (pop guess-unseen-dist)
                          (calc-approx-dist guess-goal-dist closer-nbrs))
