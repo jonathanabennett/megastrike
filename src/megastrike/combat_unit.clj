@@ -193,15 +193,10 @@
         mv-type (get unit :movement-mode :walk)]
     (loop [sum [(hexagon/step-cost origin (first (:path unit)) mv-type)]
                    path (:path unit)]
-              (if (= (count path) 1)
-                (let [t 0]
-                  (prn sum)
-                  sum)
-                (let [t 0]
-                  (prn sum)
-                  (prn path)
-                  (recur (conj sum (hexagon/step-cost (first path) (second path) mv-type))
-                        (rest path)))))))
+              (if (= (count path) 1) 
+                sum 
+                (recur (conj sum (hexagon/step-cost (first path) (second path) mv-type)) 
+                       (rest path))))))
 
 (defn can-move?
   "Checks whether or not a unit can move from its location to a destination."
@@ -213,9 +208,6 @@
                                     (assoc unit :movement-mode (key (first (:movement unit))))
                                     unit)
                              move (get-in unit [:movement (:movement-mode unit)])] 
-                         (prn sum)
-                         (prn unit)
-                         (prn move)
                          (if (<= sum move)
                            (merge unit 
                                   (select-keys (last (:path unit)) [:p :q :r])
