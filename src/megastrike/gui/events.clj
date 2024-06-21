@@ -5,6 +5,7 @@
             [megastrike.gui.subs :as subs]
             [megastrike.phases :as initiative]
             [megastrike.utils :as utils]
+            [megastrike.hexagons.hex :as hexagon]
             [megastrike.combat-unit :as cu])
   (:import (javafx.application Platform)))
 
@@ -99,18 +100,13 @@
   (let [turn-order (subs/turn-order context)
         units (subs/units context)
         active (subs/active-id context)
-        ghost (some #(and (= (:id unit) (:id %)) %) (subs/unit-ghosts context))] 
-    (when (or (= (:movement-mode unit) :stand-still) (:p ghost))
-      (let [upd (merge unit (when (:p ghost)
-                              {:p (:p ghost)
-                               :q (:q ghost)
-                               :r (:r ghost)})
-                       {:acted true})] 
-        {:context (fx/swap-context context assoc 
-                                   :turn-order (rest turn-order)
-                                   :units (assoc units active upd)
-                                   :ghosts (remove #(and (= (:id unit) (:id %)) %) (subs/unit-ghosts context))
-                                   :active-unit nil)}))))
+        upd (when (and (= (first turn-order) (:force unit)) (= active (:id unit)))
+              (cu/can-move? unit (subs/board context)))]
+    (when (:acted upd)
+      {:context (fx/swap-context context assoc 
+                                 :turn-order (rest turn-order) 
+                                 :units (assoc units active upd) 
+                                 :active-unit nil)})))
 
 (defmethod event-handler ::make-attacks 
   [{:keys [fx/context]}]

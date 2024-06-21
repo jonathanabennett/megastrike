@@ -20,7 +20,7 @@
                  (str/includes? terrain "pavement") :grey 
                  (str/includes? terrain "rubble") :darkgrey
                  (str/includes? terrain "water") :blue
-                 :else :green)] 
+                 :else :green)]
     {:fx/type :group
      :on-mouse-clicked {:event-type ::board-events/hex-clicked :hex hex}
      :children [{:fx/type :polygon
@@ -87,30 +87,51 @@
                  :layout-y (/ (+ (:x origin-hex) (:x target-hex)) 2)
                  :font 16}]}))
 
-(defn draw-destination-token [{:keys [fx/context unit layout]}]
-  (let [hex (hex/hex-points unit layout)
-        forces (subs/forces context)
-        force (forces (unit :force))] 
+(defn draw-movement-cost [{:keys [fx/context origin destination layout cost]}]
+  (let [origin-pixel (hex/hex-to-pixel origin layout)
+        dest-pixel (hex/hex-to-pixel destination layout)]
+    {:fx/type :group
+     :children [{:fx/type :line
+                 :start-x (:x origin-pixel)
+                 :start-y (:y origin-pixel)
+                 :end-x (:x dest-pixel)
+                 :end-y (:y dest-pixel)}
+                {:fx/type :label
+                 :text (str cost)
+                 :layout-x (:x dest-pixel)
+                 :layout-y (:y dest-pixel)
+                 :font 16}]}))
+
+(defn draw-movement-path 
+  [{:keys [fx/context unit layout]}]
+  (let [board (subs/board context)
+        origin (hex/find-hex unit (board/nodes board))
+        costs (cu/move-costs unit board)]
     {:fx/type :group 
-     :children [{:fx/type common/draw-sprite 
-                 :unit unit
-                 :force force 
-                 :x (nth hex 8)
-                 :y (nth hex 9)
-                 :shift (/ (layout :y-size) 3)}
-                {:fx/type :label 
-                 :text "Destination"
-                 :layout-x (nth hex 8)
-                 :layout-y (nth hex 9)
-                 :font 16
-                 :translate-y (/ (layout :y-size) 3)}]}))
+     :children (loop [sprites []
+                      total 0
+                      costs costs 
+                      o origin
+                      path (:path unit)
+                      ]
+                 (if (empty? path)
+                   sprites 
+                     (recur (concat sprites [{:fx/type draw-movement-cost
+                                              :origin o 
+                                              :destination (first path)
+                                              :layout layout
+                                              :cost (+ total (first costs))}]) 
+                            (+ total (first costs))
+                            (rest costs) 
+                            (first path)
+                            (rest path))))}))
 
 (defn game-board [{:keys [fx/context]}]
-  (let [gb (vals (board/nodes (subs/board context)))
+  (let [gb (board/nodes (subs/board context))
         layout (subs/layout context)
         active-force (first (subs/turn-order context))
         unit-locations (subs/deployed-units context)
-        destinations (subs/unit-ghosts context)
+        destinations (filter #(seq (:path %)) (vals (subs/units context)))
         target-lines (filter #(and (= active-force (:force %)) (:target %)) unit-locations)] 
     {:fx/type :scroll-pane
      :content {:fx/type :group
@@ -123,10 +144,11 @@
                             {:fx/type draw-unit
                              :unit t
                              :layout layout})
-                          (for [t destinations]
-                            {:fx/type draw-destination-token 
-                             :unit t
-                             :layout layout})
+                          (when (seq destinations)
+                            (for [t destinations]
+                             {:fx/type draw-movement-path
+                              :unit t
+                              :layout layout}))
                           (when (= (subs/phase context) :combat)
                             (for [t target-lines] 
                               {:fx/type draw-target-line 
