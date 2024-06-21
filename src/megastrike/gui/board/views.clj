@@ -13,14 +13,19 @@
         offset (hex/offset-from-hex hex)
         elevation (:elevation hex)
         terrain (:terrain hex)
+        ;; Colors below come from data/images/hexes/defaultminimap.txt
         sprite (cond
-                 (str/includes? terrain "woods") :darkgreen
-                 (str/includes? terrain "rough") :brown
-                 (str/includes? terrain "road") :lightgrey
-                 (str/includes? terrain "pavement") :grey 
-                 (str/includes? terrain "rubble") :darkgrey
-                 (str/includes? terrain "water") :blue
-                 :else :green)]
+                 (str/includes? terrain "woods") "rgb(180, 230, 130)"
+                 (str/includes? terrain "sinkhole") "rgb(210, 180, 150)"
+                 (str/includes? terrain "rough") "rgb(186, 191, 160)"
+                 (str/includes? terrain "rubble") "rgb(200, 200, 200)"
+                 (str/includes? terrain "water") "rgb(200, 247, 253)"
+                 (str/includes? terrain "pavement") "rgb(204, 204, 204)"
+                 (str/includes? terrain "road") "rgb(71, 79, 107)"
+                 (str/includes? terrain "swamp") "rgb(49, 136, 74)"
+                 (str/includes? terrain "building") "rgb(204, 204, 204)"
+                 (str/includes? terrain "bridge") "rgb(109, 55, 25)"
+                 :else "rgb(215, 211, 156)")]
     {:fx/type :group
      :on-mouse-clicked {:event-type ::board-events/hex-clicked :hex hex}
      :children [{:fx/type :polygon
