@@ -2,6 +2,7 @@
   (:require [clojure-csv.core :as csv]
             [clojure.math :as math]
             [clojure.string :as str]
+            [megastrike.board :as board]
             [megastrike.hexagons.hex :as hexagon]
             [megastrike.utils :as utils]))
 
@@ -175,18 +176,51 @@
 (defn find-sprite
   "Searches a the mechset to determine which images to use and returns the path to that image."
   [unit]
-  (let [chassis-match (filter (fn [row] (str/includes? (second row) (:chassis unit))) mechset)
+  (let [chassis-match (filter (fn [row] (= (second row) (:chassis unit))) mechset)
         exact-match (filter (fn [row] (str/includes? (second row) (:full-name unit))) mechset)
         match-row (or (first exact-match) (first chassis-match))] 
     (utils/load-resource :data (str "images/units/" (nth match-row 2)))))
 
+(defn find-path
+  [unit destination board]
+  (let [origin (hexagon/find-hex unit (board/nodes board))
+        mv-type (get unit :movement-mode :walk)]
+    (board/astar origin destination board hexagon/hex-distance mv-type)))
+
+(defn move-costs 
+  [unit board]
+  (let [origin (hexagon/find-hex unit (board/nodes board))
+        mv-type (get unit :movement-mode :walk)]
+    (loop [sum [(hexagon/step-cost origin (first (:path unit)) mv-type)]
+                   path (:path unit)]
+              (if (= (count path) 1)
+                (let [t 0]
+                  (prn sum)
+                  sum)
+                (let [t 0]
+                  (prn sum)
+                  (prn path)
+                  (recur (conj sum (hexagon/step-cost (first path) (second path) mv-type))
+                        (rest path)))))))
+
 (defn can-move?
   "Checks whether or not a unit can move from its location to a destination."
-  [unit destination]
+  [unit board]
   (cond
-    (and (= (:movement-mode unit) :walk) (not (contains? (:movement unit) :walk)))
-    (>= (first (vals (:movement unit))) (hexagon/hex-distance unit destination))
-    :else (>= (get-in unit [:movement (:movement-mode unit)]) (hexagon/hex-distance unit destination))))
+    (= (:movement-mode unit) :stand-still) (merge unit {:acted true})
+    (seq (:path unit)) (let [sum (reduce + (move-costs unit board))
+                             unit (if (not (:movement-mode unit))
+                                    (assoc unit :movement-mode (key (first (:movement unit))))
+                                    unit)
+                             move (get-in unit [:movement (:movement-mode unit)])] 
+                         (prn sum)
+                         (prn unit)
+                         (prn move)
+                         (if (<= sum move)
+                           (merge unit 
+                                  (select-keys (last (:path unit)) [:p :q :r])
+                                  {:acted true :path []})
+                           unit))))
 
 (defn calculate-attacker-mod
   "Returns the mod for a given to hit due to the attacker's movement mode this turn."
