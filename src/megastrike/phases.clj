@@ -50,7 +50,6 @@
   "Generates the turn order based on the number of units who haven't been deployed yet."
   [{:keys [forces units]}] 
   (let [deployable-units (remove (fn [unit] (number? (:q unit))) (vals units))]
-  (prn deployable-units)
     {:current-phase :deployment :turn-order (generate-turn-order forces deployable-units) :units units}))
 
 (defn start-movement-phase 
