@@ -64,6 +64,12 @@
                         {:fx/type :button 
                          :text "Save Game"
                          :on-action {:event-type ::events/auto-save :fx/sync true}}
+                         {:fx/type :button
+                          :text "Zoom In"
+                          :on-action {:event-type ::events/change-size :direction :plus :fx/sync true}}
+                         {:fx/type :button
+                          :text "Zoom Out"
+                          :on-action {:event-type ::events/change-size :direction :minus :fx/sync true}}
                         {:fx/type :button :text "Exit"
                          :on-action {:event-type ::events/quit-game}}]
         phase-buttons (cond 

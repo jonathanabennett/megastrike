@@ -93,7 +93,8 @@
    :x-size 84
    :y-size 72
    :x-origin 84
-   :y-origin 65})
+   :y-origin 65
+   :scale 1.0})
 
 (defn hex-to-pixel
   "Converts a given hex address to the pixel at the center of the hex."
@@ -101,23 +102,21 @@
   (let [htp (:hex-to-pixel-matrix layout)]
     {:x (+ (* (+ (* (get htp 0) (:p hex))
                  (* (get htp 1) (:q hex)))
-              (:x-size layout))
+              (* (:x-size layout) (:scale layout)))
            (:x-origin layout))
      :y (+ (* (+ (* (get htp 2) (:p hex))
                  (* (get htp 3) (:q hex)))
-              (:y-size layout))
+              (* (:y-size layout) (:scale layout)))
            (:y-origin layout))}))
 
 (defn find-hex-corner
   "Calculates the corner of a hex based on the center."
   [center corner layout]
   (let [angle (* 2.0 math/PI (/ (+ (:start-angle layout) corner) 6))]
-    [(+ (* (:x-size layout)
-              (math/cos angle))
-           (:x center))
-     (+ (* (:y-size layout)
-              (math/sin angle))
-           (:y center))]))
+    [(+ (* (:x-size layout) (math/cos angle) (:scale layout)) 
+        (:x center))
+     (+ (* (:y-size layout) (math/sin angle) (:scale layout)) 
+        (:y center))]))
 
 (defn hex-points
   "Returns a list of all the corners of a hex."

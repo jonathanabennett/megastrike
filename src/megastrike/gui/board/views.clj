@@ -37,15 +37,15 @@
                  :layout-x (nth points 4)
                  :layout-y (nth points 5)
                  :font 16
-                 :translate-x 10
-                 :translate-y -20}
+                 :translate-x (* 10 (:scale layout))
+                 :translate-y (* -20 (:scale layout))}
                 {:fx/type :label
                  :text (format "%02d%02d" (:x offset) (:y offset))
                  :layout-x (nth points 8)
                  :layout-y (nth points 9)
                  :font 16
-                 :translate-x 10
-                 :translate-y 10}]}))
+                 :translate-x (* 10 (:scale layout))
+                 :translate-y (* 10 (:scale layout))}]}))
 
 (defn draw-unit [{:keys [fx/context unit layout]}]
   (let [hex (hex/hex-points unit layout)
@@ -58,13 +58,13 @@
                  :force force 
                  :x (nth hex 8)
                  :y (nth hex 9)
-                 :shift (/ (layout :y-size) 3)}
+                 :shift (/ (* (layout :y-size) (:scale layout)) 3)}
                 {:fx/type :label
                  :text (unit :full-name)
                  :layout-x (nth hex 8)
                  :layout-y (nth hex 9)
                  :font 16
-                 :translate-y (/ (layout :y-size) 3)}
+                 :translate-y (/ (* (layout :y-size) (:scale layout)) 3)}
                 {:fx/type :label 
                  :text (if (:movement-mode unit)
                          (name (:movement-mode unit))
@@ -72,7 +72,7 @@
                  :layout-x (nth hex 4)
                  :layout-y (nth hex 5)
                  :font 16
-                 :translate-y (* (/ (layout :y-size) 3) -2)}]}))
+                 :translate-y (* (/ (* (layout :y-size) (:scale layout)) 3) -2)}]}))
 
 (defn draw-target-line [{:keys [fx/context unit layout]}]
   (let [origin-hex (hex/hex-to-pixel unit layout)
@@ -138,7 +138,8 @@
         unit-locations (subs/deployed-units context)
         destinations (filter #(seq (:path %)) (vals (subs/units context)))
         target-lines (filter #(and (= active-force (:force %)) (:target %)) unit-locations)] 
-    {:fx/type :scroll-pane
+    {:fx/type :scroll-pane 
+     :on-key-pressed {:event-type ::events/key-dispatcher :fx/sync true}
      :content {:fx/type :group
                :children (concat
                           (for [h gb]

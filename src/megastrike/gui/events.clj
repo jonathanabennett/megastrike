@@ -5,9 +5,9 @@
             [megastrike.gui.subs :as subs]
             [megastrike.phases :as initiative]
             [megastrike.utils :as utils]
-            [megastrike.hexagons.hex :as hexagon]
             [megastrike.combat-unit :as cu])
-  (:import (javafx.application Platform)))
+  (:import [javafx.application Platform]
+           [javafx.scene.input KeyCode KeyEvent]))
 
 (defmulti event-handler :event-type)
 
@@ -122,3 +122,21 @@
             upd (cu/make-attack attacker target)]
         (recur (assoc units (:id target) upd)
                (rest attackers))))))
+
+(defmethod event-handler ::change-size
+  [{:keys [fx/context direction]}] 
+  (let [layout (fx/sub-val context :layout)
+        new-layout (if (= direction :plus)
+                     (assoc layout :scale (+ (:scale layout) 0.1))
+                     (assoc layout :scale (- (:scale layout) 0.1)))] 
+    {:context (fx/swap-context context assoc :layout new-layout)}))
+
+(defmethod event-handler ::key-dispatcher
+  [{:keys [fx/context ^KeyEvent fx/event]}]
+  (let [code (.getCode event)]
+    (cond
+      (= KeyCode/PLUS code)
+      {:dispatch {:event-type ::change-size :direction :plus}}
+      (= KeyCode/MINUS code)
+      {:dispatch {:event-type ::change-size :direction :minus}}
+      :else (prn code))))
