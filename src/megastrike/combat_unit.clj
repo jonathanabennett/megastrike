@@ -21,6 +21,13 @@
 (def vehicle-units ["SV" "CV"])
 (def infantry-units ["BA" "CI"])
 
+(def directions {:N  0
+                 :NE 60
+                 :SE 120
+                 :S  180
+                 :SW 240
+                 :NW 300})
+
 (defn move-keyword
   "Creates a move keyword from a stat line imported from the mul export."
   [mv-type]
