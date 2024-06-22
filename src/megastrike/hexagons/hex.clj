@@ -128,18 +128,6 @@
   [a b step]
   (+ a (* (- b a) step)))
 
-(defn step-cost
-  [hex neighbor mv-type]
-  (let [terrain (:terrain neighbor)
-        lvl-change (- (:elevation neighbor) (:elevation hex))]
-    (cond 
-      (= mv-type :jump) 1
-      (str/includes? terrain "woods") (+ (abs lvl-change) 2)
-      (str/includes? terrain "rough") (+ (abs lvl-change) 2)
-      (str/includes? terrain "rubble") (+ (abs lvl-change) 2)
-      (str/includes? terrain "water") (+ (abs lvl-change) 2)
-      :else (+ (abs lvl-change) 1))))
-
 (defn hex-lerp
   [hex1 hex2 step]
   {:p (linear-interpolation (:p hex1) (:p hex2) step)
@@ -151,6 +139,18 @@
   (let [distance (hex-distance hex1 hex2)
         step (/ 1.0 (max distance 1))]
     [{:p 0 :q 0 :r 0}]))
+
+(defn step-cost
+  [hex neighbor mv-type]
+  (let [terrain (:terrain neighbor)
+        lvl-change (- (:elevation neighbor) (:elevation hex))]
+    (cond 
+      (= mv-type :jump) 1
+      (str/includes? terrain "woods") (+ (abs lvl-change) 2)
+      (str/includes? terrain "rough") (+ (abs lvl-change) 2)
+      (str/includes? terrain "rubble") (+ (abs lvl-change) 2)
+      (str/includes? terrain "water") (+ (abs lvl-change) 2)
+      :else (+ (abs lvl-change) 1))))
 
 ;; Commented out in case I need it later. I believe that cljfx
 ;; has given me this feature for "free" when I added a click event
