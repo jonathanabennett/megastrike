@@ -10,6 +10,10 @@
    (when (= (* (+ p q) -1) r)
       {:p p :q q :r r})))
 
+(defn hex-address
+  [hex]
+  (str (:p hex) ", " (:q hex) ", " (:r hex)))
+
 (defn hex-from-offset
   "Calculates a hex based on an 'offset' hex address. The input in in the format of [x y]."
   ([col row]
