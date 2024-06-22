@@ -117,19 +117,19 @@
                       total 0
                       costs costs 
                       o origin
-                      path (:path unit)
-                      ]
+                      path (:path unit)]
                  (if (empty? path)
                    sprites 
-                     (recur (concat sprites [{:fx/type draw-movement-cost
-                                              :origin o 
-                                              :destination (first path)
-                                              :layout layout
-                                              :cost (+ total (first costs))}]) 
-                            (+ total (first costs))
-                            (rest costs) 
-                            (first path)
-                            (rest path))))}))
+                   (recur (concat sprites 
+                                  [{:fx/type draw-movement-cost
+                                    :origin o 
+                                    :destination (first path)
+                                    :layout layout
+                                    :cost (+ total (first costs))}]) 
+                          (+ total (first costs))
+                          (rest costs) 
+                          (first path)
+                          (rest path))))}))
 
 (defn game-board [{:keys [fx/context]}]
   (let [gb (board/nodes (subs/board context))
@@ -150,7 +150,7 @@
                             {:fx/type draw-unit
                              :unit t
                              :layout layout})
-                          (when (seq destinations)
+                          (when (seq destinations) 
                             (for [t destinations]
                              {:fx/type draw-movement-path
                               :unit t
@@ -159,4 +159,5 @@
                             (for [t target-lines] 
                               {:fx/type draw-target-line 
                                :unit t 
-                               :layout layout})))}}))
+                               :layout layout}))
+                          )}}))
