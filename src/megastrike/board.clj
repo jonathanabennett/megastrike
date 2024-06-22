@@ -3,8 +3,7 @@
             [clojure.java.io :as io]
             [clojure.string :as str]
             [megastrike.hexagons.hex :as hex]
-            [megastrike.utils :refer [strip-quotes]]
-            [megastrike.hexagons.hex :as hexagon]))
+            [megastrike.utils :refer [strip-quotes]]))
 
 (defn create-tile
   "Returns a map with the {:q :r :s} address as the key and the full hex map 

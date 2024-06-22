@@ -1,6 +1,5 @@
 (ns megastrike.gui.views
-  (:require [cljfx.api :as fx]
-            [megastrike.gui.board.views :as board]
+  (:require [megastrike.gui.board.views :as board]
             [megastrike.gui.events :as events]
             [megastrike.gui.forces.views :as force]
             [megastrike.gui.lobby.views :as lobby]
@@ -56,7 +55,7 @@
         unit (subs/active-unit context)
         common-buttons [{:fx/type :button
                          :text "Next Phase"
-                         :disable (not (empty? turn-order))
+                         :disable (seq turn-order)
                          :on-action {:event-type ::events/next-phase :fx/sync true}}
                         {:fx/type :separator
                          :orientation :vertical 

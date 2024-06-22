@@ -46,7 +46,7 @@
 (defn configure-unit
   [state line]
   (if (re-find #"\d+=" line)
-    (let [[faction num data] (parse-unit-string line)
+    (let [[faction _ data] (parse-unit-string line)
           [unit pilot pskill gskill direction x y] (str/split data #",")
           loc (if (and x y) (hex/hex-from-offset (Integer/parseInt (str/trim x)) (Integer/parseInt (str/trim y))) {})
           skill (int (math/floor (/ (+ (Integer/parseInt pskill) (Integer/parseInt gskill)) 2)))
