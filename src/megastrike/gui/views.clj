@@ -55,7 +55,8 @@
         unit (subs/active-unit context)
         common-buttons [{:fx/type :button
                          :text "Next Phase"
-                         :disable (seq turn-order)
+                         :disable #_{:clj-kondo/ignore [:not-empty?]}
+                                  (not (empty? turn-order)) ;; DO NOT CHANGE. Regardless of idiom, cljfx does not like (seq turn-order)
                          :on-action {:event-type ::events/next-phase :fx/sync true}}
                         {:fx/type :separator
                          :orientation :vertical 
