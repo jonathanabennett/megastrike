@@ -57,6 +57,7 @@
                                      :pilot 
                                      {:name pilot 
                                       :skill skill} 
+                                     :direction direction
                                      :current-armor (:armor mul) 
                                      :current-structure (:structure mul) 
                                      :current-heat 0})))
