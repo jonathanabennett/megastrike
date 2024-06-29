@@ -50,14 +50,14 @@
           [unit pilot pskill gskill direction x y] (str/split data #",")
           loc (if (and x y) (hex/hex-from-offset (Integer/parseInt (str/trim x)) (Integer/parseInt (str/trim y))) {})
           skill (int (math/floor (/ (+ (Integer/parseInt pskill) (Integer/parseInt gskill)) 2)))
-          mul (first (cu/filter-units cu/mul :full-name unit str/includes?))] 
+          mul (cu/get-unit unit)] 
       (cu/create-element (get state :units {}) 
                          mul
                          (merge loc {:force (utils/keyword-maker faction) 
                                      :pilot 
                                      {:name pilot 
                                       :skill skill} 
-                                     :direction direction
+                                     :direction (utils/keyword-maker direction)
                                      :current-armor (:armor mul) 
                                      :current-structure (:structure mul) 
                                      :current-heat 0})))
@@ -104,9 +104,10 @@
 
 (defn map-rotator
   [filename]
-  (if (str/includes? filename "rotate:")
-    {:board (utils/load-resource :data (str "boards/" (second (str/split filename #":")) ".board")) :rotate true}
-    {:board (utils/load-resource :data (str "boards/" filename ".board")) :rotate nil}))
+  (let [f (if (str/includes? filename "rotate:") 
+            {:board (utils/load-resource :data (str "boards/" (second (str/split filename #":")) ".board")) :rotate true} 
+            {:board (utils/load-resource :data (str "boards/" filename ".board")) :rotate nil})]
+    {:original f :temp (board/create-mapsheet (:board f))}))
 
 (defn set-maps
   [scenario]
@@ -118,9 +119,8 @@
                  [x y])]
       {:map-boards (into [] (map #(pick-map % boards map-size) maps))}) 
     (let [maps (map #(map-rotator %) (:maps scenario)) 
-          size-string (first (str/split (.getName (:board (first maps))) #" ")) 
-          width (Integer/parseInt (first (str/split size-string #"x")))
-          height (Integer/parseInt (second (str/split size-string #"x")))
+          width (get-in (first maps) [:temp :width])
+          height (get-in (first maps) [:temp :height])
           offsets (for [x (range (:map-width scenario))
                         y (range (:map-height scenario))]
                     [(* width x) 
@@ -129,7 +129,7 @@
              n 0]
         (if (= (count maps) n)
           {:map-boards ret} 
-          (recur (conj ret (board/create-mapsheet (:board (nth maps n)) (first (nth offsets n)) (second (nth offsets n))))
+          (recur (conj ret (board/create-mapsheet (get-in (nth maps n) [:original :board]) (first (nth offsets n)) (second (nth offsets n))))
                    (inc n)))))))
 
 (defn parse-scenario-file

@@ -58,6 +58,7 @@
                  :force force 
                  :x (nth hex 8)
                  :y (nth hex 9)
+                 :direction true
                  :shift (/ (* (layout :y-size) (:scale layout)) 3)}
                 {:fx/type :label
                  :text (unit :full-name)

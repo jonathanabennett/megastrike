@@ -1,5 +1,6 @@
 (ns megastrike.gui.common
   (:require [cljfx.api :as fx]
+            [megastrike.board]
             [megastrike.combat-unit :as cu]
             [megastrike.gui.events :as events]))
 
@@ -16,7 +17,7 @@
 
 (defn draw-sprite
   "Draws a sprite. Used for both the map and the lobby."
-  [{:keys [unit force x y shift]}]
+  [{:keys [unit force x y shift direction]}]
   (let [color (force :color "#FFFFFF")
         camo (force :camo)
         img (cu/find-sprite unit)] 
@@ -32,7 +33,8 @@
               :bottom-input {:fx/type :image-input
                              :source (str (.toURI (cu/find-sprite unit)))}
               :mode :src-atop
-              :opacity 0.5}
+              :opacity 0.5} 
+     :rotate (if direction (:angle ((:direction unit) cu/directions)) 0)
      :translate-x x
      :translate-y (+ y shift)
      :x 0

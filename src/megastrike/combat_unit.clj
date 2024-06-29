@@ -21,12 +21,12 @@
 (def vehicle-units ["SV" "CV"])
 (def infantry-units ["BA" "CI"])
 
-(def directions {:N  0
-                 :NE 60
-                 :SE 120
-                 :S  180
-                 :SW 240
-                 :NW 300})
+(def directions {:n  {:angle 0 :ordinal 2}
+                 :ne {:angle 60 :ordinal 1}
+                 :se {:angle 120 :ordinal 0}
+                 :s  {:angle 180 :ordinal 5}
+                 :sw {:angle 240 :ordinal 4}
+                 :nw {:angle 300 :ordinal 3}})
 
 (defn move-keyword
   "Creates a move keyword from a stat line imported from the mul export."
@@ -105,6 +105,16 @@
    (filter #(when (comparison (field %) value) %) units))
   ([units field values]
    (filter #(filter-membership-helper % field values) units)))
+
+(defn get-unit
+  ([unit]
+   (let [non-standard (str/replace unit #"\(Standard\)" "")
+         matching-muls (filter-units mul :full-name unit str/includes?)
+         non-standard-mul (filter-units mul :full-name non-standard =)] 
+     (prn non-standard-mul)
+     (if (first matching-muls)
+       (first matching-muls)
+       (first non-standard-mul)))))
 
 (defn create-element
   "Creates an element for use in the game."
