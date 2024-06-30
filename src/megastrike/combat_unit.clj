@@ -40,8 +40,11 @@
 (defn parse-movement
   "Parses a string like 8\"/5\"j into a map of all the possible movement modes the unit has and their distance in hexes."
   [mv-string]
-  (let [strings (re-seq #"(\d+)\\+\"([a-zA-Z]?)" mv-string)]
-    (into {} (map #(vector (move-keyword (nth % 2)) (/ (Integer/parseInt (second %)) 2)) strings))))
+  (let [strings (re-seq #"(\d+)\\+\"([a-zA-Z]?)" mv-string)
+        mv-map (into {} (map #(vector (move-keyword (nth % 2)) (/ (Integer/parseInt (second %)) 2)) strings))]
+    (if (and (= (count mv-map) 1) (= (key (first mv-map)) :jump))
+      (merge mv-map {:walk (val (first mv-map))})
+      mv-map)))
 
 (defn print-movement-helper
   "Consumes a vector containing a move type as a keyword and a distance and prints it for human consumption."
