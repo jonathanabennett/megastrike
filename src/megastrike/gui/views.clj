@@ -31,7 +31,10 @@
      ((comp vec flatten vector) 
       [{:fx/type :button 
         :text "Stand Still" 
-        :on-action {:event-type ::events/set-movement-mode :mode :stand-still :unit unit :fx/sync true}}] 
+        :on-action {:event-type ::events/set-movement-mode :mode :stand-still :unit unit :fx/sync true}}
+       {:fx/type :button
+        :text "Turn"
+        :on-action {:event-type ::events/turn-button-clicked :fx/sync true}}] 
       buttons 
       [{:fx/type :button 
         :text "Confirm Move" 

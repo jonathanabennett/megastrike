@@ -156,6 +156,21 @@
       (str/includes? terrain "water") (+ (abs lvl-change) 2)
       :else (+ (abs lvl-change) 1))))
 
+(defn hex-facing 
+  "Finds which hexside a line starting from the center of the hex and
+   reaching a point beyond the hex passes through. Used for changing facing"
+  [o destination layout]
+  (let [origin (hex-to-pixel o layout) 
+        angle (math/to-degrees (math/atan2 (- (:x destination) (:x origin)) (- (:y destination) (:y origin))))]
+    (cond
+      (<= 150 (abs angle))  :n
+      (and (> 150 angle)  (>= angle 90))  :ne 
+      (and (> 90 angle)  (>= angle 30)) :se 
+      (and (> 30 angle) (>= angle -30)) :s
+      (and (> -30 angle) (>= angle -90)) :sw
+      (and (> -90 angle) (>= angle -150)) :nw
+      :else :n)))
+
 ;; Commented out in case I need it later. I believe that cljfx
 ;; has given me this feature for "free" when I added a click event
 ;; to the hexagons.

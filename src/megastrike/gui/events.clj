@@ -106,6 +106,7 @@
       {:context (fx/swap-context context assoc 
                                  :turn-order (rest turn-order) 
                                  :units (assoc units active upd) 
+                                 :turn-flag nil
                                  :active-unit nil)})))
 
 (defmethod event-handler ::make-attacks 
@@ -140,3 +141,14 @@
       (= KeyCode/MINUS code)
       {:dispatch {:event-type ::change-size :direction :minus}}
       :else (prn code))))
+
+(defmethod event-handler ::change-facing 
+  [{:keys [fx/context unit facing]}]
+  (let [upd (merge unit {:direction facing})
+        units (assoc (subs/units context) (:full-name upd) upd)]
+    {:context (fx/swap-context context assoc :units units :turn-flag nil)}))
+
+(defmethod event-handler ::turn-button-clicked
+  [{:keys [fx/context fx/event]}] 
+  (let [active (subs/active-unit context)]
+    {:context (fx/swap-context context assoc :turn-flag true)}))
