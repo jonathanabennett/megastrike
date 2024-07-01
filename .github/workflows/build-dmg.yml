@@ -8,8 +8,6 @@ jobs:
     runs-on: macos-latest 
     steps:
       - uses: actions/checkout@v1
-        with:
-          path: megastrike
       - uses: actions/setup-java@v1
         with:
           java-version: '17'
@@ -17,10 +15,8 @@ jobs:
         with:
           cli: '1.11.1.1413'
           lein: '2.10.0'
-      - run: cd megastrike
       - run: lein uberjar
       - run: chmod +x startup.sh
-      - run: cd ..
       - uses: ksm2/archive-action@v1
         id: archive
         with: 
