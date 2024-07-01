@@ -22,7 +22,7 @@ jobs:
         with:
           name: megastrike_win_jar
           path: |
-            ./*
+            .
             !./.git
   # build-exe:
   #   runs-on: windows-latest
