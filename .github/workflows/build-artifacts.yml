@@ -10,7 +10,7 @@ jobs:
     needs: build-linux-uberjar
     runs-on: ubuntu-latest
     steps:
-      - name: Download deb file
+      - name: Download jar file
         uses: actions/download-artifact@v4
         with:
           name: megastrike_linux_jar
@@ -29,7 +29,7 @@ jobs:
     needs: build-mac-uberjar
     runs-on: macos-latest
     steps:
-      - name: Download dmg
+      - name: Download jar
         uses: actions/download-artifact@v4 
         with: 
           name: megastrike_macos_jar
@@ -48,7 +48,7 @@ jobs:
     needs: build-win-uberjar
     runs-on: windows-latest
     steps:
-      - name: Download exe
+      - name: Download jar
         uses: actions/download-artifact@v4
         with:
           name: megastrike_win_jar
