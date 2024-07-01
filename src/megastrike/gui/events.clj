@@ -149,6 +149,5 @@
     {:context (fx/swap-context context assoc :units units :turn-flag nil)}))
 
 (defmethod event-handler ::turn-button-clicked
-  [{:keys [fx/context fx/event]}] 
-  (let [active (subs/active-unit context)]
-    {:context (fx/swap-context context assoc :turn-flag true)}))
+  [{:keys [fx/context ]}] 
+  {:context (fx/swap-context context assoc :turn-flag true)})
