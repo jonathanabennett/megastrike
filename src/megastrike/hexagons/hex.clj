@@ -1,6 +1,6 @@
 (ns megastrike.hexagons.hex
-  (:require
-   [clojure.math :as math]))
+  (:require [clojure.math :as math]
+            [clojure.string :as str]))
 
 (defn hexagon
   "Creates a Hexagon using a 3d addressing system."
@@ -9,6 +9,10 @@
   ([p q r]
    (when (= (* (+ p q) -1) r)
       {:p p :q q :r r})))
+
+(defn hex-address
+  [hex]
+  (str (:p hex) ", " (:q hex) ", " (:r hex)))
 
 (defn hex-from-offset
   "Calculates a hex based on an 'offset' hex address. The input in in the format of [x y]."
@@ -33,6 +37,10 @@
   (and (= (:p hex1) (:p hex2))
        (= (:q hex1) (:q hex2))
        (= (:r hex1) (:r hex2))))
+
+(defn find-hex 
+  [h board]
+  (first (filter #(same-hex h %) board)))
 
 (defn hex-addition
   "Use Cartesian addition to add two hexagons together."
@@ -61,7 +69,7 @@
         {:p 1  :q -1 :r 0} 
         {:p 0  :q -1 :r 1} 
         {:p -1 :q 0  :r 1} 
-        {:p -1 :q 0  :r 1} 
+        {:p -1 :q 1  :r 0} 
         {:p 0  :q 1  :r -1}))
 
 (defn hex-direction
@@ -75,6 +83,11 @@
   [hex direction]
   (hex-addition hex (hex-direction direction)))
 
+(defn hex-neighbors
+  [hex]
+  (for [i (range 6)]
+    (hex-neighbor hex i)))
+
 (defn create-layout
   "Creates a layout. Populated with the default layout."
   []
@@ -84,7 +97,8 @@
    :x-size 84
    :y-size 72
    :x-origin 84
-   :y-origin 65})
+   :y-origin 65
+   :scale 1.0})
 
 (defn hex-to-pixel
   "Converts a given hex address to the pixel at the center of the hex."
@@ -92,23 +106,21 @@
   (let [htp (:hex-to-pixel-matrix layout)]
     {:x (+ (* (+ (* (get htp 0) (:p hex))
                  (* (get htp 1) (:q hex)))
-              (:x-size layout))
+              (* (:x-size layout) (:scale layout)))
            (:x-origin layout))
      :y (+ (* (+ (* (get htp 2) (:p hex))
                  (* (get htp 3) (:q hex)))
-              (:y-size layout))
+              (* (:y-size layout) (:scale layout)))
            (:y-origin layout))}))
 
 (defn find-hex-corner
   "Calculates the corner of a hex based on the center."
   [center corner layout]
   (let [angle (* 2.0 math/PI (/ (+ (:start-angle layout) corner) 6))]
-    [(+ (* (:x-size layout)
-              (math/cos angle))
-           (:x center))
-     (+ (* (:y-size layout)
-              (math/sin angle))
-           (:y center))]))
+    [(+ (* (:x-size layout) (math/cos angle) (:scale layout)) 
+        (:x center))
+     (+ (* (:y-size layout) (math/sin angle) (:scale layout)) 
+        (:y center))]))
 
 (defn hex-points
   "Returns a list of all the corners of a hex."
@@ -131,6 +143,33 @@
   (let [distance (hex-distance hex1 hex2)
         step (/ 1.0 (max distance 1))]
     [{:p 0 :q 0 :r 0}]))
+
+(defn step-cost
+  [hex neighbor mv-type]
+  (let [terrain (:terrain neighbor)
+        lvl-change (- (:elevation neighbor) (:elevation hex))]
+    (cond 
+      (= mv-type :jump) 1
+      (str/includes? terrain "woods") (+ (abs lvl-change) 2)
+      (str/includes? terrain "rough") (+ (abs lvl-change) 2)
+      (str/includes? terrain "rubble") (+ (abs lvl-change) 2)
+      (str/includes? terrain "water") (+ (abs lvl-change) 2)
+      :else (+ (abs lvl-change) 1))))
+
+(defn hex-facing 
+  "Finds which hexside a line starting from the center of the hex and
+   reaching a point beyond the hex passes through. Used for changing facing"
+  [o destination layout]
+  (let [origin (hex-to-pixel o layout) 
+        angle (math/to-degrees (math/atan2 (- (:x destination) (:x origin)) (- (:y destination) (:y origin))))]
+    (cond
+      (<= 150 (abs angle))  :n
+      (and (> 150 angle)  (>= angle 90))  :ne 
+      (and (> 90 angle)  (>= angle 30)) :se 
+      (and (> 30 angle) (>= angle -30)) :s
+      (and (> -30 angle) (>= angle -90)) :sw
+      (and (> -90 angle) (>= angle -150)) :nw
+      :else :n)))
 
 ;; Commented out in case I need it later. I believe that cljfx
 ;; has given me this feature for "free" when I added a click event

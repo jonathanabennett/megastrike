@@ -1,6 +1,5 @@
 (ns megastrike.gui.views
-  (:require [cljfx.api :as fx]
-            [megastrike.gui.board.views :as board]
+  (:require [megastrike.gui.board.views :as board]
             [megastrike.gui.events :as events]
             [megastrike.gui.forces.views :as force]
             [megastrike.gui.lobby.views :as lobby]
@@ -9,9 +8,6 @@
 
 (defn deploy-buttons [finished-deployment]
      [{:fx/type :button
-       :text "Roll Initiative"
-       :on-action {:event-type ::events/roll-initiative :fx/sync true}}
-      {:fx/type :button
        :text "Deploy Unit"
        :disable finished-deployment
        :on-action {:event-type ::events/deploy-unit :fx/sync true}}
@@ -35,7 +31,10 @@
      ((comp vec flatten vector) 
       [{:fx/type :button 
         :text "Stand Still" 
-        :on-action {:event-type ::events/set-movement-mode :mode :stand-still :unit unit :fx/sync true}}] 
+        :on-action {:event-type ::events/set-movement-mode :mode :stand-still :unit unit :fx/sync true}}
+       {:fx/type :button
+        :text "Turn"
+        :on-action {:event-type ::events/turn-button-clicked :fx/sync true}}] 
       buttons 
       [{:fx/type :button 
         :text "Confirm Move" 
@@ -59,7 +58,8 @@
         unit (subs/active-unit context)
         common-buttons [{:fx/type :button
                          :text "Next Phase"
-                         :disable (not (empty? turn-order))
+                         :disable #_{:clj-kondo/ignore [:not-empty?]}
+                                  (not (empty? turn-order)) ;; DO NOT CHANGE. Regardless of idiom, cljfx does not like (seq turn-order)
                          :on-action {:event-type ::events/next-phase :fx/sync true}}
                         {:fx/type :separator
                          :orientation :vertical 
@@ -67,6 +67,12 @@
                         {:fx/type :button 
                          :text "Save Game"
                          :on-action {:event-type ::events/auto-save :fx/sync true}}
+                         {:fx/type :button
+                          :text "Zoom In"
+                          :on-action {:event-type ::events/change-size :direction :plus :fx/sync true}}
+                         {:fx/type :button
+                          :text "Zoom Out"
+                          :on-action {:event-type ::events/change-size :direction :minus :fx/sync true}}
                         {:fx/type :button :text "Exit"
                          :on-action {:event-type ::events/quit-game}}]
         phase-buttons (cond 
@@ -78,7 +84,7 @@
     {:fx/type :v-box
      :spacing 5
      :children [{:fx/type :label
-                 :text (str (str/capitalize (name phase)) " Phase | Turn " turn " | " (prn-str turn-order))} 
+                 :text (str (str/capitalize (name phase)) " Phase | Turn " (str turn) " | " (prn-str turn-order))} 
                 {:fx/type :h-box 
                  :children buttons}
                 ]}))

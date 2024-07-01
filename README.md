@@ -12,7 +12,7 @@ A Clojure App to play Alphastrike on the computer.
 
 Right now (v0.2), the game allows you to simulate combat between armies of any size using units exported from Megamek via their AlphaStrike stat generator. While the game won't stop you from using them, note that *FLYING UNITS DO NOT FLY* and none of the rules for them have been implemented yet. I am currently hiding all the Aero elements and many of the conventional fighters, but VTOLs and Support Vehicles which fly are still in the lists, so you could "use" them.
 
-Terrain displays as of v0.2.0, but it has no impact on movement or combat. Terrain is the major feature being worked on for the remainder of the v0.2.x series, with movement coming first and then combat.
+Terrain displays as of v0.2.0, but it only affects movement. Terrain is the major feature being worked on for the remainder of the v0.2.x series, with line of sight and combat coming next.
 
 Scenario reading (from MegaMek Scenario files, .mms) works but not everything works. Things known not to work include:
 
@@ -21,6 +21,7 @@ Scenario reading (from MegaMek Scenario files, .mms) works but not everything wo
 3. Anything to do with teams (it will be a free for all)
 4. Minefields
 5. Planetary Conditions
+6. Some units may not be selected correctly (I think I've got all the Mechs working).
 
 ## How to Play
 
@@ -53,7 +54,7 @@ If you have completed all of these steps, click the "Launch Game" button.
 
 ### Initiative Phase
 
-Initiative should roll automatically. If it does not, click "Reroll Initiative" to roll it. You can see the initiative order at the bottom of the screen above the buttons. Additionally, you can see the active force has their units at the top of the stats area to the right.
+Initiative is rolled automatically. In this phase, simply press "Next Phase".
 
 ### Deployment Phase
 
@@ -63,7 +64,11 @@ Deploying units later in the game is not yet supported.
 
 ### Movement Phase
 
-To move a unit, select the unit you want to move and then the button for the movement type you want (Stand Still, Walk, or Jump). The walk button is also the button for tracked, wheeled, etc. If a unit only has a single move type, click the "walk" button to move. Then click a hex. If you cannot reach that hex, nothing will happen. If you can reach that hex, then a ghost will appear in that hex. When you're ready to move that unit, click "Move Unit". If a unit is standing still, click them, click "Stand Still", and then click "Move Unit". When everyone has moved, click "Next Phase".
+To move a unit, select the unit you want to move and then the button for the movement type you want (Stand Still, Walk, or Jump). The walk button is also the button for tracked, wheeled, etc. If a unit only has a single move type, click the "walk" button to move. Then click a hex. You will see a black line indicating which hexes the unit will pass through and the cost to move there.
+
+If you want to turn the unit, click "Turn" and then click anywhere on the map. The mech will turn to face where you clicked. If you have already clicked the hex you want to move to, then the turn will be calculated based on your destination.
+
+When you're ready to move that unit, click "Move Unit". If a unit is standing still, click them, click "Stand Still", and then click "Move Unit". When everyone has moved, click "Next Phase".
 
 ### Combat Phase
 
@@ -75,33 +80,29 @@ Destroyed units will be removed automatically at the end of the end phase. Click
 
 ### Next round
 
-Initiative for the next round should roll automatically! If it does not, click "Reroll Initiative" and "Next Phase". Play continues until one side is destroyed. When you are finished, click "Quit Game" to exit.
+Initiative for the next round is rolled automatically. Simply click "Next Phase" twice (until you reach the movement phase) and play on. Play continues until one side is destroyed. When you are finished, click "Quit Game" to exit.
 
 ## What's coming
 
 ### 0.1.0 Previous Release
 
-This, the first "functional" release, is a very primitive implementation of the rules, allowing a hot-seat 2v2. The map is a featureless plain. Facing will not be calculated. Critical hits will not be applied. Only standard attack types will work. Basically, you will be able to build two forces, and then have them move, shoot, and lose armor/structure until everyone dies.
+This was the first "functional" release. It was a very primitive implementation of the rules, allowing a hot-seat 1 on 1 game. The map was a featureless plain. Facing was not calculated. Critical hits were not applied. Only standard attack types worked. Basically, you could build two forces, and then have them move, shoot, and lose armor/structure until everyone died.
 
 ### 0.2.0 This release
 
-This release focuses on adding support for Scenarios. The scenario files that ship with MegaMek provide a super convenient "test bank" to ensure that everything is working. Assuming every scenario can load and run, everything is working. Therefore, I prioritized getting scenarios working.
+This release focuses on adding support for Scenarios, terrain, and movement. The scenario files that ship with MegaMek provide a super convenient "test bank" to ensure that everything is working. Assuming every scenario can load and run, everything is working. Therefore, I have prioritized getting scenarios working.
 
-The next step is to make the terrain on the map actually mean something and make the map easier to read. 
+The next step is to make the terrain on the map actually mean something and make the map easier to read. It affects movement, but does not yet affect combat
 
 ### Next Release
 
-Initial implementation of terrain rules for movement (line of sight and attacks will not be implemented).
+Initial implementation of terrain rules for attacks.
 
 ### R+2
 
-Initial implementation of terrain rules for attacks.
-
-### R+3
-
 Implementation of physical attacks, heat, and criticals.
 
-### R+4
+### R+3
 
 Cleanup and bugfixes
 - Any specials not directly related to damage will not be implemented.

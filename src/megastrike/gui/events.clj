@@ -6,11 +6,12 @@
             [megastrike.phases :as initiative]
             [megastrike.utils :as utils]
             [megastrike.combat-unit :as cu])
-  (:import (javafx.application Platform)))
+  (:import [javafx.application Platform] 
+           [javafx.scene.input KeyCode KeyEvent]))
 
 (defmulti event-handler :event-type)
 
-(defmethod event-handler :default [event]
+(defmethod event-handler :default [{:keys [fx/event]}] 
   (prn event))
 
 (defmethod event-handler ::text-input
@@ -99,18 +100,14 @@
   (let [turn-order (subs/turn-order context)
         units (subs/units context)
         active (subs/active-id context)
-        ghost (some #(and (= (:id unit) (:id %)) %) (subs/unit-ghosts context))] 
-    (when (or (= (:movement-mode unit) :stand-still) (:p ghost))
-      (let [upd (merge unit (when (:p ghost)
-                              {:p (:p ghost)
-                               :q (:q ghost)
-                               :r (:r ghost)})
-                       {:acted true})] 
-        {:context (fx/swap-context context assoc 
-                                   :turn-order (rest turn-order)
-                                   :units (assoc units active upd)
-                                   :ghosts (remove #(and (= (:id unit) (:id %)) %) (subs/unit-ghosts context))
-                                   :active-unit nil)}))))
+        upd (when (and (= (first turn-order) (:force unit)) (= active (:id unit)))
+              (cu/can-move? unit (subs/board context)))]
+    (when (:acted upd)
+      {:context (fx/swap-context context assoc 
+                                 :turn-order (rest turn-order) 
+                                 :units (assoc units active upd) 
+                                 :turn-flag nil
+                                 :active-unit nil)})))
 
 (defmethod event-handler ::make-attacks 
   [{:keys [fx/context]}]
@@ -126,3 +123,31 @@
             upd (cu/make-attack attacker target)]
         (recur (assoc units (:id target) upd)
                (rest attackers))))))
+
+(defmethod event-handler ::change-size
+  [{:keys [fx/context direction]}] 
+  (let [layout (fx/sub-val context :layout)
+        new-layout (if (= direction :plus)
+                     (assoc layout :scale (+ (:scale layout) 0.1))
+                     (assoc layout :scale (- (:scale layout) 0.1)))] 
+    {:context (fx/swap-context context assoc :layout new-layout)}))
+
+(defmethod event-handler ::key-dispatcher
+  [{:keys [^KeyEvent fx/event]}]
+  (let [code (.getCode event)]
+    (cond
+      (= KeyCode/PLUS code)
+      {:dispatch {:event-type ::change-size :direction :plus}}
+      (= KeyCode/MINUS code)
+      {:dispatch {:event-type ::change-size :direction :minus}}
+      :else (prn code))))
+
+(defmethod event-handler ::change-facing 
+  [{:keys [fx/context unit facing]}]
+  (let [upd (merge unit {:direction facing})
+        units (assoc (subs/units context) (:full-name upd) upd)]
+    {:context (fx/swap-context context assoc :units units :turn-flag nil)}))
+
+(defmethod event-handler ::turn-button-clicked
+  [{:keys [fx/context ]}] 
+  {:context (fx/swap-context context assoc :turn-flag true)})

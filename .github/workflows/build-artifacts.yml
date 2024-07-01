@@ -10,7 +10,7 @@ jobs:
     needs: build-linux-uberjar
     runs-on: ubuntu-latest
     steps:
-      - name: Download deb file
+      - name: Download jar file
         uses: actions/download-artifact@v4
         with:
           name: megastrike_linux_jar
@@ -21,6 +21,7 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./*
           asset_name: megastrike_${{ github.event.release.tag_name }}_amd64
+          asset_content_type: application/gzip
 
   build-mac-uberjar:
     uses: ./.github/workflows/build-dmg.yml
@@ -28,7 +29,7 @@ jobs:
     needs: build-mac-uberjar
     runs-on: macos-latest
     steps:
-      - name: Download dmg
+      - name: Download jar
         uses: actions/download-artifact@v4 
         with: 
           name: megastrike_macos_jar
@@ -39,6 +40,7 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./*
           asset_name: megastrike-${{ github.event.release.tag_name }}_macos
+          asset_content_type: application/gzip
 
   build-win-uberjar:
     uses: ./.github/workflows/build-exe.yml
@@ -46,7 +48,7 @@ jobs:
     needs: build-win-uberjar
     runs-on: windows-latest
     steps:
-      - name: Download exe
+      - name: Download jar
         uses: actions/download-artifact@v4
         with:
           name: megastrike_win_jar
@@ -57,3 +59,4 @@ jobs:
           upload_url: ${{ github.event.release.upload_url }}
           asset_path: ./*
           asset_name: megastrike-${{ github.event.release.tag_name }}
+          asset_content_type: application/zip

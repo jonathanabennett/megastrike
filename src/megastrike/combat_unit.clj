@@ -2,6 +2,7 @@
   (:require [clojure-csv.core :as csv]
             [clojure.math :as math]
             [clojure.string :as str]
+            [megastrike.board :as board]
             [megastrike.hexagons.hex :as hexagon]
             [megastrike.utils :as utils]))
 
@@ -20,6 +21,13 @@
 (def vehicle-units ["SV" "CV"])
 (def infantry-units ["BA" "CI"])
 
+(def directions {:n  {:angle 0 :ordinal 2}
+                 :ne {:angle 60 :ordinal 1}
+                 :se {:angle 120 :ordinal 0}
+                 :s  {:angle 180 :ordinal 5}
+                 :sw {:angle 240 :ordinal 4}
+                 :nw {:angle 300 :ordinal 3}})
+
 (defn move-keyword
   "Creates a move keyword from a stat line imported from the mul export."
   [mv-type]
@@ -32,8 +40,11 @@
 (defn parse-movement
   "Parses a string like 8\"/5\"j into a map of all the possible movement modes the unit has and their distance in hexes."
   [mv-string]
-  (let [strings (re-seq #"(\d+)\\+\"([a-zA-Z]?)" mv-string)]
-    (into {} (map #(vector (move-keyword (nth % 2)) (/ (Integer/parseInt (second %)) 2)) strings))))
+  (let [strings (re-seq #"(\d+)\\+\"([a-zA-Z]?)" mv-string)
+        mv-map (into {} (map #(vector (move-keyword (nth % 2)) (/ (Integer/parseInt (second %)) 2)) strings))]
+    (if (and (= (count mv-map) 1) (= (key (first mv-map)) :jump))
+      (merge mv-map {:walk (val (first mv-map))})
+      mv-map)))
 
 (defn print-movement-helper
   "Consumes a vector containing a move type as a keyword and a distance and prints it for human consumption."
@@ -97,6 +108,15 @@
    (filter #(when (comparison (field %) value) %) units))
   ([units field values]
    (filter #(filter-membership-helper % field values) units)))
+
+(defn get-unit
+  ([unit]
+   (let [non-standard (str/replace unit #"\(Standard\)" "")
+         matching-muls (filter-units mul :full-name unit str/includes?)
+         non-standard-mul (filter-units mul :full-name non-standard =)] 
+     (if (first matching-muls)
+       (first matching-muls)
+       (first non-standard-mul)))))
 
 (defn create-element
   "Creates an element for use in the game."
@@ -175,18 +195,43 @@
 (defn find-sprite
   "Searches a the mechset to determine which images to use and returns the path to that image."
   [unit]
-  (let [chassis-match (filter (fn [row] (str/includes? (second row) (:chassis unit))) mechset)
+  (let [chassis-match (filter (fn [row] (= (second row) (:chassis unit))) mechset)
         exact-match (filter (fn [row] (str/includes? (second row) (:full-name unit))) mechset)
         match-row (or (first exact-match) (first chassis-match))] 
     (utils/load-resource :data (str "images/units/" (nth match-row 2)))))
 
+(defn find-path
+  [unit destination board]
+  (let [origin (hexagon/find-hex unit (board/nodes board))
+        mv-type (get unit :movement-mode :walk)]
+    (board/astar origin destination board hexagon/hex-distance mv-type)))
+
+(defn move-costs 
+  [unit board]
+  (let [origin (hexagon/find-hex unit (board/nodes board))
+        mv-type (get unit :movement-mode :walk)]
+    (loop [sum [(hexagon/step-cost origin (first (:path unit)) mv-type)]
+                   path (:path unit)]
+              (if (= (count path) 1) 
+                sum 
+                (recur (conj sum (hexagon/step-cost (first path) (second path) mv-type)) 
+                       (rest path))))))
+
 (defn can-move?
   "Checks whether or not a unit can move from its location to a destination."
-  [unit destination]
+  [unit board]
   (cond
-    (and (= (:movement-mode unit) :walk) (not (contains? (:movement unit) :walk)))
-    (>= (first (vals (:movement unit))) (hexagon/hex-distance unit destination))
-    :else (>= (get-in unit [:movement (:movement-mode unit)]) (hexagon/hex-distance unit destination))))
+    (= (:movement-mode unit) :stand-still) (merge unit {:acted true})
+    (seq (:path unit)) (let [sum (reduce + (move-costs unit board))
+                             unit (if (not (:movement-mode unit))
+                                    (assoc unit :movement-mode (key (first (:movement unit))))
+                                    unit)
+                             move (get-in unit [:movement (:movement-mode unit)])] 
+                         (if (<= sum move)
+                           (merge unit 
+                                  (select-keys (last (:path unit)) [:p :q :r])
+                                  {:acted true :path []})
+                           unit))))
 
 (defn calculate-attacker-mod
   "Returns the mod for a given to hit due to the attacker's movement mode this turn."

@@ -32,7 +32,7 @@
      :layout (hex/create-layout)
      :map-width "1"
      :map-height "1"
-     :current-phase -1
+     :current-phase :lobby
      :turn-number 0}
     cache/lru-cache-factory)))
 

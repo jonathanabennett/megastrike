@@ -1,7 +1,6 @@
 (ns megastrike.gui.lobby.views
   (:require [cljfx.api :as fx]
             [cljfx.ext.table-view :as tables]
-            [megastrike.board :as board]
             [megastrike.combat-unit :as cu]
             [megastrike.gui.common :as common]
             [megastrike.gui.lobby.events :as lobby-events]
