@@ -6,12 +6,12 @@
             [megastrike.phases :as initiative]
             [megastrike.utils :as utils]
             [megastrike.combat-unit :as cu])
-  (:import [javafx.application Platform]
+  (:import [javafx.application Platform] 
            [javafx.scene.input KeyCode KeyEvent]))
 
 (defmulti event-handler :event-type)
 
-(defmethod event-handler :default [event]
+(defmethod event-handler :default [{:keys [fx/event]}] 
   (prn event))
 
 (defmethod event-handler ::text-input
@@ -132,7 +132,7 @@
     {:context (fx/swap-context context assoc :layout new-layout)}))
 
 (defmethod event-handler ::key-dispatcher
-  [{:keys [fx/context ^KeyEvent fx/event]}]
+  [{:keys [^KeyEvent fx/event]}]
   (let [code (.getCode event)]
     (cond
       (= KeyCode/PLUS code)
