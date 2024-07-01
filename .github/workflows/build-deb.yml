@@ -22,8 +22,8 @@ jobs:
         with: 
           name: megastrike_linux_jar
           path: |
-          .
-          !./.git
+            .
+            !./.git
   # build-deb:
   #   runs-on: ubuntu-latest
   #   steps:

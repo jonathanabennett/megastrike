@@ -20,9 +20,9 @@ jobs:
       - uses: actions/upload-artifact@v3
         with: 
           name: megastrike_mac_jar
-          path: |
-          .
-          !./.git
+          path: | 
+            .
+            !./.git
   # build-dmg:
   #   runs-on: macos-latest
   #   steps:
