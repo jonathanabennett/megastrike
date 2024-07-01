@@ -23,3 +23,7 @@ jobs:
         with: 
           format: "zip"
           name: megastrike_win
+      - uses: actions/upload-artifact@v3
+        with:
+          name: megastrike_win
+          path: megastrike_win.zip
