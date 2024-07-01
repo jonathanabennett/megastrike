@@ -114,7 +114,6 @@
    (let [non-standard (str/replace unit #"\(Standard\)" "")
          matching-muls (filter-units mul :full-name unit str/includes?)
          non-standard-mul (filter-units mul :full-name non-standard =)] 
-     (prn non-standard-mul)
      (if (first matching-muls)
        (first matching-muls)
        (first non-standard-mul)))))
