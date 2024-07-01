@@ -10,7 +10,7 @@ jobs:
       - uses: actions/checkout@v1
       - uses: actions/setup-java@v1
         with:
-          java-version: '14'
+          java-version: '17'
       - uses: DeLaGuardo/setup-clojure@12.5
         with:
           cli: '1.11.1.1413'
@@ -18,7 +18,7 @@ jobs:
       - name: Create Uberjar
         shell: cmd
         run: lein uberjar
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v3
         with:
           name: megastrike_win_jar
           path: ./*
