@@ -19,7 +19,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: megastrike_linux
+          asset_path: megastrike
           asset_name: megastrike_${{ github.event.release.tag_name }}_amd64
           asset_content_type: application/gzip
 
@@ -38,7 +38,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: megastrike_macos
+          asset_path: megastrike
           asset_name: megastrike-${{ github.event.release.tag_name }}_macos
           asset_content_type: application/gzip
 
@@ -57,6 +57,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           upload_url: ${{ github.event.release.upload_url }}
-          asset_path: megastrike_win
+          asset_path: megastrike
           asset_name: megastrike-${{ github.event.release.tag_name }}
           asset_content_type: application/zip
