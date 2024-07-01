@@ -23,3 +23,7 @@ jobs:
         with: 
           format: "tar.gz"
           name: megastrike_linux
+      - uses: actions/upload-artifact@v3
+        with:
+          name: megastrike_linux
+          path: megastrike_linux.tar.gz
