@@ -21,7 +21,9 @@ jobs:
       - uses: actions/upload-artifact@v3
         with:
           name: megastrike_win_jar
-          path: ./*
+          path: |
+          ./*
+          !./.git
   # build-exe:
   #   runs-on: windows-latest
   #   steps:

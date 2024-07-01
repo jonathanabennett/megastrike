@@ -21,7 +21,9 @@ jobs:
       - uses: actions/upload-artifact@v3
         with: 
           name: megastrike_linux_jar
-          path: ./*
+          path: |
+          .
+          !./.git
   # build-deb:
   #   runs-on: ubuntu-latest
   #   steps:
