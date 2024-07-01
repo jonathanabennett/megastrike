@@ -13,7 +13,7 @@ jobs:
       - name: Download jar file
         uses: actions/download-artifact@v3
         with:
-          name: megastrike_linux_jar
+          name: megastrike_linux
       - uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -32,7 +32,7 @@ jobs:
       - name: Download jar
         uses: actions/download-artifact@v3 
         with: 
-          name: megastrike_macos_jar
+          name: megastrike_macos
       - uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -51,7 +51,7 @@ jobs:
       - name: Download jar
         uses: actions/download-artifact@v3
         with:
-          name: megastrike_win_jar
+          name: megastrike_win
       - uses: actions/upload-release-asset@v1
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

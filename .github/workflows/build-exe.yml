@@ -18,12 +18,11 @@ jobs:
       - name: Create Uberjar
         shell: cmd
         run: lein uberjar
-      - uses: actions/upload-artifact@v3
-        with:
-          name: megastrike_win_jar
-          path: |
-            .
-            !./.git
+      - uses: ksm/archive-action@v1
+        id: archive
+        with: 
+          format: "zip"
+          name: megastrike_win
   # build-exe:
   #   runs-on: windows-latest
   #   steps:

@@ -17,12 +17,11 @@ jobs:
           lein: '2.10.0'
       - run: lein uberjar
       - run: chmod +x startup.sh
-      - uses: actions/upload-artifact@v3
+      - uses: ksm/archive-action@v1
+        id: archive
         with: 
-          name: megastrike_mac_jar
-          path: | 
-            .
-            !./.git
+          format: "tar.gz"
+          name: megastrike_macos
   # build-dmg:
   #   runs-on: macos-latest
   #   steps:

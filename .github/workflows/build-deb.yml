@@ -18,12 +18,11 @@ jobs:
           lein: '2.10.0'
       - run: lein uberjar
       - run: chmod +x startup.sh
-      - uses: actions/upload-artifact@v3
+      - uses: ksm/archive-action@v1
+        id: archive
         with: 
-          name: megastrike_linux_jar
-          path: |
-            .
-            !./.git
+          format: "tar.gz"
+          name: megastrike_linux
   # build-deb:
   #   runs-on: ubuntu-latest
   #   steps:
