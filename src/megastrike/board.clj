@@ -71,10 +71,6 @@
   (mapsheets [board])
   (weight [board from to mv-type]))
 
-(defn neighbors% 
-  [graph node]
-  (into [] (remove nil? (map #(hex/find-hex % (graph)) (hex/hex-neighbors node)))))
-
 (defn create-board
   ([filename]
    (let [mapsheet (create-mapsheet filename)]
