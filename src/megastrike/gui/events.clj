@@ -95,6 +95,13 @@
         upd (assoc units (:id u) u)]
     {:context (fx/swap-context context assoc :units upd)}))
 
+(defmethod event-handler ::cancel-move
+  [{:keys [fx/context unit]}]
+  (let [active (subs/active-id context)
+        upd (assoc unit :path [])
+        units (assoc (subs/units context) active upd)]
+    {:context (fx/swap-context context assoc :units units)}))
+
 (defmethod event-handler ::confirm-move
   [{:keys [fx/context unit]}]
   (let [turn-order (subs/turn-order context)

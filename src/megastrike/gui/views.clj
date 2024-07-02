@@ -36,7 +36,10 @@
         :text "Turn"
         :on-action {:event-type ::events/turn-button-clicked :fx/sync true}}] 
       buttons 
-      [{:fx/type :button 
+      [{:fx/type :button
+        :text "Cancel Move"
+        :on-action {:event-type ::events/cancel-move :unit unit :fx/sync true}}
+       {:fx/type :button 
         :text "Confirm Move" 
         :on-action {:event-type ::events/confirm-move :unit unit :fx/sync true}}])))
 
