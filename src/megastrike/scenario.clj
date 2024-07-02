@@ -97,9 +97,10 @@
 
 (defn pick-map
   [loc board-files map-size]
-  (let [map-list (filter #(str/includes? (str (.getName %)) map-size) board-files)
-        width (* (first loc) (Integer/parseInt {:width map-size}))
-        height (* (second loc) (Integer/parseInt (:height map-size)))]
+  (let [size-string (str (:width map-size) "x" (:height map-size))
+        map-list (filter #(str/includes? (str (.getName %)) size-string) board-files)
+        width (* (first loc) (:width map-size))
+        height (* (second loc) (:height map-size))]
     (board/create-mapsheet (str "file:" (.getPath (rand-nth map-list))) width height)))
 
 (defn map-rotator
@@ -109,17 +110,21 @@
             {:board (utils/load-resource :data (str "boards/" filename ".board")) :rotate nil})]
     {:original f :temp (board/create-mapsheet (:board f))}))
 
+(defn map-processor 
+  [filename]
+  (board/create-mapsheet (str "file:" (.getPath filename))))
+
 (defn set-maps
   [scenario]
   (if (:map-dirs scenario)
     (let [boards (board-files (:map-dirs scenario)) 
-          size-setter (map-rotator (rand-nth boards))
+          size-setter (map-processor (rand-nth boards))
           maps (for [x (range (:map-width scenario)) 
                      y (range (:map-height scenario))] 
-                 [x y])]
+                 [x y])] 
       {:map-boards (into [] (map #(pick-map % boards size-setter) maps))}) 
 
-    (let [maps (map #(map-rotator %) (:maps scenario)) 
+    (let [maps (map #(map-rotator (str/trim %)) (:maps scenario)) 
           width (get-in (first maps) [:temp :width])
           height (get-in (first maps) [:temp :height])
           offsets (for [x (range (:map-width scenario))

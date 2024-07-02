@@ -112,7 +112,7 @@
 (defn get-unit
   ([unit]
    (let [non-standard (str/replace unit #"\(Standard\)" "")
-         matching-muls (filter-units mul :full-name unit str/includes?)
+         matching-muls (filter-units mul :full-name unit =)
          non-standard-mul (filter-units mul :full-name non-standard =)] 
      (if (first matching-muls)
        (first matching-muls)
