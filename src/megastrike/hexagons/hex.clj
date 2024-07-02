@@ -190,9 +190,9 @@
         blocked?
         (recur (cond
                  (= (count line) 2) false
-                 (same-hex origin current)   (> (:elevation current) o-height)
-                 (same-hex target (first l)) (> (:elevation current) t-height)
-                 :else (and (> (:elevation current) o-height) (> (:elevation current) t-height)))
+                 (same-hex origin current)   (>= (:elevation current) o-height)
+                 (same-hex target (first l)) (>= (:elevation current) t-height)
+                 :else (and (>= (:elevation current) o-height) (>= (:elevation current) t-height)))
                (first l)
                (rest l))))))
 
