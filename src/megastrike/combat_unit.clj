@@ -253,8 +253,16 @@
 
 (defn calculate-other-mod
   "Calculate 'other' modifiers to the to hit. Terrain, heat, etc."
-  [attacker target]
-  (:current-heat attacker))
+  [attacker target board]
+  (let [heat (:current-heat attacker)
+        line (hexagon/hex-line attacker target (board/nodes board))
+        blocked? (hexagon/height-checker (hexagon/find-hex attacker (board/nodes board)) (hexagon/find-hex target (board/nodes board)) line)
+        woods-count (count (filter #(str/includes? (:terrain %) "woods") line))]
+    (if (and (not blocked?) (<= woods-count 3))
+      (if (zero? woods-count) 
+        heat 
+        (inc heat))
+      ##Inf)))
 
 (defn calculate-range-mod
   "Calculates the mod to hit based on the range."
@@ -269,11 +277,11 @@
 
 (defn calculate-to-hit
   "Calculates the to hit for an attack using the SATOR method from the book."
-  [attacker target]
+  [attacker target nodes]
   (+ (:skill (:pilot attacker))
      (calculate-attacker-mod attacker)
      (calculate-target-mod target)
-     (calculate-other-mod attacker target)
+     (calculate-other-mod attacker target nodes)
      (calculate-range-mod attacker target)))
 
 (defn calculate-damage
@@ -304,8 +312,8 @@
 
 (defn make-attack
   "Rolls a full attack. Calculating the to-hit, rolling the dice, and then applying the damage and returning the targeted unit."
-  [attacker target]
-  (let [target-num (calculate-to-hit attacker target)
+  [attacker target board]
+  (let [target-num (calculate-to-hit attacker target board)
         range (hexagon/hex-distance attacker target)
         to-hit (utils/roll2d)]
     (if (<= target-num to-hit)
