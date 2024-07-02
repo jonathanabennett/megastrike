@@ -50,6 +50,9 @@
    {:fx/type :button 
     :text "Overheat -1"
     :on-action {:event-type ::events/overheat :value -1}} 
+   {:fx/type :button
+    :text "Clear Target"
+    :on-action {:event-type ::events/clear-target}}
    {:fx/type :button 
     :text "Resolve Attacks" 
     :on-action {:event-type ::events/make-attacks}}])
