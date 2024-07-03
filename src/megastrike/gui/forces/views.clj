@@ -67,7 +67,7 @@
   (let [active (subs/active-id context) ]
     {:fx/type :titled-pane 
      :on-mouse-clicked {:event-type ::events/stats-clicked :fx/sync true :unit (:id unit)} 
-     :text (:id unit)
+     :text (if (:acted unit) (str (:id unit) " (done)") (:id unit))
      :border {:strokes [{:stroke :black :style :solid :width 2}]}
      :padding 5
      :content {:fx/type :v-box 
