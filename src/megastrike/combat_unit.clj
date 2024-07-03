@@ -28,6 +28,16 @@
                  :sw {:angle 240 :ordinal 4}
                  :nw {:angle 300 :ordinal 3}})
 
+(def criticals {2 :ammo
+                3 :engine
+                4 :fire-control
+                6 :weapon
+                7 :mp 
+                8 :weapon
+                10 :fire-control
+                11 :engine
+                12 :destroyed})
+
 (defn move-keyword
   "Creates a move keyword from a stat line imported from the mul export."
   [mv-type]
@@ -236,11 +246,13 @@
 (defn calculate-attacker-mod
   "Returns the mod for a given to hit due to the attacker's movement mode this turn."
   [unit]
-  (cond
-    (= (:movement-mode unit) :immobile) -1
-    (= (:movement-mode unit) :standstill) -1
-    (= (:movement-mode unit) :jump) 2
-    :else 0))
+  (let [move (cond 
+               (= (:movement-mode unit) :immobile) -1 
+               (= (:movement-mode unit) :standstill) -1 
+               (= (:movement-mode unit) :jump) 2 
+               :else 0)
+        fc (* (count (filter #(= % :fire-control) (:crits unit))) 2)]
+    (+ move fc)))
 
 (defn calculate-target-mod
   "Calculates the mod for the to hit to an attack based on the target's condition."
@@ -294,21 +306,40 @@
     (>= 30 range) (if (and (:e* unit) (<= 4 (utils/roll-die))) 1 (:e unit))))
 
 (defn take-damage
-  "Applies damage 1 point at a time, checking to see if there armor remaining."
   [unit damage]
   (if (= damage 0)
     unit
-    (loop [armor (:current-armor unit (:armor unit))
-           structure (:current-structure unit (:structure unit))
-           damage damage]
-      (if (zero? damage)
-        (assoc unit :current-armor armor :current-structure structure)
-        (let [arm (dec armor)
-              str (dec structure)
-              dmg (dec damage)]
-          (if (pos? arm)
-            (recur arm structure dmg)
-            (recur 0 str dmg)))))))
+    (let [armor (- (:current-armor unit (:armor unit)) damage)
+          penetrated? (not (pos? armor))
+          penetration (- damage (:current-armor unit (:armor unit)))
+          structure (if penetrated? 
+                      (- (:current-structure unit (:structure unit)) penetration)
+                      (:current-structure unit (:structure unit)))
+          crit (get criticals (utils/roll2d) nil)
+          upd (assoc unit :current-armor armor :current-structure structure)]
+      (prn crit)
+      (cond
+        (= crit :ammo) (let [case (some #(= % :case) (:abilities unit)) 
+                             case2 (some #(= % :caseii) (:abilities unit)) 
+                             ene (some #(= % :ene) (:abilities unit))] 
+                         (cond (or case2 ene) upd 
+                               case (take-damage upd 1) 
+                               :else (assoc upd :destroyed? true)))
+        (= crit :engine) (if (some #(= % :engine) (:crits upd)) 
+                           (assoc upd :destroyed? true)
+                           (assoc upd :crits (conj (:crits upd) :engine)))
+        (= crit :fire-control) (if (< (count (filter #( % :fire-control) (:crits upd))) 4)
+                                 (assoc upd :crits (conj (:crits upd) :fire-control))
+                                 upd)
+        (= crit :weapon) (if (< (count (filter #( % :weapon) (:crits upd))) 4)
+                                 (assoc upd :crits (conj (:crits upd) :weapon))
+                                 upd)
+
+        (= crit :mv) (if (< (count (filter #( % :mv) (:crits upd))) 4)
+                                 (assoc upd :crits (conj (:crits upd) :mv))
+                                 upd)
+        (= crit :destroyed) (assoc upd :destroyed? true)
+        :else upd))))
 
 (defn make-attack
   "Rolls a full attack. Calculating the to-hit, rolling the dice, and then applying the damage and returning the targeted unit."
