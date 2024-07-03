@@ -34,7 +34,9 @@
                              :source (str (.toURI (cu/find-sprite unit)))}
               :mode :src-atop
               :opacity 0.5} 
-     :rotate (if direction (get-in cu/directions [:angle (:direction unit)] 0) 0)
+     :rotate (if direction 
+               (get-in cu/directions [(:direction unit) :angle] 0) 
+               0)
      :translate-x x
      :translate-y (+ y shift)
      :x 0
