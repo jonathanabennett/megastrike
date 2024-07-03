@@ -12,6 +12,9 @@
        :disable finished-deployment
        :on-action {:event-type ::events/deploy-unit :fx/sync true}}
       {:fx/type :button
+        :text "Turn"
+        :on-action {:event-type ::events/turn-button-clicked :fx/sync true}}
+      {:fx/type :button
        :text "Undeploy Unit"
        :on-action {:event-type ::events/undeploy-unit :fx/sync true}}])
 
