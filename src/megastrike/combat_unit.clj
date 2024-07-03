@@ -315,9 +315,12 @@
           structure (if penetrated? 
                       (- (:current-structure unit (:structure unit)) penetration)
                       (:current-structure unit (:structure unit)))
-          crit (get criticals (utils/roll2d) nil)
+          crit (if penetrated? (get criticals (utils/roll2d) nil) nil)
           upd (assoc unit :current-armor armor :current-structure structure)]
-      (prn crit)
+      (prn (str damage " damage done to " (:current-armor unit) " armor."))
+      (when penetrated?
+        (prn (str penetration " damage penetrated."))
+        (prn (str "Rolled " crit " on critical hit table.")))
       (cond
         (= crit :ammo) (let [case (some #(= % :case) (:abilities unit)) 
                              case2 (some #(= % :caseii) (:abilities unit)) 
@@ -346,7 +349,9 @@
   [attacker target board]
   (let [target-num (calculate-to-hit attacker target board)
         range (hexagon/hex-distance attacker target)
-        to-hit (utils/roll2d)]
+        to-hit (utils/roll2d)] 
+    (prn (str (:full-name attacker) " attacking " (:full-name target)))
+    (prn (str "To hit: " target-num ", Rolled: " to-hit))
     (if (<= target-num to-hit)
       (take-damage target (calculate-damage attacker range))
       target)))
