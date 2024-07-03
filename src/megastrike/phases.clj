@@ -67,13 +67,13 @@
   [{:keys [units]}] 
   (let [targeting-removed (into {} (for [[k unit] units] (if (not-any? #(= (:target unit) %) (keys units)) [k (assoc unit :target nil)]
                                                              [k unit])))] 
-    {:current-phase :end :turn-order nil :units targeting-removed}))
+    {:current-phase :end :turn-order nil :units (into {} (for [[k unit] targeting-removed] [k (assoc unit :movement-mode nil)]))}))
 
 (defn next-phase 
   "Removes destroyed units and resets the acted status on every unit, then dispatches to the correct phase method."
   [{:keys [current-phase turn-number forces units]}]
   (let [remaining (into {} (for [[k unit] units] (when (or (pos? (get unit :current-structure (get unit :structure))) (not (:destroyed? unit))) [k unit])))
-        new-units (into {} (for [[k unit] remaining] [k (assoc unit :acted nil :movement-mode nil)]))]
+        new-units (into {} (for [[k unit] remaining] [k (assoc unit :acted nil)]))]
     (cond 
      (= current-phase :initiative) (start-deployment-phase {:forces forces :units new-units})
      (= current-phase :deployment) (start-movement-phase {:forces forces :units new-units})
