@@ -269,7 +269,7 @@
   (let [heat (:current-heat attacker)
         line (hexagon/hex-line attacker target (board/nodes board))
         blocked? (hexagon/height-checker (hexagon/find-hex attacker (board/nodes board)) (hexagon/find-hex target (board/nodes board)) line)
-        woods-count (count (filter #(str/includes? (:terrain %) "woods") line))]
+        woods-count (count (filter #(str/includes? (:terrain %) "woods") (rest line)))]
     (if (and (not blocked?) (<= woods-count 3))
       (if (zero? woods-count) 
         heat 
