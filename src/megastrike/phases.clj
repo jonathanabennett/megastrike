@@ -72,7 +72,7 @@
 (defn next-phase 
   "Removes destroyed units and resets the acted status on every unit, then dispatches to the correct phase method."
   [{:keys [current-phase turn-number forces units]}]
-  (let [remaining (into {} (for [[k unit] units] (when (or (pos? (get unit :current-structure (get unit :structure))) (:destroyed? unit)) [k unit])))
+  (let [remaining (into {} (for [[k unit] units] (when (or (pos? (get unit :current-structure (get unit :structure))) (not (:destroyed? unit))) [k unit])))
         new-units (into {} (for [[k unit] remaining] [k (assoc unit :acted nil :movement-mode nil)]))]
     (cond 
      (= current-phase :initiative) (start-deployment-phase {:forces forces :units new-units})
