@@ -123,7 +123,13 @@
                            :filled (:current-heat unit) 
                            :max 4 
                            :fill-one :red 
-                           :fill-two :aliceblue}]}}))
+                           :fill-two :aliceblue}
+                          {:fx/type common/prop-label
+                           :label "Abilities: "
+                           :value (str (:abilities unit))}
+                          {:fx/type common/prop-label
+                           :label "Criticals: "
+                           :value (str (:crits unit))}]}}))
 
 (defn force-block [{:keys [fx/context units]}]
   (let [forces (subs/forces context)
