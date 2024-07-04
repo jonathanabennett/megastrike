@@ -169,7 +169,7 @@
 (defn pv-mod
   "Calculates the skill-based mod for PV based on the algorithm provided in the book."
   [unit]
-  (let [skill-diff (- 4 (:skill (:pilot unit)))]
+  (let [skill-diff (- 4 (get-in unit [:pilot :skill] 4))]
     (cond
       (> 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- (:point-value unit) 5) 10)))
       (< 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- (:point-value unit) 3) 5)))
