@@ -1,6 +1,5 @@
 (ns megastrike.hexagons.hex
-  (:require [clojure.math :as math]
-            [clojure.string :as str]))
+  (:require [clojure.math :as math]))
 
 (defn hexagon
   "Creates a Hexagon using a 3d addressing system."
@@ -136,30 +135,6 @@
             (> q-diff p-diff))
        (hexagon p-int (* (+ p-int r-int) -1) r-int)
       :else (hexagon p-int q-int (* (+ p-int q-int) -1)))))
-
-
-(defn linear-interpolation 
-  [a b step]
-  (+ a (* (- b a) step)))
-
-(defn hex-lerp
-  [hex1 hex2 step]
-  {:p (linear-interpolation (:p hex1) (:p hex2) step)
-   :q (linear-interpolation (:q hex1) (:q hex2) step)
-   :r (linear-interpolation (:r hex1) (:r hex2) step)})
-
-(defn step-cost
-  [hex neighbor mv-type]
-  (let [terrain (:terrain neighbor)
-        lvl-change (- (:elevation neighbor) (:elevation hex))]
-    (cond 
-      (= mv-type :jump) 1
-      (str/includes? terrain "woods") (+ (abs lvl-change) 2)
-      (str/includes? terrain "rough") (+ (abs lvl-change) 2)
-      (str/includes? terrain "rubble") (+ (abs lvl-change) 2)
-      (str/includes? terrain "water") (+ (abs lvl-change) 2)
-      (> lvl-change 2) ##Inf
-      :else (+ (abs lvl-change) 1))))
 
 (defn height-checker
   [origin target line]
