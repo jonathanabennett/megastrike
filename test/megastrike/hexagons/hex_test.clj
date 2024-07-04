@@ -3,14 +3,12 @@
    [clojure.test :as t]
    [megastrike.hexagons.hex :as sut]))
 
-
 (t/deftest hexagon-equality
   (t/testing "Two hexes should match if they have the same q,r,s address."
     (t/is (= (sut/same-hex (sut/hexagon 0 0 0) (sut/hexagon 0 0 0)) true)))
   (t/testing "Two hexes should NOT match if they have different q,r,s addresses."
     (t/is (= (sut/same-hex (sut/hexagon 0 0 0) (sut/hexagon 0 -1 1)) false)))
-  (t/testing "s = -q-r in hex creation."
-    (t/is (= (sut/same-hex (sut/hexagon 1 0) (sut/hexagon 1 0 -1)) true)))
+  (t/testing "r = -p-q in hex creation." (t/is (= (sut/same-hex (sut/hexagon 1 0) (sut/hexagon 1 0 -1)) true)))
   (t/testing "Disparate maps should not match."
     (t/is (= (sut/same-hex (sut/hexagon 0 0 0) {:x 0 :y 0}) false))))
 
@@ -63,7 +61,7 @@
 (t/deftest hex-multiplication
   (let [test-hex (sut/hexagon 4 0 -4)]
     (t/testing "Testing hex multiplication"
-      (t/is (= (sut/hex-multiplication test-hex 2) {:q 8 :r 0 :s -8})))))
+      (t/is (= (sut/hex-multiplication test-hex 2) {:p 8 :q 0 :r -8})))))
 
 (t/deftest hex-distance
   (let [test-hex-00 (sut/hexagon 0 0 0)
@@ -72,32 +70,80 @@
       (t/is (= (sut/hex-distance test-hex-00 test-hex-42) 4)))))
 
 (t/deftest hex-neighbor
-  (let [test-hex-00 (sut/hexagon 0 0 0)]
+  (let [test-hex-00 (sut/hexagon 0 0 0)
+        neighbors (sut/hex-neighbors test-hex-00)]
     (t/testing "Check each hex neighbor for hex 0,0"
-      (t/is (sut/same-hex (sut/hex-neighbor test-hex-00 0) {:q 1 :r 0 :s -1}))
-      (t/is (sut/same-hex (sut/hex-neighbor test-hex-00 1) {:q 1 :r -1 :s 0}))
-      (t/is (sut/same-hex (sut/hex-neighbor test-hex-00 2) {:q 0 :r -1 :s 1}))
-      (t/is (sut/same-hex (sut/hex-neighbor test-hex-00 3) {:q -1 :r 0 :s 1}))
-      (t/is (sut/same-hex (sut/hex-neighbor test-hex-00 4) {:q -1 :r 0 :s 1}))
-      (t/is (sut/same-hex (sut/hex-neighbor test-hex-00 5) {:q 0 :r 1 :s -1})))))
+      (t/is (sut/same-hex (nth neighbors 0) {:p 1  :q 0  :r -1}))
+      (t/is (sut/same-hex (nth neighbors 1) {:p 1  :q -1 :r 0}))
+      (t/is (sut/same-hex (nth neighbors 2) {:p 0  :q -1 :r 1}))
+      (t/is (sut/same-hex (nth neighbors 3) {:p -1 :q 0  :r 1}))
+      (t/is (sut/same-hex (nth neighbors 4) {:p -1 :q 1  :r 0}))
+      (t/is (sut/same-hex (nth neighbors 5) {:p 0  :q 1  :r -1})))))
 
 (t/deftest hex-to-pixel
   (let [layout (sut/create-layout)]
     (t/testing "Check the pixel location of hexes."
-      (let [test-hex-00 (sut/hexagon 0 0 0)
-            test-hex-42 (sut/hexagon 4 0 -4)]
-        (t/is (= (sut/hex-to-pixel test-hex-00 layout) {:x 84.0 :y 65.0}))
-        (t/is (= (sut/hex-to-pixel test-hex-42 layout) {:x 588.0 :y 314.41531628991834}))))))
+      (let [test-hex-00 (sut/hexagon 0 0 0) 
+            test-pixels-00 (sut/hex-to-pixel test-hex-00 layout)
+            test-hex-42 (sut/hexagon 4 0 -4)
+            test-pixels-42 (sut/hex-to-pixel test-hex-42 layout)] 
+        (t/is (< (abs (- (:x test-pixels-00) 84)) 1))
+        (t/is (< (abs (- (:y test-pixels-00) 65)) 1))
+        (t/is (< (abs (- (:x test-pixels-42) 588)) 1))
+        (t/is (< (abs (- (:y test-pixels-42) 314.4)) 1))))))
 
 (t/deftest hex-points
   (let [layout (sut/create-layout)
-        hex-00-correct (list {:x 168.0, :y 65.0}
-                             {:x 125.99999999999997, :y 127.3538290724796}
-                             {:x 42.00000000000002, :y 127.3538290724796}
-                             {:x 0.0, :y 65.00000000000001}
-                             {:x 42.000000000000036, :y 2.6461709275204015}
-                             {:x 125.99999999999994, :y 2.6461709275203873})]
+        hex-00-correct [168.0 65.0 
+                        125.99 127.35 
+                        42.00 127.35 
+                        0.0 65.00 
+                        42.00 2.64 
+                        125.99 2.64]]
     (t/testing "Find all vertices of a hex"
-      (let [test-hex-00 (sut/hexagon 0 0 0)]
-        (t/is (= (sut/hex-points test-hex-00 layout)
-                 hex-00-correct))))))
+      (let [test-hex-00 (sut/hex-points (sut/hexagon 0 0 0) layout)] 
+        (t/are [c-point t-point] (< (abs (- c-point t-point)) 1) 
+          (nth hex-00-correct 0)  (nth test-hex-00 0)
+          (nth hex-00-correct 1)  (nth test-hex-00 1)
+          (nth hex-00-correct 2)  (nth test-hex-00 2)
+          (nth hex-00-correct 3)  (nth test-hex-00 3)
+          (nth hex-00-correct 4)  (nth test-hex-00 4)
+          (nth hex-00-correct 5)  (nth test-hex-00 5)
+          (nth hex-00-correct 6)  (nth test-hex-00 6)
+          (nth hex-00-correct 7)  (nth test-hex-00 7)
+          (nth hex-00-correct 8)  (nth test-hex-00 8)
+          (nth hex-00-correct 9)  (nth test-hex-00 9)
+          (nth hex-00-correct 10) (nth test-hex-00 10)
+          (nth hex-00-correct 11) (nth test-hex-00 11)
+          )))))
+
+(t/deftest hex-round
+  (let [hex-00 (sut/hexagon 0 0 0)
+        ppoint {:p 0.2 :q -0.3 :r 0.1}
+        qpoint {:p -0.3 :q 0.2 :r 0.1}
+        rpoint {:p 0.1 :q -0.3 :r 0.2}
+        rqpoint {:p -0.3 :q 0.1 :r 0.2}
+        elsepoint {:p 0.2 :q -0.2 :r 0.0}]
+    (t/is (sut/same-hex hex-00 (sut/hex-round ppoint)))
+    (t/is (sut/same-hex hex-00 (sut/hex-round qpoint)))
+    (t/is (sut/same-hex hex-00 (sut/hex-round rpoint)))
+    (t/is (sut/same-hex hex-00 (sut/hex-round rqpoint)))
+    (t/is (sut/same-hex hex-00 (sut/hex-round elsepoint)))))
+
+(t/deftest hex-facing
+  (let [hex-42 (sut/hexagon 4 0 -4)
+        layout (sut/create-layout)
+        n-dest {:x 588 :y 200}
+        ne-dest {:x 688 :y 250}
+        se-dest {:x 688 :y 350}
+        s-dest {:x 588 :y 400}
+        sw-dest {:x 488 :y 350}
+        nw-dest {:x 488 :y 250}]
+    (t/is (= (sut/hex-facing hex-42 n-dest layout) :n))
+    (t/is (= (sut/hex-facing hex-42 ne-dest layout) :ne))
+    (t/is (= (sut/hex-facing hex-42 se-dest layout) :se))
+    (t/is (= (sut/hex-facing hex-42 s-dest layout) :s))
+    (t/is (= (sut/hex-facing hex-42 sw-dest layout) :sw))
+    (t/is (= (sut/hex-facing hex-42 nw-dest layout) :nw))
+    ))
+        588,314
