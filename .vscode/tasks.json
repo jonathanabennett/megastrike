@@ -6,7 +6,17 @@
         {
             "label": "test",
             "type": "shell",
-            "command": "lein test"
+            "command": "lein test",
+            "problemMatcher": [],
+            "group": {
+                "kind": "test",
+                "isDefault": true
+            }
+        },
+        {
+            "label": "coverage",
+            "type": "shell",
+            "command": "lein cloverage",
         }
     ]
 }
