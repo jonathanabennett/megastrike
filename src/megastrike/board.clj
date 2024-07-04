@@ -78,7 +78,7 @@
 
 (defn find-hex 
   [h board]
-  (first (filter #(hex/same-hex h %) board)))
+  (first (filter #(hex/same-hex h %) (nodes board))))
 
 (defn linear-interpolation 
   [a b step]

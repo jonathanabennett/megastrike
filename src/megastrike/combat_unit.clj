@@ -237,13 +237,13 @@
 
 (defn find-path
   [unit destination board]
-  (let [origin (board/find-hex unit (board/nodes board))
+  (let [origin (board/find-hex unit board)
         mv-type (get unit :movement-mode :walk)]
     (board/astar origin destination board hexagon/hex-distance mv-type)))
 
 (defn move-costs 
   [unit board]
-  (let [origin (board/find-hex unit (board/nodes board))
+  (let [origin (board/find-hex unit board)
         mv-type (get unit :movement-mode :walk)]
     (loop [sum [(board/step-cost origin (first (:path unit)) mv-type)]
                    path (:path unit)]
@@ -309,8 +309,8 @@
   "Calculate 'other' modifiers to the to hit. Terrain, heat, etc."
   [attacker target board]
   (let [heat (get attacker :current-heat 0)
-        line (board/hex-line attacker target (board/nodes board))
-        blocked? (height-checker (board/find-hex attacker (board/nodes board)) (board/find-hex target (board/nodes board)) line)
+        line (board/hex-line attacker target board)
+        blocked? (height-checker (board/find-hex attacker board) board line)
         woods-count (count (filter #(str/includes? (:terrain %) "woods") (rest line)))]
     (if (and (not blocked?) (<= woods-count 3))
       (if (zero? woods-count) 
