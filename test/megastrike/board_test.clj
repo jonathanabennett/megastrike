@@ -365,3 +365,5 @@
               {:p 15, :q 10, :r -25, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}
               {:p 16, :q 9, :r -25, :elevation 0, :terrain "", :palette "grass"}]))))
 
+;; I don't know how to test A* yet. Once I figure that out
+;; This file will be up to date.
