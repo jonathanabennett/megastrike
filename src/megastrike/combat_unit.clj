@@ -69,7 +69,7 @@
 
 (defn get-mv
   ([unit move-type]
-   (let [base-move (get-in unit [:movement move-type])
+   (let [base-move (move-type (:movement unit))
          div (count (filter #(= :mv %) (:crits unit)))]
      (loop [mv base-move
             n 0]
@@ -261,7 +261,7 @@
                              unit (if (not (:movement-mode unit))
                                     (assoc unit :movement-mode (key (first (:movement unit))))
                                     unit)
-                             move (get-mv unit)] 
+                             move (get-mv unit (:movement-mode unit))] 
                          (if (<= sum move)
                            (merge unit 
                                   (select-keys (last (:path unit)) [:p :q :r])
