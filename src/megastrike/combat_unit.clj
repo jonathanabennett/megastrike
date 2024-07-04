@@ -248,7 +248,7 @@
   [unit]
   (let [move (cond 
                (= (:movement-mode unit) :immobile) -1 
-               (= (:movement-mode unit) :standstill) -1 
+               (= (:movement-mode unit) :stand-still) -1 
                (= (:movement-mode unit) :jump) 2 
                :else 0)
         fc (* (count (filter #(= % :fire-control) (:crits unit))) 2)]
@@ -259,7 +259,7 @@
   [unit]
   (cond
     (= (:movement-mode unit) :immobile) -4
-    (= (:movement-mode unit) :standstill) 0
+    (= (:movement-mode unit) :stand-still) 0
     (= (:movement-mode unit) :jump) (+ (:tmm unit) 1)
     :else (:tmm unit)))
 
