@@ -330,6 +330,19 @@
     (>= 21 range) (if (and (:l* unit) (<= 4 (utils/roll-die))) 1 (:l unit))
     (>= 30 range) (if (and (:e* unit) (<= 4 (utils/roll-die))) 1 (:e unit))))
 
+(defn take-weapon-hit 
+  [unit]
+  (assoc unit 
+         :s (max (dec (:s unit)) 0) 
+         :s* false
+         :m (max (dec (:m unit)) 0)
+         :m* false
+         :l (max (dec (:l unit)) 0)
+         :l* false
+         :e (max (dec (:e unit)) 0)
+         :e* false
+         :crits (conj (:crits unit) :weapon)))
+
 (defn take-damage
   [unit damage]
   (if (= damage 0)
