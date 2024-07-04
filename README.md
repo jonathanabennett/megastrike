@@ -10,9 +10,9 @@ A Clojure App to play Alphastrike on the computer.
 
 ## What works
 
-Right now (v0.2), the game allows you to simulate combat between armies of any size using units exported from Megamek via their AlphaStrike stat generator. While the game won't stop you from using them, note that *FLYING UNITS DO NOT FLY* and none of the rules for them have been implemented yet. I am currently hiding all the Aero elements and many of the conventional fighters, but VTOLs and Support Vehicles which fly are still in the lists, so you could "use" them.
+Right now (v0.3), the game allows you to simulate combat between armies of any size using units exported from Megamek via their AlphaStrike stat generator. While the game won't stop you from using them, note that *FLYING UNITS DO NOT FLY* and none of the rules for them have been implemented yet. I am currently hiding all the Aero elements and many of the conventional fighters, but VTOLs and Support Vehicles which fly are still in the lists, so you could "use" them.
 
-Terrain displays as of v0.2.0, but it only affects movement. Terrain is the major feature being worked on for the remainder of the v0.2.x series, with line of sight and combat coming next.
+Terrain and basic attacks (including critical hits and their effects) work. Special attacks (from Special Abilities, Physicals, and attacks from the rear) do not work.
 
 Scenario reading (from MegaMek Scenario files, .mms) works but not everything works. Things known not to work include:
 
@@ -42,7 +42,7 @@ Once you have added a force, you can select it by clicking on its name. When you
 
 #### Adding Units
 
-To add a unit, you need to have a force selected and a mek selected. Enter the pilot data and click the Add Unit button. You should see the unit appear in the Army Unit List window to the bottom left. You can add as many units as you want. Currently (as of 0.2), there is no way to remove a unit added by mistake, be sure to click carefully.
+To add a unit, you need to have a force selected and a mek selected. Enter the pilot data and click the Add Unit button. You should see the unit appear in the Army Unit List window to the bottom left. You can add as many units as you want. Currently (as of 0.3), there is no way to remove a unit added by mistake, be sure to click carefully.
 
 #### Setting Up the Map
 
@@ -74,39 +74,46 @@ When you're ready to move that unit, click "Move Unit". If a unit is standing st
 
 To declare an attack, select the unit on the right and then select their target. In Alpha Strike, all attacks for a side are declared and resolved simultaneously, therefore you should declare all your attacks before clicking "Resolve Attacks". Once both sides have resolved their attacks, click "Next Phase".
 
+If you do not have line of sight to the target, the To Hit number shown on the line will be Infinity. If you want a report similar to MegaMek, check the terminal window where you launched the program.
+
 ### End Phase
 
-Destroyed units will be removed automatically at the end of the end phase. Click "Next Phase" to start the next round.
+Destroyed units will be removed automatically at the end of the end phase, movement-modes will be reset, and heat from the engine will be applied. Click "Next Phase" to start the next round.
 
 ### Next round
 
 Initiative for the next round is rolled automatically. Simply click "Next Phase" twice (until you reach the movement phase) and play on. Play continues until one side is destroyed. When you are finished, click "Quit Game" to exit.
 
-## What's coming
+## Project History
 
-### 0.1.0 Previous Release
+### 0.1.0
 
 This was the first "functional" release. It was a very primitive implementation of the rules, allowing a hot-seat 1 on 1 game. The map was a featureless plain. Facing was not calculated. Critical hits were not applied. Only standard attack types worked. Basically, you could build two forces, and then have them move, shoot, and lose armor/structure until everyone died.
 
-### 0.2.0 This release
+### 0.2.0 Previous release
 
 This release focuses on adding support for Scenarios, terrain, and movement. The scenario files that ship with MegaMek provide a super convenient "test bank" to ensure that everything is working. Assuming every scenario can load and run, everything is working. Therefore, I have prioritized getting scenarios working.
 
 The next step is to make the terrain on the map actually mean something and make the map easier to read. It affects movement, but does not yet affect combat
 
+## Roadmap
+### 0.3.0 This Release
+
+This release focuses on the combat phase. It adds LOS, terrain affecting To-hit rolls, and critical hits. Still missing are abilities, physicals, and rear attacks.
+
 ### Next Release
 
-Initial implementation of terrain rules for attacks.
+This release will focus on physicals and rear attacks as well as a refactoring of the code to make testing easier.
 
 ### R+2
-
-Implementation of physical attacks, heat, and criticals.
-
-### R+3
 
 Cleanup and bugfixes
 - Any specials not directly related to damage will not be implemented.
 - Flying and aerial movement will not be implemented.
+
+### R+3
+
+User Interface Update and Refresh
 
 ## How to Contribute
 
