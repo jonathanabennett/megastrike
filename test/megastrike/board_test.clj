@@ -28,13 +28,13 @@
 
 (t/deftest test-create-board
   (t/testing "Test an empty board."
-    (t/is (= (sut/create-board 3 3) 
+    (t/is (= (sut/nodes (sut/create-board 3 3)) 
              [{:p 1, :q 1, :r -2, :elevation 0, :terrain "", :palette "grass"}
               {:p 1, :q 2, :r -3, :elevation 0, :terrain "", :palette "grass"}
               {:p 1, :q 3, :r -4, :elevation 0, :terrain "", :palette "grass"}
               {:p 2, :q 0, :r -2, :elevation 0, :terrain "", :palette "grass"} {:p 2, :q 1, :r -3, :elevation 0, :terrain "", :palette "grass"} {:p 2, :q 2, :r -4, :elevation 0, :terrain "", :palette "grass"} {:p 3, :q 0, :r -3, :elevation 0, :terrain "", :palette "grass"} {:p 3, :q 1, :r -4, :elevation 0, :terrain "", :palette "grass"} {:p 3, :q 2, :r -5, :elevation 0, :terrain "", :palette "grass"}])))
   (t/testing "Test an example board file."
-    (t/is (= (sut/create-board "data/boards/AGoAC Maps/16x17 Grassland 2.board")
+    (t/is (= (sut/nodes (sut/create-board "data/boards/AGoAC Maps/16x17 Grassland 2.board"))
              [{:p 1, :q 1, :r -2, :elevation 0, :terrain "ground_fluff:1:2", :palette "grass"}
               {:p 2, :q 0, :r -2, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}
               {:p 3, :q 0, :r -3, :elevation 0, :terrain "", :palette "grass"}
@@ -307,3 +307,4 @@
               {:p 14, :q 10, :r -24, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}
               {:p 15, :q 10, :r -25, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}
               {:p 16, :q 9, :r -25, :elevation 0, :terrain "", :palette "grass"}]))))
+

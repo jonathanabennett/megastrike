@@ -68,6 +68,8 @@
                           y (range 1 (inc height))] 
                       (create-tile x y 0 "" "grass")))}))
 
+;; Why is a protocol required here, can I get by without one?
+
 (defprotocol BOARD
   (nodes [board])
   (neighbors [board node])
