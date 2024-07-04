@@ -65,13 +65,17 @@
 (defn start-end-phase 
   "Remove all targeting as part of the end phase process."
   [{:keys [units]}] 
-  (let [targeting-removed (into {} (for [[k unit] units] (if (not-any? #(= (:target unit) %) (keys units)) [k (assoc unit :target nil)]
-                                                             [k unit])))
-        movement-cleared (into {} (for [[k unit] targeting-removed] [k (assoc unit :movement-mode nil)]))
+  (let [movement-cleared (into {} (for [[k unit] units] [k (assoc unit :movement-mode nil)]))
         heat-applied (into {} (for [[k unit] movement-cleared] (if (some #(= :engine %) (:crits unit))
                                                                  [k (assoc unit :current-heat (inc (:current-heat unit)))]
-                                                                 [k unit])))]
-    {:current-phase :end :turn-order nil :units heat-applied}))
+                                                                 [k unit])))
+        heat-removed (into {} (for [[k unit] heat-applied] (if (not (:target unit))
+                                                             [k (assoc unit :current-heat 0)]
+                                                             [k unit])))
+        targeting-removed (into {} (for [[k unit] heat-removed] (if (not-any? #(= (:target unit) %) (keys units)) [k (assoc unit :target nil)]
+                                                             [k unit])))
+]
+    {:current-phase :end :turn-order nil :units targeting-removed}))
 
 (defn next-phase 
   "Removes destroyed units and resets the acted status on every unit, then dispatches to the correct phase method."
