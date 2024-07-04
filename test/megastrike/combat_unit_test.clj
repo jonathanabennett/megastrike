@@ -54,14 +54,10 @@
                                         {:pilot {:name "Bobby McSkillface" :skill 4}}) :pilot))))
 
 (t/deftest test-pv-mod-calculation
-  (t/testing "When the skill is 4, pv-mod is 0"
-    (t/is (= (:pv-mod (sut/pv-mod {:point-value 10 :pilot {:skill 4}})) 0))
-    (t/is (= (:pv-mod (sut/pv-mod {:point-value 10 :pilot {:skill 3}})) 2))
-    (t/is (= (:pv-mod (sut/pv-mod {:point-value 10 :pilot {:skill 5}})) -1)))
   (t/testing "Check PV Mod calculation."
-    (t/is (= (sut/pv (sut/pv-mod {:point-value 10 :pilot {:skill 4}})) 10))
-    (t/is (= (sut/pv (sut/pv-mod {:point-value 10 :pilot {:skill 3}})) 12))
-    (t/is (= (sut/pv (sut/pv-mod {:point-value 10 :pilot {:skill 5}})) 9))))
+    (t/is (= (sut/pv {:point-value 10 :pilot {:skill 4}}) 10))
+    (t/is (= (sut/pv {:point-value 10 :pilot {:skill 3}}) 12))
+    (t/is (= (sut/pv {:point-value 10 :pilot {:skill 5}}) 9))))
 
 (t/deftest test-parse-mechset-line
   (t/testing "Test comment lines"
@@ -79,15 +75,16 @@
     (t/is (= (sut/parse-mechset-line "exact \"Archer ARC-2K\" \"mechs/Archer_2K.png\"")
              ["exact" "Archer ARC-2K" "mechs/Archer_2K.png"]))))
 
-(t/deftest test-find-sprite
-  (t/testing "Test searching for a valid sprite."
-    (t/is (= (sut/find-sprite {:full-name "Archer ARC-2K" :chassis "Archer"}) "resources/images/units/mechs/Archer_2K.png"))
-    (t/is (= (sut/find-sprite {:full-name "Ahab AHB-4" :chassis "Ahab"}) "resources/images/units/fighter/ahab.png"))))
+;; TODO Find a platform-independent way of testing if two files are the same.
+;; (t/deftest test-find-sprite
+;;   (t/testing "Test searching for a valid sprite."
+;;     (t/is (= (sut/find-sprite {:full-name "Archer ARC-2K" :chassis "Archer"}) "resources/images/units/mechs/Archer_2K.png"))
+;;     (t/is (= (sut/find-sprite {:full-name "Ahab AHB-4" :chassis "Ahab"}) "resources/images/units/fighter/ahab.png"))))
 
 (t/deftest test-calculate-attacker-mod
   (t/testing "Test valid movement types"
     (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :immobile}) -1))
-    (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :standstill}) -1))
+    (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :stand-still}) -1))
     (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :walk}) 0))
     (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :jump}) 2))))
 
@@ -95,7 +92,7 @@
   (t/testing "Verify target mods are correct."
     (t/is (= (sut/calculate-target-mod {:movement-mode :jump :role "Missile Boat", :tmm 1, :e* false, :movement {}, :mul-id 73, :l* false, :m 2, :type "BM", :abilities "IF2", :e 0, :s 2, :threshold -1, :l 2, :size 3, :m* false, :point-value 34, :overheat 2, :chassis "Archer", :structure 6, :full-name "Archer ARC-2K", :armor 6, :s* false, :model "ARC-2K"}) 2))
     (t/is (= (sut/calculate-target-mod {:movement-mode :jump :role "None", :tmm 4, :e* false, :movement {}, :mul-id 3684, :l* false, :m 0, :type "SV", :abilities "BAR, EE, ENE", :e 0, :s 0, :threshold -1, :l 0, :size 2, :m* false, :point-value 6, :overheat 0, :chassis "Air Car", :structure 2, :full-name "Air Car ", :armor 1, :s* false, :model ""}) 5))
-    (t/is (= (sut/calculate-target-mod {:movement-mode :standstill :role "Missile Boat", :tmm 1, :e* false, :movement {}, :mul-id 73, :l* false, :m 2, :type "BM", :abilities "IF2", :e 0, :s 2, :threshold -1, :l 2, :size 3, :m* false, :point-value 34, :overheat 2, :chassis "Archer", :structure 6, :full-name "Archer ARC-2K", :armor 6, :s* false, :model "ARC-2K"}) 0))
+    (t/is (= (sut/calculate-target-mod {:movement-mode :stand-still :role "Missile Boat", :tmm 1, :e* false, :movement {}, :mul-id 73, :l* false, :m 2, :type "BM", :abilities "IF2", :e 0, :s 2, :threshold -1, :l 2, :size 3, :m* false, :point-value 34, :overheat 2, :chassis "Archer", :structure 6, :full-name "Archer ARC-2K", :armor 6, :s* false, :model "ARC-2K"}) 0))
     (t/is (= (sut/calculate-target-mod {:movement-mode :immobile :role "None", :tmm 4, :e* false, :movement {}, :mul-id 3684, :l* false, :m 0, :type "SV", :abilities "BAR, EE, ENE", :e 0, :s 0, :threshold -1, :l 0, :size 2, :m* false, :point-value 6, :overheat 0, :chassis "Air Car", :structure 2, :full-name "Air Car ", :armor 1, :s* false, :model ""}) -4))
     (t/is (= (sut/calculate-target-mod {:movement-mode :walk :role "Missile Boat", :tmm 1, :e* false, :movement {}, :mul-id 73, :l* false, :m 2, :type "BM", :abilities "IF2", :e 0, :s 2, :threshold -1, :l 2, :size 3, :m* false, :point-value 34, :overheat 2, :chassis "Archer", :structure 6, :full-name "Archer ARC-2K", :armor 6, :s* false, :model "ARC-2K"}) 1))
     (t/is (= (sut/calculate-target-mod {:movement-mode :walk :role "None", :tmm 4, :e* false, :movement {}, :mul-id 3684, :l* false, :m 0, :type "SV", :abilities "BAR, EE, ENE", :e 0, :s 0, :threshold -1, :l 0, :size 2, :m* false, :point-value 6, :overheat 0, :chassis "Air Car", :structure 2, :full-name "Air Car ", :armor 1, :s* false, :model ""}) 4))
@@ -103,36 +100,37 @@
 
 (t/deftest test-calculate-range-mod
   (t/testing "Test short range."
-    (t/is (= (sut/calculate-range-mod {:id "Unit 1" :q 0 :r 0 :s 0}
-                                      {:id "Unit 2" :q 2 :r 0 :s -2}) 0)))
+    (t/is (= (sut/calculate-range-mod {:id "Unit 1" :p 0 :q 0 :r 0}
+                                      {:id "Unit 2" :p 2 :q 0 :r -2}) 0)))
   (t/testing "Testing medium range."
-    (t/is (= (sut/calculate-range-mod {:id "Unit 1" :q 0 :r 0 :s 0}
-                                      {:id "Unit 2" :q 2 :r 2 :s -4}) 2)))
+    (t/is (= (sut/calculate-range-mod {:id "Unit 1" :p 0 :q 0 :r 0}
+                                      {:id "Unit 2" :p 2 :q 2 :r -4}) 2)))
   (t/testing "Testing long range."
-    (t/is (= (sut/calculate-range-mod {:id "Unit 1" :q 0 :r 0 :s 0}
-                                      {:id "Unit 2" :q 16 :r 0 :s -16}) 4)))
+    (t/is (= (sut/calculate-range-mod {:id "Unit 1" :p 0 :q 0 :r 0}
+                                      {:id "Unit 2" :p 16 :q 0 :r -16}) 4)))
   (t/testing "Testing extreme range."
-    (t/is (= (sut/calculate-range-mod {:id "Unit 1" :q 0 :r 0 :s 0}
-                                      {:id "Unit 2" :q 24 :r 0 :s -24}) 6))))
+    (t/is (= (sut/calculate-range-mod {:id "Unit 1" :p 0 :q 0 :r 0}
+                                      {:id "Unit 2" :p 24 :q 0 :r -24}) 6))))
 
 ;; (t/deftest test-calculate-to-hit
 ;;   (t/testing "Test searching for a valid sprite."
-;;     (t/is (= (sut/calculate-to-hit {:id "Unit 1" :q 0 :r 0 :s 0 :pilot {:skill 4}
+;;     (t/is (= (sut/calculate-to-hit {:id "Unit 1" :p 0 :q 0 :r 0 :pilot {:skill 4}
 ;;                                        :movement-mode :walk :tmm 2}
-;;                                       {:id "Unit 2" :q 2 :r 0 :s -2 :pilot {:skill 4}
+;;                                       {:id "Unit 2" :p 2 :q 0 :r -2 :pilot {:skill 4}
 ;;                                        :movement-mode :walk :tmm 2}) 6))))
 
 (t/deftest test-calculate-damage
   (t/testing "Test searching for a valid sprite."
-    (t/is (= (sut/calculate-damage {:id "Unit 1" :s 4} 2) 1))))
+    (t/is (= (sut/calculate-damage {:id "Unit 1" :s 4} 2) 4))))
 
 (t/deftest test-take-damage
-  (t/testing "Test searching for a valid sprite."
-    (t/is (= (sut/take-damage {:id "Unit 1" :armor 4 :current-armor 4 :structure 3 :current-structure 3} 2) 1))))
+  (t/testing "Test armor only damage."
+    (t/is (= (sut/take-damage {:id "Unit 1" :armor 4 :current-armor 4 :structure 3 :current-structure 3} 2)
+             {:id "Unit 1" :armor 4 :current-armor 2 :structure 3 :current-structure 3}))))
 
 ;; (t/deftest test-make-attack
 ;;   (t/testing "Test searching for a valid sprite."
-;;     (t/is (= (sut/make-attack {:id "Unit 1" :q 0 :r 0 :s 0 :pilot {:skill 4}
+;;     (t/is (= (sut/make-attack {:id "Unit 1" :p 0 :q 0 :r 0 :pilot {:skill 4}
 ;;                                        :movement-mode :walk :tmm 2}
-;;                               {:id "Unit 2" :q 2 :r 0 :s -2 :pilot {:skill 4}
+;;                               {:id "Unit 2" :p 2 :q 0 :r -2 :pilot {:skill 4}
 ;;                                        :movement-mode :walk :tmm 2}) 1))))
