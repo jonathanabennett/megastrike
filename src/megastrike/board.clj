@@ -118,21 +118,21 @@
    (let [mapsheet (create-mapsheet filename)]
      (reify BOARD
        (nodes [_] (:tiles mapsheet))
-       (neighbors [_ node] (into [] (remove nil? (map #(find-hex % (:tiles mapsheet)) (hex/hex-neighbors node)))))
+       (neighbors [board node] (into [] (remove nil? (map #(find-hex % board) (hex/hex-neighbors node)))))
        (mapsheets [_] [[mapsheet]])
        (weight [_ from to mv-type] (step-cost from to mv-type)))))
-  ([mapsheet-array _ _]
-     (let [tiles ((comp vec flatten vector) (for [m mapsheet-array] (:tiles m nil)))]
-       (reify BOARD
-        (nodes [_] tiles)
-        (neighbors [_ node] (into [] (remove nil? (map #(find-hex % tiles) (hex/hex-neighbors node)))))
-        (mapsheets [_] mapsheet-array)
-        (weight [_ from to mv-type] (step-cost from to mv-type)))))
+  ([mapsheet-array _ _] 
+   (let [tiles ((comp vec flatten vector) (for [m mapsheet-array] (:tiles m nil)))] 
+     (reify BOARD 
+       (nodes [_] tiles)
+       (neighbors [board node] (into [] (remove nil? (map #(find-hex % board) (hex/hex-neighbors node)))))
+       (mapsheets [_] mapsheet-array)
+       (weight [_ from to mv-type] (step-cost from to mv-type)))))
   ([width height]
    (let [mapsheet (create-mapsheet width height)]
      (reify BOARD
        (nodes [_] (:tiles mapsheet))
-       (neighbors [_ node] (into [] (remove nil? (map #(find-hex % (:tiles mapsheet)) (hex/hex-neighbors node)))))
+       (neighbors [board node] (into [] (remove nil? (map #(find-hex % board) (hex/hex-neighbors node)))))
        (mapsheets [_] [[mapsheet]])
        (weight [_ from to mv-type] (step-cost from to mv-type))))))
 
