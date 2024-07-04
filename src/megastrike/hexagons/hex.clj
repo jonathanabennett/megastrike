@@ -136,23 +136,6 @@
        (hexagon p-int (* (+ p-int r-int) -1) r-int)
       :else (hexagon p-int q-int (* (+ p-int q-int) -1)))))
 
-(defn height-checker
-  [origin target line]
-  (let [o-height (+ 2 (:elevation origin))
-        t-height (+ 2 (:elevation target))]
-    (loop [blocked? false
-           current (first line)
-           l (rest line)]
-      (if (or blocked? (empty? l))
-        blocked?
-        (recur (cond
-                 (= (count line) 2) false
-                 (same-hex origin current)   (>= (:elevation current) o-height)
-                 (same-hex target (first l)) (>= (:elevation current) t-height)
-                 :else (and (>= (:elevation current) o-height) (>= (:elevation current) t-height)))
-               (first l)
-               (rest l))))))
-
 (defn hex-facing 
   "Finds which hexside a line starting from the center of the hex and
    reaching a point beyond the hex passes through. Used for changing facing"

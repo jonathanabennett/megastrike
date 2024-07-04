@@ -111,7 +111,6 @@
       (> lvl-change 2) ##Inf
       :else (+ (abs lvl-change) 1))))
 
-
 (defn create-board
   ([filename]
    (let [mapsheet (create-mapsheet filename)]

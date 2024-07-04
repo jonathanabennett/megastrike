@@ -245,11 +245,11 @@
   [unit board]
   (let [origin (board/find-hex unit (board/nodes board))
         mv-type (get unit :movement-mode :walk)]
-    (loop [sum [(hexagon/step-cost origin (first (:path unit)) mv-type)]
+    (loop [sum [(board/step-cost origin (first (:path unit)) mv-type)]
                    path (:path unit)]
               (if (= (count path) 1) 
                 sum 
-                (recur (conj sum (hexagon/step-cost (first path) (second path) mv-type)) 
+                (recur (conj sum (board/step-cost (first path) (second path) mv-type)) 
                        (rest path))))))
 
 (defn can-move?
@@ -267,6 +267,23 @@
                                   (select-keys (last (:path unit)) [:p :q :r])
                                   {:acted true :path []})
                            unit))))
+
+(defn height-checker
+  [origin target line]
+  (let [o-height (+ 2 (:elevation origin))
+        t-height (+ 2 (:elevation target))]
+    (loop [blocked? false
+           current (first line)
+           l (rest line)]
+      (if (or blocked? (empty? l))
+        blocked?
+        (recur (cond
+                 (= (count line) 2) false
+                 (hexagon/same-hex origin current)   (>= (:elevation current) o-height)
+                 (hexagon/same-hex target (first l)) (>= (:elevation current) t-height)
+                 :else (and (>= (:elevation current) o-height) (>= (:elevation current) t-height)))
+               (first l)
+               (rest l))))))
 
 (defn calculate-attacker-mod
   "Returns the mod for a given to hit due to the attacker's movement mode this turn."
@@ -293,7 +310,7 @@
   [attacker target board]
   (let [heat (get attacker :current-heat 0)
         line (board/hex-line attacker target (board/nodes board))
-        blocked? (hexagon/height-checker (board/find-hex attacker (board/nodes board)) (board/find-hex target (board/nodes board)) line)
+        blocked? (height-checker (board/find-hex attacker (board/nodes board)) (board/find-hex target (board/nodes board)) line)
         woods-count (count (filter #(str/includes? (:terrain %) "woods") (rest line)))]
     (if (and (not blocked?) (<= woods-count 3))
       (if (zero? woods-count) 
