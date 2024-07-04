@@ -56,6 +56,17 @@
       (merge mv-map {:walk (val (first mv-map))})
       mv-map)))
 
+(defn get-tmm
+  ([unit]
+   (let [div (count (filter #(= :mv %) (:crits unit)))]
+     (loop [tmm (get unit :tmm)
+            n 0]
+       (if (= n div)
+         tmm
+         (recur (let [new-tmm (math/round (/ tmm 2.0))]
+                  (if (>= (- tmm new-tmm) 1) new-tmm 0))
+                (inc n)))))))
+
 (defn get-mv
   ([unit move-type]
    (let [base-move (get-in unit [:movement move-type])
