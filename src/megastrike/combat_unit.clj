@@ -56,19 +56,33 @@
       (merge mv-map {:walk (val (first mv-map))})
       mv-map)))
 
+(defn get-mv
+  ([unit move-type]
+   (let [base-move (get-in unit [:movement move-type])
+         div (count (filter #(= :mv %) (:crits unit)))]
+     (loop [mv base-move
+            n 0]
+       (if (= n div)
+         (- mv (get unit :current-heat 0))
+         (recur (let [new-mv (math/round (/ mv 2.0))]
+                  (if (>= (- mv new-mv) 1) new-mv 0))
+                (inc n))))))
+  ([unit]
+  (get-mv unit (get unit :movement :walk))))
+
 (defn print-movement-helper
   "Consumes a vector containing a move type as a keyword and a distance and prints it for human consumption."
-  [mv-vec]
+  [mv-vec unit]
   (cond
-    (= (first mv-vec) :walk) (second mv-vec)
-    (= (first mv-vec) :jump) (str (second mv-vec) "j")
-    :else (str (first mv-vec) " " (second mv-vec))))
+    (= (first mv-vec) :walk) (get-mv unit (first mv-vec))
+    (= (first mv-vec) :jump) (str (get-mv unit (first mv-vec)) "j")
+    :else (str (first mv-vec) " " (get-mv unit (first mv-vec)))))
 
 (defn print-movement
   "Loops over all movements a unit has a pretty prints them."
   [unit]
   (let [mv-map (:movement unit)]
-    (str/join "/" (map print-movement-helper mv-map))))
+    (str/join "/" (map #(print-movement-helper % unit) mv-map))))
 
 (defn construct-ability-list
   "Loops over all abilitys a unit has a converts them to Keywords."
@@ -236,7 +250,7 @@
                              unit (if (not (:movement-mode unit))
                                     (assoc unit :movement-mode (key (first (:movement unit))))
                                     unit)
-                             move (get-in unit [:movement (:movement-mode unit)])] 
+                             move (get-mv unit)] 
                          (if (<= sum move)
                            (merge unit 
                                   (select-keys (last (:path unit)) [:p :q :r])
@@ -260,8 +274,8 @@
   (cond
     (= (:movement-mode unit) :immobile) -4
     (= (:movement-mode unit) :stand-still) 0
-    (= (:movement-mode unit) :jump) (+ (:tmm unit) 1)
-    :else (:tmm unit)))
+    (= (:movement-mode unit) :jump) (+ (get-tmm unit) 1)
+    :else (get-tmm unit)))
 
 (defn calculate-other-mod
   "Calculate 'other' modifiers to the to hit. Terrain, heat, etc."
