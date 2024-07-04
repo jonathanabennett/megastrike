@@ -344,43 +344,44 @@
          :crits (conj (:crits unit) :weapon)))
 
 (defn take-damage
-  [unit damage]
-  (if (= damage 0)
-    unit
-    (let [armor (- (:current-armor unit (:armor unit)) damage)
-          penetrated? (not (pos? armor))
-          penetration (- damage (:current-armor unit (:armor unit)))
-          structure (if penetrated? 
-                      (- (:current-structure unit (:structure unit)) penetration)
-                      (:current-structure unit (:structure unit)))
-          crit (if penetrated? (get criticals (utils/roll2d) nil) nil)
-          upd (assoc unit :current-armor armor :current-structure structure)]
-      (prn (str damage " damage done to " (:current-armor unit) " armor."))
-      (when penetrated?
-        (prn (str penetration " damage penetrated."))
-        (prn (str "Rolled " crit " on critical hit table.")))
-      (cond
-        (= crit :ammo) (let [case (some #(= % :case) (:abilities unit)) 
-                             case2 (some #(= % :caseii) (:abilities unit)) 
-                             ene (some #(= % :ene) (:abilities unit))] 
-                         (cond (or case2 ene) upd 
-                               case (take-damage upd 1) 
-                               :else (assoc upd :destroyed? true)))
-        (= crit :engine) (if (some #(= % :engine) (:crits upd)) 
-                           (assoc upd :destroyed? true)
-                           (assoc upd :crits (conj (:crits upd) :engine)))
-        (= crit :fire-control) (if (< (count (filter #( % :fire-control) (:crits upd))) 4)
-                                 (assoc upd :crits (conj (:crits upd) :fire-control))
-                                 upd)
-        (= crit :weapon) (if (< (count (filter #( % :weapon) (:crits upd))) 4)
-                                 (assoc upd :crits (conj (:crits upd) :weapon))
-                                 upd)
-
-        (= crit :mv) (if (< (count (filter #( % :mv) (:crits upd))) 4)
-                                 (assoc upd :crits (conj (:crits upd) :mv))
-                                 upd)
-        (= crit :destroyed) (assoc upd :destroyed? true)
-        :else upd))))
+  ([unit damage]
+   (take-damage unit damage false))
+  ([unit damage tac]
+   (if (= damage 0)
+     unit
+     (let [armor (max (- (:current-armor unit (:armor unit)) damage) 0) 
+           penetration (- damage (:current-armor unit (:armor unit)))
+           structure (if (zero? armor) 
+                       (- (:current-structure unit (:structure unit)) penetration)
+                       (:current-structure unit (:structure unit)))
+           crit (if (or tac (zero? armor)) (get criticals (utils/roll2d) nil) nil)
+           upd (assoc unit :current-armor armor :current-structure structure)]
+       (prn (str damage " damage done to " (:current-armor unit) " armor."))
+       (when (zero? armor)
+         (prn (str penetration " damage penetrated.")))
+       (when (or tac (zero? armor))
+         (prn (str "Rolled " crit " on critical hit table.")))
+       (cond
+         (= crit :ammo) (let [case (some #(= % :case) (:abilities unit)) 
+                              case2 (some #(= % :caseii) (:abilities unit)) 
+                              ene (some #(= % :ene) (:abilities unit))] 
+                          (cond (or case2 ene) upd 
+                                case (take-damage upd 1) 
+                                :else (assoc upd :destroyed? true :crits (conj (:crits upd) :ammo))))
+         (= crit :engine) (if (some #(= % :engine) (:crits upd)) 
+                            (assoc upd :destroyed? true)
+                            (assoc upd :crits (conj (:crits upd) :engine)))
+         (= crit :fire-control) (if (< (count (filter #( % :fire-control) (:crits upd))) 4)
+                                  (assoc upd :crits (conj (:crits upd) :fire-control))
+                                  upd)
+         (= crit :weapon) (if (< (count (filter #( % :weapon) (:crits upd))) 4)
+                            (take-weapon-hit upd)
+                            upd)
+         (= crit :mv) (if (< (count (filter #( % :mv) (:crits upd))) 4)
+                        (assoc upd :crits (conj (:crits upd) :mv))
+                        (assoc upd :movement {:immobile 0}))
+         (= crit :destroyed) (assoc upd :destroyed? true :crits (conj (:crits upd) :destroyed))
+         :else upd)))))
 
 (defn make-attack
   "Rolls a full attack. Calculating the to-hit, rolling the dice, and then applying the damage and returning the targeted unit."
@@ -391,5 +392,5 @@
     (prn (str (:full-name attacker) " attacking " (:full-name target)))
     (prn (str "To hit: " target-num ", Rolled: " to-hit))
     (if (<= target-num to-hit)
-      (take-damage target (calculate-damage attacker range))
+      (take-damage target (calculate-damage attacker range) (= to-hit 12))
       target)))
