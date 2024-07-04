@@ -26,6 +26,63 @@
     (t/is (= (sut/parse-hex-line "hex 1301 -1 \"\" \"fungus\"")
              {:p 13, :q -5, :r -8, :elevation -1, :terrain "", :palette "fungus"}))))
 
+(t/deftest test-hex-line
+  (t/testing "Test drawing a straight line for LOS purposes"
+    (let [board (sut/create-board "data/boards/AGoAC Maps/16x17 Grassland 2.board")
+          start1 {:p 4 :q 4 :r -8}
+          end1 {:p 6 :q 0 :r -6}
+          start2 {:p 2 :q 2 :r -4}
+          end2 {:p 15 :q -4 :r -11}]
+      (t/is (= (sut/hex-line start1 end1 board) 
+               [{:p 4, :q 4, :r -8, :elevation 0, :terrain "ground_fluff:1:1;water:1", :palette "grass"}
+                {:p 5, :q 3, :r -8, :elevation 2, :terrain "", :palette "grass"}
+                {:p 5, :q 2, :r -7, :elevation 0, :terrain "ground_fluff:1:1;water:1", :palette "grass"}
+                {:p 6, :q 1, :r -7, :elevation 1, :terrain "ground_fluff:1:2", :palette "grass"}
+                {:p 6, :q 0, :r -6, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}]))
+      (t/is (= (sut/hex-line start2 end2 board) 
+               [{:p 2, :q 2, :r -4, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}
+                {:p 3, :q 2, :r -5, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"}
+                {:p 4, :q 1, :r -5, :elevation 0, :terrain "ground_fluff:1:1;water:1", :palette "grass"}
+                {:p 5, :q 1, :r -6, :elevation 0, :terrain "ground_fluff:1:1;water:1", :palette "grass"}
+                {:p 6, :q 0, :r -6, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}
+                {:p 7, :q 0, :r -7, :elevation 0, :terrain "ground_fluff:3:2", :palette "grass"}
+                {:p 8, :q -1, :r -7, :elevation 0, :terrain "woods:1:20;ground_fluff:1:1;foliage_elev:2", :palette "grass"}
+                {:p 9, :q -1, :r -8, :elevation 0, :terrain "woods:2:20;foliage_elev:2", :palette "grass"}
+                {:p 10, :q -2, :r -8, :elevation 0, :terrain "ground_fluff:1:2", :palette "grass"}
+                {:p 11, :q -2, :r -9, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}
+                {:p 12, :q -3, :r -9, :elevation 0, :terrain "rough:1:20", :palette "grass"}
+                {:p 13, :q -3, :r -10, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"}
+                {:p 14, :q -4, :r -10, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}
+                {:p 15, :q -4, :r -11, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"}]))
+      (t/is (= (sut/hex-line start1 end2 board) 
+               [{:p 4, :q 4, :r -8, :elevation 0, :terrain "ground_fluff:1:1;water:1", :palette "grass"}
+                {:p 5, :q 3, :r -8, :elevation 2, :terrain "", :palette "grass"}
+                {:p 6, :q 3, :r -9, :elevation 1, :terrain "", :palette "grass"}
+                {:p 7, :q 2, :r -9, :elevation 0, :terrain "ground_fluff:1:4", :palette "grass"}
+                {:p 8, :q 1, :r -9, :elevation 0, :terrain "ground_fluff:1:4", :palette "grass"}
+                {:p 9, :q 0, :r -9, :elevation 0, :terrain "ground_fluff:1:2", :palette "grass"}
+                {:p 10, :q 0, :r -10, :elevation 1, :terrain "woods:1:20;ground_fluff:1:1;foliage_elev:2", :palette "grass"}
+                {:p 11, :q -1, :r -10, :elevation 1, :terrain "ground_fluff:1:2", :palette "grass"}
+                {:p 12, :q -2, :r -10, :elevation 1, :terrain "ground_fluff:1:2", :palette "grass"}
+                {:p 13, :q -3, :r -10, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"}
+                {:p 14, :q -3, :r -11, :elevation 0, :terrain "ground_fluff:1:2", :palette "grass"}
+                {:p 15, :q -4, :r -11, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"} ]))
+      (t/is (= (sut/hex-line start2 end2 board)
+               [{:p 2, :q 2, :r -4, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"} 
+                {:p 3, :q 2, :r -5, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"}
+                {:p 4, :q 1, :r -5, :elevation 0, :terrain "ground_fluff:1:1;water:1", :palette "grass"}
+                {:p 5, :q 1, :r -6, :elevation 0, :terrain "ground_fluff:1:1;water:1", :palette "grass"}
+                {:p 6, :q 0, :r -6, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}
+                {:p 7, :q 0, :r -7, :elevation 0, :terrain "ground_fluff:3:2", :palette "grass"}
+                {:p 8, :q -1, :r -7, :elevation 0, :terrain "woods:1:20;ground_fluff:1:1;foliage_elev:2", :palette "grass"}
+                {:p 9, :q -1, :r -8, :elevation 0, :terrain "woods:2:20;foliage_elev:2", :palette "grass"}
+                {:p 10, :q -2, :r -8, :elevation 0, :terrain "ground_fluff:1:2", :palette "grass"}
+                {:p 11, :q -2, :r -9, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}
+                {:p 12, :q -3, :r -9, :elevation 0, :terrain "rough:1:20", :palette "grass"}
+                {:p 13, :q -3, :r -10, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"}
+                {:p 14, :q -4, :r -10, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}
+                {:p 15, :q -4, :r -11, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"}])))))
+
 (t/deftest test-create-board
   (t/testing "Test an empty board."
     (t/is (= (sut/nodes (sut/create-board 3 3)) 
