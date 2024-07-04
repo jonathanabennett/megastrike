@@ -266,7 +266,7 @@
 (defn calculate-other-mod
   "Calculate 'other' modifiers to the to hit. Terrain, heat, etc."
   [attacker target board]
-  (let [heat (:current-heat attacker)
+  (let [heat (get attacker :current-heat 0)
         line (hexagon/hex-line attacker target (board/nodes board))
         blocked? (hexagon/height-checker (hexagon/find-hex attacker (board/nodes board)) (hexagon/find-hex target (board/nodes board)) line)
         woods-count (count (filter #(str/includes? (:terrain %) "woods") (rest line)))]
