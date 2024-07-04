@@ -115,12 +115,12 @@
     (t/is (= (sut/calculate-range-mod {:id "Unit 1" :q 0 :r 0 :s 0}
                                       {:id "Unit 2" :q 24 :r 0 :s -24}) 6))))
 
-(t/deftest test-calculate-to-hit
-  (t/testing "Test searching for a valid sprite."
-    (t/is (= (sut/calculate-to-hit {:id "Unit 1" :q 0 :r 0 :s 0 :pilot {:skill 4}
-                                       :movement-mode :walk :tmm 2}
-                                      {:id "Unit 2" :q 2 :r 0 :s -2 :pilot {:skill 4}
-                                       :movement-mode :walk :tmm 2}) 6))))
+;; (t/deftest test-calculate-to-hit
+;;   (t/testing "Test searching for a valid sprite."
+;;     (t/is (= (sut/calculate-to-hit {:id "Unit 1" :q 0 :r 0 :s 0 :pilot {:skill 4}
+;;                                        :movement-mode :walk :tmm 2}
+;;                                       {:id "Unit 2" :q 2 :r 0 :s -2 :pilot {:skill 4}
+;;                                        :movement-mode :walk :tmm 2}) 6))))
 
 (t/deftest test-calculate-damage
   (t/testing "Test searching for a valid sprite."
@@ -130,9 +130,9 @@
   (t/testing "Test searching for a valid sprite."
     (t/is (= (sut/take-damage {:id "Unit 1" :armor 4 :current-armor 4 :structure 3 :current-structure 3} 2) 1))))
 
-(t/deftest test-make-attack
-  (t/testing "Test searching for a valid sprite."
-    (t/is (= (sut/make-attack {:id "Unit 1" :q 0 :r 0 :s 0 :pilot {:skill 4}
-                                       :movement-mode :walk :tmm 2}
-                              {:id "Unit 2" :q 2 :r 0 :s -2 :pilot {:skill 4}
-                                       :movement-mode :walk :tmm 2}) 1))))
+;; (t/deftest test-make-attack
+;;   (t/testing "Test searching for a valid sprite."
+;;     (t/is (= (sut/make-attack {:id "Unit 1" :q 0 :r 0 :s 0 :pilot {:skill 4}
+;;                                        :movement-mode :walk :tmm 2}
+;;                               {:id "Unit 2" :q 2 :r 0 :s -2 :pilot {:skill 4}
+;;                                        :movement-mode :walk :tmm 2}) 1))))

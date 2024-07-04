@@ -128,6 +128,24 @@
   (let [center (hex-to-pixel hex layout)]
     (flatten (map #(find-hex-corner center % layout) (list 0 1 2 3 4 5)))))
 
+(defn hex-round
+  [{:keys [p q r]}]
+  (let [p-int (math/round p)
+        q-int (math/round q)
+        r-int (math/round r)
+        p-diff (abs (- p p-int))
+        q-diff (abs (- q q-int))
+        r-diff (abs (- r r-int))]
+    (cond
+      (and (> p-diff q-diff)
+            (> p-diff r-diff))
+       (hexagon (* (+ q-int r-int) -1) q-int r-int)
+      (and (> q-diff r-diff)
+            (> q-diff p-diff))
+       (hexagon p-int (* (+ p-int r-int) -1) r-int)
+      :else (hexagon p-int q-int (* (+ p-int q-int) -1)))))
+
+
 (defn linear-interpolation 
   [a b step]
   (+ a (* (- b a) step)))
@@ -139,10 +157,14 @@
    :r (linear-interpolation (:r hex1) (:r hex2) step)})
 
 (defn hex-line
-  [hex1 hex2]
-  (let [distance (hex-distance hex1 hex2)
-        step (/ 1.0 (max distance 1))]
-    [{:p 0 :q 0 :r 0}]))
+  [hex1 hex2 board]
+  (let [distance (hex-distance hex1 hex2)]
+    (loop [result []
+           step 0]
+      (if (= step distance)
+        result
+        (recur (conj result (find-hex (hex-round (hex-lerp hex1 hex2 (* (/ 1.0 distance) step))) board))
+               (inc step))))))
 
 (defn step-cost
   [hex neighbor mv-type]
@@ -154,7 +176,25 @@
       (str/includes? terrain "rough") (+ (abs lvl-change) 2)
       (str/includes? terrain "rubble") (+ (abs lvl-change) 2)
       (str/includes? terrain "water") (+ (abs lvl-change) 2)
+      (> lvl-change 2) ##Inf
       :else (+ (abs lvl-change) 1))))
+
+(defn height-checker
+  [origin target line]
+  (let [o-height (+ 2 (:elevation origin))
+        t-height (+ 2 (:elevation target))]
+    (loop [blocked? false
+           current (first line)
+           l (rest line)]
+      (if (or blocked? (empty? l))
+        blocked?
+        (recur (cond
+                 (= (count line) 2) false
+                 (same-hex origin current)   (>= (:elevation current) o-height)
+                 (same-hex target (first l)) (>= (:elevation current) t-height)
+                 :else (and (>= (:elevation current) o-height) (>= (:elevation current) t-height)))
+               (first l)
+               (rest l))))))
 
 (defn hex-facing 
   "Finds which hexside a line starting from the center of the hex and
@@ -174,23 +214,6 @@
 ;; Commented out in case I need it later. I believe that cljfx
 ;; has given me this feature for "free" when I added a click event
 ;; to the hexagons.
-;; (defn hex-round
-;;   [p q r]
-;;   (let [p-int (math/round p)
-;;         q-int (math/round q)
-;;         r-int (math/round r)
-;;         p-diff (abs (- p p-int))
-;;         q-diff (abs (- q q-int))
-;;         r-diff (abs (- r r-int))]
-;;     (cond
-;;       (and (> p-diff q-diff)
-;;             (> p-diff r-diff))
-;;        (hexagon (* (+ q-int r-int) -1) q-int r-int)
-;;       (and (> q-diff r-diff)
-;;             (> q-diff p-diff))
-;;        (hexagon p-int (* (+ p-int r-int) -1) r-int)
-;;       :else (hexagon p-int q-int (* (+ p-int q-int) -1)))))
-
 ;; (defn pixel-to-hex
 ;;   [pt layout]
 ;;   (let [pth (:pixel-to-hex-matrix layout)

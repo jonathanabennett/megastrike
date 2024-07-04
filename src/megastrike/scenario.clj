@@ -57,6 +57,7 @@
                                      :pilot 
                                      {:name pilot 
                                       :skill skill} 
+                                     :crits []
                                      :direction (if direction (utils/keyword-maker direction) :n)
                                      :current-armor (:armor mul) 
                                      :current-structure (:structure mul) 

@@ -25,7 +25,7 @@
                  (str/includes? terrain "swamp") "rgb(49, 136, 74)"
                  (str/includes? terrain "building") "rgb(204, 204, 204)"
                  (str/includes? terrain "bridge") "rgb(109, 55, 25)"
-                 :else "rgb(215, 211, 156)")]
+                 :else "rgb(215, 211, 156)")] 
     {:fx/type :group
      :on-mouse-clicked {:event-type ::board-events/hex-clicked :hex hex}
      :children [{:fx/type :polygon
@@ -76,21 +76,24 @@
                  :translate-y (* (/ (* (layout :y-size) (:scale layout)) 3) -2)}]}))
 
 (defn draw-target-line [{:keys [fx/context unit layout]}]
-  (let [origin-hex (hex/hex-to-pixel unit layout)
+  (let [board (subs/board context)
+        origin-hex (hex/find-hex unit (board/nodes board))
+        origin-point (hex/hex-to-pixel origin-hex layout)
         target (get (subs/units context) (:target unit))
-        target-hex (hex/hex-to-pixel target layout)
+        target-hex (hex/find-hex target (board/nodes board))
+        target-point (hex/hex-to-pixel target-hex layout)
         range (hex/hex-distance unit target)
-        to-hit (cu/calculate-to-hit unit target)] 
+        to-hit (cu/calculate-to-hit unit target board)] 
     {:fx/type :group
      :children [{:fx/type :line 
-                 :start-x (:x origin-hex)
-                 :start-y (:y origin-hex)
-                 :end-x (:x target-hex)
-                 :end-y (:y target-hex)}
-                {:fx/type :label
-                 :text (str "Range: " range "; " to-hit "+ To Hit")
-                 :layout-x (/ (+ (:x origin-hex) (:x target-hex)) 2)
-                 :layout-y (/ (+ (:x origin-hex) (:x target-hex)) 2)
+                 :start-x (:x origin-point) 
+                 :start-y (:y origin-point) 
+                 :end-x (:x target-point) 
+                 :end-y (:y target-point)} 
+               {:fx/type :label 
+                 :text (str "Range: " range "; " to-hit "+ To Hit") 
+                 :layout-x (/ (+ (:x origin-point) (:x target-point)) 2) 
+                 :layout-y (/ (+ (:y origin-point) (:y target-point)) 2) 
                  :font 16}]}))
 
 (defn draw-movement-cost [{:keys [origin destination layout cost]}]

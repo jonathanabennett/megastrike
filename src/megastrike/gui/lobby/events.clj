@@ -94,6 +94,7 @@
                            :skill (Integer/parseInt (fx/sub-val context :pilot-skill))} 
                    :current-armor (:armor mul-unit) 
                    :current-structure (:structure mul-unit) 
+                   :crits []
                    :current-heat 0}]
     {:context (fx/swap-context context assoc :units (cu/create-element units mul-unit game-data))}))
 

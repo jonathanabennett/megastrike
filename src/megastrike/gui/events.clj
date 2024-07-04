@@ -95,6 +95,13 @@
         upd (assoc units (:id u) u)]
     {:context (fx/swap-context context assoc :units upd)}))
 
+(defmethod event-handler ::cancel-move
+  [{:keys [fx/context unit]}]
+  (let [active (subs/active-id context)
+        upd (assoc unit :path [])
+        units (assoc (subs/units context) active upd)]
+    {:context (fx/swap-context context assoc :units units)}))
+
 (defmethod event-handler ::confirm-move
   [{:keys [fx/context unit]}]
   (let [turn-order (subs/turn-order context)
@@ -111,18 +118,25 @@
 
 (defmethod event-handler ::make-attacks 
   [{:keys [fx/context]}]
-  (loop [units (subs/units context)
-         attackers (filter #(:target %) (subs/current-forces context))]
-    (if (empty? attackers)
-      {:context (fx/swap-context context assoc
-                                 :units units 
-                                 :active-unit nil
-                                 :turn-order (rest (subs/turn-order context)))}
-      (let [attacker (first attackers)
-            target (get units (:target attacker))
-            upd (cu/make-attack attacker target)]
-        (recur (assoc units (:id target) upd)
-               (rest attackers))))))
+  (let [nodes (subs/board context)]
+    (loop [units (subs/units context) 
+           attackers (filter #(:target %) (subs/current-forces context))] 
+      (if (empty? attackers) 
+        {:context (fx/swap-context context assoc 
+                                   :units units 
+                                   :active-unit nil
+                                   :turn-order (rest (subs/turn-order context)))}
+        (let [attacker (first attackers)
+              target (get units (:target attacker))
+              upd (cu/make-attack attacker target nodes)]
+          (recur (assoc units (:id target) upd)
+                 (rest attackers)))))))
+
+(defmethod event-handler ::clear-target 
+  [{:keys [fx/context]}]
+   (let [upd (assoc (subs/active-unit context) :target nil)
+         units (assoc (subs/units context) (subs/active-id context) upd)]
+     {:context (fx/swap-context context assoc :units units)}))
 
 (defmethod event-handler ::change-size
   [{:keys [fx/context direction]}] 

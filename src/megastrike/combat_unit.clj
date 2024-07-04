@@ -28,6 +28,16 @@
                  :sw {:angle 240 :ordinal 4}
                  :nw {:angle 300 :ordinal 3}})
 
+(def criticals {2 :ammo
+                3 :engine
+                4 :fire-control
+                6 :weapon
+                7 :mp 
+                8 :weapon
+                10 :fire-control
+                11 :engine
+                12 :destroyed})
+
 (defn move-keyword
   "Creates a move keyword from a stat line imported from the mul export."
   [mv-type]
@@ -46,19 +56,44 @@
       (merge mv-map {:walk (val (first mv-map))})
       mv-map)))
 
+(defn get-tmm
+  ([unit]
+   (let [div (count (filter #(= :mv %) (:crits unit)))]
+     (loop [tmm (get unit :tmm)
+            n 0]
+       (if (= n div)
+         tmm
+         (recur (let [new-tmm (math/round (/ tmm 2.0))]
+                  (if (>= (- tmm new-tmm) 1) new-tmm 0))
+                (inc n)))))))
+
+(defn get-mv
+  ([unit move-type]
+   (let [base-move (get-in unit [:movement move-type])
+         div (count (filter #(= :mv %) (:crits unit)))]
+     (loop [mv base-move
+            n 0]
+       (if (= n div)
+         (- mv (get unit :current-heat 0))
+         (recur (let [new-mv (math/round (/ mv 2.0))]
+                  (if (>= (- mv new-mv) 1) new-mv 0))
+                (inc n))))))
+  ([unit]
+  (get-mv unit (get unit :movement :walk))))
+
 (defn print-movement-helper
   "Consumes a vector containing a move type as a keyword and a distance and prints it for human consumption."
-  [mv-vec]
+  [mv-vec unit]
   (cond
-    (= (first mv-vec) :walk) (second mv-vec)
-    (= (first mv-vec) :jump) (str (second mv-vec) "j")
-    :else (str (first mv-vec) " " (second mv-vec))))
+    (= (first mv-vec) :walk) (get-mv unit (first mv-vec))
+    (= (first mv-vec) :jump) (str (get-mv unit (first mv-vec)) "j")
+    :else (str (first mv-vec) " " (get-mv unit (first mv-vec)))))
 
 (defn print-movement
   "Loops over all movements a unit has a pretty prints them."
   [unit]
   (let [mv-map (:movement unit)]
-    (str/join "/" (map print-movement-helper mv-map))))
+    (str/join "/" (map #(print-movement-helper % unit) mv-map))))
 
 (defn construct-ability-list
   "Loops over all abilitys a unit has a converts them to Keywords."
@@ -226,7 +261,7 @@
                              unit (if (not (:movement-mode unit))
                                     (assoc unit :movement-mode (key (first (:movement unit))))
                                     unit)
-                             move (get-in unit [:movement (:movement-mode unit)])] 
+                             move (get-mv unit)] 
                          (if (<= sum move)
                            (merge unit 
                                   (select-keys (last (:path unit)) [:p :q :r])
@@ -236,25 +271,35 @@
 (defn calculate-attacker-mod
   "Returns the mod for a given to hit due to the attacker's movement mode this turn."
   [unit]
-  (cond
-    (= (:movement-mode unit) :immobile) -1
-    (= (:movement-mode unit) :standstill) -1
-    (= (:movement-mode unit) :jump) 2
-    :else 0))
+  (let [move (cond 
+               (= (:movement-mode unit) :immobile) -1 
+               (= (:movement-mode unit) :stand-still) -1 
+               (= (:movement-mode unit) :jump) 2 
+               :else 0)
+        fc (* (count (filter #(= % :fire-control) (:crits unit))) 2)]
+    (+ move fc)))
 
 (defn calculate-target-mod
   "Calculates the mod for the to hit to an attack based on the target's condition."
   [unit]
   (cond
     (= (:movement-mode unit) :immobile) -4
-    (= (:movement-mode unit) :standstill) 0
-    (= (:movement-mode unit) :jump) (+ (:tmm unit) 1)
-    :else (:tmm unit)))
+    (= (:movement-mode unit) :stand-still) 0
+    (= (:movement-mode unit) :jump) (+ (get-tmm unit) 1)
+    :else (get-tmm unit)))
 
 (defn calculate-other-mod
   "Calculate 'other' modifiers to the to hit. Terrain, heat, etc."
-  [attacker target]
-  (:current-heat attacker))
+  [attacker target board]
+  (let [heat (get attacker :current-heat 0)
+        line (hexagon/hex-line attacker target (board/nodes board))
+        blocked? (hexagon/height-checker (hexagon/find-hex attacker (board/nodes board)) (hexagon/find-hex target (board/nodes board)) line)
+        woods-count (count (filter #(str/includes? (:terrain %) "woods") (rest line)))]
+    (if (and (not blocked?) (<= woods-count 3))
+      (if (zero? woods-count) 
+        heat 
+        (inc heat))
+      ##Inf)))
 
 (defn calculate-range-mod
   "Calculates the mod to hit based on the range."
@@ -269,11 +314,11 @@
 
 (defn calculate-to-hit
   "Calculates the to hit for an attack using the SATOR method from the book."
-  [attacker target]
+  [attacker target nodes]
   (+ (:skill (:pilot attacker))
      (calculate-attacker-mod attacker)
      (calculate-target-mod target)
-     (calculate-other-mod attacker target)
+     (calculate-other-mod attacker target nodes)
      (calculate-range-mod attacker target)))
 
 (defn calculate-damage
@@ -285,29 +330,67 @@
     (>= 21 range) (if (and (:l* unit) (<= 4 (utils/roll-die))) 1 (:l unit))
     (>= 30 range) (if (and (:e* unit) (<= 4 (utils/roll-die))) 1 (:e unit))))
 
+(defn take-weapon-hit 
+  [unit]
+  (assoc unit 
+         :s (max (dec (:s unit)) 0) 
+         :s* false
+         :m (max (dec (:m unit)) 0)
+         :m* false
+         :l (max (dec (:l unit)) 0)
+         :l* false
+         :e (max (dec (:e unit)) 0)
+         :e* false
+         :crits (conj (:crits unit) :weapon)))
+
 (defn take-damage
-  "Applies damage 1 point at a time, checking to see if there armor remaining."
-  [unit damage]
-  (if (= damage 0)
-    unit
-    (loop [armor (:current-armor unit (:armor unit))
-           structure (:current-structure unit (:structure unit))
-           damage damage]
-      (if (zero? damage)
-        (assoc unit :current-armor armor :current-structure structure)
-        (let [arm (dec armor)
-              str (dec structure)
-              dmg (dec damage)]
-          (if (pos? arm)
-            (recur arm structure dmg)
-            (recur 0 str dmg)))))))
+  ([unit damage]
+   (take-damage unit damage false))
+  ([unit damage tac]
+   (if (= damage 0)
+     unit
+     (let [armor (max (- (:current-armor unit (:armor unit)) damage) 0) 
+           penetration (- damage (:current-armor unit (:armor unit)))
+           structure (if (zero? armor) 
+                       (- (:current-structure unit (:structure unit)) penetration)
+                       (:current-structure unit (:structure unit)))
+           crit (if (or tac (zero? armor)) (get criticals (utils/roll2d) nil) nil)
+           upd (assoc unit :current-armor armor :current-structure structure)]
+       (prn (str damage " damage done to " (:current-armor unit) " armor."))
+       (when (zero? armor)
+         (prn (str penetration " damage penetrated.")))
+       (when (or tac (zero? armor))
+         (prn (str "Rolled " crit " on critical hit table.")))
+       (cond
+         (= crit :ammo) (let [case (some #(= % :case) (:abilities unit)) 
+                              case2 (some #(= % :caseii) (:abilities unit)) 
+                              ene (some #(= % :ene) (:abilities unit))] 
+                          (cond (or case2 ene) upd 
+                                case (take-damage upd 1) 
+                                :else (assoc upd :destroyed? true :crits (conj (:crits upd) :ammo))))
+         (= crit :engine) (if (some #(= % :engine) (:crits upd)) 
+                            (assoc upd :destroyed? true)
+                            (assoc upd :crits (conj (:crits upd) :engine)))
+         (= crit :fire-control) (if (< (count (filter #( % :fire-control) (:crits upd))) 4)
+                                  (assoc upd :crits (conj (:crits upd) :fire-control))
+                                  upd)
+         (= crit :weapon) (if (< (count (filter #( % :weapon) (:crits upd))) 4)
+                            (take-weapon-hit upd)
+                            upd)
+         (= crit :mv) (if (< (count (filter #( % :mv) (:crits upd))) 4)
+                        (assoc upd :crits (conj (:crits upd) :mv))
+                        (assoc upd :movement {:immobile 0}))
+         (= crit :destroyed) (assoc upd :destroyed? true :crits (conj (:crits upd) :destroyed))
+         :else upd)))))
 
 (defn make-attack
   "Rolls a full attack. Calculating the to-hit, rolling the dice, and then applying the damage and returning the targeted unit."
-  [attacker target]
-  (let [target-num (calculate-to-hit attacker target)
+  [attacker target board]
+  (let [target-num (calculate-to-hit attacker target board)
         range (hexagon/hex-distance attacker target)
-        to-hit (utils/roll2d)]
+        to-hit (utils/roll2d)] 
+    (prn (str (:full-name attacker) " attacking " (:full-name target)))
+    (prn (str "To hit: " target-num ", Rolled: " to-hit))
     (if (<= target-num to-hit)
-      (take-damage target (calculate-damage attacker range))
+      (take-damage target (calculate-damage attacker range) (= to-hit 12))
       target)))

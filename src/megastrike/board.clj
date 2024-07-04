@@ -61,19 +61,18 @@
   ([filename]
    (create-mapsheet filename 0 0))
   ([width height]
-   {:name "Generated" :height height :width width :tiles (into [] (for [x (range 1 (inc width))
-                                                                        y (range 1 (inc height))]
-                                                                    (create-tile x y 0 "" "grass")))}))
+   {:name "Generated" 
+    :height height 
+    :width width 
+    :tiles (into [] (for [x (range 1 (inc width)) 
+                          y (range 1 (inc height))] 
+                      (create-tile x y 0 "" "grass")))}))
 
 (defprotocol BOARD
   (nodes [board])
   (neighbors [board node])
   (mapsheets [board])
   (weight [board from to mv-type]))
-
-(defn neighbors% 
-  [graph node]
-  (into [] (remove nil? (map #(hex/find-hex % (graph)) (hex/hex-neighbors node)))))
 
 (defn create-board
   ([filename]

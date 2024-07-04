@@ -20,15 +20,15 @@ Unit_Irregulars_6=Warhammer WHM-6R,Lt Jake Walmar,2,2,N,13,33
 Unit_Irregulars_7=Clint CLNT-2-3T,Marleen Danules,5,5,N,05,33 
 Unit_Irregulars_8=Phoenix Hawk PXH-1,Carter Malvinson,6,5,N,06,33 
 # Irregulars 3rd Company (Rhonda Snords Irregulars) Command Lance: 
-Unit_Irregulars_9=Shadow Hawk SHD-2H,Cpt Rhonda Snord,2,2,W,01,14 
+Unit_Irregulars_9=Shadow Hawk SHD-2H,Cpt Rhonda Snord,2,2,NE,01,14 
 Unit_Irregulars_10=Phoenix Hawk PXH-1,Lt Terry Malvinson,3,3,NE,01,16 
-Unit_Irregulars_11=Griffin GRF-1N,Walker Roche,4,6,W,01,13 
+Unit_Irregulars_11=Griffin GRF-1N,Walker Roche,4,6,NE,01,13 
 Unit_Irregulars_12=Awesome AWS-8Q,Victoria Rose,4,4,NE,01,17 
 # Irregulars 3rd Company, Fire Lance: 
 Unit_Irregulars_13=Rifleman RFL-3N,Lt Bright Thomlinson,2,1,NW,15,13 
 Unit_Irregulars_14=Wolverine WVR-6R,Solomon Storm,2,3,NW,15,14 
-Unit_Irregulars_15=Scorpion SCP-1N,Linda Thomlinson,6,3,E,15,15 
-Unit_Irregulars_16=Warhammer WHM-6R,Blade Windall,4,4,E,15,16 
+Unit_Irregulars_15=Scorpion SCP-1N,Linda Thomlinson,6,3,NW,15,15 
+Unit_Irregulars_16=Warhammer WHM-6R,Blade Windall,4,4,NW,15,16 
 #WacosRangers, Command Lance: 
 Unit_WacosRangers_1=BattleMaster BLR-1G,Col Wayne Waco,1,2,N,07,12 
 Unit_WacosRangers_2=Marauder MAD-3R,Cpt Akida Samsun,3,2,NE,09,13 
