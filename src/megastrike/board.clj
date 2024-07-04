@@ -96,7 +96,7 @@
     (loop [result []
            step 0]
       (if (= step distance)
-        result
+        (conj result (find-hex hex2 board))
         (recur (conj result (find-hex (hex/hex-round (hex-lerp hex1 hex2 (* (/ 1.0 distance) step))) board))
                (inc step))))))
 
