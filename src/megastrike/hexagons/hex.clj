@@ -10,10 +10,6 @@
    (when (= (* (+ p q) -1) r)
       {:p p :q q :r r})))
 
-(defn hex-address
-  [hex]
-  (str (:p hex) ", " (:q hex) ", " (:r hex)))
-
 (defn hex-from-offset
   "Calculates a hex based on an 'offset' hex address. The input in in the format of [x y]."
   ([col row]
@@ -37,10 +33,6 @@
   (and (= (:p hex1) (:p hex2))
        (= (:q hex1) (:q hex2))
        (= (:r hex1) (:r hex2))))
-
-(defn find-hex 
-  [h board]
-  (first (filter #(same-hex h %) board)))
 
 (defn hex-addition
   "Use Cartesian addition to add two hexagons together."
@@ -155,16 +147,6 @@
   {:p (linear-interpolation (:p hex1) (:p hex2) step)
    :q (linear-interpolation (:q hex1) (:q hex2) step)
    :r (linear-interpolation (:r hex1) (:r hex2) step)})
-
-(defn hex-line
-  [hex1 hex2 board]
-  (let [distance (hex-distance hex1 hex2)]
-    (loop [result []
-           step 0]
-      (if (= step distance)
-        result
-        (recur (conj result (find-hex (hex-round (hex-lerp hex1 hex2 (* (/ 1.0 distance) step))) board))
-               (inc step))))))
 
 (defn step-cost
   [hex neighbor mv-type]
