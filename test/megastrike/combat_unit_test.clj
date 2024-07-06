@@ -83,8 +83,7 @@
     (t/is (= (sut/create-element (sut/get-unit "Wolfhound WLF-2")
                                  {:id "Wolfhound WLF-2" :path [] :p 11 :q 5 :r -16 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s}) 
              {:role "Striker", :path [], :tmm 2, :q 5, :left-arc "", :e* false, :movement {:walk 6}, :r -16, :right-arc "", :pilot {:name " Lieutenant Ciro Ramirez", :skill 4}, :force :1stsomersetstrikers, :mul-id 3563, :l* false, :m 3, :type "BM", :front-arc "", :current-structure 3, :abilities "ENE, REAR1/1/-", :acted nil, :e 0, :s 3, :threshold -1, :l 1, :size 1, :m* false, :rear-arc "", :point-value 28, :overheat 0, :chassis "Wolfhound", :structure 3, :crits [], :id "Wolfhound WLF-2", :full-name "Wolfhound WLF-2", :armor 4, :current-heat 0, :current-armor 4, :s* false, :p 11, :movement-mode :walk, :direction :s, :model "WLF-2"}))
- (t/is (= 0 1))
-    ;; This should be expanded much further to handle the edge cases.
+    ;; This should be expanded much further to handle edge cases.
     ))
 
 (t/deftest test-pv-mod-calculation
@@ -131,7 +130,16 @@
     (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :immobile}) -1))
     (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :stand-still}) -1))
     (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :walk}) 0))
-    (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :jump}) 2))))
+    (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :jump}) 2)))
+  (t/testing "Test Fire control hits"
+    (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :walk :crits [:fire-control]}) 2))
+    (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :walk :crits [:mv]}) 0))
+    (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :walk :crits [:mv :fire-control]}) 2))
+    (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :walk :crits [:fire-control :fire-control]}) 4)) 
+    (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :jump :crits [:fire-control :fire-control]}) 6)) 
+    (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :stand-still :crits [:fire-control :fire-control]}) 3)) 
+    (t/is (= (sut/calculate-attacker-mod {:id "Archer ARC-2K" :pilot {:name "Bob" :skill 4} :movement-mode :immobile :crits [:fire-control :fire-control]}) 3)) 
+    ))
 
 (t/deftest test-calculate-target-mod
   (t/testing "Verify target mods are correct."
@@ -142,6 +150,12 @@
     (t/is (= (sut/calculate-target-mod {:movement-mode :walk :role "Missile Boat", :tmm 1, :e* false, :movement {}, :mul-id 73, :l* false, :m 2, :type "BM", :abilities "IF2", :e 0, :s 2, :threshold -1, :l 2, :size 3, :m* false, :point-value 34, :overheat 2, :chassis "Archer", :structure 6, :full-name "Archer ARC-2K", :armor 6, :s* false, :model "ARC-2K"}) 1))
     (t/is (= (sut/calculate-target-mod {:movement-mode :walk :role "None", :tmm 4, :e* false, :movement {}, :mul-id 3684, :l* false, :m 0, :type "SV", :abilities "BAR, EE, ENE", :e 0, :s 0, :threshold -1, :l 0, :size 2, :m* false, :point-value 6, :overheat 0, :chassis "Air Car", :structure 2, :full-name "Air Car ", :armor 1, :s* false, :model ""}) 4))
     ))
+
+(t/deftest test-other-mod
+  (t/testing "Test terrain.")
+  (t/testing "Test heat.")
+  (t/testing "Test blocked LOS.")
+  (t/testing "Test terrain."))
 
 (t/deftest test-calculate-range-mod
   (t/testing "Test short range."
@@ -155,7 +169,10 @@
                                       {:id "Unit 2" :p 16 :q 0 :r -16}) 4)))
   (t/testing "Testing extreme range."
     (t/is (= (sut/calculate-range-mod {:id "Unit 1" :p 0 :q 0 :r 0}
-                                      {:id "Unit 2" :p 24 :q 0 :r -24}) 6))))
+                                      {:id "Unit 2" :p 24 :q 0 :r -24}) 6)))
+  (t/testing "Testing out of range."
+    (t/is (= (sut/calculate-range-mod {:id "Unit 1" :p 0 :q 0 :r 0}
+                                      {:id "Unit 2" :p 35 :q 0 :r -35}) ##Inf))))
 
 ;; (t/deftest test-calculate-to-hit
 ;;   (t/testing "Test searching for a valid sprite."
@@ -165,8 +182,20 @@
 ;;                                        :movement-mode :walk :tmm 2}) 6))))
 
 (t/deftest test-calculate-damage
-  (t/testing "Test searching for a valid sprite."
-    (t/is (= (sut/calculate-damage {:id "Unit 1" :s 4} 2) 4))))
+  (t/testing "Test damage without a *."
+    (t/is (= (sut/calculate-damage {:id "Unit 1" :s 4} 2) 4))
+    (t/is (= (sut/calculate-damage {:id "Unit 1" :m 4} 4) 4))
+    (t/is (= (sut/calculate-damage {:id "Unit 1" :l 4} 13) 4))
+    (t/is (= (sut/calculate-damage {:id "Unit 1" :e 4} 22) 4)))
+  (t/testing "Test Damage with a *." 
+    (let [s-damage (sut/calculate-damage {:id "Unit 1" :s 0 :s* true} 2)
+          m-damage (sut/calculate-damage {:id "Unit 1" :m 0 :m* true} 9)
+          l-damage (sut/calculate-damage {:id "Unit 1" :l 0 :l* true} 13)
+          e-damage (sut/calculate-damage {:id "Unit 1" :e 0 :e* true} 22)] 
+      (t/is (or (= s-damage 0) (= s-damage 1))) 
+      (t/is (or (= m-damage 0) (= m-damage 1))) 
+      (t/is (or (= l-damage 0) (= l-damage 1))) 
+      (t/is (or (= e-damage 0) (= e-damage 1))))))
 
 (t/deftest test-take-damage
   (t/testing "Test armor only damage."
