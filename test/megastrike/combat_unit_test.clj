@@ -81,7 +81,7 @@
                                         {:pilot {:name "Bobby McSkillface" :skill 4}}) :pilot)))
   (t/testing "Test Creation with units"
     (t/is (= (sut/create-element (sut/get-unit "Wolfhound WLF-2")
-                                 {:path [] :p 11 :q 5 :r -16 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s}) 
+                                 {:id "Wolfhound WLF-2" :path [] :p 11 :q 5 :r -16 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s}) 
              {:role "Striker", :path [], :tmm 2, :q 5, :left-arc "", :e* false, :movement {:walk 6}, :r -16, :right-arc "", :pilot {:name " Lieutenant Ciro Ramirez", :skill 4}, :force :1stsomersetstrikers, :mul-id 3563, :l* false, :m 3, :type "BM", :front-arc "", :current-structure 3, :abilities "ENE, REAR1/1/-", :acted nil, :e 0, :s 3, :threshold -1, :l 1, :size 1, :m* false, :rear-arc "", :point-value 28, :overheat 0, :chassis "Wolfhound", :structure 3, :crits [], :id "Wolfhound WLF-2", :full-name "Wolfhound WLF-2", :armor 4, :current-heat 0, :current-armor 4, :s* false, :p 11, :movement-mode :walk, :direction :s, :model "WLF-2"}))
  (t/is (= 0 1))
     ;; This should be expanded much further to handle the edge cases.
@@ -117,7 +117,14 @@
 
 (t/deftest test-get-units
   (t/testing "Get units for scenarios."
-    (t/is (= 0 1))))
+    (t/is (= (sut/get-unit "Sloth Battle Armor (Standard)") 1))
+    (t/is (= (sut/get-unit "Foot Platoon (Laser)") {:role "Ambusher", :tmm 0, :left-arc "", :e* false, :movement {:f 1}, :right-arc "", :mul-id 1144, :l* false, :m 1, :type "CI", :front-arc "", :abilities "AM, CAR3", :e 0, :s 1, :threshold -1, :l 0, :size 1, :m* false, :rear-arc "", :point-value 9, :overheat 0, :chassis "Foot Platoon", :structure 1, :full-name "Foot Platoon (Laser)", :armor 2, :s* false, :model "(Laser)"}))
+    (t/is (= (sut/get-unit "Elemental Battle Armor [Laser]") 1))
+    (t/is (= (sut/get-unit "Elemental Battle Armor [Flamer]") 1))
+    (t/is (= (sut/get-unit "Elemental Battle Armor [MG]") 1))
+    (t/is (= (sut/get-unit "Firestarter FS9-H") {:role "Scout", :tmm 2, :left-arc "", :e* false, :movement {:jump 6, :walk 6}, :right-arc "", :mul-id 1096, :l* false, :m 1, :type "BM", :front-arc "", :abilities "HT1/-/-, REAR0*/-/-", :e 0, :s 2, :threshold -1, :l 0, :size 1, :m* false, :rear-arc "", :point-value 20, :overheat 0, :chassis "Firestarter", :structure 3, :full-name "Firestarter FS9-H", :armor 3, :s* false, :model "FS9-H"}))
+    (t/is (= (sut/get-unit "Gnome Battle Armor (Standard)") 0))
+    (t/is (= (sut/get-unit "Clan Foot Point (Laser)") {:role "Ambusher", :tmm 0, :left-arc "", :e* false, :movement {:f 1}, :right-arc "", :mul-id 603, :l* false, :m 1, :type "CI", :front-arc "", :abilities "AM, CAR3", :e 0, :s 1, :threshold -1, :l 0, :size 1, :m* false, :rear-arc "", :point-value 11, :overheat 0, :chassis "Clan Foot Point", :structure 1, :full-name "Clan Foot Point (Laser)", :armor 3, :s* false, :model "(Laser)"}))))
 
 (t/deftest test-calculate-attacker-mod
   (t/testing "Test valid movement types"
