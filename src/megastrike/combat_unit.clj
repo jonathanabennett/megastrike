@@ -327,7 +327,7 @@
       (>= 12 range) 2
       (>= 21 range) 4
       (>= 30 range) 6
-      :else nil)))
+      :else ##Inf)))
 
 (defn calculate-to-hit
   "Calculates the to hit for an attack using the SATOR method from the book."
