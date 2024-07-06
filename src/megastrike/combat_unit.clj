@@ -70,7 +70,7 @@
 (defn get-mv
   ([unit move-type]
    (let [base-move (move-type (:movement unit))
-         div (count (filter #(= :mv %) (:crits unit)))]
+         div (count (filter #(= :mv %) (:crits unit)))] 
      (loop [mv base-move
             n 0]
        (if (= n div)
@@ -275,7 +275,7 @@
     (loop [blocked? false
            current (first line)
            l (rest line)]
-      (if (or blocked? (empty? l))
+      (if (or blocked? (= (count l) 1))
         blocked?
         (recur (cond
                  (= (count line) 2) false
@@ -310,7 +310,7 @@
   [attacker target board]
   (let [heat (get attacker :current-heat 0)
         line (board/hex-line attacker target board)
-        blocked? (height-checker (board/find-hex attacker board) board line)
+        blocked? (height-checker (board/find-hex attacker board) (board/find-hex target board) line)
         woods-count (count (filter #(str/includes? (:terrain %) "woods") (rest line)))]
     (if (and (not blocked?) (<= woods-count 3))
       (if (zero? woods-count) 
