@@ -89,7 +89,12 @@
              [{:p 1, :q 1, :r -2, :elevation 0, :terrain "", :palette "grass"}
               {:p 1, :q 2, :r -3, :elevation 0, :terrain "", :palette "grass"}
               {:p 1, :q 3, :r -4, :elevation 0, :terrain "", :palette "grass"}
-              {:p 2, :q 0, :r -2, :elevation 0, :terrain "", :palette "grass"} {:p 2, :q 1, :r -3, :elevation 0, :terrain "", :palette "grass"} {:p 2, :q 2, :r -4, :elevation 0, :terrain "", :palette "grass"} {:p 3, :q 0, :r -3, :elevation 0, :terrain "", :palette "grass"} {:p 3, :q 1, :r -4, :elevation 0, :terrain "", :palette "grass"} {:p 3, :q 2, :r -5, :elevation 0, :terrain "", :palette "grass"}])))
+              {:p 2, :q 0, :r -2, :elevation 0, :terrain "", :palette "grass"} 
+              {:p 2, :q 1, :r -3, :elevation 0, :terrain "", :palette "grass"}
+              {:p 2, :q 2, :r -4, :elevation 0, :terrain "", :palette "grass"}
+              {:p 3, :q 0, :r -3, :elevation 0, :terrain "", :palette "grass"}
+              {:p 3, :q 1, :r -4, :elevation 0, :terrain "", :palette "grass"}
+              {:p 3, :q 2, :r -5, :elevation 0, :terrain "", :palette "grass"}])))
   (t/testing "Test an example board file."
     (t/is (= (sut/nodes (sut/create-board "data/boards/AGoAC Maps/16x17 Grassland 2.board"))
              [{:p 1, :q 1, :r -2, :elevation 0, :terrain "ground_fluff:1:2", :palette "grass"}
