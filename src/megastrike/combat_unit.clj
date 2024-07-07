@@ -32,7 +32,7 @@
                 3 :engine
                 4 :fire-control
                 6 :weapon
-                7 :mp 
+                7 :mv 
                 8 :weapon
                 10 :fire-control
                 11 :engine
@@ -331,11 +331,11 @@
 
 (defn calculate-to-hit
   "Calculates the to hit for an attack using the SATOR method from the book."
-  [attacker target nodes]
+  [attacker target board]
   (+ (:skill (:pilot attacker))
      (calculate-attacker-mod attacker)
      (calculate-target-mod target)
-     (calculate-other-mod attacker target nodes)
+     (calculate-other-mod attacker target board)
      (calculate-range-mod attacker target)))
 
 (defn calculate-damage
