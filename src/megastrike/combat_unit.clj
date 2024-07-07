@@ -32,7 +32,7 @@
                 3 :engine
                 4 :fire-control
                 6 :weapon
-                7 :mp 
+                7 :mv 
                 8 :weapon
                 10 :fire-control
                 11 :engine
@@ -69,8 +69,8 @@
 
 (defn get-mv
   ([unit move-type]
-   (let [base-move (get-in unit [:movement move-type])
-         div (count (filter #(= :mv %) (:crits unit)))]
+   (let [base-move (move-type (:movement unit))
+         div (count (filter #(= :mv %) (:crits unit)))] 
      (loop [mv base-move
             n 0]
        (if (= n div)
@@ -169,7 +169,7 @@
 (defn pv-mod
   "Calculates the skill-based mod for PV based on the algorithm provided in the book."
   [unit]
-  (let [skill-diff (- 4 (:skill (:pilot unit)))]
+  (let [skill-diff (- 4 (get-in unit [:pilot :skill] 4))]
     (cond
       (> 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- (:point-value unit) 5) 10)))
       (< 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- (:point-value unit) 3) 5)))
@@ -237,19 +237,19 @@
 
 (defn find-path
   [unit destination board]
-  (let [origin (hexagon/find-hex unit (board/nodes board))
+  (let [origin (board/find-hex unit board)
         mv-type (get unit :movement-mode :walk)]
     (board/astar origin destination board hexagon/hex-distance mv-type)))
 
 (defn move-costs 
   [unit board]
-  (let [origin (hexagon/find-hex unit (board/nodes board))
+  (let [origin (board/find-hex unit board)
         mv-type (get unit :movement-mode :walk)]
-    (loop [sum [(hexagon/step-cost origin (first (:path unit)) mv-type)]
+    (loop [sum [(board/step-cost origin (first (:path unit)) mv-type)]
                    path (:path unit)]
               (if (= (count path) 1) 
                 sum 
-                (recur (conj sum (hexagon/step-cost (first path) (second path) mv-type)) 
+                (recur (conj sum (board/step-cost (first path) (second path) mv-type)) 
                        (rest path))))))
 
 (defn can-move?
@@ -261,12 +261,29 @@
                              unit (if (not (:movement-mode unit))
                                     (assoc unit :movement-mode (key (first (:movement unit))))
                                     unit)
-                             move (get-mv unit)] 
+                             move (get-mv unit (:movement-mode unit))] 
                          (if (<= sum move)
                            (merge unit 
                                   (select-keys (last (:path unit)) [:p :q :r])
                                   {:acted true :path []})
                            unit))))
+
+(defn height-checker
+  [origin target line]
+  (let [o-height (+ 2 (:elevation origin))
+        t-height (+ 2 (:elevation target))]
+    (loop [blocked? false
+           current (first line)
+           l (rest line)]
+      (if (or blocked? (= (count l) 1))
+        blocked?
+        (recur (cond
+                 (= (count line) 2) false
+                 (hexagon/same-hex origin current)   (>= (:elevation current) o-height)
+                 (hexagon/same-hex target (first l)) (>= (:elevation current) t-height)
+                 :else (and (>= (:elevation current) o-height) (>= (:elevation current) t-height)))
+               (first l)
+               (rest l))))))
 
 (defn calculate-attacker-mod
   "Returns the mod for a given to hit due to the attacker's movement mode this turn."
@@ -292,8 +309,8 @@
   "Calculate 'other' modifiers to the to hit. Terrain, heat, etc."
   [attacker target board]
   (let [heat (get attacker :current-heat 0)
-        line (hexagon/hex-line attacker target (board/nodes board))
-        blocked? (hexagon/height-checker (hexagon/find-hex attacker (board/nodes board)) (hexagon/find-hex target (board/nodes board)) line)
+        line (board/hex-line attacker target board)
+        blocked? (height-checker (board/find-hex attacker board) (board/find-hex target board) line)
         woods-count (count (filter #(str/includes? (:terrain %) "woods") (rest line)))]
     (if (and (not blocked?) (<= woods-count 3))
       (if (zero? woods-count) 
@@ -310,15 +327,15 @@
       (>= 12 range) 2
       (>= 21 range) 4
       (>= 30 range) 6
-      :else nil)))
+      :else ##Inf)))
 
 (defn calculate-to-hit
   "Calculates the to hit for an attack using the SATOR method from the book."
-  [attacker target nodes]
+  [attacker target board]
   (+ (:skill (:pilot attacker))
      (calculate-attacker-mod attacker)
      (calculate-target-mod target)
-     (calculate-other-mod attacker target nodes)
+     (calculate-other-mod attacker target board)
      (calculate-range-mod attacker target)))
 
 (defn calculate-damage

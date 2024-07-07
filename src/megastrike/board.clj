@@ -68,34 +68,73 @@
                           y (range 1 (inc height))] 
                       (create-tile x y 0 "" "grass")))}))
 
+;; Why is a protocol required here, can I get by without one?
+
 (defprotocol BOARD
   (nodes [board])
   (neighbors [board node])
   (mapsheets [board])
   (weight [board from to mv-type]))
 
+(defn find-hex 
+  [h board]
+  (first (filter #(hex/same-hex h %) (nodes board))))
+
+(defn linear-interpolation 
+  [a b step]
+  (+ a (* (- b a) step)))
+
+(defn hex-lerp
+  [hex1 hex2 step]
+  {:p (linear-interpolation (:p hex1) (:p hex2) step)
+   :q (linear-interpolation (:q hex1) (:q hex2) step)
+   :r (linear-interpolation (:r hex1) (:r hex2) step)})
+
+(defn hex-line
+  [hex1 hex2 board]
+  (let [distance (hex/hex-distance hex1 hex2)]
+    (loop [result []
+           step 0]
+      (if (= step distance)
+        (conj result (find-hex hex2 board))
+        (recur (conj result (find-hex (hex/hex-round (hex-lerp hex1 hex2 (* (/ 1.0 distance) step))) board))
+               (inc step))))))
+
+(defn step-cost
+  [hex neighbor mv-type]
+  (let [terrain (:terrain neighbor)
+        lvl-change (- (:elevation neighbor) (:elevation hex))]
+    (cond 
+      (= mv-type :jump) 1
+      (str/includes? terrain "woods") (+ (abs lvl-change) 2)
+      (str/includes? terrain "rough") (+ (abs lvl-change) 2)
+      (str/includes? terrain "rubble") (+ (abs lvl-change) 2)
+      (str/includes? terrain "water") (+ (abs lvl-change) 2)
+      (> lvl-change 2) ##Inf
+      :else (+ (abs lvl-change) 1))))
+
 (defn create-board
   ([filename]
    (let [mapsheet (create-mapsheet filename)]
      (reify BOARD
        (nodes [_] (:tiles mapsheet))
-       (neighbors [_ node] (into [] (remove nil? (map #(hex/find-hex % (:tiles mapsheet)) (hex/hex-neighbors node)))))
+       (neighbors [board node] (into [] (remove nil? (map #(find-hex % board) (hex/hex-neighbors node)))))
        (mapsheets [_] [[mapsheet]])
-       (weight [_ from to mv-type] (hex/step-cost from to mv-type)))))
-  ([mapsheet-array _ _]
-     (let [tiles ((comp vec flatten vector) (for [m mapsheet-array] (:tiles m nil)))]
-       (reify BOARD
-        (nodes [_] tiles)
-        (neighbors [_ node] (into [] (remove nil? (map #(hex/find-hex % tiles) (hex/hex-neighbors node)))))
-        (mapsheets [_] mapsheet-array)
-        (weight [_ from to mv-type] (hex/step-cost from to mv-type)))))
+       (weight [_ from to mv-type] (step-cost from to mv-type)))))
+  ([mapsheet-array _ _] 
+   (let [tiles ((comp vec flatten vector) (for [m mapsheet-array] (:tiles m nil)))] 
+     (reify BOARD 
+       (nodes [_] tiles)
+       (neighbors [board node] (into [] (remove nil? (map #(find-hex % board) (hex/hex-neighbors node)))))
+       (mapsheets [_] mapsheet-array)
+       (weight [_ from to mv-type] (step-cost from to mv-type)))))
   ([width height]
    (let [mapsheet (create-mapsheet width height)]
      (reify BOARD
        (nodes [_] (:tiles mapsheet))
-       (neighbors [_ node] (into [] (remove nil? (map #(hex/find-hex % (:tiles mapsheet)) (hex/hex-neighbors node)))))
+       (neighbors [board node] (into [] (remove nil? (map #(find-hex % board) (hex/hex-neighbors node)))))
        (mapsheets [_] [[mapsheet]])
-       (weight [_ from to mv-type] (hex/step-cost from to mv-type))))))
+       (weight [_ from to mv-type] (step-cost from to mv-type))))))
 
 (defn- calc-approx-dist [h dist]
   (for [[node d] dist] 

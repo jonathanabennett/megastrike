@@ -77,10 +77,10 @@
 
 (defn draw-target-line [{:keys [fx/context unit layout]}]
   (let [board (subs/board context)
-        origin-hex (hex/find-hex unit (board/nodes board))
+        origin-hex (board/find-hex unit board)
         origin-point (hex/hex-to-pixel origin-hex layout)
         target (get (subs/units context) (:target unit))
-        target-hex (hex/find-hex target (board/nodes board))
+        target-hex (board/find-hex target board)
         target-point (hex/hex-to-pixel target-hex layout)
         range (hex/hex-distance unit target)
         to-hit (cu/calculate-to-hit unit target board)] 
@@ -114,7 +114,7 @@
 (defn draw-movement-path 
   [{:keys [fx/context unit layout]}]
   (let [board (subs/board context)
-        origin (hex/find-hex unit (board/nodes board))
+        origin (board/find-hex unit board)
         costs (cu/move-costs unit board)]
     {:fx/type :group 
      :children (loop [sprites []

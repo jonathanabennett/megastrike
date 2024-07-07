@@ -1,6 +1,5 @@
 (ns megastrike.hexagons.hex
-  (:require [clojure.math :as math]
-            [clojure.string :as str]))
+  (:require [clojure.math :as math]))
 
 (defn hexagon
   "Creates a Hexagon using a 3d addressing system."
@@ -9,10 +8,6 @@
   ([p q r]
    (when (= (* (+ p q) -1) r)
       {:p p :q q :r r})))
-
-(defn hex-address
-  [hex]
-  (str (:p hex) ", " (:q hex) ", " (:r hex)))
 
 (defn hex-from-offset
   "Calculates a hex based on an 'offset' hex address. The input in in the format of [x y]."
@@ -37,10 +32,6 @@
   (and (= (:p hex1) (:p hex2))
        (= (:q hex1) (:q hex2))
        (= (:r hex1) (:r hex2))))
-
-(defn find-hex 
-  [h board]
-  (first (filter #(same-hex h %) board)))
 
 (defn hex-addition
   "Use Cartesian addition to add two hexagons together."
@@ -144,57 +135,6 @@
             (> q-diff p-diff))
        (hexagon p-int (* (+ p-int r-int) -1) r-int)
       :else (hexagon p-int q-int (* (+ p-int q-int) -1)))))
-
-
-(defn linear-interpolation 
-  [a b step]
-  (+ a (* (- b a) step)))
-
-(defn hex-lerp
-  [hex1 hex2 step]
-  {:p (linear-interpolation (:p hex1) (:p hex2) step)
-   :q (linear-interpolation (:q hex1) (:q hex2) step)
-   :r (linear-interpolation (:r hex1) (:r hex2) step)})
-
-(defn hex-line
-  [hex1 hex2 board]
-  (let [distance (hex-distance hex1 hex2)]
-    (loop [result []
-           step 0]
-      (if (= step distance)
-        result
-        (recur (conj result (find-hex (hex-round (hex-lerp hex1 hex2 (* (/ 1.0 distance) step))) board))
-               (inc step))))))
-
-(defn step-cost
-  [hex neighbor mv-type]
-  (let [terrain (:terrain neighbor)
-        lvl-change (- (:elevation neighbor) (:elevation hex))]
-    (cond 
-      (= mv-type :jump) 1
-      (str/includes? terrain "woods") (+ (abs lvl-change) 2)
-      (str/includes? terrain "rough") (+ (abs lvl-change) 2)
-      (str/includes? terrain "rubble") (+ (abs lvl-change) 2)
-      (str/includes? terrain "water") (+ (abs lvl-change) 2)
-      (> lvl-change 2) ##Inf
-      :else (+ (abs lvl-change) 1))))
-
-(defn height-checker
-  [origin target line]
-  (let [o-height (+ 2 (:elevation origin))
-        t-height (+ 2 (:elevation target))]
-    (loop [blocked? false
-           current (first line)
-           l (rest line)]
-      (if (or blocked? (empty? l))
-        blocked?
-        (recur (cond
-                 (= (count line) 2) false
-                 (same-hex origin current)   (>= (:elevation current) o-height)
-                 (same-hex target (first l)) (>= (:elevation current) t-height)
-                 :else (and (>= (:elevation current) o-height) (>= (:elevation current) t-height)))
-               (first l)
-               (rest l))))))
 
 (defn hex-facing 
   "Finds which hexside a line starting from the center of the hex and
