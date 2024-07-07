@@ -1,7 +1,16 @@
 (ns megastrike.combat-unit-test
   (:require [megastrike.combat-unit :as sut]
             [clojure-csv.core :as csv]
+            [megastrike.board :as board]
             [clojure.test :as t]))
+
+(def board (board/create-board "data/boards/AGoAC Maps/16x17 Grassland 2.board")) 
+(def attacker1 (sut/create-element (sut/get-unit "Wolfhound WLF-2") {:id "Wolfhound WLF-2" :path [] :p 1 :q 1 :r -2 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s}))
+(def target1 (sut/create-element (sut/get-unit "Wolfhound WLF-2") {:id "Wolfhound WLF-2" :path [] :p 2 :q 1 :r -3 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s}))
+(def wooded-unit (sut/create-element (sut/get-unit "Wolfhound WLF-2") {:id "Wolfhound WLF-2" :path [] :p 4 :q 0 :r -4 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s}))
+(def blinded-attacker (sut/create-element (sut/get-unit "Wolfhound WLF-2") {:id "Wolfhound WLF-2" :path [] :p 3 :q 4 :r -7 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s}))
+(def blinded-target (sut/create-element (sut/get-unit "Wolfhound WLF-2") {:id "Wolfhound WLF-2" :path [] :p 7 :q 2 :r -9 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s})) 
+(def heated-attacker (sut/create-element (sut/get-unit "Wolfhound WLF-2") {:id "Wolfhound WLF-2" :path [] :p 1 :q 1 :r -2 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 1 :current-armor 4 :movement-mode :walk :direction :s}))
 
 (t/deftest test-move-parser
   (t/testing "Valid Mv Strings" 
@@ -114,6 +123,47 @@
 ;;     (t/is (= (sut/find-sprite {:full-name "Archer ARC-2K" :chassis "Archer"}) "resources/images/units/mechs/Archer_2K.png"))
 ;;     (t/is (= (sut/find-sprite {:full-name "Ahab AHB-4" :chassis "Ahab"}) "resources/images/units/fighter/ahab.png"))))
 
+(t/deftest test-find-path
+  (t/testing "Test finding a path"
+    (t/is (= (sut/find-path attacker1 {:p 15, :q -5, :r -10, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"} board) 
+             [{:p 2, :q 0, :r -2, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"} {:p 3, :q 0, :r -3, :elevation 0, :terrain "", :palette "grass"} {:p 4, :q -1, :r -3, :elevation 0, :terrain "", :palette "grass"} {:p 5, :q -1, :r -4, :elevation 0, :terrain "ground_fluff:1:1;water:1", :palette "grass"} {:p 6, :q -1, :r -5, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"} {:p 7, :q -2, :r -5, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"} {:p 8, :q -2, :r -6, :elevation 0, :terrain "ground_fluff:3:2", :palette "grass"} {:p 9, :q -3, :r -6, :elevation 0, :terrain "", :palette "grass"} {:p 10, :q -3, :r -7, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"} {:p 11, :q -3, :r -8, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"} {:p 12, :q -4, :r -8, :elevation 0, :terrain "", :palette "grass"} {:p 13, :q -5, :r -8, :elevation 0, :terrain "", :palette "grass"} {:p 14, :q -5, :r -9, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"} {:p 15, :q -5, :r -10, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"}]))))
+
+(t/deftest test-move-cost
+  (t/testing "Test returning a movement cost"
+    (let [moved (assoc attacker1 :path (sut/find-path attacker1 {:p 15, :q -5, :r -10, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"} board))]
+      (t/is (= (sut/move-costs moved board) [1 1 1 2 1 1 1 1 1 1 1 1 1 1])))))
+
+(t/deftest test-can-move?
+  (t/testing "Test returning a movement cost"
+    (let [moved (assoc attacker1 :path (sut/find-path attacker1 {:p 15, :q -5, :r -10, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"} board))]
+      (t/is (= (sut/can-move? moved board) 
+               {:role "Striker", 
+                :path [{:p 2, :q 0, :r -2, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}
+                       {:p 3, :q 0, :r -3, :elevation 0, :terrain "", :palette "grass"}
+                       {:p 4, :q -1, :r -3, :elevation 0, :terrain "", :palette "grass"}
+                       {:p 5, :q -1, :r -4, :elevation 0, :terrain "ground_fluff:1:1;water:1", :palette "grass"}
+                       {:p 6, :q -1, :r -5, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"}
+                       {:p 7, :q -2, :r -5, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"}
+                       {:p 8, :q -2, :r -6, :elevation 0, :terrain "ground_fluff:3:2", :palette "grass"}
+                       {:p 9, :q -3, :r -6, :elevation 0, :terrain "", :palette "grass"}
+                       {:p 10, :q -3, :r -7, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}
+                       {:p 11, :q -3, :r -8, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}
+                       {:p 12, :q -4, :r -8, :elevation 0, :terrain "", :palette "grass"}
+                       {:p 13, :q -5, :r -8, :elevation 0, :terrain "", :palette "grass"}
+                       {:p 14, :q -5, :r -9, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"}
+                       {:p 15, :q -5, :r -10, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"}], 
+                :tmm 2, :q 1, :left-arc "", :e* false, :movement {:walk 6}, 
+                :r -2, :right-arc "", :force :1stsomersetstrikers, 
+                :pilot {:name " Lieutenant Ciro Ramirez", :skill 4},
+                :mul-id 3563, :l* false, :m 3, :type "BM", :front-arc "", 
+                :current-structure 3, :abilities "ENE, REAR1/1/-", :acted nil, 
+                :e 0, :s 3, :threshold -1, :l 1, :size 1, :m* false, 
+                :rear-arc "", :point-value 28, :overheat 0, :chassis "Wolfhound", 
+                :structure 3, :crits [], :id "Wolfhound WLF-2", 
+                :full-name "Wolfhound WLF-2", :armor 4, :current-heat 0, 
+                :current-armor 4, :s* false, :p 1, :movement-mode :walk, 
+                :direction :s, :model "WLF-2"})))))
+
 (t/deftest test-get-units
   (t/testing "Get units for scenarios."
     (t/is (= (sut/get-unit "Sloth Battle Armor (Standard)") 1))
@@ -148,14 +198,18 @@
     (t/is (= (sut/calculate-target-mod {:movement-mode :stand-still :role "Missile Boat", :tmm 1, :e* false, :movement {}, :mul-id 73, :l* false, :m 2, :type "BM", :abilities "IF2", :e 0, :s 2, :threshold -1, :l 2, :size 3, :m* false, :point-value 34, :overheat 2, :chassis "Archer", :structure 6, :full-name "Archer ARC-2K", :armor 6, :s* false, :model "ARC-2K"}) 0))
     (t/is (= (sut/calculate-target-mod {:movement-mode :immobile :role "None", :tmm 4, :e* false, :movement {}, :mul-id 3684, :l* false, :m 0, :type "SV", :abilities "BAR, EE, ENE", :e 0, :s 0, :threshold -1, :l 0, :size 2, :m* false, :point-value 6, :overheat 0, :chassis "Air Car", :structure 2, :full-name "Air Car ", :armor 1, :s* false, :model ""}) -4))
     (t/is (= (sut/calculate-target-mod {:movement-mode :walk :role "Missile Boat", :tmm 1, :e* false, :movement {}, :mul-id 73, :l* false, :m 2, :type "BM", :abilities "IF2", :e 0, :s 2, :threshold -1, :l 2, :size 3, :m* false, :point-value 34, :overheat 2, :chassis "Archer", :structure 6, :full-name "Archer ARC-2K", :armor 6, :s* false, :model "ARC-2K"}) 1))
-    (t/is (= (sut/calculate-target-mod {:movement-mode :walk :role "None", :tmm 4, :e* false, :movement {}, :mul-id 3684, :l* false, :m 0, :type "SV", :abilities "BAR, EE, ENE", :e 0, :s 0, :threshold -1, :l 0, :size 2, :m* false, :point-value 6, :overheat 0, :chassis "Air Car", :structure 2, :full-name "Air Car ", :armor 1, :s* false, :model ""}) 4))
-    ))
+    (t/is (= (sut/calculate-target-mod {:movement-mode :walk :role "None", :tmm 4, :e* false, :movement {}, :mul-id 3684, :l* false, :m 0, :type "SV", :abilities "BAR, EE, ENE", :e 0, :s 0, :threshold -1, :l 0, :size 2, :m* false, :point-value 6, :overheat 0, :chassis "Air Car", :structure 2, :full-name "Air Car ", :armor 1, :s* false, :model ""}) 4))))
 
 (t/deftest test-other-mod
-  (t/testing "Test terrain.")
-  (t/testing "Test heat.")
-  (t/testing "Test blocked LOS.")
-  (t/testing "Test terrain."))
+  (t/testing "Test terrain."
+    (t/is (= (sut/calculate-other-mod attacker1 target1 board) 0))
+    (t/is (= (sut/calculate-other-mod wooded-unit target1 board) 0))
+    (t/is (= (sut/calculate-other-mod target1 wooded-unit board) 1)))
+  (t/testing "Test heat."
+    (t/is (= (sut/calculate-other-mod heated-attacker target1 board) 1))
+    (t/is (= (sut/calculate-other-mod heated-attacker wooded-unit board) 2)))
+  (t/testing "Test blocked LOS."
+    (t/is (= (sut/calculate-other-mod blinded-attacker blinded-target board) ##Inf))))
 
 (t/deftest test-calculate-range-mod
   (t/testing "Test short range."
@@ -174,12 +228,9 @@
     (t/is (= (sut/calculate-range-mod {:id "Unit 1" :p 0 :q 0 :r 0}
                                       {:id "Unit 2" :p 35 :q 0 :r -35}) ##Inf))))
 
-;; (t/deftest test-calculate-to-hit
-;;   (t/testing "Test searching for a valid sprite."
-;;     (t/is (= (sut/calculate-to-hit {:id "Unit 1" :p 0 :q 0 :r 0 :pilot {:skill 4}
-;;                                        :movement-mode :walk :tmm 2}
-;;                                       {:id "Unit 2" :p 2 :q 0 :r -2 :pilot {:skill 4}
-;;                                        :movement-mode :walk :tmm 2}) 6))))
+(t/deftest test-calculate-to-hit
+  (t/testing "Test searching for a valid sprite."
+    (t/is (= (sut/calculate-to-hit attacker1 target1 board) 6))))
 
 (t/deftest test-calculate-damage
   (t/testing "Test damage without a *."
@@ -199,8 +250,17 @@
 
 (t/deftest test-take-damage
   (t/testing "Test armor only damage."
-    (t/is (= (sut/take-damage {:id "Unit 1" :armor 4 :current-armor 4 :structure 3 :current-structure 3} 2)
-             {:id "Unit 1" :armor 4 :current-armor 2 :structure 3 :current-structure 3}))))
+    (t/is (= (sut/take-damage attacker1 2)
+             (assoc attacker1 :current-armor 2)))
+    (t/is (= (sut/take-damage attacker1 3)
+             (assoc attacker1 :current-armor 1)))
+    (t/is (= (sut/take-damage attacker1 0)
+             (assoc attacker1 :current-armor 4)))
+    (t/is (= (sut/take-damage attacker1 4)
+             (assoc attacker1 :current-armor 0 :current-structure 3))))
+  (t/testing "Test penetration."
+    (t/is (= (sut/take-damage attacker1 5)
+             (assoc attacker1 :current-armor 0 :current-structure 2)))))
 
 ;; (t/deftest test-make-attack
 ;;   (t/testing "Test searching for a valid sprite."
