@@ -1,12 +1,17 @@
 (ns megastrike.gui.events
   (:require [cljfx.api :as fx]
             [clojure.java.io :as io]
+            [clojure.pprint :as pprint]
+            [megastrike.combat-unit :as cu]
             [megastrike.gui.subs :as subs]
             [megastrike.phases :as initiative]
-            [megastrike.utils :as utils]
-            [megastrike.combat-unit :as cu])
-  (:import [javafx.application Platform] 
-           [javafx.scene.control DialogEvent Dialog ButtonBar$ButtonData ButtonType]
+            [megastrike.utils :as utils])
+  (:import [javafx.application Platform]
+           [javafx.scene.control
+            ButtonBar$ButtonData
+            ButtonType
+            Dialog
+            DialogEvent]
            [javafx.scene.input KeyCode KeyEvent]))
 
 (defmulti event-handler :event-type)
@@ -87,6 +92,7 @@
         active (subs/active-id context)
         unit (subs/active-unit context)]
     (when (:q unit)
+    ;; Add reporting
       {:context (fx/swap-context context assoc 
                                 :turn-order (rest turn-order)
                                 :units (assoc units active (merge unit {:acted true}))
@@ -121,6 +127,7 @@
         upd (when (and (= (first turn-order) (:force unit)) (= active (:id unit)))
               (cu/can-move? unit (subs/board context)))]
     (when (:acted upd)
+    ;; Add Reporting
       {:context (fx/swap-context context assoc 
                                  :turn-order (rest turn-order) 
                                  :units (assoc units active upd) 
@@ -140,6 +147,7 @@
         (let [attacker (first attackers)
               target (get units (:target attacker))
               upd (cu/make-attack attacker target nodes)]
+              ;; Add reporting
           (recur (assoc units (:id target) upd)
                  (rest attackers)))))))
 
@@ -176,3 +184,6 @@
 (defmethod event-handler ::turn-button-clicked
   [{:keys [fx/context ]}] 
   {:context (fx/swap-context context assoc :turn-flag true)})
+
+(defmethod event-handler ::no-op 
+  [_])
