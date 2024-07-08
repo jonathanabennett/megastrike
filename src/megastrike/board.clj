@@ -1,6 +1,7 @@
 (ns megastrike.board
   (:require [clojure.data.priority-map :as priority-map]
             [clojure.java.io :as io]
+            [clojure.pprint :as pprint]
             [clojure.string :as str]
             [megastrike.hexagons.hex :as hex]
             [megastrike.utils :refer [strip-quotes]]))
@@ -44,6 +45,29 @@
 ;; :tiles - The vector of tiles that make up the board (or a function that returns the tiles from the mapsheets)
 ;; :mapsheets - a 2D vector of all the mapsheets
 ;; (def board {:tiles (flatten (map #(:tiles %) (:mapsheets board)) :mapsheets [[mapsheet-0-0 mapsheet-1-0] [mapsheet-0-1 mapsheet-1-1]])})
+
+(defn shift-hex 
+  "Shift a hex to a new position. This basically replaces the p,q,r address info with the new address and preserves the rest."
+  [x y hex] 
+  (create-tile (hex/hex-from-offset x y) (:elevation hex) (:terrain hex) (:palette hex)))
+
+(defn rotate-mapsheet
+  [mapsheet]
+  (let [reflected (for [x (range 1 (inc (:width mapsheet)))
+                        y (range 1 (inc (:height mapsheet)))]
+                    [(inc (- (:width mapsheet) x)) (inc (- (:height mapsheet) y))])
+        tiles (for [n (range (count reflected))]
+                (shift-hex (first (nth reflected n)) (second (nth reflected n)) (nth (:tiles mapsheet) n)))
+        ]
+        (pprint/pprint (:tiles mapsheet))
+        (pprint/pprint tiles)
+    (assoc mapsheet :tiles tiles)))
+
+(defn shift-mapsheet
+  [mapsheet x y]
+  (assoc mapsheet :tiles (map #(shift-hex (+ x (:x (hex/offset-from-hex %)))
+                                          (+ y (:y (hex/offset-from-hex %)))
+                                          %) (:tiles mapsheet))))
 
 (defn create-mapsheet 
   ([filename x-offset y-offset]
