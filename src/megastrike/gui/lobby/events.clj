@@ -2,7 +2,6 @@
   (:require [cljfx.api :as fx]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
-            [clojure.pprint :as pprint]
             [clojure.string :as str]
             [megastrike.board :as board]
             [megastrike.combat-unit :as cu]
@@ -62,7 +61,6 @@
                                                    :turn-number (subs/turn-number context)
                                                    :forces (subs/forces context) 
                                                    :units (subs/units context)})]
-    (prn (:round-report response))
     {:context (fx/swap-context context merge 
                                {:game-board (if (empty? (subs/board context)) 
                                               (board/create-board map-boards width height) 
@@ -72,7 +70,7 @@
 
 (defmethod e/event-handler ::load-save
   [{:keys [fx/context]}]
-   (let [save-data (edn/read-string (slurp (utils/load-resource :resources "save.edn")))]
+   (let [save-data (edn/read-string (slurp (utils/load-resource :data "save.edn")))]
      {:context (fx/swap-context context merge save-data)}))
 
 (defmethod e/event-handler ::add-force
