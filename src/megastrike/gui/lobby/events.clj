@@ -2,6 +2,7 @@
   (:require [cljfx.api :as fx]
             [clojure.edn :as edn]
             [clojure.java.io :as io]
+            [clojure.pprint :as pprint]
             [clojure.string :as str]
             [megastrike.board :as board]
             [megastrike.combat-unit :as cu]
@@ -32,7 +33,7 @@
                   (.setInitialDirectory (io/file "data/scenarios")))]
     (when-let [s (.showOpenDialog chooser window)] 
       (let [scenario (select-keys (scenario/setup-scenario s) [:units :forces :map-boards :map-width :map-height])]
-        {:context (fx/swap-context context merge scenario)}))))
+        {:context (fx/swap-context context merge {:units nil :forces nil :map-boards nil :map-width "1" :map-height "1"} scenario)}))))
 
 (defmethod e/event-handler ::load-mapboard
   [{:keys [^ActionEvent fx/context fx/event id]}]
@@ -56,15 +57,18 @@
   [{:keys [fx/context view]}]
   (let [ width (fx/sub-val context :width)
         height (fx/sub-val context :height)
-        map-boards (fx/sub-val context :map-boards)]
-    {:context (fx/swap-context context merge {:game-board (if (empty? (subs/board context))
-                                                            (board/create-board map-boards width height)
-                                                            (subs/board context))
-                                              :display view}
-                               (phases/next-phase {:current-phase (subs/phase context)
+        map-boards (fx/sub-val context :map-boards)
+        response (phases/next-phase {:current-phase (subs/phase context)
                                                    :turn-number (subs/turn-number context)
                                                    :forces (subs/forces context) 
-                                                   :units (subs/units context)}))}))
+                                                   :units (subs/units context)})]
+    (prn (:round-report response))
+    {:context (fx/swap-context context merge 
+                               {:game-board (if (empty? (subs/board context)) 
+                                              (board/create-board map-boards width height) 
+                                              (subs/board context)) 
+                                :display view}
+                               response)}))
 
 (defmethod e/event-handler ::load-save
   [{:keys [fx/context]}]

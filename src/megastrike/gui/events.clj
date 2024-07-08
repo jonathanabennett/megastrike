@@ -1,12 +1,12 @@
 (ns megastrike.gui.events
   (:require [cljfx.api :as fx]
             [clojure.java.io :as io]
-            [clojure.pprint :as pprint]
             [megastrike.gui.subs :as subs]
             [megastrike.phases :as initiative]
             [megastrike.utils :as utils]
             [megastrike.combat-unit :as cu])
   (:import [javafx.application Platform] 
+           [javafx.scene.control DialogEvent Dialog ButtonBar$ButtonData ButtonType]
            [javafx.scene.input KeyCode KeyEvent]))
 
 (defmulti event-handler :event-type)
@@ -57,17 +57,28 @@
                                 :turn-order turn-order 
                                 :current-phase :deployment})}))
 
+(defmethod event-handler ::show-round-report 
+  [{:keys [fx/context state-id]}]
+  {:context (fx/swap-context context assoc-in [:internal state-id :showing] true)})
+
+(defmethod event-handler ::hide-round-report 
+  [{:keys [fx/context ^DialogEvent fx/event state-id on-confirmed]}] 
+  (condp = (.getButtonData ^ButtonType (.getResult ^Dialog (.getSource event))) 
+    ButtonBar$ButtonData/OK_DONE 
+    {:context (fx/swap-context context assoc-in [:internal state-id :showing] false) 
+     :dispatch on-confirmed}))
+
 (defmethod event-handler ::next-phase 
   [{:keys [fx/context]}]
   (let [phase (subs/phase context)
         turn-number (subs/turn-number context)
         forces (subs/forces context)
-        units (subs/units context)]
-    {:context (fx/swap-context context merge 
-                               (initiative/next-phase {:current-phase phase 
-                                                       :turn-number turn-number
-                                                       :forces forces
-                                                       :units units}))}))
+        units (subs/units context)
+        response (initiative/next-phase {:current-phase phase
+                                         :turn-number turn-number
+                                         :forces forces
+                                         :units units})]
+    {:context (fx/swap-context context merge response)}))
 
 (defmethod event-handler ::deploy-unit 
   [{:keys [fx/context]}]

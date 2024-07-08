@@ -4,7 +4,24 @@
             [megastrike.gui.forces.views :as force]
             [megastrike.gui.lobby.views :as lobby]
             [megastrike.gui.subs :as subs]
-            [clojure.string :as str]))
+            [clojure.string :as str]
+            [cljfx.api :as fx]))
+
+(defn next-phase-button
+  [{:keys [fx/context state-id on-confirmed button dialog-pane]}]
+  {:fx/type fx/ext-let-refs 
+   :refs {::dialog {:fx/type :dialog 
+                    :showing (fx/sub-val context get-in [:internal state-id :showing] false)
+                    :on-hidden {:event-type ::events/hide-round-report
+                                :state-id state-id
+                                :on-confirmed on-confirmed}
+                    :dialog-pane (merge {:fx/type :dialog-pane
+                                         :button-types [:ok]}
+                                        dialog-pane)}}
+   :desc (merge {:fx/type :button
+                 :on-action {:event-type ::events/show-round-report
+                             :state-id state-id}}
+                button)})
 
 (defn deploy-buttons [finished-deployment]
      [{:fx/type :button
@@ -65,11 +82,11 @@
         turn (subs/turn-number context)
         turn-order (subs/turn-order context) 
         unit (subs/active-unit context)
-        common-buttons [{:fx/type :button
-                         :text "Next Phase"
-                         :disable #_{:clj-kondo/ignore [:not-empty?]}
-                                  (not (empty? turn-order)) ;; DO NOT CHANGE. Regardless of idiom, cljfx does not like (seq turn-order)
-                         :on-action {:event-type ::events/next-phase :fx/sync true}}
+        common-buttons [{:fx/type next-phase-button
+                         :state-id ::next-phase-button
+                         :button {:text "Next Phase"}
+                         :dialog-pane {:content-text (fx/sub-val context :round-report)}
+                         :on-confirmed {:event-type ::events/next-phase}}
                         {:fx/type :separator
                          :orientation :vertical 
                          :padding 15}

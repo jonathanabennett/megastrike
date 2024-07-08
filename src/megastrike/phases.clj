@@ -43,13 +43,14 @@
 (defn start-initiative-phase 
   "Reroll the initiative, increment the turn number, save the new forces (with their initiative), but do not generate a turn order."
   [{:keys [turn-number forces units]}]
-  (let [forces (roll-initiative forces)]
-    {:current-phase :initiative :turn-number (inc turn-number) :forces forces :turn-order nil :units units}))
+  (let [forces (roll-initiative forces)
+        round-report (reduce str (map #(str (:name %) " rolled a " (:initiative %) "\n") (vals forces)))]
+    {:current-phase :initiative :turn-number (inc turn-number) :forces forces :turn-order nil :units units :round-report round-report}))
 
 (defn start-deployment-phase 
   "Generates the turn order based on the number of units who haven't been deployed yet."
   [{:keys [forces units]}] 
-  (let [deployable-units (remove (fn [unit] (number? (:q unit))) (vals units))]
+  (let [deployable-units (remove (fn [unit] (number? (:q unit))) (vals units))] 
     {:current-phase :deployment :turn-order (generate-turn-order forces deployable-units) :units units}))
 
 (defn start-movement-phase 
