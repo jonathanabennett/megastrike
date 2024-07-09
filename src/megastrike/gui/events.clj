@@ -62,11 +62,11 @@
                                 :turn-order turn-order 
                                 :current-phase :deployment})}))
 
-(defmethod event-handler ::show-round-report 
+(defmethod event-handler ::show-popup
   [{:keys [fx/context state-id]}]
   {:context (fx/swap-context context assoc-in [:internal state-id :showing] true)})
 
-(defmethod event-handler ::hide-round-report 
+(defmethod event-handler ::hide-popup
   [{:keys [fx/context ^DialogEvent fx/event state-id on-confirmed]}] 
   (condp = (.getButtonData ^ButtonType (.getResult ^Dialog (.getSource event))) 
     ButtonBar$ButtonData/OK_DONE 
@@ -74,7 +74,7 @@
      :dispatch on-confirmed}))
 
 (defmethod event-handler ::next-phase 
-  [{:keys [fx/context]}]
+  [{:keys [fx/context state-id]}]
   (let [phase (subs/phase context)
         turn-number (subs/turn-number context)
         forces (subs/forces context)
@@ -83,7 +83,8 @@
                                          :turn-number turn-number
                                          :forces forces
                                          :units units})]
-    {:context (fx/swap-context context merge response)}))
+    {:context (fx/swap-context context merge response)
+     :dispatch {:event-type ::show-popup :state-id state-id}}))
 
 (defmethod event-handler ::deploy-unit 
   [{:keys [fx/context]}]
@@ -92,7 +93,6 @@
         active (subs/active-id context)
         unit (subs/active-unit context)]
     (when (:q unit)
-    ;; Add reporting
       {:context (fx/swap-context context assoc 
                                 :turn-order (rest turn-order)
                                 :units (assoc units active (merge unit {:acted true}))

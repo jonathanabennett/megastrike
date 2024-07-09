@@ -1,25 +1,42 @@
 (ns megastrike.gui.views
-  (:require [megastrike.gui.board.views :as board]
+  (:require [cljfx.api :as fx]
+            [clojure.string :as str]
+            [megastrike.gui.board.views :as board]
             [megastrike.gui.events :as events]
             [megastrike.gui.forces.views :as force]
             [megastrike.gui.lobby.views :as lobby]
             [megastrike.gui.subs :as subs]
-            [clojure.string :as str]
-            [cljfx.api :as fx]))
+            [megastrike.reports :as reports]))
 
-(defn next-phase-button
-  [{:keys [fx/context state-id on-confirmed button dialog-pane]}]
+(defn attack-report-button 
+  [{:keys [fx/context state-id on-confirmed button dialog-pane]}] 
   {:fx/type fx/ext-let-refs 
    :refs {::dialog {:fx/type :dialog 
-                    :showing (fx/sub-val context get-in [:internal state-id :showing] false)
-                    :on-hidden {:event-type ::events/hide-round-report
+                    :showing (fx/sub-val context get-in [:internal state-id :showing] false) 
+                    :on-hidden {:event-type ::events/hide-popup
                                 :state-id state-id
                                 :on-confirmed on-confirmed}
                     :dialog-pane (merge {:fx/type :dialog-pane
                                          :button-types [:ok]}
                                         dialog-pane)}}
    :desc (merge {:fx/type :button
-                 :on-action {:event-type ::events/show-round-report
+                 :on-action {:event-type ::events/show-popup
+                             :state-id state-id}}
+                button)})
+
+(defn next-phase-button
+  [{:keys [fx/context state-id on-confirmed button dialog-pane]}]
+  {:fx/type fx/ext-let-refs 
+   :refs {::dialog {:fx/type :dialog 
+                    :showing (fx/sub-val context get-in [:internal state-id :showing] false)
+                    :on-hidden {:event-type ::events/hide-popup
+                                :state-id state-id
+                                :on-confirmed on-confirmed}
+                    :dialog-pane (merge {:fx/type :dialog-pane
+                                         :button-types [:ok]}
+                                        dialog-pane)}}
+   :desc (merge {:fx/type :button
+                 :on-action {:event-type ::events/next-phase
                              :state-id state-id}}
                 button)})
 
@@ -63,13 +80,18 @@
         :text "Confirm Move" 
         :on-action {:event-type ::events/confirm-move :unit unit :fx/sync true}}])))
 
-(defn attack-buttons [] 
+(defn attack-buttons [units current-force board] 
   [{:fx/type :button 
     :text "Overheat +1" 
     :on-action {:event-type ::events/overheat :value 1}} 
    {:fx/type :button 
     :text "Overheat -1"
     :on-action {:event-type ::events/overheat :value -1}} 
+   {:fx/type attack-report-button
+    :state-id ::attack-info
+    :button {:text "Review Attacks"}
+    :dialog-pane {:content-text (reports/generate-attack-info units current-force board)}
+    :on-confirmed {:event-type ::events/no-op}}
    {:fx/type :button
     :text "Clear Target"
     :on-action {:event-type ::events/clear-target}}
@@ -82,29 +104,33 @@
         turn (subs/turn-number context)
         turn-order (subs/turn-order context) 
         unit (subs/active-unit context)
+        units (subs/units context)
+        current-force (subs/current-forces context)
+        board (subs/board context)
         common-buttons [{:fx/type next-phase-button
                          :state-id ::next-phase-button
-                         :button {:text "Next Phase"}
+                         :button {:text "Next Phase"
+                                  :disable (not (empty? turn-order))}
                          :dialog-pane {:content-text (fx/sub-val context :round-report)}
-                         :on-confirmed {:event-type ::events/next-phase}}
+                         :on-confirmed {:event-type ::events/no-op}}
                         {:fx/type :separator
                          :orientation :vertical 
                          :padding 15}
                         {:fx/type :button 
                          :text "Save Game"
                          :on-action {:event-type ::events/auto-save :fx/sync true}}
-                         {:fx/type :button
-                          :text "Zoom In"
-                          :on-action {:event-type ::events/change-size :direction :plus :fx/sync true}}
-                         {:fx/type :button
-                          :text "Zoom Out"
-                          :on-action {:event-type ::events/change-size :direction :minus :fx/sync true}}
+                        {:fx/type :button
+                         :text "Zoom In"
+                         :on-action {:event-type ::events/change-size :direction :plus :fx/sync true}}
+                        {:fx/type :button
+                         :text "Zoom Out"
+                         :on-action {:event-type ::events/change-size :direction :minus :fx/sync true}}
                         {:fx/type :button :text "Exit"
                          :on-action {:event-type ::events/quit-game}}]
         phase-buttons (cond 
                         (= phase :deployment) (deploy-buttons (empty? turn-order))
                         (= phase :movement) (move-buttons unit)
-                        (= phase :combat) (attack-buttons)
+                        (= phase :combat) (attack-buttons units current-force board)
                         :else []) 
         buttons ((comp vec flatten vector) phase-buttons common-buttons)]
     {:fx/type :v-box
