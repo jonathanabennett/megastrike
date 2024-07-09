@@ -256,10 +256,11 @@
   "Checks whether or not a unit can move from its location to a destination."
   [unit board]
   (cond
-    (= (:movement-mode unit) :stand-still) (merge unit {:acted true})
+    (= (:movement-mode unit) :stand-still) (merge unit {:acted true :path []})
     (seq (:path unit)) (let [sum (reduce + (move-costs unit board))
+                             ;; Add code here to default to walk OR the default movement mode
                              unit (if (not (:movement-mode unit))
-                                    (assoc unit :movement-mode (key (first (:movement unit))))
+                                    (assoc unit :movement-mode (key (first (remove :jump (:movement unit)))))
                                     unit)
                              move (get-mv unit (:movement-mode unit))] 
                          (if (<= sum move)
@@ -293,17 +294,19 @@
                (= (:movement-mode unit) :stand-still) -1 
                (= (:movement-mode unit) :jump) 2 
                :else 0)
-        fc (* (count (filter #(= % :fire-control) (:crits unit))) 2)]
-    (+ move fc)))
+        fc (count (filter #(= % :fire-control) (:crits unit)))]
+    {:attacker (if (pos? fc) 
+                 {:desc (str "Attacker " (name (:movement-mode unit)) " and " fc " fire control hits") :val (+ move (* fc 2))} 
+                 {:desc (str "Attacker " (name (:movement-mode unit))) :val move})}))
 
 (defn calculate-target-mod
   "Calculates the mod for the to hit to an attack based on the target's condition."
   [unit]
-  (cond
-    (= (:movement-mode unit) :immobile) -4
-    (= (:movement-mode unit) :stand-still) 0
-    (= (:movement-mode unit) :jump) (+ (get-tmm unit) 1)
-    :else (get-tmm unit)))
+  {:target (cond 
+             (= (:movement-mode unit) :immobile) {:desc "Target immobile" :val -4} 
+             (= (:movement-mode unit) :stand-still) {:desc "Target standing still" :val 0} 
+             (= (:movement-mode unit) :jump) {:desc "Target jumping" :val (+ (get-tmm unit) 1)} 
+             :else {:desc "Target movement modifier" :val (get-tmm unit)})})
 
 (defn calculate-other-mod
   "Calculate 'other' modifiers to the to hit. Terrain, heat, etc."
@@ -312,40 +315,66 @@
         line (board/hex-line attacker target board)
         blocked? (height-checker (board/find-hex attacker board) (board/find-hex target board) line)
         woods-count (count (filter #(str/includes? (:terrain %) "woods") (rest line)))]
-    (if (and (not blocked?) (<= woods-count 3))
-      (if (zero? woods-count) 
-        heat 
-        (inc heat))
-      ##Inf)))
+    {:other (if (and (not blocked?) (<= woods-count 3)) 
+              (if (zero? woods-count) 
+                {:desc "Heat" :val heat} 
+                {:desc "Heat and Woods" :val (inc heat)}) 
+              {:desc "No Line of Sight" :val ##Inf})}))
 
 (defn calculate-range-mod
   "Calculates the mod to hit based on the range."
   [attacker target]
   (let [range (hexagon/hex-distance attacker target)]
-    (cond
-      (>= 3 range) 0
-      (>= 12 range) 2
-      (>= 21 range) 4
-      (>= 30 range) 6
-      :else ##Inf)))
+    {:range (cond 
+              (>= 3 range) {:desc "Range 1-3" :val 0} 
+              (>= 12 range) {:desc "Range 4-12" :val 2} 
+              (>= 21 range) {:desc "Range 13-21" :val 4} 
+              (>= 30 range) {:desc "Range 22-30" :val 6} 
+              :else {:desc "Out of range" :val ##Inf})}))
 
 (defn calculate-to-hit
   "Calculates the to hit for an attack using the SATOR method from the book."
   [attacker target board]
-  (+ (:skill (:pilot attacker))
-     (calculate-attacker-mod attacker)
-     (calculate-target-mod target)
-     (calculate-other-mod attacker target board)
-     (calculate-range-mod attacker target)))
+  (let [skill {:skill {:desc "Pilot skill" :val (get-in attacker [:pilot :skill])}}
+        atk (calculate-attacker-mod attacker)
+        tgt (calculate-target-mod target)
+        other (calculate-other-mod attacker target board)
+        range (calculate-range-mod attacker target)]
+    ;; Map doesn't work this way. I need to combine them all somehow first
+    (merge skill atk tgt other range)))
+
+(defn return-to-hit
+  [calculation]
+  (reduce + [(get-in calculation [:skill :val] 4)
+             (get-in calculation [:attacker :val] 0)
+             (get-in calculation [:target :val] 0)
+             (get-in calculation [:other :val] 0)
+             (get-in calculation [:range :val] 0)]))
+
+(defn write-to-hit
+  [calculation]
+   (reduce str [(get-in calculation [:skill :desc]) ", " 
+                (get-in calculation [:attacker :desc])  ", "
+                (get-in calculation [:target :desc])  ", "
+                (get-in calculation [:other :desc])  ", "
+                (get-in calculation [:range :desc])]))
 
 (defn calculate-damage
   "Returns the damage done by a unit at a given range. Calculates 0* damage correctly."
-  [unit range]
-  (cond
-    (>= 3 range) (if (and (:s* unit) (<= 4 (utils/roll-die))) 1 (:s unit))
-    (>= 12 range) (if (and (:m* unit) (<= 4 (utils/roll-die))) 1 (:m unit))
-    (>= 21 range) (if (and (:l* unit) (<= 4 (utils/roll-die))) 1 (:l unit))
-    (>= 30 range) (if (and (:e* unit) (<= 4 (utils/roll-die))) 1 (:e unit))))
+  ([unit range]
+   (cond
+     (>= 3 range) (if (and (:s* unit) (<= 4 (utils/roll-die))) 1 (:s unit))
+     (>= 12 range) (if (and (:m* unit) (<= 4 (utils/roll-die))) 1 (:m unit))
+     (>= 21 range) (if (and (:l* unit) (<= 4 (utils/roll-die))) 1 (:l unit))
+     (>= 30 range) (if (and (:e* unit) (<= 4 (utils/roll-die))) 1 (:e unit))
+     :else 0))
+  ([unit range prediction?]
+   (cond
+     (>= 3 range) (print-short unit)
+     (>= 12 range) (print-medium unit)
+     (>= 21 range) (print-long unit)
+     (>= 30 range) (print-extreme unit)
+     :else 0)))
 
 (defn take-weapon-hit 
   [unit]
@@ -371,7 +400,7 @@
            structure (if (zero? armor) 
                        (- (:current-structure unit (:structure unit)) penetration)
                        (:current-structure unit (:structure unit)))
-           crit (if (or tac (zero? armor)) (get criticals (utils/roll2d) nil) nil)
+           crit (if (or tac (pos? penetration)) (get criticals (utils/roll2d) nil) nil)
            upd (assoc unit :current-armor armor :current-structure structure)]
        (prn (str damage " damage done to " (:current-armor unit) " armor."))
        (when (zero? armor)
@@ -403,11 +432,11 @@
 (defn make-attack
   "Rolls a full attack. Calculating the to-hit, rolling the dice, and then applying the damage and returning the targeted unit."
   [attacker target board]
-  (let [target-num (calculate-to-hit attacker target board)
+  (let [targeting-data (calculate-to-hit attacker target board)
         range (hexagon/hex-distance attacker target)
         to-hit (utils/roll2d)] 
     (prn (str (:full-name attacker) " attacking " (:full-name target)))
-    (prn (str "To hit: " target-num ", Rolled: " to-hit))
-    (if (<= target-num to-hit)
+    (prn (str "To hit: " (return-to-hit targeting-data) ", Rolled: " to-hit))
+    (if (<= (return-to-hit targeting-data) to-hit)
       (take-damage target (calculate-damage attacker range) (= to-hit 12))
       target)))
