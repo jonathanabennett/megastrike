@@ -43,24 +43,34 @@
 (defn start-initiative-phase 
   "Reroll the initiative, increment the turn number, save the new forces (with their initiative), but do not generate a turn order."
   [{:keys [turn-number forces units]}]
-  (let [forces (roll-initiative forces)]
-    {:current-phase :initiative :turn-number (inc turn-number) :forces forces :turn-order nil :units units}))
+  (let [forces (roll-initiative forces)
+        initiative-report (reduce str (map #(str (:name %) " rolled a " (:initiative %) "\n") (vals forces)))
+        turn-string (str "Turn: " (inc turn-number))
+        move-list (str "Turn Order: " (reduce str (map #(str % ", ") (generate-turn-order forces (vals units)))))
+        round-report (str turn-string "\n" initiative-report move-list "\n")]
+    {:current-phase :initiative :turn-number (inc turn-number) :forces forces :turn-order nil :units units :round-report round-report}))
 
 (defn start-deployment-phase 
   "Generates the turn order based on the number of units who haven't been deployed yet."
-  [{:keys [forces units]}] 
-  (let [deployable-units (remove (fn [unit] (number? (:q unit))) (vals units))]
-    {:current-phase :deployment :turn-order (generate-turn-order forces deployable-units) :units units}))
+  [{:keys [forces units round-report]}] 
+  (let [deployable-units (remove (fn [unit] (number? (:q unit))) (vals units)) 
+        turn-order (generate-turn-order forces deployable-units)
+        round-string (str "Deployment Phase\n" "Deployment order: " (reduce str (map #(str % ", ") turn-order)) "\n")] 
+    {:current-phase :deployment :turn-order turn-order :units units :round-report (str round-report round-string)}))
 
 (defn start-movement-phase 
   "Regenerates the turn order. Nothing else special is required."
-  [{:keys [forces units]}]
-  {:current-phase :movement :turn-order (generate-turn-order forces (vals units)) :units units})
+  [{:keys [forces units round-report]}]
+  (let [turn-order (generate-turn-order forces (vals units))
+        round-string (str "Movement Phase \n" "Movement Order: " (reduce str (map #(str % ", ") turn-order)) "\n")]
+    {:current-phase :movement :turn-order turn-order :units units :round-report (str round-report round-string)}))
 
 (defn start-combat-phase 
   "Simply regenerate the turn order, but with each force only in the turn order once."
-  [{:keys [forces units]}]
-  {:current-phase :combat :turn-order (generate-turn-order forces) :units units})
+  [{:keys [forces units round-report]}]
+  (let [turn-order (generate-turn-order forces)
+        round-string (str "Combat Phase \n" "Attack Order: " (reduce str (map #(str % ", ") turn-order)) "\n")]
+    {:current-phase :combat :turn-order turn-order :units units :round-report (str round-report round-string)}))
 
 (defn start-end-phase 
   "Remove all targeting as part of the end phase process."
@@ -73,19 +83,18 @@
                                                              [k (assoc unit :current-heat 0)]
                                                              [k unit])))
         targeting-removed (into {} (for [[k unit] heat-removed] (if (not-any? #(= (:target unit) %) (keys units)) [k (assoc unit :target nil)]
-                                                             [k unit])))
-]
+                                                             [k unit])))]
     {:current-phase :end :turn-order nil :units targeting-removed}))
 
 (defn next-phase 
   "Removes destroyed units and resets the acted status on every unit, then dispatches to the correct phase method."
-  [{:keys [current-phase turn-number forces units]}]
+  [{:keys [current-phase turn-number forces units round-report]}]
   (let [remaining (into {} (for [[k unit] units] (when (or (pos? (get unit :current-structure (get unit :structure))) (not (:destroyed? unit))) [k unit])))
         new-units (into {} (for [[k unit] remaining] [k (assoc unit :acted nil)]))]
     (cond 
-     (= current-phase :initiative) (start-deployment-phase {:forces forces :units new-units})
-     (= current-phase :deployment) (start-movement-phase {:forces forces :units new-units})
-     (= current-phase :movement)   (start-combat-phase {:forces forces :units new-units})
-     (= current-phase :combat)     (start-end-phase {:units new-units})
-     (= current-phase :end)        (start-initiative-phase {:forces forces :turn-number turn-number :units new-units})
-     :else (start-initiative-phase {:forces forces :turn-number turn-number :units new-units}))))
+     (= current-phase :initiative) (start-deployment-phase {:forces forces :units new-units :round-report round-report})
+     (= current-phase :deployment) (start-movement-phase {:forces forces :units new-units :round-report round-report})
+     (= current-phase :movement)   (start-combat-phase {:forces forces :units new-units :round-report round-report})
+     (= current-phase :combat)     (start-end-phase {:units new-units :round-report round-report})
+     (= current-phase :end)        (start-initiative-phase {:forces forces :turn-number turn-number :units new-units :round-report round-report})
+     :else (start-initiative-phase {:forces forces :turn-number turn-number :units new-units :round-report round-report}))))

@@ -2,11 +2,16 @@
   (:require [cljfx.api :as fx]
             [clojure.java.io :as io]
             [clojure.pprint :as pprint]
+            [megastrike.combat-unit :as cu]
             [megastrike.gui.subs :as subs]
             [megastrike.phases :as initiative]
-            [megastrike.utils :as utils]
-            [megastrike.combat-unit :as cu])
-  (:import [javafx.application Platform] 
+            [megastrike.utils :as utils])
+  (:import [javafx.application Platform]
+           [javafx.scene.control
+            ButtonBar$ButtonData
+            ButtonType
+            Dialog
+            DialogEvent]
            [javafx.scene.input KeyCode KeyEvent]))
 
 (defmulti event-handler :event-type)
@@ -57,17 +62,29 @@
                                 :turn-order turn-order 
                                 :current-phase :deployment})}))
 
+(defmethod event-handler ::show-popup
+  [{:keys [fx/context state-id]}]
+  {:context (fx/swap-context context assoc-in [:internal state-id :showing] true)})
+
+(defmethod event-handler ::hide-popup
+  [{:keys [fx/context ^DialogEvent fx/event state-id on-confirmed]}] 
+  (condp = (.getButtonData ^ButtonType (.getResult ^Dialog (.getSource event))) 
+    ButtonBar$ButtonData/OK_DONE 
+    {:context (fx/swap-context context assoc-in [:internal state-id :showing] false) 
+     :dispatch on-confirmed}))
+
 (defmethod event-handler ::next-phase 
-  [{:keys [fx/context]}]
+  [{:keys [fx/context state-id]}]
   (let [phase (subs/phase context)
         turn-number (subs/turn-number context)
         forces (subs/forces context)
-        units (subs/units context)]
-    {:context (fx/swap-context context merge 
-                               (initiative/next-phase {:current-phase phase 
-                                                       :turn-number turn-number
-                                                       :forces forces
-                                                       :units units}))}))
+        units (subs/units context)
+        response (initiative/next-phase {:current-phase phase
+                                         :turn-number turn-number
+                                         :forces forces
+                                         :units units})]
+    {:context (fx/swap-context context merge response)
+     :dispatch {:event-type ::show-popup :state-id state-id}}))
 
 (defmethod event-handler ::deploy-unit 
   [{:keys [fx/context]}]
@@ -110,6 +127,7 @@
         upd (when (and (= (first turn-order) (:force unit)) (= active (:id unit)))
               (cu/can-move? unit (subs/board context)))]
     (when (:acted upd)
+    ;; Add Reporting
       {:context (fx/swap-context context assoc 
                                  :turn-order (rest turn-order) 
                                  :units (assoc units active upd) 
@@ -129,6 +147,7 @@
         (let [attacker (first attackers)
               target (get units (:target attacker))
               upd (cu/make-attack attacker target nodes)]
+              ;; Add reporting
           (recur (assoc units (:id target) upd)
                  (rest attackers)))))))
 
@@ -165,3 +184,6 @@
 (defmethod event-handler ::turn-button-clicked
   [{:keys [fx/context ]}] 
   {:context (fx/swap-context context assoc :turn-flag true)})
+
+(defmethod event-handler ::no-op 
+  [_])

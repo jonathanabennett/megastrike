@@ -24,10 +24,12 @@
      :forces {}
      :units {}
      :ghosts []
+     :internal {}
      :active-mul nil
      :active-force nil
      :active-unit nil
      :map-boards []
+     :round-report []
      :game-board []
      :layout (hex/create-layout)
      :map-width "1"
