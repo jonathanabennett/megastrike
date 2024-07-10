@@ -47,7 +47,7 @@
         initiative-report (reduce str (map #(str (:name %) " rolled a " (:initiative %) "\n") (vals forces)))
         turn-string (str "Turn: " (inc turn-number))
         move-list (str "Turn Order: " (reduce str (map #(str % ", ") (generate-turn-order forces (vals units)))))
-        round-report (str turn-string "\n" initiative-report move-list "\n")]
+        round-report (str turn-string "\n" initiative-report move-list "\n\n----------\n")]
     {:current-phase :initiative :turn-number (inc turn-number) :forces forces :turn-order nil :units units :round-report round-report}))
 
 (defn start-deployment-phase 
@@ -55,22 +55,25 @@
   [{:keys [forces units round-report]}] 
   (let [deployable-units (remove (fn [unit] (number? (:q unit))) (vals units)) 
         turn-order (generate-turn-order forces deployable-units)
-        round-string (str "Deployment Phase\n" "Deployment order: " (reduce str (map #(str % ", ") turn-order)) "\n")] 
-    {:current-phase :deployment :turn-order turn-order :units units :round-report (str round-report round-string)}))
+        round-string (str "Deployment Phase\n" "Deployment order: " (reduce str (map #(str % ", ") turn-order)) "\n\n----------\n")
+        report (str round-report round-string)] 
+    {:current-phase :deployment :turn-order turn-order :units units :round-report report}))
 
 (defn start-movement-phase 
   "Regenerates the turn order. Nothing else special is required."
   [{:keys [forces units round-report]}]
   (let [turn-order (generate-turn-order forces (vals units))
-        round-string (str "Movement Phase \n" "Movement Order: " (reduce str (map #(str % ", ") turn-order)) "\n")]
-    {:current-phase :movement :turn-order turn-order :units units :round-report (str round-report round-string)}))
+        round-string (str "Movement Phase \n" "Movement Order: " (reduce str (map #(str % ", ") turn-order)) "\n\n----------\n")
+        report (str round-report round-string)] 
+    {:current-phase :movement :turn-order turn-order :units units :round-report report}))
 
 (defn start-combat-phase 
   "Simply regenerate the turn order, but with each force only in the turn order once."
   [{:keys [forces units round-report]}]
   (let [turn-order (generate-turn-order forces)
-        round-string (str "Combat Phase \n" "Attack Order: " (reduce str (map #(str % ", ") turn-order)) "\n")]
-    {:current-phase :combat :turn-order turn-order :units units :round-report (str round-report round-string)}))
+        round-string (str "Combat Phase \n" "Attack Order: " (reduce str (map #(str % ", ") turn-order)) "\n\n----------\n")
+        report (str round-report round-string)]
+    {:current-phase :combat :turn-order turn-order :units units :round-report report}))
 
 (defn start-end-phase 
   "Remove all targeting as part of the end phase process."

@@ -82,7 +82,8 @@
         response (initiative/next-phase {:current-phase phase
                                          :turn-number turn-number
                                          :forces forces
-                                         :units units})]
+                                         :units units
+                                         :round-report (fx/sub-val context :round-report)})]
     {:context (fx/swap-context context merge response)
      :dispatch {:event-type ::show-popup :state-id state-id}}))
 
