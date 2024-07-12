@@ -124,6 +124,7 @@
             :e (Integer/parseInt (:e mul-row))
             :e* (if (= "TRUE" (:e* mul-row)) true false)
             :overheat (Integer/parseInt (:overheat mul-row))
+            :abilities (:abilities mul-row)
             :point-value (Integer/parseInt (:point-value mul-row))))))
 
 (def mul (map parse-row (rest (csv/parse-csv (slurp (utils/load-resource :resources "mul.csv")) :delimiter \tab))))
@@ -297,7 +298,7 @@
         fc (count (filter #(= % :fire-control) (:crits unit)))]
     {:attacker (if (pos? fc) 
                  {:desc (str "Attacker " (name (:movement-mode unit)) " and " fc " fire control hits") :val (+ move (* fc 2))} 
-                 {:desc (str "Attacker " (name (:movement-mode unit))) :val move})}))
+                 {:desc (str "Attacker " (name (:movement-mode unit :none))) :val move})}))
 
 (defn calculate-target-mod
   "Calculates the mod for the to hit to an attack based on the target's condition."
@@ -359,22 +360,26 @@
                 (get-in calculation [:other :desc])  ", "
                 (get-in calculation [:range :desc])]))
 
+(defn print-damage
+  [unit range physical]
+  (cond 
+     (and (= range 1) physical) (+ (:size unit) (if (str/includes? (:abilities unit) "MEL") 1 0))
+     (>= 3 range) (print-short unit)
+     (>= 12 range) (print-medium unit)
+     (>= 21 range) (print-long unit)
+     (>= 30 range) (print-extreme unit)
+     :else 0))
+
 (defn calculate-damage
   "Returns the damage done by a unit at a given range. Calculates 0* damage correctly."
-  ([unit range]
-   (cond
+  [unit range]
+   (cond 
+     (and (= range 1) (= (:attack-type unit) :physical)) (+ (:size unit) (if (str/includes? (:abilities unit) "MEL") 1 0))
      (>= 3 range) (if (and (:s* unit) (<= 4 (utils/roll-die))) 1 (:s unit))
      (>= 12 range) (if (and (:m* unit) (<= 4 (utils/roll-die))) 1 (:m unit))
      (>= 21 range) (if (and (:l* unit) (<= 4 (utils/roll-die))) 1 (:l unit))
      (>= 30 range) (if (and (:e* unit) (<= 4 (utils/roll-die))) 1 (:e unit))
      :else 0))
-  ([unit range prediction?]
-   (cond
-     (>= 3 range) (print-short unit)
-     (>= 12 range) (print-medium unit)
-     (>= 21 range) (print-long unit)
-     (>= 30 range) (print-extreme unit)
-     :else 0)))
 
 (defn take-weapon-hit 
   [unit]
@@ -406,11 +411,13 @@
        (when (zero? armor)
          (prn (str penetration " damage penetrated.")))
        (when (or tac (zero? armor))
-         (prn (str "Rolled " crit " on critical hit table.")))
+         (prn (str "Rolled " crit " on critical hit table."))) 
+       (when (not (pos? (:current-structure unit (:structure unit))))
+         (assoc unit :destroyed? true))
        (cond
-         (= crit :ammo) (let [case (some #(= % :case) (:abilities unit)) 
-                              case2 (some #(= % :caseii) (:abilities unit)) 
-                              ene (some #(= % :ene) (:abilities unit))] 
+         (= crit :ammo) (let [case (str/includes? (:abilities unit) "CASE") 
+                              case2 (str/includes? (:abilities unit) "CASEII") 
+                              ene (str/includes? (:abilities unit) "ENE")] 
                           (cond (or case2 ene) upd 
                                 case (take-damage upd 1) 
                                 :else (assoc upd :destroyed? true :crits (conj (:crits upd) :ammo))))
