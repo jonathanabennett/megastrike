@@ -110,7 +110,8 @@
         common-buttons [{:fx/type next-phase-button
                          :state-id ::next-phase-button
                          :button {:text "Next Phase"
-                                  :disable (not (empty? turn-order))}
+                                  :disable #_{:clj-kondo/ignore [:not-empty?]}
+                                           (not (empty? turn-order))}
                          :dialog-pane {:content-text (fx/sub-val context :round-report)}
                          :on-confirmed {:event-type ::events/no-op}}
                         {:fx/type :separator

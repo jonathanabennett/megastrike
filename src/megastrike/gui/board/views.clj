@@ -3,13 +3,12 @@
             [clojure.string :as str]
             [megastrike.board :as board]
             [megastrike.combat-unit :as cu]
-            [megastrike.reports :as reports]
             [megastrike.gui.board.events :as board-events]
             [megastrike.gui.common :as common]
             [megastrike.gui.events :as events]
             [megastrike.gui.subs :as subs]
             [megastrike.hexagons.hex :as hex])
-  (:import [javafx.scene.control Dialog ChoiceDialog DialogEvent]))
+  (:import [javafx.scene.control Dialog DialogEvent]))
 
 (defn draw-hex [{:keys [hex layout]}]
   (let [points (hex/hex-points hex layout)
@@ -51,9 +50,7 @@
                  :translate-y (* 10 (:scale layout))}]}))
 
 (defn draw-unit [{:keys [fx/context unit layout]}]
-  (let [active-unit (subs/active-unit context)
-        board (subs/board context)
-        hex (hex/hex-points unit layout)
+  (let [hex (hex/hex-points unit layout)
         forces (subs/forces context)
         force (forces (unit :force))] 
     {:fx/type fx/ext-let-refs
