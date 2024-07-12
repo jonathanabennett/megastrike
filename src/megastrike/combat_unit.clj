@@ -298,7 +298,7 @@
         fc (count (filter #(= % :fire-control) (:crits unit)))]
     {:attacker (if (pos? fc) 
                  {:desc (str "Attacker " (name (:movement-mode unit)) " and " fc " fire control hits") :val (+ move (* fc 2))} 
-                 {:desc (str "Attacker " (name (:movement-mode unit :none))) :val move})}))
+                 {:desc (str "Attacker " (name (get unit :movement-mode :none))) :val move})}))
 
 (defn calculate-target-mod
   "Calculates the mod for the to hit to an attack based on the target's condition."
@@ -374,7 +374,7 @@
   "Returns the damage done by a unit at a given range. Calculates 0* damage correctly."
   [unit range]
    (cond 
-     (and (= range 1) (= (:attack-type unit) :physical)) (+ (:size unit) (if (str/includes? (:abilities unit) "MEL") 1 0))
+     (and (= range 1) (= (:attack unit) :physical)) (+ (:size unit) (if (str/includes? (:abilities unit) "MEL") 1 0))
      (>= 3 range) (if (and (:s* unit) (<= 4 (utils/roll-die))) 1 (:s unit))
      (>= 12 range) (if (and (:m* unit) (<= 4 (utils/roll-die))) 1 (:m unit))
      (>= 21 range) (if (and (:l* unit) (<= 4 (utils/roll-die))) 1 (:l unit))
@@ -410,14 +410,13 @@
        (prn (str damage " damage done to " (:current-armor unit) " armor."))
        (when (zero? armor)
          (prn (str penetration " damage penetrated.")))
-       (when (or tac (zero? armor))
+       (when (or tac (pos? penetration))
          (prn (str "Rolled " crit " on critical hit table."))) 
-       (when (not (pos? (:current-structure unit (:structure unit))))
-         (assoc unit :destroyed? true))
-       (cond
-         (= crit :ammo) (let [case (str/includes? (:abilities unit) "CASE") 
-                              case2 (str/includes? (:abilities unit) "CASEII") 
-                              ene (str/includes? (:abilities unit) "ENE")] 
+       (cond 
+         (not (pos? (:current-structure upd (:structure upd)))) (assoc upd :destroyed? true)
+         (= crit :ammo) (let [case (str/includes? (:abilities upd) "CASE") 
+                              case2 (str/includes? (:abilities upd) "CASEII") 
+                              ene (str/includes? (:abilities upd) "ENE")] 
                           (cond (or case2 ene) upd 
                                 case (take-damage upd 1) 
                                 :else (assoc upd :destroyed? true :crits (conj (:crits upd) :ammo))))
