@@ -72,9 +72,9 @@
      :padding 5
      :content {:fx/type :v-box 
                :style (cond 
-                     (= (:id unit) active) "-fx-background-color: #BBBBBB;"
-                     (not (:acted unit)) "-fx-background-color: 999999"
-                     :else "-fx-background-color: #DDDDDD;")
+                        (= (:id unit) active) "-fx-background-color: #BBBBBB;"
+                        (not (:acted unit)) "-fx-background-color: 999999"
+                        :else "-fx-background-color: #DDDDDD;")
                :spacing 5 
                :children [{:fx/type :h-box 
                            :spacing 5 
