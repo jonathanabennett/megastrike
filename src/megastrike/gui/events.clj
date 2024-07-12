@@ -4,11 +4,15 @@
             [clojure.pprint :as pprint]
             [megastrike.combat-unit :as cu]
             [megastrike.gui.subs :as subs]
+            [megastrike.reports :as reports]
             [megastrike.phases :as initiative]
             [megastrike.utils :as utils])
   (:import [javafx.application Platform]
+           [javafx.event ActionEvent]
+           [javafx.scene Node]
            [javafx.scene.control
             ButtonBar$ButtonData
+            ChoiceDialog
             ButtonType
             Dialog
             DialogEvent]
@@ -40,18 +44,32 @@
     (when (and (= (:force u) (first (subs/turn-order context))) (not (:acted u))) 
       {:context (fx/swap-context context assoc :active-unit unit)})))
 
+(defmethod event-handler ::set-attack 
+  [{:keys [fx/context unit selected]}]
+  (let [active-id (subs/active-id context)
+        active (subs/active-unit context)
+        upd (assoc active :target (:id unit) :attack selected)
+        units (assoc (subs/units context) active-id upd)] 
+    (prn "Set attack fired.")
+    (prn upd)
+    {:context (fx/swap-context context assoc :units units)}))
+
 (defmethod event-handler ::unit-clicked
   [{:keys [fx/context unit]}]
    (let [phase (subs/phase context)
          active-force (first (subs/turn-order context))
-         active-unit (subs/active-unit context)]
+         active-unit (subs/active-unit context)
+         board (subs/board context)]
      (when (and (= active-force (:force unit)) 
                 (not (:acted unit)))
        {:context (fx/swap-context context assoc :active-unit (:id unit))})
      (when (and (= phase :combat) 
-                (not (= active-force (:force unit))))
-       (let [upd (assoc (subs/units context) (:id active-unit) (assoc active-unit :target (:id unit)))]
-         {:context (fx/swap-context context assoc :units upd)}))))
+                (not (= active-force (:force unit)))) 
+       (let [ctx (get-in context [:internal (:id unit)])]
+         {:context (fx/swap-context context assoc-in [:internal (:id unit)] (assoc ctx :showing true :items (reports/attack-confirmation-choices active-unit unit board)))})
+      ;;  (let [upd (assoc (subs/units context) (:id active-unit) (assoc active-unit :target (:id unit)))]
+      ;;    {:context (fx/swap-context context assoc :units upd)})
+       )))
 
 (defmethod event-handler ::roll-initiative
   [{:keys [fx/context]}]
@@ -65,6 +83,15 @@
 (defmethod event-handler ::show-popup
   [{:keys [fx/context state-id]}]
   {:context (fx/swap-context context assoc-in [:internal state-id :showing] true)})
+
+(defmethod event-handler ::close-attack-selection 
+  [{:keys [fx/context unit on-close ^DialogEvent fx/event]}]
+  (let [selected (.getSelectedItem ^ChoiceDialog (.getTarget event))
+        ctx (get-in context [:internal (:id unit)])]
+    (prn (merge on-close {:selected (first (keys selected))}))
+    (.setSelectedItem ^ChoiceDialog (.getTarget event) nil)
+    {:context (fx/swap-context context assoc-in [:internal (:id unit)] (assoc ctx :showing false :items []))
+     :dispatch (merge on-close {:selected (first (keys selected))})}))
 
 (defmethod event-handler ::hide-popup
   [{:keys [fx/context ^DialogEvent fx/event state-id on-confirmed]}] 
