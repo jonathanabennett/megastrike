@@ -7,6 +7,7 @@
   :dependencies [[org.clojure/clojure "1.11.1"]
                  [net.sekao/odoyle-rules "1.3.1"]
                  [org.clojure/core.cache "1.0.225"]
+                 [com.brunobonacci/mulog "0.9.0"]
                  [cljfx "1.7.24"]
                  [clojure-csv/clojure-csv "2.0.1"]]
   :main ^:skip-aot megastrike.core
