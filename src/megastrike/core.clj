@@ -3,11 +3,15 @@
    :main true)
   (:require [cljfx.api :as fx]
             [clojure.core.cache :as cache]
+            [com.brunobonacci.mulog :as mu]
             [megastrike.combat-unit :as cu]
             [megastrike.gui.events :as events]
             [megastrike.gui.views :as views]
             [megastrike.hexagons.hex :as hex])
   (:import (javafx.application Platform)))
+
+(mu/set-global-context! {:app-name "MegaStrike" :version "0.3.0"})
+(mu/start-publisher! {:type :console :pretty? true})
 
 (def *state
   (atom
@@ -58,5 +62,6 @@
 (defn -main
   "The main entry point for the game."
   []
+  (mu/log ::launch-game)
   (Platform/setImplicitExit true)
   (fx/mount-renderer *state renderer))
