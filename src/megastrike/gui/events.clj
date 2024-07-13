@@ -8,8 +8,6 @@
             [megastrike.phases :as initiative]
             [megastrike.utils :as utils])
   (:import [javafx.application Platform]
-           [javafx.event ActionEvent]
-           [javafx.scene Node]
            [javafx.scene.control
             ButtonBar$ButtonData
             ChoiceDialog
