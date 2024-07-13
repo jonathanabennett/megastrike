@@ -53,7 +53,8 @@
     (mu/log ::begin-initiative-phase 
             :turn-number turn-num
             :initiative-rolls initiative-report
-            :turn-order move-list)
+            :turn-order move-list
+            :instrumentation :player)
     {:current-phase :initiative :turn-number turn-num :forces forces :turn-order nil :units units :round-report round-report}))
 
 (defn start-deployment-phase 
@@ -65,7 +66,8 @@
         report (str round-report round-string)] 
     (mu/log ::begin-deployment-phase
             :deployable-units (map :id deployable-units)
-            :turn-order turn-order)
+            :turn-order turn-order
+            :instrumentation :player)
     {:current-phase :deployment :turn-order turn-order :units units :round-report report}))
 
 (defn start-movement-phase 
@@ -75,7 +77,8 @@
         round-string (str "Movement Phase \n" "Movement Order: " (reduce str (map #(str % ", ") turn-order)) "\n\n----------\n")
         report (str round-report round-string)] 
     (mu/log ::begin-movement-phase 
-            :turn-order turn-order)
+            :turn-order turn-order
+            :instrumentation :player)
     {:current-phase :movement :turn-order turn-order :units units :round-report report}))
 
 (defn start-combat-phase 
@@ -85,7 +88,8 @@
         round-string (str "Combat Phase \n" "Attack Order: " (reduce str (map #(str % ", ") turn-order)) "\n\n----------\n")
         report (str round-report round-string)] 
     (mu/log ::begin-combat-phase
-            :turn-order turn-order)
+            :turn-order turn-order
+            :instrumentation :player)
     {:current-phase :combat :turn-order turn-order :units units :round-report report}))
 
 (defn start-end-phase 
