@@ -48,7 +48,7 @@
         initiative-report (reduce str (map #(str (:name %) " rolled a " (:initiative %) "\n") (vals forces)))
         turn-num (inc turn-number)
         turn-string (str "Turn: " turn-num)
-        move-list (str "Turn Order: " (reduce str (map #(str % ", ") (generate-turn-order forces (vals units)))))
+        move-list (str "Turn Order: " (generate-turn-order forces (vals units)))
         round-report (str turn-string "\n" initiative-report move-list "\n\n----------\n")]
     (mu/log ::begin-initiative-phase 
             :turn-number turn-num

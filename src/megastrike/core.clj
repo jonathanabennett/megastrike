@@ -7,11 +7,17 @@
             [megastrike.combat-unit :as cu]
             [megastrike.gui.events :as events]
             [megastrike.gui.views :as views]
-            [megastrike.hexagons.hex :as hex])
+            [megastrike.hexagons.hex :as hex]
+            [megastrike.utils :as utils])
   (:import (javafx.application Platform)))
 
 (mu/set-global-context! {:app-name "MegaStrike" :version "0.3.0"})
-(mu/start-publisher! {:type :console :pretty? true})
+
+(def logs
+  (mu/start-publisher! {:type :multi
+                        :publishers
+                        [{:type :console :pretty? true}
+                         {:type :simple-file :filename (str utils/application-directory "megastrike.log")}]}))
 
 (def *state
   (atom

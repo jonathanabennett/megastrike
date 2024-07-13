@@ -2,6 +2,7 @@
   (:require [cljfx.api :as fx]
             [clojure.java.io :as io]
             [clojure.pprint :as pprint]
+            [com.brunobonacci.mulog :as mu]
             [megastrike.combat-unit :as cu]
             [megastrike.gui.subs :as subs]
             [megastrike.reports :as reports]
@@ -18,7 +19,8 @@
 
 (defmulti event-handler :event-type)
 
-(defmethod event-handler :default [{:keys [fx/event]}] 
+(defmethod event-handler :default [{:keys [fx/context fx/event]}] 
+  (mu/log ::unhandled-event :event event :context context)
   (prn event))
 
 (defmethod event-handler ::text-input
@@ -30,6 +32,7 @@
   (let [save {:game-board (fx/sub-val context :game-board)
               :units (subs/units context)
               :forces (fx/sub-val context :forces)}]
+    (mu/log ::auto-save-event)
     (pprint/pprint save (io/writer (utils/load-resource :data "save.edn")))))
 
 (defmethod event-handler ::quit-game
@@ -38,8 +41,9 @@
 
 (defmethod event-handler ::stats-clicked
   [{:keys [fx/context unit]}]
-  (let [u (get (subs/units context) unit)]
+  (let [u (get (subs/units context) unit)] 
     (when (and (= (:force u) (first (subs/turn-order context))) (not (:acted u))) 
+      (mu/log ::stats-clicked-event :clicked unit)
       {:context (fx/swap-context context assoc :active-unit unit)})))
 
 (defmethod event-handler ::set-attack 
@@ -48,8 +52,11 @@
         active (subs/active-unit context)
         upd (assoc active :target (:id unit) :attack selected)
         units (assoc (subs/units context) active-id upd)] 
-    (prn "Set attack fired.")
-    (prn upd)
+    (mu/log ::set-attack-event
+            :attacker upd
+            :target unit
+            :attack-type selected 
+            :instrumentation :player)
     {:context (fx/swap-context context assoc :units units)}))
 
 (defmethod event-handler ::unit-clicked
@@ -58,16 +65,14 @@
          active-force (first (subs/turn-order context))
          active-unit (subs/active-unit context)
          board (subs/board context)]
-     (when (and (= active-force (:force unit)) 
-                (not (:acted unit)))
-       {:context (fx/swap-context context assoc :active-unit (:id unit))})
-     (when (and (= phase :combat) 
-                (not (= active-force (:force unit)))) 
-       (let [ctx (get-in context [:internal (:id unit)])]
-         {:context (fx/swap-context context assoc-in [:internal (:id unit)] (assoc ctx :showing true :items (reports/attack-confirmation-choices active-unit unit board)))})
-      ;;  (let [upd (assoc (subs/units context) (:id active-unit) (assoc active-unit :target (:id unit)))]
-      ;;    {:context (fx/swap-context context assoc :units upd)})
-       )))
+     (mu/with-context {:unit-clicked unit :phase phase}
+       (when (and (= active-force (:force unit)) (not (:acted unit)))
+        (mu/log ::select-unit)
+        {:context (fx/swap-context context assoc :active-unit (:id unit))})
+      (when (and (= phase :combat) 
+                 (not (= active-force (:force unit)))) 
+        (let [ctx (get-in context [:internal (:id unit)])]
+          {:context (fx/swap-context context assoc-in [:internal (:id unit)] (assoc ctx :showing true :items (reports/attack-confirmation-choices active-unit unit board)))})))))
 
 (defmethod event-handler ::roll-initiative
   [{:keys [fx/context]}]
@@ -86,7 +91,6 @@
   [{:keys [fx/context unit on-close ^DialogEvent fx/event]}]
   (let [selected (.getSelectedItem ^ChoiceDialog (.getTarget event))
         ctx (get-in context [:internal (:id unit)])]
-    (prn (merge on-close {:selected (first (keys selected))}))
     (.setSelectedItem ^ChoiceDialog (.getTarget event) nil)
     {:context (fx/swap-context context assoc-in [:internal (:id unit)] (assoc ctx :showing false :items []))
      :dispatch (merge on-close {:selected (first (keys selected))})}))
@@ -119,10 +123,14 @@
         active (subs/active-id context)
         unit (subs/active-unit context)]
     (when (:q unit)
+      (mu/log ::unit-deployed
+              :turn-order turn-order 
+              :unit unit 
+              :instrumentation :player)
       {:context (fx/swap-context context assoc 
-                                :turn-order (rest turn-order)
-                                :units (assoc units active (merge unit {:acted true}))
-                                :active-unit nil)})))
+                                 :turn-order (rest turn-order)
+                                 :units (assoc units active (merge unit {:acted true}))
+                                 :active-unit nil)})))
 
 (defmethod event-handler ::undeploy-unit
   [{:keys [fx/context]}]
@@ -152,8 +160,12 @@
         active (subs/active-id context)
         upd (when (and (= (first turn-order) (:force unit)) (= active (:id unit)))
               (cu/can-move? unit (subs/board context)))]
-    (when (:acted upd)
-    ;; Add Reporting
+    (when (:acted upd) 
+      (mu/log ::move-confirmed 
+              :unit unit 
+              :destination (select-keys unit [:p :q :r])
+              :remaining-moves (rest turn-order)
+              :instrumentation :player)
       {:context (fx/swap-context context assoc 
                                  :turn-order (rest turn-order) 
                                  :units (assoc units active upd) 
@@ -173,7 +185,6 @@
         (let [attacker (first attackers)
               target (get units (:target attacker))
               upd (cu/make-attack attacker target nodes)]
-              ;; Add reporting
           (recur (assoc units (:id target) upd)
                  (rest attackers)))))))
 
