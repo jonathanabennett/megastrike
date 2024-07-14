@@ -7,7 +7,8 @@
             [megastrike.gui.common :as common]
             [megastrike.gui.events :as events]
             [megastrike.gui.subs :as subs]
-            [megastrike.hexagons.hex :as hex])
+            [megastrike.hexagons.hex :as hex]
+            [megastrike.attacks :as attacks])
   (:import [javafx.scene.control Dialog DialogEvent]))
 
 (defn draw-hex [{:keys [hex layout]}]
@@ -97,7 +98,7 @@
         target-hex (board/find-hex target board)
         target-point (hex/hex-to-pixel target-hex layout)
         range (hex/hex-distance unit target)
-        to-hit (cu/return-to-hit (cu/calculate-to-hit unit target board))] 
+        to-hit (attacks/print-attack-roll (attacks/produce-attack-roll unit target board) false)] 
     {:fx/type :group
      :children [{:fx/type :line 
                  :start-x (:x origin-point) 
