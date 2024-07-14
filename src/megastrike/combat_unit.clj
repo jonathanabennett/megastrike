@@ -2,6 +2,7 @@
   (:require [clojure-csv.core :as csv]
             [clojure.math :as math]
             [clojure.string :as str]
+            [com.brunobonacci.mulog :as mu]
             [megastrike.board :as board]
             [megastrike.hexagons.hex :as hexagon]
             [megastrike.utils :as utils]))
@@ -150,6 +151,10 @@
    (let [non-standard (str/replace unit #"\(Standard\)" "")
          matching-muls (filter-units mul :full-name unit =)
          non-standard-mul (filter-units mul :full-name non-standard =)] 
+     (mu/log ::get-unit-function
+             :search-term unit
+             :matching-mul-results matching-muls
+             :non-standard-results non-standard-mul)
      (if (first matching-muls)
        (first matching-muls)
        (first non-standard-mul)))))
@@ -160,11 +165,13 @@
    (merge mul-unit game-data))
   ([units mul-unit game-data]
    (let [matching-units (filter (fn [x] (when (and (:id x) (:full-name mul-unit)) 
-                                   (str/includes? (:id x) (:full-name mul-unit)))) (vals units))
+                                          (str/includes? (:id x) (:full-name mul-unit)))) (vals units))
          id (if (seq matching-units)
               (str (:full-name mul-unit) " #" (inc (count matching-units)))
               (str (:full-name mul-unit)))
          unit (merge mul-unit {:id id} game-data)]
+     (mu/log ::element-created 
+             :element unit)
      (merge units {id unit}))))
 
 (defn pv-mod
@@ -258,17 +265,18 @@
   [unit board]
   (cond
     (= (:movement-mode unit) :stand-still) (merge unit {:acted true :path []})
-    (seq (:path unit)) (let [sum (reduce + (move-costs unit board))
-                             ;; Add code here to default to walk OR the default movement mode
-                             unit (if (not (:movement-mode unit))
-                                    (assoc unit :movement-mode :walk)
-                                    unit)
-                             move (get-mv unit (:movement-mode unit))] 
-                         (if (<= sum move)
-                           (merge unit 
-                                  (select-keys (last (:path unit)) [:p :q :r])
-                                  {:acted true :path []})
-                           unit))))
+    (seq (:path unit)) 
+    (let [sum (reduce + (move-costs unit board)) 
+    ;; Add code here to default to walk OR the default movement mode 
+           unit (if (not (:movement-mode unit))
+                  (assoc unit :movement-mode :walk)
+                  unit)
+           move (get-mv unit (:movement-mode unit))] 
+       (if (<= sum move)
+         (merge unit 
+                (select-keys (last (:path unit)) [:p :q :r])
+                {:acted true :path []})
+         unit))))
 
 (defn height-checker
   [origin target line]
