@@ -2,16 +2,27 @@
   (:gen-class
    :main true)
   (:require [cljfx.api :as fx]
+            [clojure.java.io :as io]
             [clojure.core.cache :as cache]
             [com.brunobonacci.mulog :as mu]
             [megastrike.combat-unit :as cu]
             [megastrike.gui.events :as events]
             [megastrike.gui.views :as views]
-            [megastrike.hexagons.hex :as hex])
+            [megastrike.hexagons.hex :as hex]
+            [megastrike.utils :as utils])
   (:import (javafx.application Platform)))
 
 (mu/set-global-context! {:app-name "MegaStrike" :version "0.3.0"})
-(mu/start-publisher! {:type :console :pretty? true})
+
+(def log-file (str utils/application-directory "megastrike.log"))
+
+(io/delete-file log-file true)
+
+(def logs
+  (mu/start-publisher! {:type :multi
+                        :publishers
+                        [{:type :console :pretty? true}
+                         {:type :simple-file :filename log-file}]}))
 
 (def *state
   (atom
