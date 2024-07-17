@@ -166,7 +166,9 @@
      :showing true
      :title (subs/title-string context)
      :scene
-     {:fx/type :scene
+     {:fx/type :scene 
+      :accelerators {[:minus] {:event-type ::events/change-size :direction :minus :fx/sync true}
+                     [:shift :equals] {:event-type ::events/change-size :direction :plus}}
       :root
       (cond
         (= view :lobby) lobby/view

@@ -158,7 +158,6 @@
         destinations (filter #(seq (:path %)) (vals (subs/units context)))
         target-lines (filter #(and (= active-force (:force %)) (:target %)) unit-locations)] 
     {:fx/type :scroll-pane 
-     :on-key-pressed {:event-type ::events/key-dispatcher :fx/sync true}
      :content {:fx/type :group
                :children (concat
                           (for [h gb]

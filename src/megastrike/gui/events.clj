@@ -196,21 +196,12 @@
 
 (defmethod event-handler ::change-size
   [{:keys [fx/context direction]}] 
-  (let [layout (fx/sub-val context :layout)
-        new-layout (if (= direction :plus)
-                     (assoc layout :scale (+ (:scale layout) 0.1))
-                     (assoc layout :scale (- (:scale layout) 0.1)))] 
-    {:context (fx/swap-context context assoc :layout new-layout)}))
-
-(defmethod event-handler ::key-dispatcher
-  [{:keys [^KeyEvent fx/event]}]
-  (let [code (.getCode event)]
-    (cond
-      (= KeyCode/PLUS code)
-      {:dispatch {:event-type ::change-size :direction :plus}}
-      (= KeyCode/MINUS code)
-      {:dispatch {:event-type ::change-size :direction :minus}}
-      :else (prn code))))
+  (when (= (fx/sub-val context :display) :game)
+    (let [layout (fx/sub-val context :layout)
+         new-layout (if (= direction :plus)
+                      (assoc layout :scale (+ (:scale layout) 0.1))
+                      (assoc layout :scale (- (:scale layout) 0.1)))] 
+     {:context (fx/swap-context context assoc :layout new-layout)})))
 
 (defmethod event-handler ::change-facing 
   [{:keys [fx/context unit facing]}]
