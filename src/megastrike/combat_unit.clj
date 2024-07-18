@@ -24,12 +24,30 @@
 (def vehicle-units ["SV" "CV"])
 (def infantry-units ["BA" "CI"])
 
-(def directions {:n  {:angle 0 :ordinal 2}
-                 :ne {:angle 60 :ordinal 1}
-                 :se {:angle 120 :ordinal 0}
-                 :s  {:angle 180 :ordinal 5}
-                 :sw {:angle 240 :ordinal 4}
-                 :nw {:angle 300 :ordinal 3}})
+(def directions {:n  {:angle 0 
+                      :ordinal 2 
+                      :points [8 9 10 11] 
+                      :rear :s}
+                 :ne {:angle 60 
+                      :ordinal 1 
+                      :points [10 11 0 1] 
+                      :rear :sw}
+                 :se {:angle 120 
+                      :ordinal 0 
+                      :points [0 1 2 3] 
+                      :rear :nw}
+                 :s  {:angle 180 
+                      :ordinal 5 
+                      :points [2 3 4 5] 
+                      :rear :n}
+                 :sw {:angle 240 
+                      :ordinal 4 
+                      :points [4 5 6 7] 
+                      :rear :ne}
+                 :nw {:angle 300 
+                      :ordinal 3
+                      :points [6 7 8 9]
+                      :rear :se}})
 
 (def criticals {2 :ammo
                 3 :engine
@@ -281,14 +299,17 @@
 
 (defn calculate-damage
   "Returns the damage done by a unit at a given range. Calculates 0* damage correctly."
-  [unit range]
-   (cond 
-     (and (= range 1) (= (:attack unit) :physical)) (+ (:size unit) (if (str/includes? (:abilities unit) "MEL") 1 0))
-     (>= 3 range) (if (and (:s* unit) (<= 4 (utils/roll-die))) 1 (:s unit))
-     (>= 12 range) (if (and (:m* unit) (<= 4 (utils/roll-die))) 1 (:m unit))
-     (>= 21 range) (if (and (:l* unit) (<= 4 (utils/roll-die))) 1 (:l unit))
-     (>= 30 range) (if (and (:e* unit) (<= 4 (utils/roll-die))) 1 (:e unit))
-     :else 0))
+  [unit range rear-attack?]
+   (let [damage (cond
+                  (and (= range 1) (= (:attack unit) :physical)) (+ (:size unit) (if (str/includes? (:abilities unit) "MEL") 1 0))
+                  (>= 3 range) (if (and (:s* unit) (<= 4 (utils/roll-die))) 1 (:s unit))
+                  (>= 12 range) (if (and (:m* unit) (<= 4 (utils/roll-die))) 1 (:m unit))
+                  (>= 21 range) (if (and (:l* unit) (<= 4 (utils/roll-die))) 1 (:l unit))
+                  (>= 30 range) (if (and (:e* unit) (<= 4 (utils/roll-die))) 1 (:e unit))
+                  :else 0)]
+     (if rear-attack?
+       (inc damage)
+       damage)))
 
 (defn take-weapon-hit 
   [unit]
@@ -302,6 +323,37 @@
          :e (max (dec (:e unit)) 0)
          :e* false
          :crits (conj (:crits unit) :weapon)))
+
+(defn vector-subtract [v1 v2]
+  (mapv - v1 v2))
+
+(defn cross-product-2d [v1 v2]
+  (- (* (first v1) (second v2)) (* (second v1) (first v2))))
+
+(defn line-between-points? [p1 p2 cp op]
+  (let [v-line (vector-subtract p2 p1)
+        v-cp (vector-subtract cp p1)
+        v-op (vector-subtract op p1)
+        cross1 (cross-product-2d v-line v-cp)
+        cross2 (cross-product-2d v-line v-op)]
+    ;; The sign of cross2 tells us which "side" of the line op is on.
+    ;; If cross2 is 0, then op is on the line.
+    (if (< (abs cross2) 1)
+      ;; In which case, we return true.
+      true
+      ; Otherwise, check if cp and op have opposite signs (i.e. are on opposite sides of the line).
+      (not (pos? (* cross1 cross2))))))
+
+(defn detect-direction 
+  "Detect if a hex is 'behind' a given hex-side."
+  [this-hex other-hex side layout]
+  (let [this-pixel (hex/hex-to-pixel this-hex layout)
+        points (hex/hex-points this-hex layout)
+        points-list (get-in directions [side :points])
+        p1 [(nth points (first points-list)) (nth points (second points-list))]
+        p2 [(nth points (nth points-list 2)) (nth points (nth points-list 3))]
+        other-hex (hex/hex-to-pixel other-hex layout)]
+    (line-between-points? p1 p2 [(:x this-pixel) (:y this-pixel)] [(:x other-hex) (:y other-hex)])))
 
 (defn take-damage
   ([unit damage]
@@ -346,14 +398,17 @@
        upd))))
 
 (defn make-attack 
-  [attacker target board]
+  [attacker target board layout]
   (let [targeting-data (attacks/produce-attack-roll attacker target board)
+        rear-attack? (detect-direction target attacker (get-in directions [(:direction target) :rear])layout)
+        damage (calculate-damage attacker (hex/hex-distance attacker target) rear-attack?)
         to-hit (utils/roll2d)]
     (mu/log ::make-attack
             :attacker (:id attacker)
             :target (:id target)
+            :rear-attack? rear-attack?
             :targeting-data targeting-data
             :to-hit to-hit)
     (if (<= (attacks/calculate-to-hit targeting-data) to-hit)
-      (take-damage target (calculate-damage attacker (hex/hex-distance attacker target)) (= to-hit 12))
+      (take-damage target damage (= to-hit 12))
       target)))

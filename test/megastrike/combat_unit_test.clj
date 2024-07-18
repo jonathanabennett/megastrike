@@ -169,19 +169,32 @@
 
 (t/deftest test-calculate-damage
   (t/testing "Test damage without a *."
-    (t/is (= (sut/calculate-damage {:id "Unit 1" :s 4} 2) 4))
-    (t/is (= (sut/calculate-damage {:id "Unit 1" :m 4} 4) 4))
-    (t/is (= (sut/calculate-damage {:id "Unit 1" :l 4} 13) 4))
-    (t/is (= (sut/calculate-damage {:id "Unit 1" :e 4} 22) 4)))
+    (t/is (= (sut/calculate-damage {:id "Unit 1" :s 4} 2 false) 4))
+    (t/is (= (sut/calculate-damage {:id "Unit 1" :m 4} 4 false) 4))
+    (t/is (= (sut/calculate-damage {:id "Unit 1" :l 4} 13 false) 4))
+    (t/is (= (sut/calculate-damage {:id "Unit 1" :e 4} 22 false) 4))
+    (t/is (= (sut/calculate-damage {:id "Unit 1" :s 4} 2 true) 5))
+    (t/is (= (sut/calculate-damage {:id "Unit 1" :m 4} 4 true) 5))
+    (t/is (= (sut/calculate-damage {:id "Unit 1" :l 4} 13 true) 5))
+    (t/is (= (sut/calculate-damage {:id "Unit 1" :e 4} 22 true) 5)))
   (t/testing "Test Damage with a *." 
-    (let [s-damage (sut/calculate-damage {:id "Unit 1" :s 0 :s* true} 2)
-          m-damage (sut/calculate-damage {:id "Unit 1" :m 0 :m* true} 9)
-          l-damage (sut/calculate-damage {:id "Unit 1" :l 0 :l* true} 13)
-          e-damage (sut/calculate-damage {:id "Unit 1" :e 0 :e* true} 22)] 
+    (let [s-damage (sut/calculate-damage {:id "Unit 1" :s 0 :s* true} 2 false)
+          m-damage (sut/calculate-damage {:id "Unit 1" :m 0 :m* true} 9 false)
+          l-damage (sut/calculate-damage {:id "Unit 1" :l 0 :l* true} 13 false)
+          e-damage (sut/calculate-damage {:id "Unit 1" :e 0 :e* true} 22 false)
+          sr-damage (sut/calculate-damage {:id "Unit 1" :s 0 :s* true} 2 true)
+          mr-damage (sut/calculate-damage {:id "Unit 1" :m 0 :m* true} 9 true)
+          lr-damage (sut/calculate-damage {:id "Unit 1" :l 0 :l* true} 13 true)
+          er-damage (sut/calculate-damage {:id "Unit 1" :e 0 :e* true} 22 true)] 
       (t/is (or (= s-damage 0) (= s-damage 1))) 
       (t/is (or (= m-damage 0) (= m-damage 1))) 
       (t/is (or (= l-damage 0) (= l-damage 1))) 
-      (t/is (or (= e-damage 0) (= e-damage 1))))))
+      (t/is (or (= e-damage 0) (= e-damage 1)))
+      (t/is (or (= sr-damage 1) (= sr-damage 2))) 
+      (t/is (or (= mr-damage 1) (= mr-damage 2))) 
+      (t/is (or (= lr-damage 1) (= lr-damage 2))) 
+      (t/is (or (= er-damage 1) (= er-damage 2)))
+      )))
 
 (t/deftest test-take-damage
   (t/testing "Test armor only damage."

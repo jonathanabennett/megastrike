@@ -41,7 +41,17 @@
                  :layout-y (nth points 5)
                  :font 16
                  :translate-x (* 10 (:scale layout))
-                 :translate-y (* -20 (:scale layout))}
+                 :translate-y (* -20 (:scale layout))} 
+                {:fx/type :label
+                 :text "Corner 2"
+                 :layout-x (nth points 2)
+                 :layout-y (nth points 3)
+                 :font 16}
+                {:fx/type :label
+                 :text "Corner 1"
+                 :layout-x (nth points 0)
+                 :layout-y (nth points 1)
+                 :font 16}
                 {:fx/type :label
                  :text (format "%02d%02d" (:x offset) (:y offset))
                  :layout-x (nth points 8)

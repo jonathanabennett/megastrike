@@ -14,8 +14,7 @@
             ChoiceDialog
             ButtonType
             Dialog
-            DialogEvent]
-           [javafx.scene.input KeyCode KeyEvent]))
+            DialogEvent]))
 
 (defmulti event-handler :event-type)
 
@@ -184,7 +183,7 @@
                                    :turn-order (rest (subs/turn-order context)))}
         (let [attacker (first attackers)
               target (get units (:target attacker))
-              upd (cu/make-attack attacker target nodes)]
+              upd (cu/make-attack attacker target nodes (fx/sub-val context :layout))]
           (recur (assoc units (:id target) upd)
                  (rest attackers)))))))
 
