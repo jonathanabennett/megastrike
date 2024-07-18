@@ -5,6 +5,7 @@
             [megastrike.board :as board]
             [megastrike.combat-unit :as cu]
             [megastrike.hexagons.hex :as hex]
+            [megastrike.reports :as reports]
             [megastrike.utils :as utils]))
 
 (def probabilities 
@@ -186,28 +187,40 @@
                        (:current-structure unit (:structure unit)))
            crit (if (or tac (pos? penetration)) (get criticals (utils/roll2d) nil) nil)
            damaged (assoc unit :current-armor armor :current-structure structure)
-           upd (cond 
+           upd (cond
                  (not (pos? (:current-structure damaged (:structure damaged)))) (assoc damaged :destroyed? true)
-         (= crit :ammo) (let [case (str/includes? (:abilities damaged) "CASE") 
-                              case2 (str/includes? (:abilities damaged) "CASEII") 
-                              ene (str/includes? (:abilities damaged) "ENE")] 
-                          (cond (or case2 ene) damaged 
-                                case (take-damage damaged 1) 
-                                :else (assoc damaged :destroyed? true :crits (conj (:crits damaged) :ammo))))
-         (= crit :engine) (if (some #(= % :engine) (:crits damaged)) 
-                            (assoc damaged :destroyed? true)
-                            (assoc damaged :crits (conj (:crits damaged) :engine)))
-         (= crit :fire-control) (if (< (count (filter #( % :fire-control) (:crits damaged))) 4)
-                                  (assoc damaged :crits (conj (:crits damaged) :fire-control))
-                                  damaged)
-         (= crit :weapon) (if (< (count (filter #( % :weapon) (:crits damaged))) 4)
-                            (cu/take-weapon-hit damaged)
-                            damaged)
-         (= crit :mv) (if (< (count (filter #( % :mv) (:crits damaged))) 4)
-                        (assoc damaged :crits (conj (:crits damaged) :mv))
-                        (assoc damaged :movement {:immobile 0}))
-         (= crit :destroyed) (assoc damaged :destroyed? true :crits (conj (:crits damaged) :destroyed))
-         :else damaged)]
+                 (= crit :ammo) (let [case (str/includes? (:abilities damaged) "CASE")
+                                      case2 (str/includes? (:abilities damaged) "CASEII")
+                                      ene (str/includes? (:abilities damaged) "ENE")]
+                                  (cond (or case2 ene) damaged
+                                        case (take-damage damaged 1)
+                                        :else (assoc damaged :destroyed? true :crits (conj (:crits damaged) :ammo))))
+                 (= crit :engine) (if (some #(= % :engine) (:crits damaged))
+                                    (assoc damaged :destroyed? true)
+                                    (assoc damaged :crits (conj (:crits damaged) :engine)))
+                 (= crit :fire-control) (if (< (count (filter #(% :fire-control) (:crits damaged))) 4)
+                                          (assoc damaged :crits (conj (:crits damaged) :fire-control))
+                                          damaged)
+                 (= crit :weapon) (if (< (count (filter #(% :weapon) (:crits damaged))) 4)
+                                    (cu/take-weapon-hit damaged)
+                                    damaged)
+                 (= crit :mv) (if (< (count (filter #(% :mv) (:crits damaged))) 4)
+                                (assoc damaged :crits (conj (:crits damaged) :mv))
+                                (assoc damaged :movement {:immobile 0}))
+                 (= crit :destroyed) (assoc damaged :destroyed? true :crits (conj (:crits damaged) :destroyed))
+                 :else damaged)]
+       (send reports/reports str (:id upd) " takes " damage " damage to " (:current-armor unit) "armor.\n")
+       (when tac
+         (send reports/reports str "Rolled 12, TAC!\n")
+         (when (not crit)
+           (send reports/reports str "No critical rolled.\n")))
+       (when (zero? armor)
+         (send reports/reports str penetration " damage penetrates the armor.\n")
+         (when (not crit)
+           (send reports/reports str "No criitical rolled.\n")))
+       (when crit
+         (send reports/reports str "Rolled a " (name crit) " critical.\n"))
+       (send reports/reports str "\n\n\n")
        (mu/log ::damage-dealt
                :target (:id unit)
                :damage damage
@@ -215,10 +228,34 @@
                :unit-status upd)
        upd))))
 
+(defn attack-confirmation-choices
+  [attacker target board]
+  (let [atk-data (produce-attack-roll attacker target board)
+        range (hex/hex-distance attacker target)
+        regular-damage (cu/print-damage attacker range false)
+        physical-damage (cu/print-damage attacker range true)]
+    [{:regular (str (print-attack-roll atk-data false) ": " regular-damage " damage")}
+     (when (= range 1)
+       {:physical (str (print-attack-roll atk-data false) ": " physical-damage " damage")})]))
+
+(defn generate-attack-info
+  [units current-force board]
+  (loop [ret ""
+         attackers (filter #(:target %) current-force)]
+    (if (empty? attackers)
+      ret
+      (let [attacker (first attackers)
+            target (get units (:target attacker))
+            atk-data (produce-attack-roll attacker target board)]
+        (recur (str ret (:full-name attacker) " will attack " (:full-name target) ": " (calculate-to-hit atk-data) "\n"
+                    "Modifiers: " (print-attack-roll atk-data) "\n"
+                    "Damage: " (cu/print-damage attacker (hex/hex-distance attacker target) (:physical attacker)) "\n")
+               (rest attackers))))))
+
 (defn make-attack 
   [attacker target board layout]
   (let [targeting-data (produce-attack-roll attacker target board)
-        rear-attack? (detect-direction target attacker (get-in cu/directions [(:direction target) :rear])layout)
+        rear-attack? (detect-direction target attacker (get-in cu/directions [(:direction target) :rear]) layout)
         damage (cu/calculate-damage attacker (hex/hex-distance attacker target) rear-attack?)
         to-hit (utils/roll2d)]
     (mu/log ::make-attack
@@ -227,6 +264,10 @@
             :rear-attack? rear-attack?
             :targeting-data targeting-data
             :to-hit to-hit)
+    (send reports/reports
+          str (:id attacker) " attacking " (:id target) ". Needs a " (calculate-to-hit targeting-data) ": Rolled " to-hit "\n") 
     (if (<= (calculate-to-hit targeting-data) to-hit)
       (take-damage target damage (= to-hit 12))
-      target)))
+      (do 
+        (send reports/reports str "Missed. \n\n")
+        target))))

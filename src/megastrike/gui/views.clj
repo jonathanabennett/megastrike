@@ -1,6 +1,7 @@
 (ns megastrike.gui.views
   (:require [cljfx.api :as fx]
             [clojure.string :as str]
+            [megastrike.attacks :as attacks]
             [megastrike.gui.board.views :as board]
             [megastrike.gui.events :as events]
             [megastrike.gui.forces.views :as force]
@@ -90,7 +91,7 @@
    {:fx/type attack-report-button
     :state-id ::attack-info
     :button {:text "Review Attacks"}
-    :dialog-pane {:content-text (reports/generate-attack-info units current-force board)}
+    :dialog-pane {:content-text (attacks/generate-attack-info units current-force board)}
     :on-confirmed {:event-type ::events/no-op}}
    {:fx/type :button
     :text "Clear Target"
@@ -112,7 +113,7 @@
                          :button {:text "Next Phase"
                                   :disable #_{:clj-kondo/ignore [:not-empty?]}
                                            (not (empty? turn-order))}
-                         :dialog-pane {:content-text (fx/sub-val context :round-report)}
+                         :dialog-pane {:content-text @reports/reports}
                          :on-confirmed {:event-type ::events/no-op}}
                         {:fx/type :separator
                          :orientation :vertical 

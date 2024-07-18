@@ -37,6 +37,8 @@
 
 (defmethod event-handler ::quit-game
   [_]
+  (await reports/reports)
+  (reports/logs)
   (Platform/exit))
 
 (defmethod event-handler ::stats-clicked
@@ -72,7 +74,7 @@
       (when (and (= phase :combat) 
                  (not (= active-force (:force unit)))) 
         (let [ctx (get-in context [:internal (:id unit)])]
-          {:context (fx/swap-context context assoc-in [:internal (:id unit)] (assoc ctx :showing true :items (reports/attack-confirmation-choices active-unit unit board)))})))))
+          {:context (fx/swap-context context assoc-in [:internal (:id unit)] (assoc ctx :showing true :items (attacks/attack-confirmation-choices active-unit unit board)))})))))
 
 (defmethod event-handler ::roll-initiative
   [{:keys [fx/context]}]
@@ -113,6 +115,7 @@
                                          :forces forces
                                          :units units
                                          :round-report (fx/sub-val context :round-report)})]
+    (await reports/reports)
     {:context (fx/swap-context context merge response)
      :dispatch {:event-type ::show-popup :state-id state-id}}))
 

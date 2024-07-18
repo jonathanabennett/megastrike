@@ -14,16 +14,6 @@
 
 (mu/set-global-context! {:app-name "MegaStrike" :version "0.3.0"})
 
-(def log-file (str utils/application-directory "megastrike.log"))
-
-(io/delete-file log-file true)
-
-(def logs
-  (mu/start-publisher! {:type :multi
-                        :publishers
-                        [{:type :console :pretty? true}
-                         {:type :simple-file :filename log-file}]}))
-
 (def *state
   (atom
    (fx/create-context
@@ -44,7 +34,7 @@
      :active-force nil
      :active-unit nil
      :map-boards []
-     :round-report []
+     :round-report ""
      :game-board []
      :layout (hex/create-layout)
      :map-width "1"
