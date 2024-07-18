@@ -3,11 +3,7 @@
             [clojure.math :as math]
             [clojure.string :as str]
             [com.brunobonacci.mulog :as mu]
-            [megastrike.attacks :as attacks]
-            [megastrike.board :as board]
-            [megastrike.utils :as utils]
-            [megastrike.hexagons.hex :as hex]
-            ))
+            [megastrike.utils :as utils]))
 
 (def header-row
   "Defines the header row which will serve as the keys for the creation of combat units."
@@ -49,16 +45,6 @@
                       :points [6 7 8 9]
                       :rear :se}})
 
-(def criticals {2 :ammo
-                3 :engine
-                4 :fire-control
-                6 :weapon
-                7 :mv 
-                8 :weapon
-                10 :fire-control
-                11 :engine
-                12 :destroyed})
-
 (defn move-keyword
   "Creates a move keyword from a stat line imported from the mul export."
   [mv-type]
@@ -76,39 +62,6 @@
     (if (and (= (count mv-map) 1) (= (key (first mv-map)) :jump))
       (merge mv-map {:walk (val (first mv-map))})
       mv-map)))
-
-(defn get-mv
-  ([unit move-type]
-   (let [base-move (move-type (:movement unit))
-         div (count (filter #(= :mv %) (:crits unit)))] 
-     (loop [mv base-move
-            n 0]
-       (if (= n div)
-         (- mv (get unit :current-heat 0))
-         (recur (let [new-mv (math/round (/ mv 2.0))]
-                  (if (>= (- mv new-mv) 1) new-mv 0))
-                (inc n))))))
-  ([unit]
-  (get-mv unit (get unit :movement :walk))))
-
-(defn print-movement-helper
-  "Consumes a vector containing a move type as a keyword and a distance and prints it for human consumption."
-  [mv-vec unit]
-  (cond
-    (= (first mv-vec) :walk) (get-mv unit (first mv-vec))
-    (= (first mv-vec) :jump) (str (get-mv unit (first mv-vec)) "j")
-    :else (str (first mv-vec) " " (get-mv unit (first mv-vec)))))
-
-(defn print-movement
-  "Loops over all movements a unit has a pretty prints them."
-  [unit]
-  (let [mv-map (:movement unit)]
-    (str/join "/" (map #(print-movement-helper % unit) mv-map))))
-
-(defn construct-ability-list
-  "Loops over all abilitys a unit has a converts them to Keywords."
-  [str]
-  (into [] (map utils/keyword-maker (str/split str #","))))
 
 (defn parse-row
   "Parses a single row of the MUL file."
@@ -138,6 +91,29 @@
             :point-value (Integer/parseInt (:point-value mul-row))))))
 
 (def mul (map parse-row (rest (csv/parse-csv (slurp (utils/load-resource :resources "mul.csv")) :delimiter \tab))))
+
+(defn parse-mechset-line
+  "Parses a single line from a mechset file. Mechset files define which images match which units."
+  [line]
+  (when-not (or (= (str/index-of line "#") 0)
+                (= line "")
+                (= (str/index-of line "include") 0))
+    (let [first-break (str/index-of line " ")
+          second-break (str/index-of line "\" " (inc first-break))
+          mechset-type (str/trim (subs line 0 first-break))
+          search-term (str/trim (utils/strip-quotes (subs line first-break second-break)))
+          file-path (str/trim (utils/strip-quotes (subs line second-break)))]
+      (vector mechset-type search-term file-path))))
+
+(defn parse-mechset
+  "Parses a full Mechset file."
+  []
+  (into [] (remove
+            nil?
+            (map #(parse-mechset-line %)
+                 (str/split-lines (slurp (utils/load-resource :data "images/units/mechset.txt")))))))
+
+(def mechset (parse-mechset))
 
 (defn filter-membership-helper
   "Returns true if a unit matches one of the types."
@@ -183,6 +159,42 @@
              :element unit)
      (merge units {id unit}))))
 
+(defn find-sprite
+  "Searches a the mechset to determine which images to use and returns the path to that image."
+  [unit]
+  (let [chassis-match (filter (fn [row] (= (second row) (:chassis unit))) mechset)
+        exact-match (filter (fn [row] (str/includes? (second row) (:full-name unit))) mechset)
+        match-row (or (first exact-match) (first chassis-match))] 
+    (utils/load-resource :data (str "images/units/" (nth match-row 2)))))
+
+(defn get-mv
+  ([unit move-type]
+   (let [base-move (move-type (:movement unit))
+         div (count (filter #(= :mv %) (:crits unit)))] 
+     (loop [mv base-move
+            n 0]
+       (if (= n div)
+         (max (- mv (get unit :current-heat 0)) 0)
+         (recur (let [new-mv (math/round (/ mv 2.0))]
+                  (if (>= (- mv new-mv) 1) new-mv 0))
+                (inc n))))))
+  ([unit]
+  (get-mv unit (get unit :movement :walk))))
+
+(defn print-movement-helper
+  "Consumes a vector containing a move type as a keyword and a distance and prints it for human consumption."
+  [mv-vec unit]
+  (cond
+    (= (first mv-vec) :walk) (get-mv unit (first mv-vec))
+    (= (first mv-vec) :jump) (str (get-mv unit (first mv-vec)) "j")
+    :else (str (first mv-vec) " " (get-mv unit (first mv-vec)))))
+
+(defn print-movement
+  "Loops over all movements a unit has a pretty prints them."
+  [unit]
+  (let [mv-map (:movement unit)]
+    (str/join "/" (map #(print-movement-helper % unit) mv-map))))
+
 (defn pv-mod
   "Calculates the skill-based mod for PV based on the algorithm provided in the book."
   [unit]
@@ -221,72 +233,6 @@
     "0*"
     (str (:e unit))))
 
-(defn parse-mechset-line
-  "Parses a single line from a mechset file. Mechset files define which images match which units."
-  [line]
-  (when-not (or (= (str/index-of line "#") 0)
-                (= line "")
-                (= (str/index-of line "include") 0))
-    (let [first-break (str/index-of line " ")
-          second-break (str/index-of line "\" " (inc first-break))
-          mechset-type (str/trim (subs line 0 first-break))
-          search-term (str/trim (utils/strip-quotes (subs line first-break second-break)))
-          file-path (str/trim (utils/strip-quotes (subs line second-break)))]
-      (vector mechset-type search-term file-path))))
-
-(defn parse-mechset
-  "Parses a full Mechset file."
-  []
-  (into [] (remove
-            nil?
-            (map #(parse-mechset-line %)
-                 (str/split-lines (slurp (utils/load-resource :data "images/units/mechset.txt")))))))
-
-(def mechset (parse-mechset))
-
-(defn find-sprite
-  "Searches a the mechset to determine which images to use and returns the path to that image."
-  [unit]
-  (let [chassis-match (filter (fn [row] (= (second row) (:chassis unit))) mechset)
-        exact-match (filter (fn [row] (str/includes? (second row) (:full-name unit))) mechset)
-        match-row (or (first exact-match) (first chassis-match))] 
-    (utils/load-resource :data (str "images/units/" (nth match-row 2)))))
-
-(defn find-path
-  [unit destination board]
-  (let [origin (board/find-hex unit board)
-        mv-type (get unit :movement-mode :walk)]
-    (board/astar origin destination board hex/hex-distance mv-type)))
-
-(defn move-costs 
-  [unit board]
-  (let [origin (board/find-hex unit board)
-        mv-type (get unit :movement-mode :walk)]
-    (loop [sum [(board/step-cost origin (first (:path unit)) mv-type)]
-                   path (:path unit)]
-              (if (= (count path) 1) 
-                sum 
-                (recur (conj sum (board/step-cost (first path) (second path) mv-type)) 
-                       (rest path))))))
-
-(defn can-move?
-  "Checks whether or not a unit can move from its location to a destination."
-  [unit board]
-  (cond
-    (= (:movement-mode unit) :stand-still) (merge unit {:acted true :path []})
-    (seq (:path unit)) 
-    (let [sum (reduce + (move-costs unit board)) 
-    ;; Add code here to default to walk OR the default movement mode 
-           unit (if (not (:movement-mode unit))
-                  (assoc unit :movement-mode :walk)
-                  unit)
-           move (get-mv unit (:movement-mode unit))] 
-       (if (<= sum move)
-         (merge unit 
-                (select-keys (last (:path unit)) [:p :q :r])
-                {:acted true :path []})
-         unit))))
-
 (defn print-damage
   [unit range physical]
   (cond 
@@ -323,92 +269,3 @@
          :e (max (dec (:e unit)) 0)
          :e* false
          :crits (conj (:crits unit) :weapon)))
-
-(defn vector-subtract [v1 v2]
-  (mapv - v1 v2))
-
-(defn cross-product-2d [v1 v2]
-  (- (* (first v1) (second v2)) (* (second v1) (first v2))))
-
-(defn line-between-points? [p1 p2 cp op]
-  (let [v-line (vector-subtract p2 p1)
-        v-cp (vector-subtract cp p1)
-        v-op (vector-subtract op p1)
-        cross1 (cross-product-2d v-line v-cp)
-        cross2 (cross-product-2d v-line v-op)]
-    ;; The sign of cross2 tells us which "side" of the line op is on.
-    ;; If cross2 is 0, then op is on the line.
-    (if (< (abs cross2) 1)
-      ;; In which case, we return true.
-      true
-      ; Otherwise, check if cp and op have opposite signs (i.e. are on opposite sides of the line).
-      (not (pos? (* cross1 cross2))))))
-
-(defn detect-direction 
-  "Detect if a hex is 'behind' a given hex-side."
-  [this-hex other-hex side layout]
-  (let [this-pixel (hex/hex-to-pixel this-hex layout)
-        points (hex/hex-points this-hex layout)
-        points-list (get-in directions [side :points])
-        p1 [(nth points (first points-list)) (nth points (second points-list))]
-        p2 [(nth points (nth points-list 2)) (nth points (nth points-list 3))]
-        other-hex (hex/hex-to-pixel other-hex layout)]
-    (line-between-points? p1 p2 [(:x this-pixel) (:y this-pixel)] [(:x other-hex) (:y other-hex)])))
-
-(defn take-damage
-  ([unit damage]
-   (take-damage unit damage false))
-  ([unit damage tac]
-   (if (= damage 0)
-     unit
-     (let [armor (max (- (:current-armor unit (:armor unit)) damage) 0) 
-           penetration (- damage (:current-armor unit (:armor unit)))
-           structure (if (zero? armor) 
-                       (- (:current-structure unit (:structure unit)) penetration)
-                       (:current-structure unit (:structure unit)))
-           crit (if (or tac (pos? penetration)) (get criticals (utils/roll2d) nil) nil)
-           damaged (assoc unit :current-armor armor :current-structure structure)
-           upd (cond 
-                 (not (pos? (:current-structure damaged (:structure damaged)))) (assoc damaged :destroyed? true)
-         (= crit :ammo) (let [case (str/includes? (:abilities damaged) "CASE") 
-                              case2 (str/includes? (:abilities damaged) "CASEII") 
-                              ene (str/includes? (:abilities damaged) "ENE")] 
-                          (cond (or case2 ene) damaged 
-                                case (take-damage damaged 1) 
-                                :else (assoc damaged :destroyed? true :crits (conj (:crits damaged) :ammo))))
-         (= crit :engine) (if (some #(= % :engine) (:crits damaged)) 
-                            (assoc damaged :destroyed? true)
-                            (assoc damaged :crits (conj (:crits damaged) :engine)))
-         (= crit :fire-control) (if (< (count (filter #( % :fire-control) (:crits damaged))) 4)
-                                  (assoc damaged :crits (conj (:crits damaged) :fire-control))
-                                  damaged)
-         (= crit :weapon) (if (< (count (filter #( % :weapon) (:crits damaged))) 4)
-                            (take-weapon-hit damaged)
-                            damaged)
-         (= crit :mv) (if (< (count (filter #( % :mv) (:crits damaged))) 4)
-                        (assoc damaged :crits (conj (:crits damaged) :mv))
-                        (assoc damaged :movement {:immobile 0}))
-         (= crit :destroyed) (assoc damaged :destroyed? true :crits (conj (:crits damaged) :destroyed))
-         :else damaged)]
-       (mu/log ::damage-dealt
-               :target (:id unit)
-               :damage damage
-               :crit crit
-               :unit-status upd)
-       upd))))
-
-(defn make-attack 
-  [attacker target board layout]
-  (let [targeting-data (attacks/produce-attack-roll attacker target board)
-        rear-attack? (detect-direction target attacker (get-in directions [(:direction target) :rear])layout)
-        damage (calculate-damage attacker (hex/hex-distance attacker target) rear-attack?)
-        to-hit (utils/roll2d)]
-    (mu/log ::make-attack
-            :attacker (:id attacker)
-            :target (:id target)
-            :rear-attack? rear-attack?
-            :targeting-data targeting-data
-            :to-hit to-hit)
-    (if (<= (attacks/calculate-to-hit targeting-data) to-hit)
-      (take-damage target damage (= to-hit 12))
-      target)))

@@ -173,3 +173,25 @@
     (t/is (= (sut/print-attack-roll (sut/produce-attack-roll blinded-target blinded-attacker board) true) 
              "Line of Sight Blocked"))
     ))
+
+(t/deftest test-take-damage
+  (t/testing "Test armor only damage."
+    (t/is (= (sut/take-damage attacker1 2)
+             (assoc attacker1 :current-armor 2)))
+    (t/is (= (sut/take-damage attacker1 3)
+             (assoc attacker1 :current-armor 1)))
+    (t/is (= (sut/take-damage attacker1 0)
+             (assoc attacker1 :current-armor 4)))
+    (t/is (= (sut/take-damage attacker1 4)
+             (assoc attacker1 :current-armor 0 :current-structure 3))))
+  (t/testing "Test penetration."
+    (let [tgt (sut/take-damage attacker1 5)] 
+      (t/is (= (:current-armor tgt) 0))
+      (t/is (= (:current-structure tgt) 2)))))
+
+;; (t/deftest test-make-attack
+;;   (t/testing "Test searching for a valid sprite."
+;;     (t/is (= (sut/make-attack {:id "Unit 1" :p 0 :q 0 :r 0 :pilot {:skill 4}
+;;                                        :movement-mode :walk :tmm 2}
+;;                               {:id "Unit 2" :p 2 :q 0 :r -2 :pilot {:skill 4}
+;;                                        :movement-mode :walk :tmm 2}) 1))))

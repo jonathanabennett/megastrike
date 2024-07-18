@@ -3,16 +3,17 @@
             [clojure.java.io :as io]
             [clojure.pprint :as pprint]
             [com.brunobonacci.mulog :as mu]
-            [megastrike.combat-unit :as cu]
+            [megastrike.attacks :as attacks]
             [megastrike.gui.subs :as subs]
-            [megastrike.reports :as reports]
+            [megastrike.movement :as movement]
             [megastrike.phases :as initiative]
+            [megastrike.reports :as reports]
             [megastrike.utils :as utils])
   (:import [javafx.application Platform]
            [javafx.scene.control
             ButtonBar$ButtonData
-            ChoiceDialog
             ButtonType
+            ChoiceDialog
             Dialog
             DialogEvent]))
 
@@ -158,7 +159,7 @@
         units (subs/units context)
         active (subs/active-id context)
         upd (when (and (= (first turn-order) (:force unit)) (= active (:id unit)))
-              (cu/can-move? unit (subs/board context)))]
+              (movement/can-move? unit (subs/board context)))]
     (when (:acted upd) 
       (mu/log ::move-confirmed 
               :unit unit 
@@ -183,7 +184,7 @@
                                    :turn-order (rest (subs/turn-order context)))}
         (let [attacker (first attackers)
               target (get units (:target attacker))
-              upd (cu/make-attack attacker target nodes (fx/sub-val context :layout))]
+              upd (attacks/make-attack attacker target nodes (fx/sub-val context :layout))]
           (recur (assoc units (:id target) upd)
                  (rest attackers)))))))
 

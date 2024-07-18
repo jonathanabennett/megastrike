@@ -1,11 +1,24 @@
 (ns megastrike.attacks
   (:require [clojure.math :as math]
             [clojure.string :as str]
+            [com.brunobonacci.mulog :as mu]
             [megastrike.board :as board]
-            [megastrike.hexagons.hex :as hex]))
+            [megastrike.combat-unit :as cu]
+            [megastrike.hexagons.hex :as hex]
+            [megastrike.utils :as utils]))
 
 (def probabilities 
   {2  100, 3  98, 4  92, 5  83, 6  72, 7  58, 8  42, 9  28, 10 17, 11 8, 12 3})
+
+(def criticals {2 :ammo
+                3 :engine
+                4 :fire-control
+                6 :weapon
+                7 :mv 
+                8 :weapon
+                10 :fire-control
+                11 :engine
+                12 :destroyed})
 
 (defn get-tmm
   ([unit]
@@ -116,6 +129,37 @@
               (str "+ " (:value m 0) " (" (:desc m) ") "))]
       s))
 
+(defn vector-subtract [v1 v2]
+  (mapv - v1 v2))
+
+(defn cross-product-2d [v1 v2]
+  (- (* (first v1) (second v2)) (* (second v1) (first v2))))
+
+(defn line-between-points? [p1 p2 cp op]
+  (let [v-line (vector-subtract p2 p1)
+        v-cp (vector-subtract cp p1)
+        v-op (vector-subtract op p1)
+        cross1 (cross-product-2d v-line v-cp)
+        cross2 (cross-product-2d v-line v-op)]
+    ;; The sign of cross2 tells us which "side" of the line op is on.
+    ;; If cross2 is 0, then op is on the line.
+    (if (< (abs cross2) 1)
+      ;; In which case, we return true.
+      true
+      ; Otherwise, check if cp and op have opposite signs (i.e. are on opposite sides of the line).
+      (not (pos? (* cross1 cross2))))))
+
+(defn detect-direction 
+  "Detect if a hex is 'behind' a given hex-side."
+  [this-hex other-hex side layout]
+  (let [this-pixel (hex/hex-to-pixel this-hex layout)
+        points (hex/hex-points this-hex layout)
+        points-list (get-in cu/directions [side :points])
+        p1 [(nth points (first points-list)) (nth points (second points-list))]
+        p2 [(nth points (nth points-list 2)) (nth points (nth points-list 3))]
+        other-hex (hex/hex-to-pixel other-hex layout)]
+    (line-between-points? p1 p2 [(:x this-pixel) (:y this-pixel)] [(:x other-hex) (:y other-hex)])))
+
 (defn print-attack-roll 
   ([attack-roll]
    (print-attack-roll attack-roll true))
@@ -128,3 +172,61 @@
          (let [details (map attack-roll-parser attack-roll)]
            (str/trim (str to-hit-str ": " (reduce str details))))
          (str/trim to-hit-str))))))
+
+(defn take-damage
+  ([unit damage]
+   (take-damage unit damage false))
+  ([unit damage tac]
+   (if (= damage 0)
+     unit
+     (let [armor (max (- (:current-armor unit (:armor unit)) damage) 0) 
+           penetration (- damage (:current-armor unit (:armor unit)))
+           structure (if (zero? armor) 
+                       (- (:current-structure unit (:structure unit)) penetration)
+                       (:current-structure unit (:structure unit)))
+           crit (if (or tac (pos? penetration)) (get criticals (utils/roll2d) nil) nil)
+           damaged (assoc unit :current-armor armor :current-structure structure)
+           upd (cond 
+                 (not (pos? (:current-structure damaged (:structure damaged)))) (assoc damaged :destroyed? true)
+         (= crit :ammo) (let [case (str/includes? (:abilities damaged) "CASE") 
+                              case2 (str/includes? (:abilities damaged) "CASEII") 
+                              ene (str/includes? (:abilities damaged) "ENE")] 
+                          (cond (or case2 ene) damaged 
+                                case (take-damage damaged 1) 
+                                :else (assoc damaged :destroyed? true :crits (conj (:crits damaged) :ammo))))
+         (= crit :engine) (if (some #(= % :engine) (:crits damaged)) 
+                            (assoc damaged :destroyed? true)
+                            (assoc damaged :crits (conj (:crits damaged) :engine)))
+         (= crit :fire-control) (if (< (count (filter #( % :fire-control) (:crits damaged))) 4)
+                                  (assoc damaged :crits (conj (:crits damaged) :fire-control))
+                                  damaged)
+         (= crit :weapon) (if (< (count (filter #( % :weapon) (:crits damaged))) 4)
+                            (cu/take-weapon-hit damaged)
+                            damaged)
+         (= crit :mv) (if (< (count (filter #( % :mv) (:crits damaged))) 4)
+                        (assoc damaged :crits (conj (:crits damaged) :mv))
+                        (assoc damaged :movement {:immobile 0}))
+         (= crit :destroyed) (assoc damaged :destroyed? true :crits (conj (:crits damaged) :destroyed))
+         :else damaged)]
+       (mu/log ::damage-dealt
+               :target (:id unit)
+               :damage damage
+               :crit crit
+               :unit-status upd)
+       upd))))
+
+(defn make-attack 
+  [attacker target board layout]
+  (let [targeting-data (produce-attack-roll attacker target board)
+        rear-attack? (detect-direction target attacker (get-in cu/directions [(:direction target) :rear])layout)
+        damage (cu/calculate-damage attacker (hex/hex-distance attacker target) rear-attack?)
+        to-hit (utils/roll2d)]
+    (mu/log ::make-attack
+            :attacker (:id attacker)
+            :target (:id target)
+            :rear-attack? rear-attack?
+            :targeting-data targeting-data
+            :to-hit to-hit)
+    (if (<= (calculate-to-hit targeting-data) to-hit)
+      (take-damage target damage (= to-hit 12))
+      target)))

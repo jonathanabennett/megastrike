@@ -2,7 +2,7 @@
   (:require [cljfx.api :as fx]
             [clojure.string :as str]
             [megastrike.board :as board]
-            [megastrike.combat-unit :as cu]
+            [megastrike.movement :as movement]
             [megastrike.gui.board.events :as board-events]
             [megastrike.gui.common :as common]
             [megastrike.gui.events :as events]
@@ -140,7 +140,7 @@
   [{:keys [fx/context unit layout]}]
   (let [board (subs/board context)
         origin (board/find-hex unit board)
-        costs (cu/move-costs unit board)]
+        costs (movement/move-costs unit board)]
     {:fx/type :group 
      :children (loop [sprites []
                       total 0
