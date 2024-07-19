@@ -7,7 +7,7 @@
             [megastrike.gui.subs :as subs]
             [megastrike.movement :as movement]
             [megastrike.phases :as initiative]
-            [megastrike.reports :as reports]
+            [megastrike.gui.reports :as reports]
             [megastrike.utils :as utils])
   (:import [javafx.application Platform]
            [javafx.scene.control

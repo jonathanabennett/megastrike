@@ -1,9 +1,7 @@
-(ns megastrike.reports 
+(ns megastrike.logs 
   (:require [clojure.java.io :as io]
             [com.brunobonacci.mulog :as mu]
             [megastrike.utils :as utils]))
-
-(def reports (agent ""))
 
 (def log-file (str utils/application-directory "megastrike.log"))
 

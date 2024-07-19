@@ -5,7 +5,7 @@
             [megastrike.board :as board]
             [megastrike.combat-unit :as cu]
             [megastrike.hexagons.hex :as hex]
-            [megastrike.reports :as reports]
+            [megastrike.logs :as reports]
             [megastrike.utils :as utils]))
 
 (def probabilities 
@@ -209,18 +209,6 @@
                                 (assoc damaged :movement {:immobile 0}))
                  (= crit :destroyed) (assoc damaged :destroyed? true :crits (conj (:crits damaged) :destroyed))
                  :else damaged)]
-       (send reports/reports str (:id upd) " takes " damage " damage to " (:current-armor unit) "armor.\n")
-       (when tac
-         (send reports/reports str "Rolled 12, TAC!\n")
-         (when (not crit)
-           (send reports/reports str "No critical rolled.\n")))
-       (when (zero? armor)
-         (send reports/reports str penetration " damage penetrates the armor.\n")
-         (when (not crit)
-           (send reports/reports str "No criitical rolled.\n")))
-       (when crit
-         (send reports/reports str "Rolled a " (name crit) " critical.\n"))
-       (send reports/reports str "\n\n\n")
        (mu/log ::damage-dealt
                :target (:id unit)
                :damage damage
@@ -264,10 +252,6 @@
             :rear-attack? rear-attack?
             :targeting-data targeting-data
             :to-hit to-hit)
-    (send reports/reports
-          str (:id attacker) " attacking " (:id target) ". Needs a " (calculate-to-hit targeting-data) ": Rolled " to-hit "\n") 
     (if (<= (calculate-to-hit targeting-data) to-hit)
-      (take-damage target damage (= to-hit 12))
-      (do 
-        (send reports/reports str "Missed. \n\n")
-        target))))
+      (take-damage target damage (= to-hit 12)) 
+      target)))

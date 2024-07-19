@@ -7,7 +7,7 @@
             [megastrike.gui.forces.views :as force]
             [megastrike.gui.lobby.views :as lobby]
             [megastrike.gui.subs :as subs]
-            [megastrike.reports :as reports]))
+            [megastrike.gui.reports :as reports]))
 
 (defn attack-report-button 
   [{:keys [fx/context state-id on-confirmed button dialog-pane]}] 
@@ -113,7 +113,7 @@
                          :button {:text "Next Phase"
                                   :disable #_{:clj-kondo/ignore [:not-empty?]}
                                            (not (empty? turn-order))}
-                         :dialog-pane {:content-text @reports/reports}
+                         :dialog-pane {:content-text (fx/sub-val context :round-reports)}
                          :on-confirmed {:event-type ::events/no-op}}
                         {:fx/type :separator
                          :orientation :vertical 

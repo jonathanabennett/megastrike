@@ -1,6 +1,6 @@
 (ns megastrike.phases
   (:require [clojure.math :as math] 
-            [megastrike.reports :as reports]
+            [megastrike.logs :as reports]
             [com.brunobonacci.mulog :as mu]
             [megastrike.utils :as utils]))
 
@@ -51,9 +51,6 @@
         turn-string (str "Turn: " turn-num)
         move-list (str "Turn Order: " (reduce str (map #(str % ", ") (generate-turn-order forces (vals units)))))
         round-report (str turn-string "\n" initiative-report move-list "\n\n----------\n")] 
-    (send reports/reports str turn-string "\n")
-    (send reports/reports str move-list "\n")
-    (send reports/reports str "\n\n---------------------\n")
     (mu/log ::begin-initiative-phase 
             :turn-number turn-num
             :initiative-rolls initiative-report
@@ -68,9 +65,6 @@
         turn-order (generate-turn-order forces deployable-units)
         round-string (str "Deployment Phase\n" "Deployment order: " (reduce str (map #(str % ", ") turn-order)) "\n\n----------\n")
         report (str round-report round-string)] 
-    (send reports/reports str "Deployment Phase\n")
-    (send reports/reports str "Deployment order: " (reduce str (map #(str % ", ") turn-order)) "\n")
-    (send reports/reports str "\n\n--------------------------\n")
     (mu/log ::begin-deployment-phase
             :deployable-units (map :id deployable-units)
             :turn-order turn-order
@@ -83,7 +77,6 @@
   (let [turn-order (generate-turn-order forces (vals units))
         round-string (str "Movement Phase \n" "Movement Order: " (reduce str (map #(str % ", ") turn-order)) "\n\n----------\n")
         report (str round-report round-string)] 
-    (send reports/reports str round-string)
     (mu/log ::begin-movement-phase 
             :turn-order turn-order
             :instrumentation :player)
@@ -95,7 +88,6 @@
   (let [turn-order (generate-turn-order forces)
         round-string (str "Combat Phase \n" "Attack Order: " (reduce str (map #(str % ", ") turn-order)) "\n\n----------\n")
         report (str round-report round-string)] 
-    (send reports/reports str round-string)
     (mu/log ::begin-combat-phase
             :turn-order turn-order
             :instrumentation :player)
