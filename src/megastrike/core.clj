@@ -2,14 +2,12 @@
   (:gen-class
    :main true)
   (:require [cljfx.api :as fx]
-            [clojure.java.io :as io]
             [clojure.core.cache :as cache]
             [com.brunobonacci.mulog :as mu]
             [megastrike.combat-unit :as cu]
             [megastrike.gui.events :as events]
             [megastrike.gui.views :as views]
-            [megastrike.hexagons.hex :as hex]
-            [megastrike.utils :as utils])
+            [megastrike.hexagons.hex :as hex])
   (:import (javafx.application Platform)))
 
 (mu/set-global-context! {:app-name "MegaStrike" :version "0.3.0"})
