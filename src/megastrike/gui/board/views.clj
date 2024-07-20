@@ -1,12 +1,15 @@
 (ns megastrike.gui.board.views
-  (:require [clojure.string :as str]
+  (:require [cljfx.api :as fx]
+            [clojure.string :as str]
             [megastrike.board :as board]
-            [megastrike.combat-unit :as cu]
+            [megastrike.movement :as movement]
             [megastrike.gui.board.events :as board-events]
             [megastrike.gui.common :as common]
             [megastrike.gui.events :as events]
             [megastrike.gui.subs :as subs]
-            [megastrike.hexagons.hex :as hex]))
+            [megastrike.hexagons.hex :as hex]
+            [megastrike.attacks :as attacks])
+  (:import [javafx.scene.control Dialog DialogEvent]))
 
 (defn draw-hex [{:keys [hex layout]}]
   (let [points (hex/hex-points hex layout)
@@ -38,7 +41,17 @@
                  :layout-y (nth points 5)
                  :font 16
                  :translate-x (* 10 (:scale layout))
-                 :translate-y (* -20 (:scale layout))}
+                 :translate-y (* -20 (:scale layout))} 
+                {:fx/type :label
+                 :text "Corner 2"
+                 :layout-x (nth points 2)
+                 :layout-y (nth points 3)
+                 :font 16}
+                {:fx/type :label
+                 :text "Corner 1"
+                 :layout-x (nth points 0)
+                 :layout-y (nth points 1)
+                 :font 16}
                 {:fx/type :label
                  :text (format "%02d%02d" (:x offset) (:y offset))
                  :layout-x (nth points 8)
@@ -51,29 +64,41 @@
   (let [hex (hex/hex-points unit layout)
         forces (subs/forces context)
         force (forces (unit :force))] 
-    {:fx/type :group
-     :on-mouse-clicked {:event-type ::events/unit-clicked :unit unit}
-     :children [{:fx/type common/draw-sprite 
-                 :unit unit 
-                 :force force 
-                 :x (nth hex 8)
-                 :y (nth hex 9)
-                 :direction true
-                 :shift (/ (* (layout :y-size) (:scale layout)) 3)}
-                {:fx/type :label
-                 :text (unit :full-name)
-                 :layout-x (nth hex 8)
-                 :layout-y (nth hex 9)
-                 :font 16
-                 :translate-y (/ (* (layout :y-size) (:scale layout)) 3)}
-                {:fx/type :label 
-                 :text (if (:movement-mode unit)
-                         (name (:movement-mode unit))
-                         "Did not move")
-                 :layout-x (nth hex 4)
-                 :layout-y (nth hex 5)
-                 :font 16
-                 :translate-y (* (/ (* (layout :y-size) (:scale layout)) 3) -2)}]}))
+    {:fx/type fx/ext-let-refs
+     :refs {::dialog {:fx/type :choice-dialog 
+                      :showing (fx/sub-val context get-in [:internal (:id unit) :showing] false) 
+                      :on-close-request (fn [^DialogEvent event] 
+                                          (when (nil? (.getResult ^Dialog (.getSource event))) 
+                                            (.consume event))) 
+                      :header-text "Select Attack" 
+                      :on-hidden {:event-type ::events/close-attack-selection
+                                  :unit unit
+                                  :on-close {:event-type ::events/set-attack 
+                                             :unit unit}} 
+                      :items (fx/sub-val context get-in [:internal (:id unit) :items] [])}} 
+     :desc {:fx/type :group
+      :on-mouse-clicked {:event-type ::events/unit-clicked :unit unit}
+      :children [{:fx/type common/draw-sprite 
+                  :unit unit 
+                  :force force 
+                  :x (nth hex 8)
+                  :y (nth hex 9)
+                  :direction true
+                  :shift (/ (* (layout :y-size) (:scale layout)) 3)}
+                 {:fx/type :label
+                  :text (unit :full-name)
+                  :layout-x (nth hex 8)
+                  :layout-y (nth hex 9)
+                  :font 16
+                  :translate-y (/ (* (layout :y-size) (:scale layout)) 3)}
+                 {:fx/type :label 
+                  :text (if (:movement-mode unit)
+                          (name (:movement-mode unit))
+                          "Did not move")
+                  :layout-x (nth hex 4)
+                  :layout-y (nth hex 5)
+                  :font 16
+                  :translate-y (* (/ (* (layout :y-size) (:scale layout)) 3) -2)}]}}))
 
 (defn draw-target-line [{:keys [fx/context unit layout]}]
   (let [board (subs/board context)
@@ -83,7 +108,7 @@
         target-hex (board/find-hex target board)
         target-point (hex/hex-to-pixel target-hex layout)
         range (hex/hex-distance unit target)
-        to-hit (cu/calculate-to-hit unit target board)] 
+        to-hit (attacks/print-attack-roll (attacks/produce-attack-roll unit target board) false)] 
     {:fx/type :group
      :children [{:fx/type :line 
                  :start-x (:x origin-point) 
@@ -115,7 +140,7 @@
   [{:keys [fx/context unit layout]}]
   (let [board (subs/board context)
         origin (board/find-hex unit board)
-        costs (cu/move-costs unit board)]
+        costs (movement/move-costs unit board)]
     {:fx/type :group 
      :children (loop [sprites []
                       total 0
@@ -143,7 +168,6 @@
         destinations (filter #(seq (:path %)) (vals (subs/units context)))
         target-lines (filter #(and (= active-force (:force %)) (:target %)) unit-locations)] 
     {:fx/type :scroll-pane 
-     :on-key-pressed {:event-type ::events/key-dispatcher :fx/sync true}
      :content {:fx/type :group
                :children (concat
                           (for [h gb]

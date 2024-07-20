@@ -3,11 +3,14 @@
    :main true)
   (:require [cljfx.api :as fx]
             [clojure.core.cache :as cache]
+            [com.brunobonacci.mulog :as mu]
             [megastrike.combat-unit :as cu]
             [megastrike.gui.events :as events]
             [megastrike.gui.views :as views]
             [megastrike.hexagons.hex :as hex])
   (:import (javafx.application Platform)))
+
+(mu/set-global-context! {:app-name "MegaStrike" :version "0.3.0"})
 
 (def *state
   (atom
@@ -24,10 +27,12 @@
      :forces {}
      :units {}
      :ghosts []
+     :internal {}
      :active-mul nil
      :active-force nil
      :active-unit nil
      :map-boards []
+     :round-report ""
      :game-board []
      :layout (hex/create-layout)
      :map-width "1"
@@ -56,5 +61,6 @@
 (defn -main
   "The main entry point for the game."
   []
+  (mu/log ::launch-game)
   (Platform/setImplicitExit true)
   (fx/mount-renderer *state renderer))

@@ -2,6 +2,7 @@
   (:require [clojure.string :as str]
             [megastrike.combat-unit :as cu]
             [megastrike.gui.common :as common]
+            [megastrike.attacks :as attacks]
             [megastrike.gui.subs :as subs]
             [megastrike.gui.events :as events]))
 
@@ -72,9 +73,9 @@
      :padding 5
      :content {:fx/type :v-box 
                :style (cond 
-                     (= (:id unit) active) "-fx-background-color: #BBBBBB;"
-                     (not (:acted unit)) "-fx-background-color: 999999"
-                     :else "-fx-background-color: #DDDDDD;")
+                        (= (:id unit) active) "-fx-background-color: #BBBBBB;"
+                        (not (:acted unit)) "-fx-background-color: 999999"
+                        :else "-fx-background-color: #DDDDDD;")
                :spacing 5 
                :children [{:fx/type :h-box 
                            :spacing 5 
@@ -100,7 +101,7 @@
                                        :value (str (:size unit))} 
                                       {:fx/type common/prop-label 
                                        :label "TMM: " 
-                                       :value (str (cu/get-tmm unit))}]} 
+                                       :value (str (attacks/get-tmm unit))}]} 
                           {:fx/type common/prop-label 
                            :label "Pilot (skill): " 
                            :value (str (:name (:pilot unit)) " (" (:skill (:pilot unit)) ")")} 

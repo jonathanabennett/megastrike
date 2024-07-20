@@ -16,7 +16,8 @@
         {
             "label": "coverage",
             "type": "shell",
-            "command": "lein cloverage",
+            "command": "lein cloverage -e 'megastrike.gui.*'",
+            "problemMatcher": []
         }
     ]
 }
