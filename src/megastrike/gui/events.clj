@@ -8,6 +8,7 @@
             [megastrike.movement :as movement]
             [megastrike.phases :as initiative]
             [megastrike.gui.reports :as reports]
+            [megastrike.logs :as logs]
             [megastrike.utils :as utils])
   (:import [javafx.application Platform]
            [javafx.scene.control
@@ -37,8 +38,7 @@
 
 (defmethod event-handler ::quit-game
   [_]
-  (await reports/reports)
-  (reports/logs)
+  (logs/logs)
   (Platform/exit))
 
 (defmethod event-handler ::stats-clicked
@@ -115,7 +115,6 @@
                                          :forces forces
                                          :units units
                                          :round-report (fx/sub-val context :round-report)})]
-    (await reports/reports)
     {:context (fx/swap-context context merge response)
      :dispatch {:event-type ::show-popup :state-id state-id}}))
 
@@ -179,17 +178,20 @@
   [{:keys [fx/context]}]
   (let [nodes (subs/board context)]
     (loop [units (subs/units context) 
-           attackers (filter #(:target %) (subs/current-forces context))] 
+           attackers (filter #(:target %) (subs/current-forces context))
+           report (fx/sub-val context :round-report)] 
       (if (empty? attackers) 
         {:context (fx/swap-context context assoc 
                                    :units units 
                                    :active-unit nil
+                                   :round-report report
                                    :turn-order (rest (subs/turn-order context)))}
         (let [attacker (first attackers)
               target (get units (:target attacker))
-              upd (attacks/make-attack attacker target nodes (fx/sub-val context :layout))]
-          (recur (assoc units (:id target) upd)
-                 (rest attackers)))))))
+              data (attacks/make-attack attacker target nodes (fx/sub-val context :layout))]
+          (recur (assoc units (:id target) (:result data))
+                 (rest attackers)
+                 (str report (reports/parse-attack-data data))))))))
 
 (defmethod event-handler ::clear-target 
   [{:keys [fx/context]}]

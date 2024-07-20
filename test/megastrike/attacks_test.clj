@@ -2,7 +2,8 @@
   (:require [clojure.test :as t]
             [megastrike.attacks :as sut]
             [megastrike.board :as board]
-            [megastrike.combat-unit :as cu]))
+            [megastrike.combat-unit :as cu]
+            [megastrike.hexagons.hex :as hex]))
 
 (def board (board/create-board "data/boards/AGoAC Maps/16x17 Grassland 2.board")) 
 (def attacker1 (cu/create-element (cu/get-unit "Wolfhound WLF-2") {:id "Wolfhound WLF-2" :path [] :p 1 :q 1 :r -2 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s}))
@@ -189,9 +190,20 @@
       (t/is (= (:current-armor tgt) 0))
       (t/is (= (:current-structure tgt) 2)))))
 
-;; (t/deftest test-make-attack
-;;   (t/testing "Test searching for a valid sprite."
-;;     (t/is (= (sut/make-attack {:id "Unit 1" :p 0 :q 0 :r 0 :pilot {:skill 4}
-;;                                        :movement-mode :walk :tmm 2}
-;;                               {:id "Unit 2" :p 2 :q 0 :r -2 :pilot {:skill 4}
-;;                                        :movement-mode :walk :tmm 2}) 1))))
+(t/deftest test-make-attack
+  (t/testing "Test attack that hits"
+    (t/is (= (sut/make-attack (merge attacker1 {:direction :n}) (merge target1 {:direction :n}) board (hex/create-layout) 11)
+             {:targeting-data [[{:desc "pilot skill", :value 4}]
+                               [{:desc "0 fire control hits", :value 0}]
+                               [{:desc "attacker moved", :value 0}]
+                               [{:desc "target moved", :value 2}]
+                               nil
+                               [{:desc "clear line of sight", :value 0}]
+                               [{:desc "no intervening woods", :value 0}]
+                               [{:desc "target 1 hexes away", :value 0}]]
+              :rear-attack? false
+              :to-hit 11
+              :hit? true
+              :attacker (merge attacker1 {:direction :n})
+              :target (merge target1 {:direction :n})
+              :result {:role "Striker", :path [], :tmm 2, :q 1, :left-arc "", :e* false, :movement {:walk 6}, :r -3, :right-arc "", :pilot {:name " Lieutenant Ciro Ramirez", :skill 4}, :force :1stsomersetstrikers, :mul-id 3563, :l* false, :m 3, :type "BM", :front-arc "", :current-structure 3, :abilities "ENE, REAR1/1/-", :acted nil, :e 0, :s 3, :threshold -1, :l 1, :size 1, :m* false, :rear-arc "", :point-value 28, :overheat 0, :chassis "Wolfhound", :structure 3, :crits [], :id "Wolfhound WLF-2", :full-name "Wolfhound WLF-2", :armor 4, :current-heat 0, :current-armor 1, :s* false, :p 2, :movement-mode :walk, :direction :n, :model "WLF-2"}}))))

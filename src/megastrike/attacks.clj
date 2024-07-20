@@ -5,7 +5,6 @@
             [megastrike.board :as board]
             [megastrike.combat-unit :as cu]
             [megastrike.hexagons.hex :as hex]
-            [megastrike.logs :as reports]
             [megastrike.utils :as utils]))
 
 (def probabilities 
@@ -214,7 +213,8 @@
                :damage damage
                :crit crit
                :unit-status upd)
-       upd))))
+       {:crit crit
+        :result upd}))))
 
 (defn attack-confirmation-choices
   [attacker target board]
@@ -241,17 +241,24 @@
                (rest attackers))))))
 
 (defn make-attack 
-  [attacker target board layout]
-  (let [targeting-data (produce-attack-roll attacker target board)
-        rear-attack? (detect-direction target attacker (get-in cu/directions [(:direction target) :rear]) layout)
-        damage (cu/calculate-damage attacker (hex/hex-distance attacker target) rear-attack?)
-        to-hit (utils/roll2d)]
-    (mu/log ::make-attack
-            :attacker (:id attacker)
-            :target (:id target)
-            :rear-attack? rear-attack?
-            :targeting-data targeting-data
-            :to-hit to-hit)
-    (if (<= (calculate-to-hit targeting-data) to-hit)
-      (take-damage target damage (= to-hit 12)) 
-      target)))
+  ([attacker target board layout to-hit]
+   (let [targeting-data (produce-attack-roll attacker target board)
+         rear-attack? (detect-direction target attacker (get-in cu/directions [(:direction target) :rear]) layout)
+         damage (cu/calculate-damage attacker (hex/hex-distance attacker target) rear-attack?)]
+     (mu/log ::make-attack
+             :attacker (:id attacker)
+             :target (:id target)
+             :rear-attack? rear-attack?
+             :targeting-data targeting-data
+             :to-hit to-hit)
+     (merge {:targeting-data targeting-data
+             :rear-attack? rear-attack?
+             :to-hit to-hit
+             :attacker attacker
+             :damage damage
+             :target target}
+             (if (<= (calculate-to-hit targeting-data) to-hit)
+                       (take-damage target damage (= to-hit 12))
+                       {:result target}))))
+  ([attacker target board layout]
+   (make-attack attacker target board layout (utils/roll2d))))

@@ -55,6 +55,7 @@
             :turn-number turn-num
             :initiative-rolls initiative-report
             :turn-order move-list
+            :current-phase "Initiative"
             :instrumentation :player)
     {:current-phase :initiative :turn-number turn-num :forces forces :turn-order nil :units units :round-report round-report}))
 
@@ -68,6 +69,7 @@
     (mu/log ::begin-deployment-phase
             :deployable-units (map :id deployable-units)
             :turn-order turn-order
+            :current-phase "Deployment"
             :instrumentation :player)
     {:current-phase :deployment :turn-order turn-order :units units :round-report report}))
 
@@ -79,6 +81,7 @@
         report (str round-report round-string)] 
     (mu/log ::begin-movement-phase 
             :turn-order turn-order
+            :current-phase "Movement"
             :instrumentation :player)
     {:current-phase :movement :turn-order turn-order :units units :round-report report}))
 
@@ -90,6 +93,7 @@
         report (str round-report round-string)] 
     (mu/log ::begin-combat-phase
             :turn-order turn-order
+            :current-phase "Combat"
             :instrumentation :player)
     {:current-phase :combat :turn-order turn-order :units units :round-report report}))
 
@@ -105,7 +109,8 @@
                                                              [k unit])))
         targeting-removed (into {} (for [[k unit] heat-removed] (if (not-any? #(= (:target unit) %) (keys units)) [k (assoc unit :target nil)]
                                                              [k unit])))] 
-    (mu/log ::begin-end-phase)
+    (mu/log ::begin-end-phase
+            :current-phase "End")
     {:current-phase :end :turn-order nil :units targeting-removed}))
 
 (defn next-phase 
