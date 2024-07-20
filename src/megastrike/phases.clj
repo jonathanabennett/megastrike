@@ -1,6 +1,5 @@
 (ns megastrike.phases
   (:require [clojure.math :as math] 
-            [megastrike.logs :as reports]
             [com.brunobonacci.mulog :as mu]
             [megastrike.utils :as utils]))
 

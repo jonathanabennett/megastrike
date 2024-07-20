@@ -6,9 +6,7 @@
             [megastrike.gui.events :as events]
             [megastrike.gui.forces.views :as force]
             [megastrike.gui.lobby.views :as lobby]
-            [megastrike.gui.subs :as subs]
-            [megastrike.gui.reports :as reports]
-            [com.brunobonacci.mulog :as mu]))
+            [megastrike.gui.subs :as subs]))
 
 (defn attack-report-button 
   [{:keys [fx/context state-id on-confirmed button dialog-pane]}] 
