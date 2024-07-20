@@ -1,21 +1,5 @@
 (ns megastrike.gui.reports
-  (:require [clojure.pprint :as pprint]
-            [clojure.edn :as edn]
-            [megastrike.logs :as logs]
-            [clojure.string :as str]
-            [megastrike.attacks :as attacks]))
-
-;; Write a function that takes a file, opens it up, and
-;; dumps it into a string  for use in the reports
-(defn read-logs 
-  ([file]
-   (let [f (slurp file)
-         edns (map #(edn/read-string {:default tagged-literal} %) (str/split-lines f))
-         filtered (filter #(= (:instrumentation %) :player) edns)] 
-     (prn (map :player-message filtered))
-     (reduce str (map :player-message filtered))))
-  ([]
-   (read-logs logs/log-file)))
+  (:require [megastrike.attacks :as attacks]))
 
 (defn parse-attack-data 
   [data]
