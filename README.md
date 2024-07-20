@@ -10,9 +10,9 @@ A Clojure App to play Alphastrike on the computer.
 
 ## What works
 
-Right now (v0.3), the game allows you to simulate combat between armies of any size using units exported from Megamek via their AlphaStrike stat generator. While the game won't stop you from using them, note that *FLYING UNITS DO NOT FLY* and none of the rules for them have been implemented yet. I am currently hiding all the Aero elements and many of the conventional fighters, but VTOLs and Support Vehicles which fly are still in the lists, so you could "use" them.
+Right now (v0.4), the game allows you to simulate combat between armies of any size using units exported from Megamek via their AlphaStrike stat generator. While the game won't stop you from using them, note that *FLYING UNITS DO NOT FLY* and none of the rules for them have been implemented yet. I am currently hiding all the Aero elements and many of the conventional fighters, but VTOLs and Support Vehicles which fly are still in the lists, so you could "use" them.
 
-Terrain and basic attacks (including critical hits and their effects) work. Special attacks (from Special Abilities, Physicals, and attacks from the rear) do not work.
+Terrain and attacks (including physical attacks, rear attacks, critical hits and their effects) work. Special attacks (Charges, DFS, and attacks Special Abilities) do not work.
 
 Scenario reading (from MegaMek Scenario files, .mms) works but not everything works. Things known not to work include:
 
@@ -52,6 +52,10 @@ Finally, initialize the map by entering number of boards wide by high you want t
 
 If you have completed all of these steps, click the "Launch Game" button.
 
+#### Zooming the map
+
+In addition to the zoom in and zoom out buttons, the keyboard shortcuts for + and - should also zoom the map.
+
 ### Initiative Phase
 
 Initiative is rolled automatically. In this phase, simply press "Next Phase".
@@ -72,9 +76,9 @@ When you're ready to move that unit, click "Move Unit". If a unit is standing st
 
 ### Combat Phase
 
-To declare an attack, select the unit on the right and then select their target. In Alpha Strike, all attacks for a side are declared and resolved simultaneously, therefore you should declare all your attacks before clicking "Resolve Attacks". Once both sides have resolved their attacks, click "Next Phase".
+To declare an attack, select the unit on the right and then select their target. This will pop up a window where you can select what kind of attack. A `:regular` attack uses the default damage line. `:physical` attacks are calculated per the physical attack rules. In Alpha Strike, all attacks for a side are declared and resolved simultaneously, therefore you should declare all your attacks before clicking "Resolve Attacks". Once both sides have resolved their attacks, click "Next Phase".
 
-If you do not have line of sight to the target, the To Hit number shown on the line will be Infinity. If you want a report similar to MegaMek, check the terminal window where you launched the program.
+If you do not have line of sight to the target, the To Hit number will be infinity. You will see detailed calculation details for the attack in the round report.
 
 ### End Phase
 
@@ -90,20 +94,24 @@ Initiative for the next round is rolled automatically. Simply click "Next Phase"
 
 This was the first "functional" release. It was a very primitive implementation of the rules, allowing a hot-seat 1 on 1 game. The map was a featureless plain. Facing was not calculated. Critical hits were not applied. Only standard attack types worked. Basically, you could build two forces, and then have them move, shoot, and lose armor/structure until everyone died.
 
-### 0.2.0 Previous release
+### 0.2.0
 
 This release focuses on adding support for Scenarios, terrain, and movement. The scenario files that ship with MegaMek provide a super convenient "test bank" to ensure that everything is working. Assuming every scenario can load and run, everything is working. Therefore, I have prioritized getting scenarios working.
 
 The next step is to make the terrain on the map actually mean something and make the map easier to read. It affects movement, but does not yet affect combat
 
-## Roadmap
-### 0.3.0 This Release
+### 0.3.0 Previous Release
 
 This release focuses on the combat phase. It adds LOS, terrain affecting To-hit rolls, and critical hits. Still missing are abilities, physicals, and rear attacks.
 
+### 0.4.0 This Release
+
+This release focuses on round reports and on physical attacks.
+
+## Roadmap
 ### Next Release
 
-This release will focus on physicals and rear attacks as well as a refactoring of the code to make testing easier.
+This release will focus on Special attack and having unit attacks respect facing (i.e. you won't be able to attack units behind you unless you have a REAR special ability).
 
 ### R+2
 
