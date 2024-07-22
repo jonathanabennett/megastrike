@@ -12,7 +12,7 @@
   (:import [javafx.scene.control Dialog DialogEvent]))
 
 (defn draw-hex [{:keys [hex layout]}]
-  (let [points (hex/hex-points hex layout)
+  (let [points (hex/points hex layout)
         offset (hex/offset-from-hex hex)
         elevation (:elevation hex)
         terrain (:terrain hex)
@@ -61,7 +61,7 @@
                  :translate-y (* 10 (:scale layout))}]}))
 
 (defn draw-unit [{:keys [fx/context unit layout]}]
-  (let [hex (hex/hex-points unit layout)
+  (let [hex (hex/points unit layout)
         forces (subs/forces context)
         force (forces (unit :force))] 
     {:fx/type fx/ext-let-refs
@@ -107,7 +107,7 @@
         target (get (subs/units context) (:target unit))
         target-hex (board/find-hex target board)
         target-point (hex/hex-to-pixel target-hex layout)
-        range (hex/hex-distance unit target)
+        range (hex/distance unit target)
         to-hit (attacks/print-attack-roll (attacks/produce-attack-roll unit target board) false)] 
     {:fx/type :group
      :children [{:fx/type :line 

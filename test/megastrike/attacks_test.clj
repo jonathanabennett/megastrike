@@ -85,37 +85,37 @@
   (t/testing "Check for LOS"
     (t/is (= (sut/height-checker 
               attacker1 target1 
-              (board/hex-line 
+              (board/line 
                (board/find-hex attacker1 board)
                (board/find-hex target1 board) board)) false))
     (t/is (= (sut/height-checker 
               attacker1 wooded-unit 
-              (board/hex-line 
+              (board/line 
                (board/find-hex attacker1 board)
                (board/find-hex wooded-unit board) board)) false))
     (t/is (= (sut/height-checker 
               blinded-attacker blinded-target
-              (board/hex-line 
+              (board/line 
                (board/find-hex blinded-attacker board)
                (board/find-hex blinded-target board) board)) true))
     (t/is (= (sut/height-checker 
               blinded-target blinded-attacker
-              (board/hex-line 
+              (board/line 
                (board/find-hex blinded-target board)
                (board/find-hex blinded-attacker board) board)) true))
     (t/is (= (sut/height-checker 
               heated-attacker target1 
-              (board/hex-line
+              (board/line
                (board/find-hex heated-attacker board)
                (board/find-hex target1 board) board)) false))
     (t/is (= (sut/height-checker 
               heated-attacker wooded-unit 
-              (board/hex-line 
+              (board/line 
                (board/find-hex heated-attacker board)
                (board/find-hex wooded-unit board) board)) false))
     (t/is (= (sut/height-checker 
               heated-attacker blinded-target 
-              (board/hex-line 
+              (board/line 
                (board/find-hex heated-attacker board)
                (board/find-hex blinded-target board) board)) false))))
 

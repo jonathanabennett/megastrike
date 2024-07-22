@@ -22,7 +22,7 @@
        (let [e ^MouseEvent event 
              u (if (:path unit) (last (:path unit)) unit)
              dest {:x (.getX e) :y (.getY e)}
-             facing (hex/hex-facing u dest (subs/layout context))]
+             facing (hex/facing u dest (subs/layout context))]
          {:dispatch {:event-type ::events/change-facing :unit unit :facing facing}})
        (and (= phase :deployment) (not (nil? unit)) (not (get unit :acted)) (= (get unit :force) next-force)) 
        (let [updated (merge unit (select-keys hex [:p :q :r])) 

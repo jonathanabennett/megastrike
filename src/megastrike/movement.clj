@@ -7,7 +7,7 @@
   [unit destination board]
   (let [origin (board/find-hex unit board)
         mv-type (get unit :movement-mode :walk)]
-    (board/astar origin destination board hex/hex-distance mv-type)))
+    (board/astar origin destination board hex/distance mv-type)))
 
 (defn move-costs 
   [unit board]

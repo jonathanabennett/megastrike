@@ -11,7 +11,7 @@
   ([q r s elevation terrain palette]
    (create-tile (hex/hexagon q r s) elevation terrain palette))
   ([x y elevation terrain palette]
-   (create-tile (hex/hex-from-offset x y) elevation terrain palette))
+   (create-tile (hex/from-offset x y) elevation terrain palette))
   ([hex elevation terrain palette]
    (merge hex {:elevation elevation :terrain terrain :palette palette})))
 
@@ -84,20 +84,20 @@
   [a b step]
   (+ a (* (- b a) step)))
 
-(defn hex-lerp
+(defn lerp
   [hex1 hex2 step]
   {:p (linear-interpolation (:p hex1) (:p hex2) step)
    :q (linear-interpolation (:q hex1) (:q hex2) step)
    :r (linear-interpolation (:r hex1) (:r hex2) step)})
 
-(defn hex-line
+(defn line
   [hex1 hex2 board]
-  (let [distance (hex/hex-distance hex1 hex2)]
+  (let [distance (hex/distance hex1 hex2)]
     (loop [result []
            step 0]
       (if (= step distance)
         (conj result (find-hex hex2 board))
-        (recur (conj result (find-hex (hex/hex-round (hex-lerp hex1 hex2 (* (/ 1.0 distance) step))) board))
+        (recur (conj result (find-hex (hex/round (lerp hex1 hex2 (* (/ 1.0 distance) step))) board))
                (inc step))))))
 
 (defn step-cost
@@ -118,21 +118,21 @@
    (let [mapsheet (create-mapsheet filename)]
      (reify BOARD
        (nodes [_] (:tiles mapsheet))
-       (neighbors [board node] (into [] (remove nil? (map #(find-hex % board) (hex/hex-neighbors node)))))
+       (neighbors [board node] (into [] (remove nil? (map #(find-hex % board) (hex/neighbors node)))))
        (mapsheets [_] [[mapsheet]])
        (weight [_ from to mv-type] (step-cost from to mv-type)))))
   ([mapsheet-array _ _] 
    (let [tiles ((comp vec flatten vector) (for [m mapsheet-array] (:tiles m nil)))] 
      (reify BOARD 
        (nodes [_] tiles)
-       (neighbors [board node] (into [] (remove nil? (map #(find-hex % board) (hex/hex-neighbors node)))))
+       (neighbors [board node] (into [] (remove nil? (map #(find-hex % board) (hex/neighbors node)))))
        (mapsheets [_] mapsheet-array)
        (weight [_ from to mv-type] (step-cost from to mv-type)))))
   ([width height]
    (let [mapsheet (create-mapsheet width height)]
      (reify BOARD
        (nodes [_] (:tiles mapsheet))
-       (neighbors [board node] (into [] (remove nil? (map #(find-hex % board) (hex/hex-neighbors node)))))
+       (neighbors [board node] (into [] (remove nil? (map #(find-hex % board) (hex/neighbors node)))))
        (mapsheets [_] [[mapsheet]])
        (weight [_ from to mv-type] (step-cost from to mv-type))))))
 

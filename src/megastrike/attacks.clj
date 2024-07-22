@@ -104,7 +104,7 @@
             
 (defn produce-attack-roll
   [attacker target board]
-  (let [line (board/hex-line attacker target board) 
+  (let [line (board/line attacker target board) 
         attack-roll (conj [] (attacker-skill attacker) 
                              (calculate-fc-hits attacker) 
                              (calculate-amm attacker) 
@@ -114,7 +114,7 @@
                                [{:desc "Line of Sight Blocked" :value ##Inf}]
                                [{:desc "clear line of sight" :value 0}])
                              (woods-mod line) 
-                             (calculate-range-mod (hex/hex-distance attacker target)))]
+                             (calculate-range-mod (hex/distance attacker target)))]
     attack-roll))
 
 (defn calculate-to-hit 
@@ -219,7 +219,7 @@
 (defn attack-confirmation-choices
   [attacker target board]
   (let [atk-data (produce-attack-roll attacker target board)
-        range (hex/hex-distance attacker target)
+        range (hex/distance attacker target)
         regular-damage (cu/print-damage attacker range false)
         physical-damage (cu/print-damage attacker range true)]
     [{:regular (str (print-attack-roll atk-data false) ": " regular-damage " damage")}
@@ -237,14 +237,14 @@
             atk-data (produce-attack-roll attacker target board)]
         (recur (str ret (:full-name attacker) " will attack " (:full-name target) ": " (calculate-to-hit atk-data) "\n"
                     "Modifiers: " (print-attack-roll atk-data) "\n"
-                    "Damage: " (cu/print-damage attacker (hex/hex-distance attacker target) (:physical attacker)) "\n")
+                    "Damage: " (cu/print-damage attacker (hex/distance attacker target) (:physical attacker)) "\n")
                (rest attackers))))))
 
 (defn make-attack 
   ([attacker target board layout to-hit]
    (let [targeting-data (produce-attack-roll attacker target board)
          rear-attack? (detect-direction target attacker (get-in cu/directions [(:direction target) :rear]) layout)
-         damage (cu/calculate-damage attacker (hex/hex-distance attacker target) rear-attack?)]
+         damage (cu/calculate-damage attacker (hex/distance attacker target) rear-attack?)]
      (mu/log ::make-attack
              :attacker (:id attacker)
              :target (:id target)

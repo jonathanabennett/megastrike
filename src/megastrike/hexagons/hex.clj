@@ -33,28 +33,28 @@
        (= (:q hex1) (:q hex2))
        (= (:r hex1) (:r hex2))))
 
-(defn hex-addition
+(defn addition
   "Use Cartesian addition to add two hexagons together."
   [hex1 hex2]
   (hexagon (+ (:p hex1) (:p hex2)) (+ (:q hex1) (:q hex2)) (+ (:r hex1) (:r hex2))))
 
-(defn hex-subtraction
+(defn subtraction
   "Use Cartesian subtraction to add two hexagons together."
   [hex1 hex2]
   (hexagon (- (:p hex1) (:p hex2)) (- (:q hex1) (:q hex2)) (- (:r hex1) (:r hex2))))
 
-(defn hex-multiplication
+(defn multiplication
   "Use Cartesian multiplication to multipy a hex by a value x."
   [hex x]
   (hexagon (* (:p hex) x) (* (:q hex) x) (* (:r hex) x)))
 
-(defn hex-distance
+(defn distance
   "The distance between two hexes using 3d addresses is half of the sum of the differences of the address hexes."
   [hex1 hex2]
-  (let [length (hex-subtraction hex1 hex2)]
+  (let [length (subtraction hex1 hex2)]
     (/ (+ (abs (:p length)) (abs (:q length)) (abs (:r length))) 2)))
 
-(def hex-ordinals
+(def ordinals
   "Defines the neighbors in each direction."
   (list {:p 1  :q 0  :r -1} 
         {:p 1  :q -1 :r 0} 
@@ -63,21 +63,21 @@
         {:p -1 :q 1  :r 0} 
         {:p 0  :q 1  :r -1}))
 
-(defn hex-direction
+(defn direction
   "Returns the coordinate transformation to select a hex in a given direction"
   [direction]
   (let [dir (mod direction 6)]
-    (nth hex-ordinals dir)))
+    (nth ordinals dir)))
 
-(defn hex-neighbor
+(defn neighbor
   "The neighbor in a given direction."
   [hex direction]
-  (hex-addition hex (hex-direction direction)))
+  (addition hex (direction direction)))
 
-(defn hex-neighbors
+(defn neighbors
   [hex]
   (for [i (range 6)]
-    (hex-neighbor hex i)))
+    (neighbor hex i)))
 
 (defn create-layout
   "Creates a layout. Populated with the default layout."
@@ -113,13 +113,13 @@
      (+ (* (:y-size layout) (math/sin angle) (:scale layout)) 
         (:y center))]))
 
-(defn hex-points
+(defn points
   "Returns a list of all the corners of a hex."
   [hex layout]
   (let [center (hex-to-pixel hex layout)]
     (flatten (map #(find-hex-corner center % layout) (list 0 1 2 3 4 5)))))
 
-(defn hex-round
+(defn round
   [{:keys [p q r]}]
   (let [p-int (math/round p)
         q-int (math/round q)
@@ -136,7 +136,7 @@
        (hexagon p-int (* (+ p-int r-int) -1) r-int)
       :else (hexagon p-int q-int (* (+ p-int q-int) -1)))))
 
-(defn hex-facing 
+(defn facing 
   "Finds which hexside a line starting from the center of the hex and
    reaching a point beyond the hex passes through. Used for changing facing"
   [o destination layout]
@@ -167,4 +167,4 @@
 ;;              (* (:y modified-point) (get pth 1)))
 ;;         q (+ (* (:x modified-point) (get pth 2))
 ;;              (* (:y modified-point) (get pth 3)))]
-;;     (hex-round p q (* (+ p q) -1))))
+;;     (round p q (* (+ p q) -1))))
