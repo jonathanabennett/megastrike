@@ -65,14 +65,14 @@
 
 (defn direction
   "Returns the coordinate transformation to select a hex in a given direction"
-  [direction]
-  (let [dir (mod direction 6)]
-    (nth ordinals dir)))
+  [dir]
+  (let [d (mod dir 6)]
+    (nth ordinals d)))
 
 (defn neighbor
   "The neighbor in a given direction."
-  [hex direction]
-  (addition hex (direction direction)))
+  [hex dir]
+  (addition hex (direction dir)))
 
 (defn neighbors
   [hex]
