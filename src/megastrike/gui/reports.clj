@@ -2,19 +2,19 @@
   (:require [megastrike.attacks :as attacks]))
 
 (defn parse-attack-data 
-  [data]
-  (let [atk-id (get-in data [:attacker :id])
-        tgt-id (get-in data [:target :id])
-        arm (get-in data [:target :current-armor] (get-in data [:target :armor]))
-        penetration (- (:damage data) arm)
-        target-num (attacks/calculate-to-hit (:targeting-data data))]
+  [{:keys [attacker target damage targeting-data to-hit result crit] :as data}]
+  (let [atk-id (:id attacker)
+        tgt-id (:id target)
+        arm (:current-structure target (:structure target))
+        penetration (- damage arm)
+        target-num (attacks/calculate-to-hit targeting-data)]
     (str atk-id " attacks " tgt-id ". Needs a " target-num ".\n"
          "Rolled a " (:to-hit data) "\n"
-         (if (<= target-num (:to-hit data))
-           (str "Attack hits for " (:damage data) " damage against " arm " armor.\n"
+         (if (<= target-num to-hit)
+           (str "Attack hits for " damage " damage against " arm " armor.\n"
                 (when (pos? penetration)
-                  (str penetration " damage penetrates. " (get-in data [:result :current-structure]) " structure remaining.\n"))
-                (when (or (= (:to-hit data) 12) (pos? penetration))
-                  (str "Possible Critical: Rolled " (if (:crit data) (name (:crit data)) "no critical") " on the critical hits table.\n")))
+                  (str penetration " damage penetrates. " (:current-structure result) " structure remaining.\n"))
+                (when (or (= to-hit 12) (pos? penetration))
+                  (str "Possible Critical: Rolled " (if crit (name crit) "no critical") " on the critical hits table.\n")))
            "Attack misses.\n")
          \newline\newline\newline)))
