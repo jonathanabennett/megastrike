@@ -178,15 +178,19 @@
 (t/deftest test-take-damage
   (t/testing "Test armor only damage."
     (t/is (= (sut/take-damage attacker1 2)
-             (assoc attacker1 :current-armor 2)))
+             {:crit nil 
+              :result (assoc attacker1 :current-armor 2)}))
     (t/is (= (sut/take-damage attacker1 3)
-             (assoc attacker1 :current-armor 1)))
+             {:crit nil 
+              :result (assoc attacker1 :current-armor 1)}))
     (t/is (= (sut/take-damage attacker1 0)
-             (assoc attacker1 :current-armor 4)))
+             {:crit nil 
+              :result (assoc attacker1 :current-armor 4)}))
     (t/is (= (sut/take-damage attacker1 4)
-             (assoc attacker1 :current-armor 0 :current-structure 3))))
+             {:crit nil 
+              :result (assoc attacker1 :current-armor 0 :current-structure 3)})))
   (t/testing "Test penetration."
-    (let [tgt (sut/take-damage attacker1 5)] 
+    (let [tgt (:result (sut/take-damage attacker1 5))] 
       (t/is (= (:current-armor tgt) 0))
       (t/is (= (:current-structure tgt) 2)))))
 
@@ -201,9 +205,7 @@
                                [{:desc "clear line of sight", :value 0}]
                                [{:desc "no intervening woods", :value 0}]
                                [{:desc "target 1 hexes away", :value 0}]]
-              :rear-attack? false
-              :to-hit 11
-              :hit? true
+              :rear-attack? false :to-hit 11 :crit nil :damage 3
               :attacker (merge attacker1 {:direction :n})
               :target (merge target1 {:direction :n})
               :result {:role "Striker", :path [], :tmm 2, :q 1, :left-arc "", :e* false, :movement {:walk 6}, :r -3, :right-arc "", :pilot {:name " Lieutenant Ciro Ramirez", :skill 4}, :force :1stsomersetstrikers, :mul-id 3563, :l* false, :m 3, :type "BM", :front-arc "", :current-structure 3, :abilities "ENE, REAR1/1/-", :acted nil, :e 0, :s 3, :threshold -1, :l 1, :size 1, :m* false, :rear-arc "", :point-value 28, :overheat 0, :chassis "Wolfhound", :structure 3, :crits [], :id "Wolfhound WLF-2", :full-name "Wolfhound WLF-2", :armor 4, :current-heat 0, :current-armor 1, :s* false, :p 2, :movement-mode :walk, :direction :n, :model "WLF-2"}}))))

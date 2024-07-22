@@ -178,7 +178,7 @@
    (take-damage unit damage false))
   ([unit damage tac]
    (if (= damage 0)
-     unit
+     {:crit nil :result unit}
      (let [armor (max (- (:current-armor unit (:armor unit)) damage) 0) 
            penetration (- damage (:current-armor unit (:armor unit)))
            structure (if (zero? armor) 
