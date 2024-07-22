@@ -21,9 +21,9 @@
 
 (defn offset-from-hex
   "Calculates an offset address (x,y) based on a 3D address."
-  [hex]
-  (let [row (int (+ (:q hex) (math/floor (/ (+ (:p hex) (* (mod (abs (:p hex)) 2) -1)) 2))))
-        col (:p hex)]
+  [{:keys [p q]}]
+  (let [row (int (+ q (math/floor (/ (+ p (* (mod (abs p) 2) -1)) 2))))
+        col p]
     {:x col :y row}))
 
 (defn same-hex
@@ -66,8 +66,7 @@
 (defn direction
   "Returns the coordinate transformation to select a hex in a given direction"
   [dir]
-  (let [d (mod dir 6)]
-    (nth ordinals d)))
+  (nth ordinals (mod dir 6)))
 
 (defn neighbor
   "The neighbor in a given direction."
