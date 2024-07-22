@@ -21,9 +21,9 @@
                 12 :destroyed})
 
 (defn get-tmm
-  ([unit]
-   (let [div (count (filter #(= :mv %) (:crits unit)))]
-     (loop [tmm (get unit :tmm)
+  ([{:keys [tmm crits]}]
+   (let [div (count (filter #(= :mv %) crits))]
+     (loop [tmm tmm
             n 0]
        (if (= n div)
          tmm
@@ -32,38 +32,37 @@
                 (inc n)))))))
 
 (defn attacker-skill
-  [unit]
-  [{:desc "pilot skill" :value (get-in unit [:pilot :skill])}])
+  [{:keys [pilot]}]
+  [{:desc "pilot skill" :value (:skill pilot)}])
 
 (defn calculate-amm
-  [unit]
-  (condp = (:movement-mode unit)
+  [{:keys [movement-mode]}]
+  (condp = movement-mode
     :immobile [{:desc "attacker immobile" :value -1}]
     :stand-still [{:desc "attacker stood still" :value -1}]
     :jump [{:desc "attacker jumped" :value 2}]
     [{:desc "attacker moved" :value 0}]))
 
 (defn calculate-fc-hits
-  [unit]
-  (let [fc (count (filter #(= % :fire-control) (:crits unit)))
+  [{:keys [crits]}]
+  (let [fc (count (filter #(= % :fire-control) crits))
         s (if (= fc 1)
             "fire control hit"
             "fire control hits")]
       [{:desc (str fc " " s) :value (* fc 2)}]))
 
 (defn calculate-target-mod
-  [unit]
-  (condp = (:movement-mode unit)
+  [{:keys [movement-mode] :as unit}]
+  (condp = movement-mode
     :immobile [{:desc "target immobile" :value -4}]
     :stand-still [{:desc "target did not move" :value 0}]
     :jump [{:desc "target jumped" :value (inc (get-tmm unit))}]
     [{:desc "target moved" :value (get-tmm unit)}]))
 
 (defn calculate-heat-mod 
-  [unit]
-  (let [heat (get unit :current-heat 0)]
-    (when (pos? heat)
-      [{:desc "attacker heat" :value heat}])))
+  [{:keys [current-heat] :or {current-heat 0}}]
+  (when (pos? current-heat)
+      [{:desc "attacker heat" :value current-heat}]))
 
 (defn woods-mod
   [line]
@@ -122,12 +121,10 @@
   (reduce + (map #(:value (first %) 0) attack-roll)))
 
 (defn attack-roll-parser 
-  [m]
-    (let [m (first m)
-          s (if (neg? (:value m 0))
-              (str "- " (abs (:value m 0)) " (" (:desc m) ") ")
-              (str "+ " (:value m 0) " (" (:desc m) ") "))]
-      s))
+  [[m]]
+    (if (neg? (:value m 0))
+      (str "- " (abs (:value m 0)) " (" (:desc m) ") ")
+      (str "+ " (:value m 0) " (" (:desc m) ") ")))
 
 (defn vector-subtract [v1 v2]
   (mapv - v1 v2))
