@@ -153,7 +153,7 @@
   "Detect if a hex is 'behind' a given hex-side."
   [this-hex other-hex side layout]
   (let [this-pixel (hex/hex-to-pixel this-hex layout)
-        points (hex/hex-points this-hex layout)
+        points (hex/points this-hex layout)
         points-list (get-in cu/directions [side :points])
         p1 [(nth points (first points-list)) (nth points (second points-list))]
         p2 [(nth points (nth points-list 2)) (nth points (nth points-list 3))]

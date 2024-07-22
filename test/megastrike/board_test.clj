@@ -33,13 +33,13 @@
           end1 {:p 6 :q 0 :r -6}
           start2 {:p 2 :q 2 :r -4}
           end2 {:p 15 :q -4 :r -11}]
-      (t/is (= (sut/hex-line start1 end1 board) 
+      (t/is (= (sut/line start1 end1 board) 
                [{:p 4, :q 4, :r -8, :elevation 0, :terrain "ground_fluff:1:1;water:1", :palette "grass"}
                 {:p 5, :q 3, :r -8, :elevation 2, :terrain "", :palette "grass"}
                 {:p 5, :q 2, :r -7, :elevation 0, :terrain "ground_fluff:1:1;water:1", :palette "grass"}
                 {:p 6, :q 1, :r -7, :elevation 1, :terrain "ground_fluff:1:2", :palette "grass"}
                 {:p 6, :q 0, :r -6, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}]))
-      (t/is (= (sut/hex-line start2 end2 board) 
+      (t/is (= (sut/line start2 end2 board) 
                [{:p 2, :q 2, :r -4, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}
                 {:p 3, :q 2, :r -5, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"}
                 {:p 4, :q 1, :r -5, :elevation 0, :terrain "ground_fluff:1:1;water:1", :palette "grass"}
@@ -54,7 +54,7 @@
                 {:p 13, :q -3, :r -10, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"}
                 {:p 14, :q -4, :r -10, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}
                 {:p 15, :q -4, :r -11, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"}]))
-      (t/is (= (sut/hex-line start1 end2 board) 
+      (t/is (= (sut/line start1 end2 board) 
                [{:p 4, :q 4, :r -8, :elevation 0, :terrain "ground_fluff:1:1;water:1", :palette "grass"}
                 {:p 5, :q 3, :r -8, :elevation 2, :terrain "", :palette "grass"}
                 {:p 6, :q 3, :r -9, :elevation 1, :terrain "", :palette "grass"}
@@ -67,7 +67,7 @@
                 {:p 13, :q -3, :r -10, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"}
                 {:p 14, :q -3, :r -11, :elevation 0, :terrain "ground_fluff:1:2", :palette "grass"}
                 {:p 15, :q -4, :r -11, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"} ]))
-      (t/is (= (sut/hex-line start2 end2 board)
+      (t/is (= (sut/line start2 end2 board)
                [{:p 2, :q 2, :r -4, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"} 
                 {:p 3, :q 2, :r -5, :elevation 0, :terrain "ground_fluff:3:1", :palette "grass"}
                 {:p 4, :q 1, :r -5, :elevation 0, :terrain "ground_fluff:1:1;water:1", :palette "grass"}
