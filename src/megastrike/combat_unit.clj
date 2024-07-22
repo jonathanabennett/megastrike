@@ -197,41 +197,41 @@
 
 (defn pv-mod
   "Calculates the skill-based mod for PV based on the algorithm provided in the book."
-  [unit]
-  (let [skill-diff (- 4 (get-in unit [:pilot :skill] 4))]
+  [{:keys [pilot point-value]}]
+  (let [skill-diff (- 4 (:skill pilot))]
     (cond
-      (> 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- (:point-value unit) 5) 10)))
-      (< 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- (:point-value unit) 3) 5)))
+      (> 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- point-value 5) 10)))
+      (< 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- point-value 3) 5)))
       :else 0)))
 
 (defn pv
   "Returns the modified PV."
-  [unit]
-  (+ (:point-value unit) (pv-mod unit)))
+  [{:keys [point-value] :as unit}]
+  (+ point-value (pv-mod unit)))
 
 (defn print-short
-  [unit]
-  (if (:s* unit)
+  [{:keys [s s*]}]
+  (if s*
     "0*"
-    (str (:s unit))))
+    (str s)))
 
 (defn print-medium
-  [unit]
-  (if (:m* unit)
+  [{:keys [m m*]}]
+  (if m*
     "0*"
-    (str (:m unit))))
+    (str m)))
 
 (defn print-long
-  [unit]
-  (if (:l* unit)
+  [{:keys [l l*]}]
+  (if l*
     "0*"
-    (str (:l unit))))
+    (str l)))
 
 (defn print-extreme
-  [unit]
-  (if (:e* unit)
+  [{:keys [e e*]}]
+  (if e*
     "0*"
-    (str (:e unit))))
+    (str e)))
 
 (defn print-damage
   [unit range physical]
