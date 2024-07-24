@@ -183,13 +183,15 @@
     (utils/load-resource :data (str "images/units/" (nth match-row 2)))))
 
 (defn get-mv
-  ([unit move-type]
-   (let [base-move (move-type (:movement unit))
-         div (count (filter #(= :mv %) (:crits unit)))]
+  ([{:keys [movement crits current-heat]
+     :or {crits [] current-heat 0}}
+    move-type]
+   (let [base-move (move-type movement)
+         div (count (filter #(= :mv %) crits))]
      (loop [mv base-move
             n 0]
        (if (= n div)
-         (max (- mv (:current-heat unit 0)) 0)
+         (max (- mv current-heat) 0)
          (recur (let [new-mv (math/round (/ mv 2.0))]
                   (if (>= (- mv new-mv) 1) new-mv 0))
                 (inc n))))))
