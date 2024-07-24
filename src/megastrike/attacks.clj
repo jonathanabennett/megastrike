@@ -102,29 +102,45 @@
                 (rest l)))))))
             
 (defn produce-attack-roll
-  [attacker target board]
+  [attacker target board type]
   (let [line (board/line attacker target board) 
+        range (hex/distance attacker target)
         attack-roll (conj [] (attacker-skill attacker) 
                              (calculate-fc-hits attacker) 
                              (calculate-amm attacker) 
                              (calculate-target-mod target) 
-                             (calculate-heat-mod attacker) 
+                             (when (and (not= type :physical) (calculate-heat-mod attacker))
+                               (calculate-heat-mod attacker)) 
                              (if (height-checker attacker target line) 
                                [{:desc "Line of Sight Blocked" :value ##Inf}]
                                [{:desc "clear line of sight" :value 0}])
                              (woods-mod line) 
-                             (calculate-range-mod (hex/distance attacker target)))]
-    attack-roll))
+                             (calculate-range-mod range))
+        damage (cu/print-damage attacker range (= type :physical))]
+    {:targeting attack-roll
+     :damage damage}))
 
 (defn calculate-to-hit 
-  [attack-roll]
-  (reduce + (map #(:value (first %) 0) attack-roll)))
+  [{:keys [targeting]}]
+  (reduce + (map #(:value (first %) 0) targeting)))
 
 (defn attack-roll-parser 
   [[m]]
     (if (neg? (:value m 0))
       (str "- " (abs (:value m 0)) " (" (:desc m) ") ")
       (str "+ " (:value m 0) " (" (:desc m) ") ")))
+
+(defn print-attack-roll 
+  ([attack-roll]
+   (print-attack-roll attack-roll true))
+  ([attack-roll detailed?]
+   (if (some #(= ##Inf (:value (first %))) (:targeting attack-roll))
+     (:desc (first (first (filter #(= ##Inf (:value (first %))) (:targeting attack-roll)))))
+     (let [to-hit (calculate-to-hit attack-roll)
+           to-hit-str (str "To Hit: " to-hit " (" (get probabilities to-hit) "%)")]
+       (if detailed?
+         (str/trim (str to-hit-str ": " (reduce str (map attack-roll-parser (:targeting attack-roll)))))
+         (str/trim to-hit-str))))))
 
 (defn vector-subtract [v1 v2]
   (mapv - v1 v2))
@@ -202,13 +218,12 @@
 
 (defn attack-confirmation-choices
   [attacker target board]
-  (let [atk-data (produce-attack-roll attacker target board)
-        range (hex/distance attacker target)
-        regular-damage (cu/print-damage attacker range false)
-        physical-damage (cu/print-damage attacker range true)]
-    [{:regular (str (print-attack-roll atk-data false) ": " regular-damage " damage")}
+  (let [range (hex/distance attacker target)
+       regular-attack (produce-attack-roll attacker target board :regular)
+       physical-attack (produce-attack-roll attacker target board :physical)]
+    [{:regular (str (print-attack-roll regular-attack false) ": " (:damage regular-attack) " damage.")}
      (when (= range 1)
-       {:physical (str (print-attack-roll atk-data false) ": " physical-damage " damage")})]))
+       {:regular (str (print-attack-roll physical-attack false) ": " (:damage physical-attack) " damage.")})]))
 
 (defn generate-attack-info
   [units current-force board]
@@ -218,7 +233,7 @@
       ret
       (let [attacker (first attackers)
             target (get units (:target attacker))
-            atk-data (produce-attack-roll attacker target board)]
+            atk-data (produce-attack-roll attacker target board (:attack attacker))]
         (recur (str ret (:full-name attacker) " will attack " (:full-name target) ": " (calculate-to-hit atk-data) "\n"
                     "Modifiers: " (print-attack-roll atk-data) "\n"
                     "Damage: " (cu/print-damage attacker (hex/distance attacker target) (:physical attacker)) "\n")
@@ -226,7 +241,7 @@
 
 (defn make-attack 
   ([attacker target board layout to-hit]
-   (let [targeting-data (produce-attack-roll attacker target board)
+   (let [targeting-data (produce-attack-roll attacker target board (:attack attacker))
          rear-attack? (detect-direction target attacker (get-in cu/directions [(:direction target) :rear]) layout)
          damage (cu/calculate-damage attacker (hex/distance attacker target) rear-attack?)]
      (mu/log ::make-attack
