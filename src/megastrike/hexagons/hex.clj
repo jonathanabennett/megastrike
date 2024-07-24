@@ -9,7 +9,7 @@
    (when (= (* (+ p q) -1) r)
       {:p p :q q :r r})))
 
-(defn hex-from-offset
+(defn offset->hex
   "Calculates a hex based on an 'offset' hex address. The input in in the format of [x y]."
   ([col row]
   (let [p col
@@ -17,9 +17,9 @@
         r (int (* (+ p q) -1))]
     (hexagon p q r)))
   ([offset]
-   (hex-from-offset (:x offset) (:y offset))))
+   (offset->hex (:x offset) (:y offset))))
 
-(defn offset-from-hex
+(defn hex->offset
   "Calculates an offset address (x,y) based on a 3D address."
   [{:keys [p q]}]
   (let [row (int (+ q (math/floor (/ (+ p (* (mod (abs p) 2) -1)) 2))))
@@ -28,31 +28,31 @@
 
 (defn same-hex
   "A hex is the same if the p,q, and r addresses are the same."
-  [hex1 hex2]
-  (and (= (:p hex1) (:p hex2))
-       (= (:q hex1) (:q hex2))
-       (= (:r hex1) (:r hex2))))
+  [{q1 :q p1 :p r1 :r} {q2 :q p2 :p r2 :r}]
+  (and (= p1 p2)
+       (= q1 q2)
+       (= r1 r2)))
 
 (defn addition
   "Use Cartesian addition to add two hexagons together."
-  [hex1 hex2]
-  (hexagon (+ (:p hex1) (:p hex2)) (+ (:q hex1) (:q hex2)) (+ (:r hex1) (:r hex2))))
+  [{q1 :q p1 :p r1 :r} {q2 :q p2 :p r2 :r}]
+  (hexagon (+ p1 p2) (+ q1 q2) (+ r1 r2)))
 
 (defn subtraction
   "Use Cartesian subtraction to add two hexagons together."
-  [hex1 hex2]
-  (hexagon (- (:p hex1) (:p hex2)) (- (:q hex1) (:q hex2)) (- (:r hex1) (:r hex2))))
+  [{q1 :q p1 :p r1 :r} {q2 :q p2 :p r2 :r}]
+  (hexagon (- p1 p2) (- q1 q2) (- r1 r2)))
 
 (defn multiplication
   "Use Cartesian multiplication to multipy a hex by a value x."
-  [hex x]
-  (hexagon (* (:p hex) x) (* (:q hex) x) (* (:r hex) x)))
+  [{:keys [p q r]} x]
+  (hexagon (* p x) (* q x) (* r x)))
 
 (defn distance
   "The distance between two hexes using 3d addresses is half of the sum of the differences of the address hexes."
   [hex1 hex2]
-  (let [length (subtraction hex1 hex2)]
-    (/ (+ (abs (:p length)) (abs (:q length)) (abs (:r length))) 2)))
+  (let [{:keys [p q r]} (subtraction hex1 hex2)]
+    (/ (+ (abs p) (abs q) (abs r)) 2)))
 
 (def ordinals
   "Defines the neighbors in each direction."
@@ -90,32 +90,31 @@
    :y-origin 65
    :scale 1.0})
 
-(defn hex-to-pixel
+(defn hex->pixel
   "Converts a given hex address to the pixel at the center of the hex."
-  [hex layout]
-  (let [htp (:hex-to-pixel-matrix layout)]
-    {:x (+ (* (+ (* (get htp 0) (:p hex))
-                 (* (get htp 1) (:q hex)))
-              (* (:x-size layout) (:scale layout)))
-           (:x-origin layout))
-     :y (+ (* (+ (* (get htp 2) (:p hex))
-                 (* (get htp 3) (:q hex)))
-              (* (:y-size layout) (:scale layout)))
-           (:y-origin layout))}))
+  [{:keys [p q]} {:keys [hex-to-pixel-matrix x-size scale x-origin y-size y-origin]}]
+  {:x (+ (* (+ (* (get hex-to-pixel-matrix 0) p)
+               (* (get hex-to-pixel-matrix 1) q)) 
+            (* x-size scale)) 
+         x-origin) 
+   :y (+ (* (+ (* (get hex-to-pixel-matrix 2) p) 
+               (* (get hex-to-pixel-matrix 3) q)) 
+            (* y-size scale)) 
+         y-origin)})
 
 (defn find-hex-corner
   "Calculates the corner of a hex based on the center."
-  [center corner layout]
-  (let [angle (* 2.0 math/PI (/ (+ (:start-angle layout) corner) 6))]
-    [(+ (* (:x-size layout) (math/cos angle) (:scale layout)) 
+  [center corner {:keys [start-angle x-size y-size scale]}]
+  (let [angle (* 2.0 math/PI (/ (+ start-angle corner) 6))]
+    [(+ (* x-size (math/cos angle) scale) 
         (:x center))
-     (+ (* (:y-size layout) (math/sin angle) (:scale layout)) 
+     (+ (* y-size (math/sin angle) scale) 
         (:y center))]))
 
 (defn points
   "Returns a list of all the corners of a hex."
   [hex layout]
-  (let [center (hex-to-pixel hex layout)]
+  (let [center (hex->pixel hex layout)]
     (flatten (map #(find-hex-corner center % layout) (list 0 1 2 3 4 5)))))
 
 (defn round
@@ -139,7 +138,7 @@
   "Finds which hexside a line starting from the center of the hex and
    reaching a point beyond the hex passes through. Used for changing facing"
   [o destination layout]
-  (let [origin (hex-to-pixel o layout) 
+  (let [origin (hex->pixel o layout) 
         angle (math/to-degrees (math/atan2 (- (:x destination) (:x origin)) (- (:y destination) (:y origin))))]
     (cond
       (<= 150 (abs angle))  :n
@@ -153,7 +152,7 @@
 ;; Commented out in case I need it later. I believe that cljfx
 ;; has given me this feature for "free" when I added a click event
 ;; to the hexagons.
-;; (defn pixel-to-hex
+;; (defn pixel->hex
 ;;   [pt layout]
 ;;   (let [pth (:pixel-to-hex-matrix layout)
 ;;         modified-point {:x (/ (- (:x pt)

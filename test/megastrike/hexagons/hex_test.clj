@@ -48,15 +48,15 @@
         test-hex-42 (sut/hexagon 4 0 -4)
         test-hex-offset-42 {:x 4 :y 2}]
     (t/testing "Testing from hex to offset."
-      (t/is (= test-hex-offset-00 (sut/offset-from-hex test-hex-00)))
-      (t/is (not (= test-hex-offset-00 (sut/offset-from-hex test-hex-42))))
-      (t/is (= test-hex-offset-42 (sut/offset-from-hex test-hex-42)))
-      (t/is (not (= test-hex-offset-42 (sut/offset-from-hex test-hex-00)))))
+      (t/is (= test-hex-offset-00 (sut/hex->offset test-hex-00)))
+      (t/is (not (= test-hex-offset-00 (sut/hex->offset test-hex-42))))
+      (t/is (= test-hex-offset-42 (sut/hex->offset test-hex-42)))
+      (t/is (not (= test-hex-offset-42 (sut/hex->offset test-hex-00)))))
     (t/testing "Testing hex from offset."
-      (t/is (= test-hex-00 (sut/hex-from-offset test-hex-offset-00)))
-      (t/is (not (= test-hex-00 (sut/hex-from-offset test-hex-offset-42))))
-      (t/is (= test-hex-42 (sut/hex-from-offset test-hex-offset-42)))
-      (t/is (not (= test-hex-42 (sut/hex-from-offset test-hex-offset-00)))))))
+      (t/is (= test-hex-00 (sut/offset->hex test-hex-offset-00)))
+      (t/is (not (= test-hex-00 (sut/offset->hex test-hex-offset-42))))
+      (t/is (= test-hex-42 (sut/offset->hex test-hex-offset-42)))
+      (t/is (not (= test-hex-42 (sut/offset->hex test-hex-offset-00)))))))
 
 (t/deftest multiplication
   (let [test-hex (sut/hexagon 4 0 -4)]
@@ -84,9 +84,9 @@
   (let [layout (sut/create-layout)]
     (t/testing "Check the pixel location of hexes."
       (let [test-00 (sut/hexagon 0 0 0) 
-            test-pixels-00 (sut/hex-to-pixel test-00 layout)
+            test-pixels-00 (sut/hex->pixel test-00 layout)
             test-42 (sut/hexagon 4 0 -4)
-            test-pixels-42 (sut/hex-to-pixel test-42 layout)] 
+            test-pixels-42 (sut/hex->pixel test-42 layout)] 
         (t/is (< (abs (- (:x test-pixels-00) 84)) 1))
         (t/is (< (abs (- (:y test-pixels-00) 65)) 1))
         (t/is (< (abs (- (:x test-pixels-42) 588)) 1))

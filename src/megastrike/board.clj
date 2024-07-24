@@ -11,7 +11,7 @@
   ([q r s elevation terrain palette]
    (create-tile (hex/hexagon q r s) elevation terrain palette))
   ([x y elevation terrain palette]
-   (create-tile (hex/hex-from-offset x y) elevation terrain palette))
+   (create-tile (hex/offset->hex x y) elevation terrain palette))
   ([hex elevation terrain palette]
    (merge hex {:elevation elevation :terrain terrain :palette palette})))
 

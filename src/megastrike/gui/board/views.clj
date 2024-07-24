@@ -13,7 +13,7 @@
 
 (defn draw-hex [{:keys [hex layout]}]
   (let [points (hex/points hex layout)
-        offset (hex/offset-from-hex hex)
+        offset (hex/hex->offset hex)
         elevation (:elevation hex)
         terrain (:terrain hex)
         ;; Colors below come from data/images/hexes/defaultminimap.txt
@@ -103,12 +103,12 @@
 (defn draw-target-line [{:keys [fx/context unit layout]}]
   (let [board (subs/board context)
         origin-hex (board/find-hex unit board)
-        origin-point (hex/hex-to-pixel origin-hex layout)
+        origin-point (hex/hex->pixel origin-hex layout)
         target (get (subs/units context) (:target unit))
         target-hex (board/find-hex target board)
-        target-point (hex/hex-to-pixel target-hex layout)
+        target-point (hex/hex->pixel target-hex layout)
         range (hex/distance unit target)
-        to-hit (attacks/print-attack-roll (attacks/produce-attack-roll unit target board) false)] 
+        to-hit (attacks/print-attack-roll (attacks/produce-attack-roll unit target board (:attack unit)) false)] 
     {:fx/type :group
      :children [{:fx/type :line 
                  :start-x (:x origin-point) 
@@ -122,8 +122,8 @@
                  :font 16}]}))
 
 (defn draw-movement-cost [{:keys [origin destination layout cost]}]
-  (let [origin-pixel (hex/hex-to-pixel origin layout)
-        dest-pixel (hex/hex-to-pixel destination layout)]
+  (let [origin-pixel (hex/hex->pixel origin layout)
+        dest-pixel (hex/hex->pixel destination layout)]
     {:fx/type :group
      :children [{:fx/type :line
                  :start-x (:x origin-pixel)

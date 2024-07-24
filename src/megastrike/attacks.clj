@@ -149,26 +149,13 @@
 (defn detect-direction 
   "Detect if a hex is 'behind' a given hex-side."
   [this-hex other-hex side layout]
-  (let [this-pixel (hex/hex-to-pixel this-hex layout)
+  (let [this-pixel (hex/hex->pixel this-hex layout)
         points (hex/points this-hex layout)
         points-list (get-in cu/directions [side :points])
         p1 [(nth points (first points-list)) (nth points (second points-list))]
         p2 [(nth points (nth points-list 2)) (nth points (nth points-list 3))]
-        other-hex (hex/hex-to-pixel other-hex layout)]
+        other-hex (hex/hex->pixel other-hex layout)]
     (line-between-points? p1 p2 [(:x this-pixel) (:y this-pixel)] [(:x other-hex) (:y other-hex)])))
-
-(defn print-attack-roll 
-  ([attack-roll]
-   (print-attack-roll attack-roll true))
-  ([attack-roll detailed?]
-   (if (some #(= ##Inf (:value (first %))) attack-roll)
-     (:desc (first (first (filter #(= ##Inf (:value (first %))) attack-roll))))
-     (let [to-hit (calculate-to-hit attack-roll) 
-           to-hit-str (str "To Hit: " to-hit " (" (get probabilities to-hit) "%)")] 
-       (if detailed?  
-         (let [details (map attack-roll-parser attack-roll)]
-           (str/trim (str to-hit-str ": " (reduce str details))))
-         (str/trim to-hit-str))))))
 
 (defn take-damage
   ([unit damage]

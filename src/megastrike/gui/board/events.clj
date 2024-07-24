@@ -35,7 +35,7 @@
        (and (= phase :combat) (not (nil? unit)))
        (mu/log ::check-direction
                :unit unit
-               :hex (hex/offset-from-hex hex)
+               :hex (hex/hex->offset hex)
                :facing (:direction unit)
                :rear (get-in cu/directions [(:direction unit) :rear])
                :is-behind (attacks/detect-direction unit hex (get-in cu/directions [(:direction unit) :rear]) (fx/sub-val context :layout))
