@@ -133,13 +133,13 @@
 (defn print-attack-roll 
   ([attack-roll]
    (print-attack-roll attack-roll true))
-  ([attack-roll detailed?]
-   (if (some #(= ##Inf (:value (first %))) (:targeting attack-roll))
-     (:desc (first (first (filter #(= ##Inf (:value (first %))) (:targeting attack-roll)))))
+  ([{:keys [targeting] :as attack-roll} detailed?]
+   (if (some #(= ##Inf (:value (first %))) targeting)
+     (:desc (first (first (filter #(= ##Inf (:value (first %))) targeting))))
      (let [to-hit (calculate-to-hit attack-roll)
            to-hit-str (str "To Hit: " to-hit " (" (get probabilities to-hit) "%)")]
        (if detailed?
-         (str/trim (str to-hit-str ": " (reduce str (map attack-roll-parser (:targeting attack-roll)))))
+         (str/trim (str to-hit-str ": " (reduce str (map attack-roll-parser targeting))))
          (str/trim to-hit-str))))))
 
 (defn vector-subtract [v1 v2]
