@@ -183,6 +183,7 @@
     (utils/load-resource :data (str "images/units/" (nth match-row 2)))))
 
 (defn get-mv
+  <<<<<<< HEAD
   ([{:keys [movement crits current-heat]
      :or {crits [] current-heat 0}}
     move-type]
@@ -191,7 +192,7 @@
      (loop [mv base-move
             n 0]
        (if (= n div)
-         (max (- mv current-heat) 0)
+         (max (- mv (:current-heat unit 0)) 0)
          (recur (let [new-mv (math/round (/ mv 2.0))]
                   (if (>= (- mv new-mv) 1) new-mv 0))
                 (inc n))))))
