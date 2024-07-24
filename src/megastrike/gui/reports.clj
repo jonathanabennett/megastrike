@@ -5,7 +5,7 @@
   [{:keys [attacker target damage targeting-data to-hit result crit] :as data}]
   (let [atk-id (:id attacker)
         tgt-id (:id target)
-        arm (:current-structure target (:structure target))
+        arm (:current-armor target (:armor target))
         penetration (- damage arm)
         target-num (attacks/calculate-to-hit targeting-data)]
     (str atk-id " attacks " tgt-id ". Needs a " target-num ".\n"

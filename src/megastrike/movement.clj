@@ -22,7 +22,7 @@
 
 (defn can-move?
   "Checks whether or not a unit can move from its location to a destination."
-  [{:keys [movement-mode path] :as unit} board]
+  [{:keys [movement-mode path] :or {movement-mode :walk} :as unit} board]
   (cond
     (= movement-mode :stand-still) (merge unit {:acted true :path []})
     (seq path) 
