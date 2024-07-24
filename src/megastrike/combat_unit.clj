@@ -132,12 +132,12 @@
    (filter #(filter-membership-helper % field values) units)))
 
 (defn get-unit
-  ([unit]
-   (let [non-standard (str/replace unit #"\(Standard\)" "")
-         matching-muls (filter-units mul :full-name unit =)
+  ([s]
+   (let [non-standard (str/replace s #"\(Standard\)" "")
+         matching-muls (filter-units mul :full-name s =)
          non-standard-mul (filter-units mul :full-name non-standard =)] 
      (mu/log ::get-unit-function
-             :search-term unit
+             :search-term s
              :matching-mul-results matching-muls
              :non-standard-results non-standard-mul)
      (if (first matching-muls)
@@ -161,20 +161,22 @@
 
 (defn find-sprite
   "Searches a the mechset to determine which images to use and returns the path to that image."
-  [unit]
-  (let [chassis-match (filter (fn [row] (= (second row) (:chassis unit))) mechset)
-        exact-match (filter (fn [row] (str/includes? (second row) (:full-name unit))) mechset)
+  [{:keys [chassis full-name]}]
+  (let [chassis-match (filter (fn [row] (= (second row) chassis)) mechset)
+        exact-match (filter (fn [row] (str/includes? (second row) full-name)) mechset)
         match-row (or (first exact-match) (first chassis-match))] 
     (utils/load-resource :data (str "images/units/" (nth match-row 2)))))
 
 (defn get-mv
-  ([unit move-type]
-   (let [base-move (move-type (:movement unit))
-         div (count (filter #(= :mv %) (:crits unit)))] 
+  ([{:keys [movement crits current-heat] 
+     :or {crits [] current-heat 0}} 
+    move-type]
+   (let [base-move (move-type movement)
+         div (count (filter #(= :mv %) crits))] 
      (loop [mv base-move
             n 0]
        (if (= n div)
-         (max (- mv (get unit :current-heat 0)) 0)
+         (max (- mv current-heat) 0)
          (recur (let [new-mv (math/round (/ mv 2.0))]
                   (if (>= (- mv new-mv) 1) new-mv 0))
                 (inc n))))))
@@ -234,9 +236,9 @@
     (str e)))
 
 (defn print-damage
-  [unit range physical]
+  [{:keys [size abilities] :as unit} range physical]
   (cond 
-     (and (= range 1) physical) (+ (:size unit) (if (str/includes? (:abilities unit) "MEL") 1 0))
+     (and (= range 1) physical) (+ size (if (str/includes? abilities "MEL") 1 0))
      (>= 3 range) (print-short unit)
      (>= 12 range) (print-medium unit)
      (>= 21 range) (print-long unit)
@@ -245,13 +247,13 @@
 
 (defn calculate-damage
   "Returns the damage done by a unit at a given range. Calculates 0* damage correctly."
-  [unit range rear-attack?]
+  [{:keys [attack size abilities s s* m m* l l* e e*]} range rear-attack?]
    (let [damage (cond
-                  (and (= range 1) (= (:attack unit) :physical)) (+ (:size unit) (if (str/includes? (:abilities unit) "MEL") 1 0))
-                  (>= 3 range) (if (and (:s* unit) (<= 4 (utils/roll-die))) 1 (:s unit))
-                  (>= 12 range) (if (and (:m* unit) (<= 4 (utils/roll-die))) 1 (:m unit))
-                  (>= 21 range) (if (and (:l* unit) (<= 4 (utils/roll-die))) 1 (:l unit))
-                  (>= 30 range) (if (and (:e* unit) (<= 4 (utils/roll-die))) 1 (:e unit))
+                  (and (= range 1) (= attack :physical)) (+ size (if (str/includes? abilities "MEL") 1 0))
+                  (>= 3 range) (if (and  s* (<= 4 (utils/roll-die))) 1 s)
+                  (>= 12 range) (if (and m* (<= 4 (utils/roll-die))) 1 m)
+                  (>= 21 range) (if (and l* (<= 4 (utils/roll-die))) 1 l)
+                  (>= 30 range) (if (and e* (<= 4 (utils/roll-die))) 1 e)
                   :else 0)]
      (if rear-attack?
        (inc damage)

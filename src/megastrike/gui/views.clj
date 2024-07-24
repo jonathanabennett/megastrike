@@ -52,9 +52,8 @@
        :text "Undeploy Unit"
        :on-action {:event-type ::events/undeploy-unit :fx/sync true}}])
 
-(defn move-buttons [unit]
-  (let [ movement (:movement unit)
-        buttons (if (contains? movement :jump)
+(defn move-buttons [{:keys [movement] :as unit}]
+  (let [ buttons (if (contains? movement :jump)
                   [{:fx/type :button
                     :text "Walk"
                     :on-action {:event-type ::events/set-movement-mode :mode :walk :unit unit :fx/sync true}}
@@ -110,8 +109,7 @@
         common-buttons [{:fx/type next-phase-button
                          :state-id ::next-phase-button
                          :button {:text "Next Phase"
-                                  :disable #_{:clj-kondo/ignore [:not-empty?]}
-                                           (not (empty? turn-order))}
+                                  :disable (boolean (seq turn-order))}
                          :dialog-pane {:content-text (fx/sub-val context :round-report)}
                          :on-confirmed {:event-type ::events/no-op}}
                         {:fx/type :separator

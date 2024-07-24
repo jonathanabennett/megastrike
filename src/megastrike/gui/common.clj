@@ -18,8 +18,7 @@
 (defn draw-sprite
   "Draws a sprite. Used for both the map and the lobby."
   [{:keys [unit force x y shift direction]}]
-  (let [color (force :color "#FFFFFF")
-        camo (force :camo)
+  (let [{:keys [color camo] :or {color "#FFFFFF"}} force
         img (cu/find-sprite unit)] 
     {:fx/type :image-view
      :image (str "file:" (.getPath img))

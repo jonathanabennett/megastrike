@@ -14,8 +14,7 @@
 (defn draw-hex [{:keys [hex layout]}]
   (let [points (hex/points hex layout)
         offset (hex/hex->offset hex)
-        elevation (:elevation hex)
-        terrain (:terrain hex)
+        {:keys [elevation terrain]} hex
         ;; Colors below come from data/images/hexes/defaultminimap.txt
         sprite (cond
                  (str/includes? terrain "woods") "rgb(180, 230, 130)"

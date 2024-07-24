@@ -54,7 +54,7 @@
 
 (defmethod e/event-handler ::launch-game
   [{:keys [fx/context view]}]
-  (let [ width (fx/sub-val context :width)
+  (let [width (fx/sub-val context :width)
         height (fx/sub-val context :height)
         map-boards (fx/sub-val context :map-boards)
         response (phases/next-phase {:current-phase (subs/phase context)
