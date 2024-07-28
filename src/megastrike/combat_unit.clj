@@ -10,6 +10,9 @@
   (map utils/keyword-maker
        (first (csv/parse-csv (slurp (utils/load-resource :resources "mul.csv")) :delimiter \tab))))
 
+(def type-schema [:enum :bm :im :pm :sv :cv :ba :ci :ss :ws :js :ds :da :sc :cf :af])
+(def move-schema [:enum :walk :jump :wheeled :tracked :hover :wige :vtol])
+
 (def all-types ["BM" "IM" "PM" "SV" "CV" "BA" "CI" "SS"
                 "WS" "JS" "DS" "DA" "SC" "CF" "AF"])
 (def ground-units ["BM" "IM" "PM" "SV" "CV" "BA" "CI"])
@@ -44,6 +47,37 @@
                       :ordinal 3
                       :points [6 7 8 9]
                       :rear :se}})
+
+(def mul-schema
+  [:map 
+   [:mul-id :int]
+   [:chassis :string]
+   [:model :string]
+   [:role :string]
+   [:type type-schema]
+   [:size :int]
+   [:movement [:map-of [keyword? int?]]]
+   [:tmm :int]
+   [:armor :int]
+   [:structure :int]
+   [:threshold :int]
+   [:s :int]
+   [:s* :boolean]
+   [:m :int]
+   [:m* :boolean]
+   [:l :int]
+   [:l* :boolean]
+   [:e :int]
+   [:e* :boolean]
+   [:overheat :int]
+   [:point-value :int]
+   [:abilities :string]
+   [:front-arc :string]
+   [:left-arc :string]
+   [:right-arc :string]
+   [:rear-arc :string]])
+
+
 
 (defn move-keyword
   "Creates a move keyword from a stat line imported from the mul export."
