@@ -56,7 +56,7 @@
    [:role :string]
    [:type type-schema]
    [:size :int]
-   [:movement [:map-of [keyword? int?]]]
+   [:movement [:map-of [move-schema int?]]]
    [:tmm :int]
    [:armor :int]
    [:structure :int]
@@ -89,6 +89,7 @@
     (str/includes? "MEL" str) {:ability/type :mel}
     (str/includes? "REAR" str) {:ability/type :rear :s 0 :m 0 :l 0}
     (str/includes? "IF" str) {:ability/type :if :value 0}
+    (str/includes? "HEAT" str) {:ability/type :heat :s 0 :m 0 :l 0}
     ))
 
 (defn move-keyword
