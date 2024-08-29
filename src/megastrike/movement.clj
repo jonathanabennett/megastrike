@@ -22,16 +22,16 @@
 
 (defn can-move?
   "Checks whether or not a unit can move from its location to a destination."
-  [{:keys [movement-mode path] :or {movement-mode :walk} :as unit} board]
+  [{:keys [path] :as unit} board]
   (cond
-    (= movement-mode :stand-still) (merge unit {:acted true :path []})
+    (= (:movement-mode unit) :stand-still) (merge unit {:acted true :path []})
     (seq path) 
     (let [sum (reduce + (move-costs unit board)) 
     ;; Add code here to default to walk OR the default movement mode 
-           unit (if (not movement-mode)
+           unit (if (not (:movement-mode unit))
                   (assoc unit :movement-mode :walk)
                   unit)
-           move (cu/get-mv unit movement-mode)] 
+           move (cu/get-mv unit (:movement-mode unit))] 
        (if (<= sum move)
          (merge unit 
                 (select-keys (last path) [:p :q :r])
