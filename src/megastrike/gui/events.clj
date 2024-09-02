@@ -70,6 +70,84 @@
   (logs/logs)
   (Platform/exit))
 
+(defmethod event-handler ::stats-clicked
+  [{:keys [fx/context unit]}]
+  (let [u (get (subs/units context) unit)]
+    (when (and (= (:force u) (first (subs/turn-order context))) (not (:acted u)))
+      (mu/log ::stats-clicked-event :clicked unit)
+      {:context (fx/swap-context context assoc :active-unit unit)})))
+
+(defmethod event-handler ::set-attack
+  [{:keys [fx/context unit selected]}]
+  (let [active-id (subs/active-id context)
+        active (subs/active-unit context)
+        upd (assoc active :target (:id unit) :attack selected)
+        units (assoc (subs/units context) active-id upd)]
+    (mu/log ::set-attack-event
+            :attacker upd
+            :target unit
+            :attack-type selected
+            :instrumentation :player)
+    {:context (fx/swap-context context assoc :units units)}))
+
+(defmethod event-handler ::make-attack
+  [{:keys [fx/context unit selected]}]
+  (let [active-id (subs/active-id context)
+        active (subs/active-unit context)
+        upd (assoc active :target (:id unit) :attack selected)
+        nodes (subs/board context)
+        report (fx/sub-val context :round-report)
+        data (attacks/make-attack upd unit nodes (fx/sub-val context :layout))
+        units (assoc (subs/units context)
+                     active-id upd
+                     (:id unit) (:result data))]
+    {:context (fx/swap-context context assoc
+                               :units units
+                               :round-report (str report (reports/parse-attack-data data)))}))
+
+(defmethod event-handler ::unit-clicked
+  [{:keys [fx/context unit]}]
+  (let [phase (subs/phase context)
+        active-force (first (subs/turn-order context))
+        active-unit (subs/active-unit context)
+        board (subs/board context)]
+    (mu/with-context {:unit-clicked unit :phase phase}
+      (when (and (= active-force (:force unit)) (not (:acted unit)))
+        (mu/log ::select-unit)
+        {:context (fx/swap-context context assoc :active-unit (:id unit))})
+      (when (and (= phase :combat)
+                 (not (= active-force (:force unit))))
+        (let [ctx (get-in context [:internal (:id unit)])]
+          {:context (fx/swap-context context assoc-in [:internal (:id unit)] (assoc ctx :showing true :items (attacks/attack-confirmation-choices active-unit unit board)))})))))
+
+(defmethod event-handler ::roll-initiative
+  [{:keys [fx/context]}]
+  (let [forces (initiative/roll-initiative (fx/sub-val context :forces))
+        turn-order (initiative/generate-turn-order forces (vals (subs/units context)))]
+    {:context (fx/swap-context context merge
+                               {:forces forces
+                                :turn-order turn-order
+                                :current-phase :deployment})}))
+
+(defmethod event-handler ::show-popup
+  [{:keys [fx/context state-id]}]
+  {:context (fx/swap-context context assoc-in [:internal state-id :showing] true)})
+
+(defmethod event-handler ::close-attack-selection
+  [{:keys [fx/context unit on-close ^DialogEvent fx/event]}]
+  (let [selected (.getSelectedItem ^ChoiceDialog (.getTarget event))
+        ctx (get-in context [:internal (:id unit)])]
+    (.setSelectedItem ^ChoiceDialog (.getTarget event) nil)
+    {:context (fx/swap-context context assoc-in [:internal (:id unit)] (assoc ctx :showing false :items []))
+     :dispatch (merge on-close {:selected (first (keys selected))})}))
+
+(defmethod event-handler ::hide-popup
+  [{:keys [fx/context ^DialogEvent fx/event state-id on-confirmed]}]
+  (condp = (.getButtonData ^ButtonType (.getResult ^Dialog (.getSource event)))
+    ButtonBar$ButtonData/OK_DONE
+    {:context (fx/swap-context context assoc-in [:internal state-id :showing] false)
+     :dispatch on-confirmed}))
+
 (defmethod event-handler ::next-phase
   [{:keys [fx/context state-id]}]
   (let [phase (subs/phase context)
@@ -216,6 +294,10 @@
      :dispatch (merge on-close {:selected (first (keys selected))})}))
 
 (defmethod event-handler ::finish-attacks
+  [{:keys [fx/context]}]
+  {:context (fx/swap-context context assoc :turn-order (rest (subs/turn-order context)))})
+
+(defmethod event-handler ::make-attacks
   [{:keys [fx/context]}]
   {:context (fx/swap-context context assoc :turn-order (rest (subs/turn-order context)))})
 
