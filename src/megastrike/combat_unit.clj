@@ -23,33 +23,33 @@
 (def vehicle-units ["SV" "CV"])
 (def infantry-units ["BA" "CI"])
 
-(def directions {:n  {:angle 0 
-                      :ordinal 2 
-                      :points [8 9 10 11] 
+(def directions {:n  {:angle 0
+                      :ordinal 2
+                      :points [8 9 10 11]
                       :rear :s}
-                 :ne {:angle 60 
-                      :ordinal 1 
-                      :points [10 11 0 1] 
+                 :ne {:angle 60
+                      :ordinal 1
+                      :points [10 11 0 1]
                       :rear :sw}
-                 :se {:angle 120 
-                      :ordinal 0 
-                      :points [0 1 2 3] 
+                 :se {:angle 120
+                      :ordinal 0
+                      :points [0 1 2 3]
                       :rear :nw}
-                 :s  {:angle 180 
-                      :ordinal 5 
-                      :points [2 3 4 5] 
+                 :s  {:angle 180
+                      :ordinal 5
+                      :points [2 3 4 5]
                       :rear :n}
-                 :sw {:angle 240 
-                      :ordinal 4 
-                      :points [4 5 6 7] 
+                 :sw {:angle 240
+                      :ordinal 4
+                      :points [4 5 6 7]
                       :rear :ne}
-                 :nw {:angle 300 
+                 :nw {:angle 300
                       :ordinal 3
                       :points [6 7 8 9]
                       :rear :se}})
 
 (def mul-schema
-  [:map 
+  [:map
    [:mul-id :int]
    [:chassis :string]
    [:model :string]
@@ -77,9 +77,9 @@
    [:right-arc :string]
    [:rear-arc :string]])
 
-(defn parse-ability 
+(defn parse-ability
   [str]
-  (cond 
+  (cond
     (str/includes? "LRM" str) {:ability/type :lrm :s 0 :m 0 :l 0}
     (str/includes? "ENE" str) {:ability/type :ene}
     (str/includes? "OMNI" str) {:ability/type :omni}
@@ -89,8 +89,7 @@
     (str/includes? "MEL" str) {:ability/type :mel}
     (str/includes? "REAR" str) {:ability/type :rear :s 0 :m 0 :l 0}
     (str/includes? "IF" str) {:ability/type :if :value 0}
-    (str/includes? "HEAT" str) {:ability/type :heat :s 0 :m 0 :l 0}
-    ))
+    (str/includes? "HEAT" str) {:ability/type :heat :s 0 :m 0 :l 0}))
 
 (defn move-keyword
   "Creates a move keyword from a stat line imported from the mul export."
@@ -182,7 +181,7 @@
   ([s]
    (let [non-standard (str/replace s #"\(Standard\)" "")
          matching-muls (filter-units mul :full-name s =)
-         non-standard-mul (filter-units mul :full-name non-standard =)] 
+         non-standard-mul (filter-units mul :full-name non-standard =)]
      (mu/log ::get-unit-function
              :search-term s
              :matching-mul-results matching-muls
@@ -194,15 +193,15 @@
 (defn create-element
   "Creates an element for use in the game."
   ([mul-unit game-data]
-   (merge mul-unit game-data))
+   (merge mul-unit game-data {:changes {}}))
   ([units mul-unit game-data]
-   (let [matching-units (filter (fn [x] (when (and (:id x) (:full-name mul-unit)) 
+   (let [matching-units (filter (fn [x] (when (and (:id x) (:full-name mul-unit))
                                           (str/includes? (:id x) (:full-name mul-unit)))) (vals units))
          id (if (seq matching-units)
               (str (:full-name mul-unit) " #" (inc (count matching-units)))
               (str (:full-name mul-unit)))
          unit (merge mul-unit {:id id} game-data)]
-     (mu/log ::element-created 
+     (mu/log ::element-created
              :element unit)
      (merge units {id unit}))))
 
@@ -211,13 +210,13 @@
   [{:keys [chassis full-name]}]
   (let [chassis-match (filter (fn [row] (= (second row) chassis)) mechset)
         exact-match (filter (fn [row] (str/includes? (second row) full-name)) mechset)
-        match-row (or (first exact-match) (first chassis-match))] 
+        match-row (or (first exact-match) (first chassis-match))]
     (utils/load-resource :data (str "images/units/" (nth match-row 2)))))
 
 (defn get-mv
   ([unit move-type]
    (let [move (get-in unit [:movement move-type])
-         div (count (filter #(= :mv %) (:crits unit)))] 
+         div (count (filter #(= :mv %) (:crits unit)))]
      (loop [mv move
             n 0]
        (if (= n div)
@@ -226,7 +225,7 @@
                   (if (>= (- mv new-mv) 1) new-mv 0))
                 (inc n))))))
   ([unit]
-  (get-mv unit (get unit :movement :walk))))
+   (get-mv unit (get unit :movement :walk))))
 
 (defn print-movement-helper
   "Consumes a vector containing a move type as a keyword and a distance and prints it for human consumption."
@@ -282,32 +281,32 @@
 
 (defn print-damage
   [{:keys [size abilities] :as unit} range physical]
-  (cond 
-     (and (= range 1) physical) (+ size (if (str/includes? abilities "MEL") 1 0))
-     (>= 3 range) (print-short unit)
-     (>= 12 range) (print-medium unit)
-     (>= 21 range) (print-long unit)
-     (>= 30 range) (print-extreme unit)
-     :else 0))
+  (cond
+    (and (= range 1) physical) (+ size (if (str/includes? abilities "MEL") 1 0))
+    (>= 3 range) (print-short unit)
+    (>= 12 range) (print-medium unit)
+    (>= 21 range) (print-long unit)
+    (>= 30 range) (print-extreme unit)
+    :else 0))
 
 (defn calculate-damage
   "Returns the damage done by a unit at a given range. Calculates 0* damage correctly."
   [{:keys [attack size abilities s s* m m* l l* e e*]} range rear-attack?]
-   (let [damage (cond
-                  (and (= range 1) (= attack :physical)) (+ size (if (str/includes? abilities "MEL") 1 0))
-                  (>= 3 range) (if (and  s* (<= 4 (utils/roll-die))) 1 s)
-                  (>= 12 range) (if (and m* (<= 4 (utils/roll-die))) 1 m)
-                  (>= 21 range) (if (and l* (<= 4 (utils/roll-die))) 1 l)
-                  (>= 30 range) (if (and e* (<= 4 (utils/roll-die))) 1 e)
-                  :else 0)]
-     (if rear-attack?
-       (inc damage)
-       damage)))
+  (let [damage (cond
+                 (and (= range 1) (= attack :physical)) (+ size (if (str/includes? abilities "MEL") 1 0))
+                 (>= 3 range) (if (and  s* (<= 4 (utils/roll-die))) 1 s)
+                 (>= 12 range) (if (and m* (<= 4 (utils/roll-die))) 1 m)
+                 (>= 21 range) (if (and l* (<= 4 (utils/roll-die))) 1 l)
+                 (>= 30 range) (if (and e* (<= 4 (utils/roll-die))) 1 e)
+                 :else 0)]
+    (if rear-attack?
+      (inc damage)
+      damage)))
 
-(defn take-weapon-hit 
+(defn take-weapon-hit
   [unit]
-  (assoc unit 
-         :s (max (dec (:s unit)) 0) 
+  (assoc unit
+         :s (max (dec (:s unit)) 0)
          :s* false
          :m (max (dec (:m unit)) 0)
          :m* false

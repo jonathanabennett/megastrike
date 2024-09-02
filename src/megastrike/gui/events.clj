@@ -61,6 +61,21 @@
             :instrumentation :player)
     {:context (fx/swap-context context assoc :units units)}))
 
+(defmethod event-handler ::make-attack 
+  [{:keys [fx/context unit selected]}]
+   (let [active-id (subs/active-id context)
+         active (subs/active-unit context)
+         upd (assoc active :target (:id unit) :attack selected)
+         nodes (subs/board context)
+         report (fx/sub-val context :round-report)
+         data (attacks/make-attack upd unit nodes (fx/sub-val context :layout))
+         units (assoc (subs/units context)
+                      active-id upd
+                      (:id unit) (:result data))]
+       {:context (fx/swap-context context assoc
+                                  :units units
+                                  :round-report (str report (reports/parse-attack-data data)))}))
+
 (defmethod event-handler ::unit-clicked
   [{:keys [fx/context unit]}]
    (let [phase (subs/phase context)
@@ -173,6 +188,10 @@
                                  :units (assoc units active upd) 
                                  :turn-flag nil
                                  :active-unit nil)})))
+
+(defmethod event-handler ::finish-attacks 
+  [{:keys [fx/context]}]
+  {:context (fx/swap-context context assoc :turn-order (rest (subs/turn-order context)))})
 
 (defmethod event-handler ::make-attacks 
   [{:keys [fx/context]}]

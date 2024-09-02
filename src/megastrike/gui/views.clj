@@ -95,8 +95,8 @@
     :text "Clear Target"
     :on-action {:event-type ::events/clear-target}}
    {:fx/type :button 
-    :text "Resolve Attacks" 
-    :on-action {:event-type ::events/make-attacks}}])
+    :text "Finish Attacks" 
+    :on-action {:event-type ::events/finish-attacks}}])
 
 (defn command-palette [{:keys [fx/context]}]
   (let [phase (subs/phase context)

@@ -72,7 +72,7 @@
                       :header-text "Select Attack" 
                       :on-hidden {:event-type ::events/close-attack-selection
                                   :unit unit
-                                  :on-close {:event-type ::events/set-attack 
+                                  :on-close {:event-type ::events/make-attack 
                                              :unit unit}} 
                       :items (fx/sub-val context get-in [:internal (:id unit) :items] [])}} 
      :desc {:fx/type :group

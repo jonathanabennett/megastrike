@@ -1,7 +1,8 @@
 (defproject megastrike "0.4.0"
   :description "This is an implementation of the Alpha Strike board game for the computer."
   :url ""
-  :plugins [[lein-cloverage "1.2.2"]]
+  :plugins [[lein-cloverage "1.2.2"]
+            [cider/cider-nrepl "0.42.1"]]
   :license {:name "GPL-2.0-or-later WITH Classpath-exception-2.0"
             :url "https://www.eclipse.org/legal/epl-2.0/"}
   :dependencies [[org.clojure/clojure "1.11.1"]

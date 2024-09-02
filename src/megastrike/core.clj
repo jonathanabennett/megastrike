@@ -33,6 +33,7 @@
      :active-unit nil
      :map-boards []
      :round-report ""
+     :attacked-units {}
      :game-board []
      :layout (hex/create-layout)
      :map-width "1"
