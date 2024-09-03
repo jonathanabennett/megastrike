@@ -10,9 +10,6 @@
   (map utils/keyword-maker
        (first (csv/parse-csv (slurp (utils/load-resource :resources "mul.csv")) :delimiter \tab))))
 
-(def type-schema [:enum :bm :im :pm :sv :cv :ba :ci :ss :ws :js :ds :da :sc :cf :af])
-(def move-schema [:enum :walk :jump :wheeled :tracked :hover :wige :vtol])
-
 (def all-types ["BM" "IM" "PM" "SV" "CV" "BA" "CI" "SS"
                 "WS" "JS" "DS" "DA" "SC" "CF" "AF"])
 (def ground-units ["BM" "IM" "PM" "SV" "CV" "BA" "CI"])
@@ -47,35 +44,6 @@
                       :ordinal 3
                       :points [6 7 8 9]
                       :rear :se}})
-
-(def mul-schema
-  [:map
-   [:mul-id :int]
-   [:chassis :string]
-   [:model :string]
-   [:role :string]
-   [:type type-schema]
-   [:size :int]
-   [:movement [:map-of [move-schema int?]]]
-   [:tmm :int]
-   [:armor :int]
-   [:structure :int]
-   [:threshold :int]
-   [:s :int]
-   [:s* :boolean]
-   [:m :int]
-   [:m* :boolean]
-   [:l :int]
-   [:l* :boolean]
-   [:e :int]
-   [:e* :boolean]
-   [:overheat :int]
-   [:point-value :int]
-   [:abilities :string]
-   [:front-arc :string]
-   [:left-arc :string]
-   [:right-arc :string]
-   [:rear-arc :string]])
 
 (defn parse-ability
   [str]
@@ -200,7 +168,7 @@
          id (if (seq matching-units)
               (str (:full-name mul-unit) " #" (inc (count matching-units)))
               (str (:full-name mul-unit)))
-         unit (merge mul-unit {:id id} game-data)]
+         unit (merge mul-unit {:id id} game-data {:changes {}})]
      (mu/log ::element-created
              :element unit)
      (merge units {id unit}))))
@@ -226,6 +194,20 @@
                 (inc n))))))
   ([unit]
    (get-mv unit (get unit :movement :walk))))
+
+(defn get-armor
+  [unit]
+  (get-in unit [:changes :current-armor]
+          (get unit :current-armor (unit :armor))))
+
+(defn get-structure
+  [unit]
+  (get-in unit [:changes :current-structure]
+          (get unit :current-structure (unit :structure))))
+
+(defn get-crits
+  [unit]
+  (conj (get unit :crits) (get-in unit [:changes :crits])))
 
 (defn print-movement-helper
   "Consumes a vector containing a move type as a keyword and a distance and prints it for human consumption."

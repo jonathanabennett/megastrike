@@ -1,20 +1,21 @@
 (ns megastrike.attacks
-  (:require [clojure.math :as math]
-            [clojure.string :as str]
-            [com.brunobonacci.mulog :as mu]
-            [megastrike.board :as board]
-            [megastrike.combat-unit :as cu]
-            [megastrike.hexagons.hex :as hex]
-            [megastrike.utils :as utils]))
+  (:require
+   [clojure.math :as math]
+   [clojure.string :as str]
+   [com.brunobonacci.mulog :as mu]
+   [megastrike.board :as board]
+   [megastrike.combat-unit :as cu]
+   [megastrike.hexagons.hex :as hex]
+   [megastrike.utils :as utils]))
 
-(def probabilities 
+(def probabilities
   {2  100, 3  98, 4  92, 5  83, 6  72, 7  58, 8  42, 9  28, 10 17, 11 8, 12 3})
 
 (def criticals {2 :ammo
                 3 :engine
                 4 :fire-control
                 6 :weapon
-                7 :mv 
+                7 :mv
                 8 :weapon
                 10 :fire-control
                 11 :engine
@@ -49,7 +50,7 @@
         s (if (= fc 1)
             "fire control hit"
             "fire control hits")]
-      [{:desc (str fc " " s) :value (* fc 2)}]))
+    [{:desc (str fc " " s) :value (* fc 2)}]))
 
 (defn calculate-target-mod
   [{:keys [movement-mode] :as unit}]
@@ -59,10 +60,10 @@
     :jump [{:desc "target jumped" :value (inc (get-tmm unit))}]
     [{:desc "target moved" :value (get-tmm unit)}]))
 
-(defn calculate-heat-mod 
+(defn calculate-heat-mod
   [{:keys [current-heat] :or {current-heat 0}}]
   (when (pos? current-heat)
-      [{:desc "attacker heat" :value current-heat}]))
+    [{:desc "attacker heat" :value current-heat}]))
 
 (defn woods-mod
   [line]
@@ -73,14 +74,14 @@
       (pos? woods) [{:desc "intervening woods" :value 1}]
       :else [{:desc "no intervening woods" :value 0}])))
 
-(defn calculate-range-mod 
+(defn calculate-range-mod
   [range]
   (let [range-str (str "target " range " hexes away")]
-    (condp >= range 
-      3  [{:desc range-str :value 0}] 
-      12 [{:desc range-str :value 2}] 
-      21 [{:desc range-str :value 4}] 
-      30 [{:desc range-str :value 6}] 
+    (condp >= range
+      3  [{:desc range-str :value 0}]
+      12 [{:desc range-str :value 2}]
+      21 [{:desc range-str :value 4}]
+      30 [{:desc range-str :value 6}]
       [{:desc "Target out of range" :value ##Inf}])))
 
 (defn height-checker
@@ -90,47 +91,47 @@
     (if (= (count line) 2)
       false
       (loop [blocked? false
-            current (first line)
-            l (rest line)]
-       (if (or blocked? (= (count l) 1))
-         blocked?
-         (recur (cond
-                  (hex/same-hex origin current)   (>= (:elevation current) o-height)
-                  (hex/same-hex target (first l)) (>= (:elevation current) t-height)
-                  :else (and (>= (:elevation current) o-height) (>= (:elevation current) t-height)))
-                (first l)
-                (rest l)))))))
-            
+             current (first line)
+             l (rest line)]
+        (if (or blocked? (= (count l) 1))
+          blocked?
+          (recur (cond
+                   (hex/same-hex origin current)   (>= (:elevation current) o-height)
+                   (hex/same-hex target (first l)) (>= (:elevation current) t-height)
+                   :else (and (>= (:elevation current) o-height) (>= (:elevation current) t-height)))
+                 (first l)
+                 (rest l)))))))
+
 (defn produce-attack-roll
   [attacker target board type]
-  (let [line (board/line attacker target board) 
+  (let [line (board/line attacker target board)
         range (hex/distance attacker target)
-        attack-roll (conj [] (attacker-skill attacker) 
-                             (calculate-fc-hits attacker) 
-                             (calculate-amm attacker) 
-                             (calculate-target-mod target) 
-                             (when (and (not= type :physical) (calculate-heat-mod attacker))
-                               (calculate-heat-mod attacker)) 
-                             (if (height-checker attacker target line) 
-                               [{:desc "Line of Sight Blocked" :value ##Inf}]
-                               [{:desc "clear line of sight" :value 0}])
-                             (woods-mod line) 
-                             (calculate-range-mod range))
+        attack-roll (conj [] (attacker-skill attacker)
+                          (calculate-fc-hits attacker)
+                          (calculate-amm attacker)
+                          (calculate-target-mod target)
+                          (when (and (not= type :physical) (calculate-heat-mod attacker))
+                            (calculate-heat-mod attacker))
+                          (if (height-checker attacker target line)
+                            [{:desc "Line of Sight Blocked" :value ##Inf}]
+                            [{:desc "clear line of sight" :value 0}])
+                          (woods-mod line)
+                          (calculate-range-mod range))
         damage (cu/print-damage attacker range (= type :physical))]
     {:targeting attack-roll
      :damage damage}))
 
-(defn calculate-to-hit 
+(defn calculate-to-hit
   [{:keys [targeting]}]
   (reduce + (map #(:value (first %) 0) targeting)))
 
-(defn attack-roll-parser 
+(defn attack-roll-parser
   [[m]]
-    (if (neg? (:value m 0))
-      (str "- " (abs (:value m 0)) " (" (:desc m) ") ")
-      (str "+ " (:value m 0) " (" (:desc m) ") ")))
+  (if (neg? (:value m 0))
+    (str "- " (abs (:value m 0)) " (" (:desc m) ") ")
+    (str "+ " (:value m 0) " (" (:desc m) ") ")))
 
-(defn print-attack-roll 
+(defn print-attack-roll
   ([attack-roll]
    (print-attack-roll attack-roll true))
   ([{:keys [targeting] :as attack-roll} detailed?]
@@ -162,7 +163,7 @@
       ; Otherwise, check if cp and op have opposite signs (i.e. are on opposite sides of the line).
       (not (pos? (* cross1 cross2))))))
 
-(defn detect-direction 
+(defn detect-direction
   "Detect if a hex is 'behind' a given hex-side."
   [this-hex other-hex side layout]
   (let [this-pixel (hex/hex->pixel this-hex layout)
@@ -173,54 +174,71 @@
         other-hex (hex/hex->pixel other-hex layout)]
     (line-between-points? p1 p2 [(:x this-pixel) (:y this-pixel)] [(:x other-hex) (:y other-hex)])))
 
+(defn roll-crits
+  [tac penetration]
+  (let [tac-crit (if tac (get criticals (utils/roll2d) nil) nil)
+        pen-crit (if (pos? penetration) (get criticals (utils/roll2d) nil) nil)]
+    [tac-crit pen-crit]))
+
+(declare take-damage)
+
+(defn take-crits
+  [unit crits]
+  (loop [unit unit
+         crits crits]
+    (if (empty? crits)
+      unit
+      (recur
+       (let [crit (first crits)]
+         (prn crit)
+         (case crit
+           :ammo (let [case (str/includes? (:abilities unit) "CASE")
+                       case2 (str/includes? (:abilities unit) "CASEII")
+                       ene (str/includes? (:abilities unit) "ENE")]
+                   (cond (or case2 ene) unit
+                         case (take-damage unit 1)
+                         :else (assoc-in unit [:changes :destroyed?] true)))
+           :engine (if (some #(= % :engine) (cu/get-crits unit))
+                     (assoc-in unit [:changes :destroyed?] true)
+                     (assoc-in unit [:changes :crits] (conj (get-in unit [:changes :crits]) :engine)))
+           :fire-control (if (< (count (filter #(= % :fire-control) (cu/get-crits unit))) 4)
+                           (assoc-in unit [:changes :crits] (conj (get-in unit [:changes :crits]) :fire-control))
+                           unit)
+           :weapon (assoc-in unit [:changes :crits] (conj (get-in unit [:changes :crits]) :weapon))
+           :mv (if (< (count (filter #(= % :mv) (cu/get-crits unit))) 4)
+                 (assoc-in unit [:changes :crits] (conj (get-in unit [:changes :crits]) :mv))
+                 (assoc-in unit [:changes :movement] {:immobile 0}))
+           :destroyed (assoc-in unit [:changes :destroyed?] true)
+           unit))
+       (rest crits)))))
+
 (defn take-damage
   ([unit damage]
    (take-damage unit damage false))
   ([unit damage tac]
-   (if (= damage 0)
-     {:crit nil :result unit}
-     (let [armor (max (- (:current-armor unit (:armor unit)) damage) 0) 
-           penetration (- damage (:current-armor unit (:armor unit)))
-           structure (if (zero? armor) 
-                       (- (:current-structure unit (:structure unit)) penetration)
-                       (:current-structure unit (:structure unit)))
-           crit (if (or tac (pos? penetration)) (get criticals (utils/roll2d) nil) nil)
-           damaged (assoc unit :current-armor armor :current-structure structure)
-           upd (cond
-                 (not (pos? (:current-structure damaged (:structure damaged)))) (assoc damaged :destroyed? true)
-                 (= crit :ammo) (let [case (str/includes? (:abilities damaged) "CASE")
-                                      case2 (str/includes? (:abilities damaged) "CASEII")
-                                      ene (str/includes? (:abilities damaged) "ENE")]
-                                  (cond (or case2 ene) damaged
-                                        case (take-damage damaged 1)
-                                        :else (assoc damaged :destroyed? true :crits (conj (:crits damaged) :ammo))))
-                 (= crit :engine) (if (some #(= % :engine) (:crits damaged))
-                                    (assoc damaged :destroyed? true)
-                                    (assoc damaged :crits (conj (:crits damaged) :engine)))
-                 (= crit :fire-control) (if (< (count (filter #(% :fire-control) (:crits damaged))) 4)
-                                          (assoc damaged :crits (conj (:crits damaged) :fire-control))
-                                          damaged)
-                 (= crit :weapon) (if (< (count (filter #(% :weapon) (:crits damaged))) 4)
-                                    (cu/take-weapon-hit damaged)
-                                    damaged)
-                 (= crit :mv) (if (< (count (filter #(% :mv) (:crits damaged))) 4)
-                                (assoc damaged :crits (conj (:crits damaged) :mv))
-                                (assoc damaged :movement {:immobile 0}))
-                 (= crit :destroyed) (assoc damaged :destroyed? true :crits (conj (:crits damaged) :destroyed))
-                 :else damaged)]
+   (if (zero? damage)
+     {:crit [nil nil] :result unit}
+     (let [armor (max (- (cu/get-armor unit) damage) 0)
+           penetration (- damage (cu/get-armor unit))
+           structure (if (zero? armor)
+                       (- (cu/get-structure unit) penetration)
+                       (cu/get-structure unit))
+           crits (roll-crits tac penetration)
+           upd (if crits
+                 (take-crits (assoc unit :changes {:current-armor armor :current-structure structure}) crits)
+                 (assoc unit :changes {:current-armor armor :current-structure structure}))]
        (mu/log ::damage-dealt
                :target (:id unit)
                :damage damage
-               :crit crit
+               :crit crits
                :unit-status upd)
-       {:crit crit
-        :result upd}))))
+       {:crit crits :result upd}))))
 
 (defn attack-confirmation-choices
   [attacker target board]
   (let [range (hex/distance attacker target)
-       regular-attack (produce-attack-roll attacker target board :regular)
-       physical-attack (produce-attack-roll attacker target board :physical)]
+        regular-attack (produce-attack-roll attacker target board :regular)
+        physical-attack (produce-attack-roll attacker target board :physical)]
     [{:regular (str (print-attack-roll regular-attack false) ": " (:damage regular-attack) " damage.")}
      (when (= range 1)
        {:regular (str (print-attack-roll physical-attack false) ": " (:damage physical-attack) " damage.")})]))
@@ -239,7 +257,7 @@
                     "Damage: " (cu/print-damage attacker (hex/distance attacker target) (:physical attacker)) "\n")
                (rest attackers))))))
 
-(defn make-attack 
+(defn make-attack
   ([attacker target board layout to-hit]
    (let [targeting-data (produce-attack-roll attacker target board (:attack attacker))
          rear-attack? (detect-direction target attacker (get-in cu/directions [(:direction target) :rear]) layout)
@@ -256,8 +274,8 @@
              :attacker attacker
              :damage damage
              :target target}
-             (if (<= (calculate-to-hit targeting-data) to-hit)
-                       (take-damage target damage (= to-hit 12))
-                       {:result target}))))
+            (if (<= (calculate-to-hit targeting-data) to-hit)
+              (take-damage target damage (= to-hit 12))
+              {:result target}))))
   ([attacker target board layout]
    (make-attack attacker target board layout (utils/roll2d))))
