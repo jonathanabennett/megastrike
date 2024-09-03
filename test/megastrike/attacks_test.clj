@@ -1,6 +1,5 @@
 (ns megastrike.attacks-test
   (:require
-   [clojure.pprint :as pprint]
    [clojure.test :as t]
    [megastrike.attacks :as sut]
    [megastrike.board :as board]
