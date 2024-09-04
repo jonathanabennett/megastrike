@@ -131,10 +131,18 @@
                           {:fx/type common/prop-label
                            :label "Criticals: "
                            :value (str (:crits unit))}
-                          {:fx/type common/prop-label
-                           :label "Unapplied Damage: "
-                           :value (str "Armor: " (cu/get-armor unit)
-                                       "\nStructure: " (cu/get-structure unit))}
+                          {:fx/type draw-pips
+                           :text (str "Remaining Armor: " (cu/get-armor unit) "/" (:armor unit))
+                           :filled (cu/get-armor unit)
+                           :max (:armor unit)
+                           :fill-one :green
+                           :fill-two :transparent}
+                          {:fx/type draw-pips
+                           :text (str "Remaining structure " (cu/get-structure unit) "/" (:structure unit))
+                           :filled (cu/get-structure unit)
+                           :max (:structure unit)
+                           :fill-one :green
+                           :fill-two :transparent}
                           {:fx/type common/prop-label
                            :label "Unapplied Criticals: "
                            :value (str (get-in unit [:changes :crits] nil))}]}}))
