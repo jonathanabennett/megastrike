@@ -69,7 +69,14 @@
        :on-action {:event-type ::events/set-movement-mode :mode :stand-still :unit unit :fx/sync true}}
       {:fx/type :button
        :text "Turn"
-       :on-action {:event-type ::events/turn-button-clicked :fx/sync true}}]
+       :on-action {:event-type ::events/turn-button-clicked :fx/sync true}}
+      {:fx/type :button
+       :text "Charge"
+       :on-action {:event-type ::events/declare-charge-popup :fx/sync true}}
+      (when (contains? movement :jump)
+        {:fx/type :button
+         :text "DFA"
+         :on-action {:event-type ::events/declare-dfa-popup :fx/sync true}})]
      buttons
      [{:fx/type :button
        :text "Cancel Move"
@@ -107,8 +114,7 @@
         board (subs/board context)
         common-buttons [{:fx/type next-phase-button
                          :state-id ::next-phase-button
-                         :button {:text "Next Phase"
-                                  :disable (boolean (seq turn-order))}
+                         :button {:text "Next Phase"}
                          :dialog-pane {:content-text (fx/sub-val context :round-report)}
                          :on-confirmed {:event-type ::events/no-op}}
                         {:fx/type :separator

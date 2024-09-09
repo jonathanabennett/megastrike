@@ -7,6 +7,7 @@
             [megastrike.combat-unit :as cu]
             [megastrike.gui.events :as e]
             [megastrike.gui.subs :as subs]
+            [com.brunobonacci.mulog :as mu]
             [megastrike.phases :as phases]
             [megastrike.scenario :as scenario]
             [megastrike.utils :as utils])
@@ -15,13 +16,13 @@
            [javafx.stage FileChooser]))
 
 ;; Make camo separate from color and, in the event of a camo being supplied, select a color from the camo.
-(defmethod e/event-handler ::select-camo 
+(defmethod e/event-handler ::select-camo
   [{:keys [^ActionEvent fx/context fx/event]}]
   (let [window (.getWindow (.getScene ^Node (.getTarget event)))
         chooser (doto (FileChooser.)
                   (.setTitle "Select Camo")
                   (.setInitialDirectory (io/file "data/images/camo")))]
-    (when-let [camo (.showOpenDialog chooser window)] 
+    (when-let [camo (.showOpenDialog chooser window)]
       {:context (fx/swap-context context assoc :force-camo (str "file:" (.getPath camo)))})))
 
 (defmethod e/event-handler ::load-scenario
@@ -30,7 +31,7 @@
         chooser (doto (FileChooser.)
                   (.setTitle "Select Scenario")
                   (.setInitialDirectory (io/file "data/scenarios")))]
-    (when-let [s (.showOpenDialog chooser window)] 
+    (when-let [s (.showOpenDialog chooser window)]
       (let [scenario (select-keys (scenario/setup-scenario s) [:units :forces :map-boards :map-width :map-height])]
         {:context (fx/swap-context context merge {:units nil :forces nil :map-boards nil :map-width "1" :map-height "1"} scenario)}))))
 
@@ -58,20 +59,22 @@
         height (fx/sub-val context :height)
         map-boards (fx/sub-val context :map-boards)
         response (phases/next-phase {:current-phase (subs/phase context)
-                                                   :turn-number (subs/turn-number context)
-                                                   :forces (subs/forces context) 
-                                                   :units (subs/units context)})]
-    {:context (fx/swap-context context merge 
-                               {:game-board (if (empty? (subs/board context)) 
-                                              (board/create-board map-boards width height) 
-                                              (subs/board context)) 
+                                     :turn-number (subs/turn-number context)
+                                     :forces (subs/forces context)
+                                     :units (subs/units context)})]
+    (mu/log ::game-started
+            :game-state response)
+    {:context (fx/swap-context context merge
+                               {:game-board (if (empty? (subs/board context))
+                                              (board/create-board map-boards width height)
+                                              (subs/board context))
                                 :display view}
                                response)}))
 
 (defmethod e/event-handler ::load-save
   [{:keys [fx/context]}]
-   (let [save-data (edn/read-string (slurp (utils/load-resource :data "save.edn")))]
-     {:context (fx/swap-context context merge save-data)}))
+  (let [save-data (edn/read-string (slurp (utils/load-resource :data "save.edn")))]
+    {:context (fx/swap-context context merge save-data)}))
 
 (defmethod e/event-handler ::add-force
   [{:keys [fx/context]}]
@@ -79,7 +82,7 @@
         deploy (fx/sub-val context :force-zone)
         color (fx/sub-val context :force-color)
         camo (fx/sub-val context :force-camo)
-        new-forces (merge (subs/forces context) {(utils/keyword-maker name) {:name name :deploy deploy :color color :camo camo}})] 
+        new-forces (merge (subs/forces context) {(utils/keyword-maker name) {:name name :deploy deploy :color color :camo camo}})]
     {:context
      (fx/swap-context context assoc :forces new-forces :force-camo nil :force-color :white)}))
 
@@ -91,11 +94,11 @@
   [{:keys [fx/context]}]
   (let [units (fx/sub-val context :units)
         mul-unit (fx/sub-val context :active-mul)
-        game-data {:force (fx/sub-val context :active-force) 
-                   :pilot {:name (fx/sub-val context :pilot-name) 
-                           :skill (Integer/parseInt (fx/sub-val context :pilot-skill))} 
-                   :current-armor (:armor mul-unit) 
-                   :current-structure (:structure mul-unit) 
+        game-data {:force (fx/sub-val context :active-force)
+                   :pilot {:name (fx/sub-val context :pilot-name)
+                           :skill (Integer/parseInt (fx/sub-val context :pilot-skill))}
+                   :current-armor (:armor mul-unit)
+                   :current-structure (:structure mul-unit)
                    :crits []
                    :current-heat 0}]
     {:context (fx/swap-context context assoc :units (cu/create-element units mul-unit game-data))}))
@@ -107,7 +110,7 @@
 
 (defmethod e/event-handler ::force-selection-changed
   [{:keys [fx/context fx/event]}]
-  {:context (fx/swap-context context assoc 
+  {:context (fx/swap-context context assoc
                              :active-force (utils/keyword-maker (:name event))
                              :force-name (:name event)
                              :force-zone (:deployment event))})

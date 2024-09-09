@@ -56,7 +56,7 @@
             :turn-order move-list
             :current-phase "Initiative"
             :instrumentation :player)
-    {:current-phase :initiative :turn-number turn-num :forces forces :turn-order nil :units units :round-report round-report}))
+    {:current-phase :initiative :turn-number turn-num :forces forces :turn-order () :units units :round-report round-report}))
 
 (defn start-deployment-phase
   "Generates the turn order based on the number of units who haven't been deployed yet."
