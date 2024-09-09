@@ -84,7 +84,14 @@
        :on-action {:event-type ::events/set-movement-mode :mode :stand-still :unit unit :fx/sync true}}
       {:fx/type :button
        :text "Turn"
-       :on-action {:event-type ::events/turn-button-clicked :fx/sync true}}]
+       :on-action {:event-type ::events/turn-button-clicked :fx/sync true}}
+      {:fx/type :button
+       :text "Charge"
+       :on-action {:event-type ::events/declare-charge-popup :fx/sync true}}
+      (when (contains? movement :jump)
+        {:fx/type :button
+         :text "DFA"
+         :on-action {:event-type ::events/declare-dfa-popup :fx/sync true}})]
      buttons
      [{:fx/type :button
        :text "Cancel Move"
