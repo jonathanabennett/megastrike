@@ -99,6 +99,8 @@
       (cond
         (and (= active-force (:force unit)) (not (:acted unit)))
         (when true (mu/log ::select-unit) {:context (fx/swap-context context assoc :active-unit (:id unit))})
+        ; (and (= phase :movement) (not (= active-force (:force unit))))
+        ; (let [can-charge? (movement/can-move? 
         (and (= phase :combat) (not (= active-force (:force unit))))
         (let [ctx (get-in context [:internal (:id unit)])]
           {:context (fx/swap-context context assoc-in [:internal (:id unit)] (assoc ctx :showing true :items (attacks/attack-confirmation-choices active-unit unit board)))})))))
@@ -169,7 +171,7 @@
         units (subs/units context)
         active (subs/active-id context)
         upd (when (and (= (first turn-order) (:force unit)) (= active (:id unit)))
-              (movement/can-move? unit (subs/board context)))]
+              (movement/move-unit unit (subs/board context)))]
     (when (:acted upd)
       (mu/log ::move-confirmed
               :unit upd
