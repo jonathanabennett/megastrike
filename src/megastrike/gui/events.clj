@@ -183,19 +183,6 @@
                                  :active-unit nil)})))
 
 ;; Combat Phase
-(defmethod event-handler ::set-attack
-  [{:keys [fx/context unit selected]}]
-  (let [active-id (subs/active-id context)
-        active (subs/active-unit context)
-        upd (assoc active :target (:id unit) :attack selected)
-        units (assoc (subs/units context) active-id upd)]
-    (mu/log ::set-attack-event
-            :attacker upd
-            :target unit
-            :attack-type selected
-            :instrumentation :player)
-    {:context (fx/swap-context context assoc :units units)}))
-
 (defmethod event-handler ::make-attack
   [{:keys [fx/context unit selected]}]
   (let [active-id (subs/active-id context)
