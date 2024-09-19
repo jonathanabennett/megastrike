@@ -234,6 +234,13 @@
                :unit-status upd)
        {:crit crits :result upd}))))
 
+(defn physical-confirmation-choices
+  [attacker target board can-charge? can-dfa?]
+  (let [charge-attack (produce-attack-roll attacker target board :regular)
+        dfa-attack (produce-attack-roll attacker target board :physical)]
+    [{:charge (str (print-attack-roll charge-attack false) ": " (:damage charge-attack) " damage.")}
+     {:dfa (str (print-attack-roll dfa-attack false) ": " (:damage dfa-attack) " damage.")}]))
+
 (defn attack-confirmation-choices
   [attacker target board]
   (let [range (hex/distance attacker target)

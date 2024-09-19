@@ -4,6 +4,7 @@
             [clojure.pprint :as pprint]
             [com.brunobonacci.mulog :as mu]
             [megastrike.attacks :as attacks]
+            [megastrike.board :as board]
             [megastrike.gui.subs :as subs]
             [megastrike.hexagons.hex :as hex]
             [megastrike.movement :as movement]
@@ -99,8 +100,12 @@
       (cond
         (and (= active-force (:force unit)) (not (:acted unit)))
         (when true (mu/log ::select-unit) {:context (fx/swap-context context assoc :active-unit (:id unit))})
-        ; (and (= phase :movement) (not (= active-force (:force unit))))
-        ; (let [can-charge? (movement/can-move? 
+        (and (= phase :movement) (not (= active-force (:force unit))))
+        (let [u (assoc active-unit :path (movement/find-path active-unit (board/find-hex unit (subs/board context)) (subs/board context)))
+              can-charge? (movement/can-move? (merge u {:movement-mode :walk}) (subs/board context))
+              can-dfa? (if (contains? (:movement u) :jump) (movement/can-move? (merge u {:movement-mode :jump}) (subs/board context)) false)
+              ctx (get-in context [:internal (:id unit)])]
+          {:context (fx/swap-context context assoc-in [:internal (:id unit)] (assoc ctx :showing true :items (attacks/physical-confirmation-choices active-unit unit board can-charge? can-dfa?)))})
         (and (= phase :combat) (not (= active-force (:force unit))))
         (let [ctx (get-in context [:internal (:id unit)])]
           {:context (fx/swap-context context assoc-in [:internal (:id unit)] (assoc ctx :showing true :items (attacks/attack-confirmation-choices active-unit unit board)))})))))
