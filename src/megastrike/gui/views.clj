@@ -91,9 +91,6 @@
     :dialog-pane {:content-text (attacks/generate-attack-info units current-force board)}
     :on-confirmed {:event-type ::events/no-op}}
    {:fx/type :button
-    :text "Clear Target"
-    :on-action {:event-type ::events/clear-target}}
-   {:fx/type :button
     :text "Finish Attacks"
     :on-action {:event-type ::events/finish-attacks}}])
 

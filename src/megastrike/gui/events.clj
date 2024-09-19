@@ -212,12 +212,6 @@
                  (rest attackers)
                  (str report (reports/parse-attack-data data))))))))
 
-(defmethod event-handler ::clear-target
-  [{:keys [fx/context]}]
-  (let [upd (assoc (subs/active-unit context) :target nil)
-        units (assoc (subs/units context) (subs/active-id context) upd)]
-    {:context (fx/swap-context context assoc :units units)}))
-
 (defmethod event-handler ::change-size
   [{:keys [fx/context direction]}]
   (when (= (fx/sub-val context :display) :game)
