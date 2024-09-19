@@ -26,9 +26,6 @@
   (if (seq path)
     (let [sum (reduce + (move-costs unit board))
     ;; Add code here to default to walk OR the default movement mode 
-          unit (if (not (:movement-mode unit))
-                 (assoc unit :movement-mode :walk)
-                 unit)
           move (cu/get-mv unit (:movement-mode unit))]
       (<= sum move))
     false))
