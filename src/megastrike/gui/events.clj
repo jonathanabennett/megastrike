@@ -223,21 +223,3 @@
   [{:keys [fx/context]}]
   {:context (fx/swap-context context assoc :turn-order (rest (subs/turn-order context)))})
 
-(defmethod event-handler ::make-attacks
-  [{:keys [fx/context]}]
-  (let [nodes (subs/board context)]
-    (loop [units (subs/units context)
-           attackers (filter #(:target %) (subs/current-forces context))
-           report (fx/sub-val context :round-report)]
-      (if (empty? attackers)
-        {:context (fx/swap-context context assoc
-                                   :units units
-                                   :active-unit nil
-                                   :round-report report
-                                   :turn-order (rest (subs/turn-order context)))}
-        (let [attacker (first attackers)
-              target (get units (:target attacker))
-              data (attacks/make-attack attacker target nodes (fx/sub-val context :layout))]
-          (recur (assoc units (:id target) (:result data))
-                 (rest attackers)
-                 (str report (reports/parse-attack-data data))))))))
