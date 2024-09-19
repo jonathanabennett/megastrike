@@ -145,7 +145,7 @@
                            :fill-two :transparent}
                           {:fx/type common/prop-label
                            :label "Unapplied Criticals: "
-                           :value (str (get-in unit [:changes :crits] nil))}]}}))
+                           :value (str (get-in unit [:changes :crits] []))}]}}))
 
 (defn force-block [{:keys [fx/context units]}]
   (let [forces (subs/forces context)
