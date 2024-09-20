@@ -1,21 +1,24 @@
 (ns megastrike.hexagons.hex
-  (:require [clojure.math :as math]))
+  (:require [clojure.math :as math]
+            [malli.core :as m]
+            [megastrike.schemas :as schemas]))
 
 (defn hexagon
   "Creates a Hexagon using a 3d addressing system."
   ([p q]
    (hexagon p q (* (+ p q) -1)))
   ([p q r]
-   (when (= (* (+ p q) -1) r)
-      {:p p :q q :r r})))
+   (let [hex {:p p :q q :r r}]
+     (when (m/validate schemas/Hexagon hex)
+       hex))))
 
 (defn offset->hex
   "Calculates a hex based on an 'offset' hex address. The input in in the format of [x y]."
   ([col row]
-  (let [p col
-        q (int (- row (math/floor (/ (+ col (* (mod (abs col) 2) -1)) 2))))
-        r (int (* (+ p q) -1))]
-    (hexagon p q r)))
+   (let [p col
+         q (int (- row (math/floor (/ (+ col (* (mod (abs col) 2) -1)) 2))))
+         r (int (* (+ p q) -1))]
+     (hexagon p q r)))
   ([offset]
    (offset->hex (:x offset) (:y offset))))
 
