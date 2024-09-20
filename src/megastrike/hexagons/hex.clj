@@ -59,11 +59,11 @@
 
 (def ordinals
   "Defines the neighbors in each direction."
-  (list {:p 1  :q 0  :r -1} 
-        {:p 1  :q -1 :r 0} 
-        {:p 0  :q -1 :r 1} 
-        {:p -1 :q 0  :r 1} 
-        {:p -1 :q 1  :r 0} 
+  (list {:p 1  :q 0  :r -1}
+        {:p 1  :q -1 :r 0}
+        {:p 0  :q -1 :r 1}
+        {:p -1 :q 0  :r 1}
+        {:p -1 :q 1  :r 0}
         {:p 0  :q 1  :r -1}))
 
 (defn direction
@@ -97,21 +97,21 @@
   "Converts a given hex address to the pixel at the center of the hex."
   [{:keys [p q]} {:keys [hex-to-pixel-matrix x-size scale x-origin y-size y-origin]}]
   {:x (+ (* (+ (* (get hex-to-pixel-matrix 0) p)
-               (* (get hex-to-pixel-matrix 1) q)) 
-            (* x-size scale)) 
-         x-origin) 
-   :y (+ (* (+ (* (get hex-to-pixel-matrix 2) p) 
-               (* (get hex-to-pixel-matrix 3) q)) 
-            (* y-size scale)) 
+               (* (get hex-to-pixel-matrix 1) q))
+            (* x-size scale))
+         x-origin)
+   :y (+ (* (+ (* (get hex-to-pixel-matrix 2) p)
+               (* (get hex-to-pixel-matrix 3) q))
+            (* y-size scale))
          y-origin)})
 
 (defn find-hex-corner
   "Calculates the corner of a hex based on the center."
   [center corner {:keys [start-angle x-size y-size scale]}]
   (let [angle (* 2.0 math/PI (/ (+ start-angle corner) 6))]
-    [(+ (* x-size (math/cos angle) scale) 
+    [(+ (* x-size (math/cos angle) scale)
         (:x center))
-     (+ (* y-size (math/sin angle) scale) 
+     (+ (* y-size (math/sin angle) scale)
         (:y center))]))
 
 (defn points
@@ -130,23 +130,23 @@
         r-diff (abs (- r r-int))]
     (cond
       (and (> p-diff q-diff)
-            (> p-diff r-diff))
-       (hexagon (* (+ q-int r-int) -1) q-int r-int)
+           (> p-diff r-diff))
+      (hexagon (* (+ q-int r-int) -1) q-int r-int)
       (and (> q-diff r-diff)
-            (> q-diff p-diff))
-       (hexagon p-int (* (+ p-int r-int) -1) r-int)
+           (> q-diff p-diff))
+      (hexagon p-int (* (+ p-int r-int) -1) r-int)
       :else (hexagon p-int q-int (* (+ p-int q-int) -1)))))
 
-(defn facing 
+(defn facing
   "Finds which hexside a line starting from the center of the hex and
    reaching a point beyond the hex passes through. Used for changing facing"
   [o destination layout]
-  (let [origin (hex->pixel o layout) 
+  (let [origin (hex->pixel o layout)
         angle (math/to-degrees (math/atan2 (- (:x destination) (:x origin)) (- (:y destination) (:y origin))))]
     (cond
       (<= 150 (abs angle))  :n
-      (and (> 150 angle)  (>= angle 90))  :ne 
-      (and (> 90 angle)  (>= angle 30)) :se 
+      (and (> 150 angle)  (>= angle 90))  :ne
+      (and (> 90 angle)  (>= angle 30)) :se
       (and (> 30 angle) (>= angle -30)) :s
       (and (> -30 angle) (>= angle -90)) :sw
       (and (> -90 angle) (>= angle -150)) :nw
