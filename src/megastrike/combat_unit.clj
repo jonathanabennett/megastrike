@@ -3,6 +3,7 @@
             [clojure.math :as math]
             [clojure.string :as str]
             [com.brunobonacci.mulog :as mu]
+            [megastrike.hexagons.hex :as hex]
             [megastrike.utils :as utils]))
 
 (def header-row
@@ -183,9 +184,9 @@
 
 (defn get-mv
   ([unit move-type]
-   (let [move (get-in unit [:movement move-type])
+   (let [base-move (move-type (:movement unit))
          div (count (filter #(= :mv %) (:crits unit)))]
-     (loop [mv move
+     (loop [mv base-move
             n 0]
        (if (= n div)
          (max (- mv (:current-heat unit 0)) 0)
@@ -301,3 +302,8 @@
 (defn destroyed?
   [unit]
   (or (:destroyed? unit) (not (pos? (get-structure unit)))))
+
+(defn can-charge?
+  "You can charge a unit if they have acted, you have moved, and they are adjacent to you."
+  [unit target]
+  (and (:acted target) (pos? (count (:path unit))) (= (hex/hex-distance unit target) 1)))

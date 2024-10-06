@@ -2,6 +2,7 @@
   (:require [cljfx.api :as fx]
             [clojure.string :as str]
             [megastrike.attacks :as attacks]
+            [megastrike.combat-unit :as cu]
             [megastrike.gui.board.views :as board]
             [megastrike.gui.common :as common]
             [megastrike.gui.events :as events]
@@ -53,8 +54,21 @@
     :text "Undeploy Unit"
     :on-action {:event-type ::events/undeploy-unit :fx/sync true}}])
 
-(defn move-buttons [{:keys [movement] :as unit}]
-  (let [buttons (if (contains? movement :jump)
+(defn charge-buttons [{:keys [fx/context]}]
+  (let [active (subs/active-unit context)
+        units (subs/units context)
+        boards (subs/boards context)
+        attackable (filter #(cu/can-charge active %) units)]
+    (when (seq attackable)
+      [{:fx/type attack-report-button
+        :text (if (= (:movement-mode active) :jump)
+                "DFA"
+                "Charge")
+        :on-action {:event-type ::events/charge-attack :targets attackable}}])))
+
+(defn move-buttons [unit]
+  (let [movement (:movement unit)
+        buttons (if (contains? movement :jump)
                   [{:fx/type :button
                     :text "Walk"
                     :on-action {:event-type ::events/set-movement-mode :mode :walk :unit unit :fx/sync true}}
@@ -106,6 +120,9 @@
         common-buttons [{:fx/type next-phase-button
                          :state-id ::next-phase-button
                          :button {:text "Next Phase"}
+                         ; :button {:text "Next Phase"
+                         ;          :disable #_{:clj-kondo/ignore [:not-empty?]}
+                         ;          (not (empty? turn-order))}
                          :dialog-pane {:content-text (fx/sub-val context :round-report)}
                          :on-confirmed {:event-type ::events/no-op}}
                         {:fx/type :separator
