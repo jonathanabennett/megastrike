@@ -297,3 +297,7 @@
          :e (max (dec (:e unit)) 0)
          :e* false
          :crits (conj (:crits unit) :weapon)))
+
+(defn destroyed?
+  [unit]
+  (or (:destroyed? unit) (not (pos? (get-structure unit)))))

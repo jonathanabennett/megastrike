@@ -1,6 +1,7 @@
 (ns megastrike.phases
   (:require [clojure.math :as math]
             [com.brunobonacci.mulog :as mu]
+            [megastrike.combat-unit :as cu]
             [megastrike.utils :as utils]))
 
 (defn roll-initiative
@@ -120,7 +121,7 @@
   "Removes destroyed units and resets the acted status on every unit, then dispatches to the correct phase method."
   [{:keys [current-phase turn-number forces units round-report]}]
   (let [changed-units (into {} (for [[k unit] units] [k (merge unit (:changes unit) {:changes {}})]))
-        remaining (into {} (for [[k unit] changed-units] (when (not (:destroyed? unit)) [k unit])))
+        remaining (into {} (for [[k unit] changed-units] (when (not (cu/destroyed? unit)) [k unit])))
         new-units (into {} (for [[k unit] remaining] [k (assoc unit :acted nil)]))]
     (mu/with-context {:turn-number turn-number}
       (cond
