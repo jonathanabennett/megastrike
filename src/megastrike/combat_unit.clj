@@ -308,7 +308,7 @@
 (defn can-charge?
   "You can charge a unit if they have acted, you have moved, and they are adjacent to you."
   [unit target]
-  (and (:acted target) (pos? (count (:path unit))) (= (hex/hex-distance unit target) 1)))
+  (and (:acted target) (pos? (count (:path unit))) (= (hex/distance unit target) 1)))
 
 (defn destroyed?
   [unit]
