@@ -234,6 +234,10 @@
                :unit-status upd)
        {:crit crits :result upd}))))
 
+(defn create-confirmation-choice
+  [attacker target board atk-flag atk-class]
+  {atk-flag (print-attack-roll (produce-attack-roll attacker target board atk-class) false)})
+
 (defn physical-confirmation-choices
   [attacker target board can-charge? can-dfa?]
   (let [charge-attack (produce-attack-roll attacker target board :regular)
@@ -244,11 +248,9 @@
 (defn attack-confirmation-choices
   [attacker target board]
   (let [range (hex/distance attacker target)
-        regular-attack (produce-attack-roll attacker target board :regular)
-        physical-attack (produce-attack-roll attacker target board :physical)]
-    [{:regular (str (print-attack-roll regular-attack false) ": " (:damage regular-attack) " damage.")}
-     (when (= range 1)
-       {:regular (str (print-attack-roll physical-attack false) ": " (:damage physical-attack) " damage.")})]))
+        regular-attack (create-confirmation-choice attacker target board :regular :regular)
+        physical-attack (create-confirmation-choice attacker target board :physical :physical)]
+    [(when (= range 1) physical-attack) regular-attack]))
 
 (defn generate-attack-info
   [units current-force board]
