@@ -57,8 +57,8 @@
 (defn charge-buttons [{:keys [fx/context]}]
   (let [active (subs/active-unit context)
         units (subs/units context)
-        boards (subs/boards context)
-        attackable (filter #(cu/can-charge active %) units)]
+        boards (subs/board context)
+        attackable (filter #(cu/can-charge? active %) units)]
     (when (seq attackable)
       [{:fx/type attack-report-button
         :text (if (= (:movement-mode active) :jump)
