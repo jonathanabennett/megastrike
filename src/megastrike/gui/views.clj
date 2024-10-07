@@ -3,6 +3,7 @@
             [clojure.string :as str]
             [megastrike.attacks :as attacks]
             [megastrike.gui.board.views :as board]
+            [megastrike.gui.common :as common]
             [megastrike.gui.events :as events]
             [megastrike.gui.forces.views :as force]
             [megastrike.gui.lobby.views :as lobby]
@@ -17,7 +18,7 @@
                                 :state-id state-id
                                 :on-confirmed on-confirmed}
                     :dialog-pane (merge {:fx/type :dialog-pane
-                                         :button-types [:ok]}
+                                         :button-types [:ok :cancel]}
                                         dialog-pane)}}
    :desc (merge {:fx/type :button
                  :on-action {:event-type ::events/show-popup
@@ -153,15 +154,18 @@
 
 (defn root [{:keys [fx/context]}]
   (let [view (subs/get-view context)]
-    {:fx/type :stage
-     :showing true
-     :title (subs/title-string context)
-     :scene
-     {:fx/type :scene
-      :accelerators {[:minus] {:event-type ::events/change-size :direction :minus :fx/sync true}
-                     [:shift :equals] {:event-type ::events/change-size :direction :plus}}
-      :root
-      (cond
-        (= view :lobby) lobby/view
-        (= view :game) game-view
-        :else lobby/view)}}))
+    {:fx/type fx/ext-many
+     :desc [{:fx/type :stage
+             :showing true
+             :title (subs/title-string context)
+             :scene
+             {:fx/type :scene
+              :accelerators {[:minus] {:event-type ::events/change-size :direction :minus :fx/sync true}
+                             [:shift :equals] {:event-type ::events/change-size :direction :plus}}
+              :root
+              (cond
+                (= view :lobby) lobby/view
+                (= view :game) game-view
+                :else lobby/view)}}
+            {:fx/type common/attack-dialog}]}))
+
