@@ -43,7 +43,9 @@
   (condp = (.getButtonData ^ButtonType (.getResult ^Dialog (.getSource event)))
     ButtonBar$ButtonData/OK_DONE
     {:context (fx/swap-context context assoc-in [:internal state-id :showing] false)
-     :dispatch on-confirmed}))
+     :dispatch on-confirmed}
+    ButtonBar$ButtonData/CANCEL_CLOSE
+    {:context (fx/swap-context context assoc-in [:internal state-id :showing] false)}))
 
 (defmethod event-handler ::change-size
   [{:keys [fx/context direction]}]
