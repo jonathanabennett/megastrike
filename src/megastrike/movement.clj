@@ -39,7 +39,8 @@
                (assoc unit :movement-mode :walk)
                unit)]
     (cond
-      (or (= (:movement-mode unit) :stand-still) (empty? (:path unit))) (merge unit {:movement-mode :stand-still :acted true :path []})
+      (or (= (:movement-mode unit) :stand-still) (empty? (:path unit)))
+      (merge unit {:movement-mode :stand-still :acted true :path []})
       (seq (:path unit))
       (if (can-move? unit board)
         (merge unit (select-keys (last (:path unit)) [:p :q :r]) {:acted true :path []})
