@@ -12,7 +12,8 @@
   (:import (javafx.application Platform)))
 
 (mu/set-global-context! {:app-name "MegaStrike" :version "0.3.0"})
-(def in-development? true)
+
+(def in-development? false)
 
 (def *state
   (atom
@@ -73,12 +74,32 @@
    :opts {:fx.opt/map-event-handler event-handler
           :fx.opt/type->lifecycle (dev/wrap-type->lifecycle #(or (fx/keyword->lifecycle %)
                                                                  (fx/fn->lifecycle-with-context %)))}))
+; (def app
+;   (fx/create-app *state
+;                  :event-handler event-handler
+;                  :middleware (comp
+;                               fx/wrap-context-desc
+;                               (fx/wrap-map-desc (fn [_] {:fx/type views/root})))
+;                  :opts {:fx.opt/map-event-handler event-handler
+;                         :fx.opt/type->lifecycle #(or (fx/keyword->lifecycle %)
+;                                                      (fx/fn->lifecycle-with-context %))}
+;                  :desc-fn views/root))
 
+(defn regular-launch
+  []
+  (mu/log ::launch-game)
+  (Platform/setImplicitExit true)
+  (fx/mount-renderer *state renderer))
+
+(defn dev-launch
+  []
+  (mu/log ::launch-game
+          :development true)
+  (fx/mount-renderer *state dev-renderer))
 (defn -main
   "The main entry point for the game."
   []
   (mu/log ::launch-game)
-  (Platform/setImplicitExit true)
   (if in-development?
-    (fx/mount-renderer *state dev-renderer)
-    (fx/mount-renderer *state renderer)))
+    (dev-launch)
+    (regular-launch)))
