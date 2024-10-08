@@ -30,7 +30,7 @@
                  (str/includes? terrain "bridge") "rgb(109, 55, 25)"
                  :else "rgb(215, 211, 156)")]
     {:fx/type :group
-     :on-mouse-clicked {:event-type ::board-events/hex-clicked :hex hex}
+     :on-mouse-clicked {:event-type ::board-events/hex-clicked :hex hex :fx/sync true}
      :children [{:fx/type :polygon
                  :points points
                  :fill sprite
@@ -83,7 +83,7 @@
      :refs {::dialog {:fx/type attack-dialog
                       :unit unit}}
      :desc {:fx/type :group
-            :on-mouse-clicked {:event-type ::events/unit-clicked :unit unit}
+            :on-mouse-clicked {:event-type ::events/unit-clicked :unit unit :fx/sync true}
             :children [{:fx/type common/draw-sprite
                         :unit unit
                         :force force
