@@ -62,49 +62,33 @@
 
 (defn draw-indicator-bar [{:keys [fx/context unit layout]}])
 
-(defn attack-dialog [{:keys [fx/context unit]}]
-  {:fx/type :choice-dialog
-   :showing (fx/sub-val context get-in [:internal (:id unit) :showing] false)
-   :on-close-request (fn [^DialogEvent event]
-                       (when (nil? (.getResult ^Dialog (.getSource event)))
-                         (.consume event)))
-   :header-text "Select Attack"
-   :on-hidden {:event-type ::events/close-attack-selection
-               :unit unit
-               :on-close {:event-type ::events/make-attack
-                          :unit unit}}
-   :items (fx/sub-val context get-in [:internal (:id unit) :items] [])})
-
 (defn draw-unit [{:keys [fx/context unit layout]}]
   (let [hex (hex/points unit layout)
         forces (subs/forces context)
         force (forces (unit :force))]
-    {:fx/type fx/ext-let-refs
-     :refs {::dialog {:fx/type attack-dialog
-                      :unit unit}}
-     :desc {:fx/type :group
-            :on-mouse-clicked {:event-type ::events/unit-clicked :unit unit :fx/sync true}
-            :children [{:fx/type common/draw-sprite
-                        :unit unit
-                        :force force
-                        :x (nth hex 8)
-                        :y (nth hex 9)
-                        :direction true
-                        :shift (/ (* (layout :y-size) (:scale layout)) 3)}
-                       {:fx/type :label
-                        :text (unit :full-name)
-                        :layout-x (nth hex 8)
-                        :layout-y (nth hex 9)
-                        :font 16
-                        :translate-y (/ (* (layout :y-size) (:scale layout)) 3)}
-                       {:fx/type :label
-                        :text (if (:movement-mode unit)
-                                (name (:movement-mode unit))
-                                "Did not move")
-                        :layout-x (nth hex 4)
-                        :layout-y (nth hex 5)
-                        :font 16
-                        :translate-y (* (/ (* (layout :y-size) (:scale layout)) 3) -2)}]}}))
+    {:fx/type :group
+     :on-mouse-clicked {:event-type ::events/unit-clicked :unit unit :fx/sync true}
+     :children [{:fx/type common/draw-sprite
+                 :unit unit
+                 :force force
+                 :x (nth hex 8)
+                 :y (nth hex 9)
+                 :direction true
+                 :shift (/ (* (layout :y-size) (:scale layout)) 3)}
+                {:fx/type :label
+                 :text (unit :full-name)
+                 :layout-x (nth hex 8)
+                 :layout-y (nth hex 9)
+                 :font 16
+                 :translate-y (/ (* (layout :y-size) (:scale layout)) 3)}
+                {:fx/type :label
+                 :text (if (:movement-mode unit)
+                         (name (:movement-mode unit))
+                         "Did not move")
+                 :layout-x (nth hex 4)
+                 :layout-y (nth hex 5)
+                 :font 16
+                 :translate-y (* (/ (* (layout :y-size) (:scale layout)) 3) -2)}]}))
 
 (defn draw-movement-cost [{:keys [origin destination layout cost]}]
   (let [origin-pixel (hex/hex->pixel origin layout)
