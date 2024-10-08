@@ -46,49 +46,49 @@
                :text "All Infantry"}]})
 
 (defn mul-table [{:keys [fx/context]}]
-   (let [mul (fx/sub-val context :mul)
-         selected (fx/sub-val context :active-mul)]
-     {:fx/type tables/with-selection-props
-      :props {:selection-mode :single
-              :on-selected-item-changed {:event-type ::lobby-events/mul-selection-changed :fx/sync true}
-              :selected-item selected}
-      :desc {:fx/type :table-view
-             :columns [{:fx/type :table-column
-                        :text "Unit Name"
-                        :cell-value-factory identity
-                        :cell-factory {:fx/cell-type :table-cell
-                                       :describe (fn [x] {:text (:full-name x)})}}
-                       {:fx/type :table-column
-                        :text "Type"
-                        :cell-value-factory identity
-                        :cell-factory {:fx/cell-type :table-cell
-                                       :describe (fn [x] {:text (:type x)})}}
-                       {:fx/type :table-column
-                        :text "PV"
-                        :cell-value-factory identity
-                        :cell-factory {:fx/cell-type :table-cell
-                                       :describe (fn [x] {:text (pr-str (:point-value x))})}}
-                       {:fx/type :table-column
-                        :text "Size"
-                        :cell-value-factory identity
-                        :cell-factory {:fx/cell-type :table-cell
-                                       :describe (fn [x] {:text (pr-str (:size x))})}}
-                       {:fx/type :table-column
-                        :text "Movement"
-                        :cell-value-factory identity
-                        :cell-factory {:fx/cell-type :table-cell
-                                       :describe (fn [x] {:text (cu/print-movement x)})}}
-                       {:fx/type :table-column
-                        :text "TMM"
-                        :cell-value-factory identity
-                        :cell-factory {:fx/cell-type :table-cell
-                                       :describe (fn [x] {:text (pr-str (:tmm x))})}}
-                       {:fx/type :table-column
-                        :text "Armor"
-                        :cell-value-factory identity
-                        :cell-factory {:fx/cell-type :table-cell
-                                       :describe (fn [x] {:text (pr-str (:armor x))})}}
-                       {:fx/type :table-column
+  (let [mul (fx/sub-val context :mul)
+        selected (fx/sub-val context :active-mul)]
+    {:fx/type tables/with-selection-props
+     :props {:selection-mode :single
+             :on-selected-item-changed {:event-type ::lobby-events/mul-selection-changed :fx/sync true}
+             :selected-item selected}
+     :desc {:fx/type :table-view
+            :columns [{:fx/type :table-column
+                       :text "Unit Name"
+                       :cell-value-factory identity
+                       :cell-factory {:fx/cell-type :table-cell
+                                      :describe (fn [x] {:text (:full-name x)})}}
+                      {:fx/type :table-column
+                       :text "Type"
+                       :cell-value-factory identity
+                       :cell-factory {:fx/cell-type :table-cell
+                                      :describe (fn [x] {:text (:type x)})}}
+                      {:fx/type :table-column
+                       :text "PV"
+                       :cell-value-factory identity
+                       :cell-factory {:fx/cell-type :table-cell
+                                      :describe (fn [x] {:text (pr-str (:point-value x))})}}
+                      {:fx/type :table-column
+                       :text "Size"
+                       :cell-value-factory identity
+                       :cell-factory {:fx/cell-type :table-cell
+                                      :describe (fn [x] {:text (pr-str (:size x))})}}
+                      {:fx/type :table-column
+                       :text "Movement"
+                       :cell-value-factory identity
+                       :cell-factory {:fx/cell-type :table-cell
+                                      :describe (fn [x] {:text (cu/print-movement x)})}}
+                      {:fx/type :table-column
+                       :text "TMM"
+                       :cell-value-factory identity
+                       :cell-factory {:fx/cell-type :table-cell
+                                      :describe (fn [x] {:text (pr-str (:tmm x))})}}
+                      {:fx/type :table-column
+                       :text "Armor"
+                       :cell-value-factory identity
+                       :cell-factory {:fx/cell-type :table-cell
+                                      :describe (fn [x] {:text (pr-str (:armor x))})}}
+                      {:fx/type :table-column
                        :text "Structure"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
@@ -98,37 +98,37 @@
                 ;;  :cell-value-factory identity
                 ;;  :cell-factory {:fx/cell-type :table-cell
                 ;;                 :describe (fn [x] {:text (pr-str (:threshold x))})}}
-                       {:fx/type :table-column
+                      {:fx/type :table-column
                        :text "S"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
                                       :describe (fn [x] {:text (cu/print-short x)})}}
-                       {:fx/type :table-column
+                      {:fx/type :table-column
                        :text "M"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
                                       :describe (fn [x] {:text (cu/print-medium x)})}}
-                       {:fx/type :table-column
+                      {:fx/type :table-column
                        :text "L"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
                                       :describe (fn [x] {:text (cu/print-long x)})}}
-                       {:fx/type :table-column
+                      {:fx/type :table-column
                        :text "E"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
                                       :describe (fn [x] {:text (cu/print-extreme x)})}}
-                       {:fx/type :table-column
+                      {:fx/type :table-column
                        :text "OV"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
                                       :describe (fn [x] {:text (pr-str (:overheat x))})}}
-                       {:fx/type :table-column
+                      {:fx/type :table-column
                        :text "Abilities"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
                                       :describe (fn [x] {:text (:abilities x)})}}]
-             :items mul}}))
+            :items mul}}))
 
 (def mul-chassis-search
   {:fx/type :h-box
@@ -192,16 +192,16 @@
                          :cell-value-factory identity
                          :cell-factory {:fx/cell-type :table-cell
                                         :describe (fn [x] {:text (:name x)})}}
-                         {:fx/type :table-column
-                          :text "Deployment"
-                          :cell-value-factory identity
-                          :cell-factory {:fx/cell-type :table-cell
-                                         :describe (fn [x] {:text (:deploy x)})}}
-                         {:fx/type :table-column
-                          :text "Unit Count"
-                          :cell-value-factory identity
-                          :cell-factory {:fx/cell-type :table-cell
-                                         :describe (fn [x] {:text (prn-str (count ((utils/keyword-maker (:name x)) counts)))})}}
+                        {:fx/type :table-column
+                         :text "Deployment"
+                         :cell-value-factory identity
+                         :cell-factory {:fx/cell-type :table-cell
+                                        :describe (fn [x] {:text (:deploy x)})}}
+                        {:fx/type :table-column
+                         :text "Unit Count"
+                         :cell-value-factory identity
+                         :cell-factory {:fx/cell-type :table-cell
+                                        :describe (fn [x] {:text (prn-str (count ((utils/keyword-maker (:name x)) counts)))})}}
                         {:fx/type :table-column
                          :text "Total PV"
                          :cell-value-factory identity
@@ -227,14 +227,14 @@
                :children [{:fx/type :label :text "Color:"}
                           {:fx/type :color-picker
                            :on-value-changed {:event-type ::lobby-events/color-changed :fx/sync true}
-                           :value :gold} ]}
-              (if (fx/sub-val context :force-camo) 
-                {:fx/type :button 
-                 :background {:images (list (fx/sub-val context :force-camo))} 
-                 :text "Change Camo" 
-                 :on-action {:event-type ::lobby-events/select-camo :fx/sync true}} 
-                {:fx/type :button 
-                 :text "Select Camo" 
+                           :value :gold}]}
+              (if (fx/sub-val context :force-camo)
+                {:fx/type :button
+                 :background {:images (list (fx/sub-val context :force-camo))}
+                 :text "Change Camo"
+                 :on-action {:event-type ::lobby-events/select-camo :fx/sync true}}
+                {:fx/type :button
+                 :text "Select Camo"
                  :on-action {:event-type ::lobby-events/select-camo :fx/sync true}})
               {:fx/type :button
                :text "Add Force"
@@ -249,42 +249,39 @@
       {:fx/type :label
        :text "Please add a unit."}
       {:fx/type tables/with-selection-props
-     :props {:selection-mode :single
-             :on-selected-item-changed {:event-type ::lobby-events/unit-selection-changed :fx/sync true}
-             :selected-item selected}
-     :desc {:fx/type :table-view
-            :columns [
-                      {:fx/type :table-column
-                       :text "Unit"
-                       :cell-value-factory identity
-                       :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (:id x)})}}
-                      {:fx/type :table-column
-                       :text "Image"
-                       :cell-value-factory identity
-                       :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:graphic {:fx/type common/draw-sprite
-                                                                   :unit x
-                                                                   :force ((:force x) forces)
-                                                                   :x 0
-                                                                   :y 0
-                                                                   :shift 0}})}}
-                      {:fx/type :table-column
-                       :text "Pilot"
-                       :cell-value-factory identity
-                       :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (str (:name (:pilot x)) " (" (:skill (:pilot x)) ")")})}}
-                      {:fx/type :table-column
-                       :text "PV"
-                       :cell-value-factory identity
-                       :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (prn-str (cu/pv x))})}}]
-            :items (vals units)}})
-    ))
-
+       :props {:selection-mode :single
+               :on-selected-item-changed {:event-type ::lobby-events/unit-selection-changed :fx/sync true}
+               :selected-item selected}
+       :desc {:fx/type :table-view
+              :columns [{:fx/type :table-column
+                         :text "Unit"
+                         :cell-value-factory identity
+                         :cell-factory {:fx/cell-type :table-cell
+                                        :describe (fn [x] {:text (:id x)})}}
+                        {:fx/type :table-column
+                         :text "Image"
+                         :cell-value-factory identity
+                         :cell-factory {:fx/cell-type :table-cell
+                                        :describe (fn [x] {:graphic {:fx/type common/draw-sprite
+                                                                     :unit x
+                                                                     :force ((:force x) forces)
+                                                                     :x 0
+                                                                     :y 0
+                                                                     :shift 0}})}}
+                        {:fx/type :table-column
+                         :text "Pilot"
+                         :cell-value-factory identity
+                         :cell-factory {:fx/cell-type :table-cell
+                                        :describe (fn [x] {:text (str (:name (:pilot x)) " (" (:skill (:pilot x)) ")")})}}
+                        {:fx/type :table-column
+                         :text "PV"
+                         :cell-value-factory identity
+                         :cell-factory {:fx/cell-type :table-cell
+                                        :describe (fn [x] {:text (prn-str (cu/pv x))})}}]
+              :items (vals units)}})))
 
 (def unit-pane
-   {:fx/type :v-box
+  {:fx/type :v-box
    :spacing 5
    :fill-width true
    :alignment :top-center
@@ -302,14 +299,14 @@
         height (Integer/parseInt (fx/sub-val context :map-height))
         boards (fx/sub-val context :map-boards)]
     {:fx/type :grid-pane
-     :children (for [x (range width) 
-                     y (range height)] 
-                       {:fx/type :button 
-                        :grid-pane/column x 
-                        :grid-pane/row y 
-                        :text (:name (nth boards (+ (* y width) x) {:name "None"})) 
-                        :id (str (+ (* y width) x)) 
-                        :on-action {:event-type ::lobby-events/load-mapboard :id (+ (* y width) x)}})}))
+     :children (for [x (range width)
+                     y (range height)]
+                 {:fx/type :button
+                  :grid-pane/column x
+                  :grid-pane/row y
+                  :text (:name (nth boards (+ (* y width) x) {:name "None"}))
+                  :id (str (+ (* y width) x))
+                  :on-action {:event-type ::lobby-events/load-mapboard :id (+ (* y width) x)}})}))
 
 (def map-pane
   {:fx/type :v-box
@@ -327,7 +324,7 @@
                :key :map-width}
               {:fx/type common/text-input
                :label "Map Height (in boards)"
-               :key :map-height} 
+               :key :map-height}
               {:fx/type map-grid}
               {:fx/type :button
                :text "Load Test Game"
@@ -342,10 +339,10 @@
 (def view
   {:fx/type :grid-pane
    :children [mul-pane
-              {:fx/type force-pane 
-               :grid-pane/row 0 
-               :grid-pane/column 1 
-               :grid-pane/hgrow :always 
+              {:fx/type force-pane
+               :grid-pane/row 0
+               :grid-pane/column 1
+               :grid-pane/hgrow :always
                :grid-pane/vgrow :always}
               unit-pane
               map-pane]})
