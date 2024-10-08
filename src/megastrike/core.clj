@@ -74,17 +74,6 @@
    :opts {:fx.opt/map-event-handler event-handler
           :fx.opt/type->lifecycle (dev/wrap-type->lifecycle #(or (fx/keyword->lifecycle %)
                                                                  (fx/fn->lifecycle-with-context %)))}))
-; (def app
-;   (fx/create-app *state
-;                  :event-handler event-handler
-;                  :middleware (comp
-;                               fx/wrap-context-desc
-;                               (fx/wrap-map-desc (fn [_] {:fx/type views/root})))
-;                  :opts {:fx.opt/map-event-handler event-handler
-;                         :fx.opt/type->lifecycle #(or (fx/keyword->lifecycle %)
-;                                                      (fx/fn->lifecycle-with-context %))}
-;                  :desc-fn views/root))
-
 (defn regular-launch
   []
   (mu/log ::launch-game)
