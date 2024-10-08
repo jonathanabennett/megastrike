@@ -109,8 +109,11 @@
               ctx (get-in context [:internal (:id unit)])]
           {:context (fx/swap-context context assoc-in [:internal (:id unit)] (assoc ctx :showing true :items (attacks/physical-confirmation-choices active-unit unit board can-charge? can-dfa?)))})
         (and (= phase :combat) (not (= active-force (:force unit))))
-        (let [ctx (get-in context [:internal (:id unit)])]
-          {:context (fx/swap-context context assoc-in [:internal (:id unit)] (assoc ctx :showing true :items (attacks/attack-confirmation-choices active-unit unit board)))})))))
+        (let [ctx (get-in context [:internal :attack-dialog])]
+          {:context (fx/swap-context context assoc-in [:internal :attack-dialog]
+                                     (assoc ctx :showing true
+                                            :items (attacks/attack-confirmation-choices active-unit unit board)
+                                            :unit unit))})))))
 
 ;; Initiative Phase
 (defmethod event-handler ::roll-initiative
@@ -223,9 +226,9 @@
 (defmethod event-handler ::close-attack-selection
   [{:keys [fx/context unit on-close ^DialogEvent fx/event]}]
   (let [selected (.getSelectedItem ^ChoiceDialog (.getTarget event))
-        ctx (get-in context [:internal (:id unit)])]
+        ctx (get-in context [:internal :attack-dialog])]
     (.setSelectedItem ^ChoiceDialog (.getTarget event) nil)
-    {:context (fx/swap-context context assoc-in [:internal (:id unit)] (assoc ctx :showing false :items []))
+    {:context (fx/swap-context context assoc-in [:internal :attack-dialog] (assoc ctx :showing false :items []))
      :dispatch (merge on-close {:selected (first (keys selected))})}))
 
 (defmethod event-handler ::finish-attacks

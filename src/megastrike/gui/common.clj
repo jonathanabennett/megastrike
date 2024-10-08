@@ -7,15 +7,17 @@
 
 (defn attack-dialog
   [{:keys [fx/context]}]
-  {:fx/type :choice-dialog
-   :showing (fx/sub-val context get-in [:internal :attack-dialog :showing] false)
-   :on-close-request (fn [^DialogEvent event]
-                       (when (nil? (.getResult ^Dialog (.getSource event)))
-                         (.consume event)))
-   :header-text "Select Attack"
-   :on-hidden {:event-type ::events/close-attack-selection
-               :on-close {:event-type ::events/make-attack}}
-   :items (fx/sub-val context get-in [:internal :attack-dialog :items] [])})
+  (let [unit (fx/sub-val context get-in [:internal :attack-dialog :unit])]
+    {:fx/type :choice-dialog
+     :showing (fx/sub-val context get-in [:internal :attack-dialog :showing] false)
+     :on-close-request (fn [^DialogEvent event]
+                         (when (nil? (.getResult ^Dialog (.getSource event)))
+                           (.consume event)))
+     :header-text "Select Attack"
+     :on-hidden {:event-type ::events/close-attack-selection
+                 :unit unit
+                 :on-close {:event-type ::events/make-attack :unit unit}}
+     :items (fx/sub-val context get-in [:internal :attack-dialog :items] [])}))
 
 (defn prop-label
   "Creates a text-flow, which contains a label and a value tied to that label."
