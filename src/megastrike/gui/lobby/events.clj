@@ -83,8 +83,7 @@
         color (fx/sub-val context :force-color)
         camo (fx/sub-val context :force-camo)
         new-forces (merge (subs/forces context) {(utils/keyword-maker name) {:name name :deploy deploy :color color :camo camo}})]
-    {:context
-     (fx/swap-context context assoc :forces new-forces :force-camo nil :force-color :white)}))
+    {:context (fx/swap-context context assoc :forces new-forces :force-camo nil :force-color :white)}))
 
 (defmethod e/event-handler ::mul-selection-changed
   [{:keys [fx/context fx/event]}]
