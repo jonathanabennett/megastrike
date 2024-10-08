@@ -64,7 +64,9 @@
                                       :width 20 :height 10
                                       :stroke :black
                                       :fill fill-two})))}]})
-(defn unit-stat-block [{:keys [fx/context unit]}]
+
+(defn unit-stat-block
+  [{:keys [fx/context unit]}]
   (let [active (subs/active-id context)]
     {:fx/type :titled-pane
      :on-mouse-clicked {:event-type ::events/stats-clicked :fx/sync true :unit (:id unit)}
