@@ -85,10 +85,10 @@
   (mu/log ::launch-game
           :development true)
   (fx/mount-renderer *state dev-renderer))
+
 (defn -main
   "The main entry point for the game."
   []
-  (mu/log ::launch-game)
   (if in-development?
     (dev-launch)
     (regular-launch)))
