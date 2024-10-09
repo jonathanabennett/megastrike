@@ -2,22 +2,48 @@
   (:require [cljfx.api :as fx]
             [megastrike.board]
             [megastrike.combat-unit :as cu]
-            [megastrike.gui.events :as events])
+            [megastrike.attacks :as attacks]
+            [megastrike.gui.events :as events]
+            [com.brunobonacci.mulog :as mu]
+            [megastrike.gui.subs :as subs])
   (:import [javafx.scene.control Dialog DialogEvent]))
+
+(defn attack-buttons
+  [attacks unit]
+  (loop [ret [{:fx/type :button
+               :text "No Attack"
+               :on-action {:event-type ::events/close-attack-selection :selected false :unit unit}}]
+         attacks attacks]
+    (if (empty? attacks)
+      ret
+      (recur (let [atk-type (first (keys attacks))
+                   atk-data (first (vals attacks))]
+               ((comp vec flatten conj) ret {:fx/type :button
+                                             :text (str atk-data)
+                                             :on-action {:event-type ::events/close-attack-selection  :unit unit :selected atk-type :fx/sync true}}))
+             (rest attacks)))))
 
 (defn attack-dialog
   [{:keys [fx/context]}]
-  (let [unit (fx/sub-val context get-in [:internal :attack-dialog :unit])]
-    {:fx/type :choice-dialog
+  (let [unit (fx/sub-val context get-in [:internal :attack-dialog :unit])
+        attacks (fx/sub-val context get-in [:internal :attack-dialog :items])
+        active (subs/active-unit context)]
+    (mu/log ::check-attacks
+            :attacks attacks)
+    {:fx/type :dialog
      :showing (fx/sub-val context get-in [:internal :attack-dialog :showing] false)
      :on-close-request (fn [^DialogEvent event]
                          (when (nil? (.getResult ^Dialog (.getSource event)))
                            (.consume event)))
-     :header-text "Select Attack"
+     :header-text (str (:full-name active) " attacking " (:full-name unit))
      :on-hidden {:event-type ::events/close-attack-selection
                  :unit unit
                  :on-close {:event-type ::events/make-attack :unit unit}}
-     :items (fx/sub-val context get-in [:internal :attack-dialog :items] [])}))
+     :dialog-pane {:fx/type :dialog-pane
+                   :button-types [:cancel]
+                   :content {:fx/type :v-box
+                             :spacing 5
+                             :children (attack-buttons attacks unit)}}}))
 
 (defn prop-label
   "Creates a text-flow, which contains a label and a value tied to that label."

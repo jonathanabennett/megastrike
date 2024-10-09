@@ -250,7 +250,7 @@
   (let [range (hex/distance attacker target)
         regular-attack (create-confirmation-choice attacker target board :regular :regular)
         physical-attack (create-confirmation-choice attacker target board :physical :physical)]
-    [(when (= range 1) physical-attack) regular-attack]))
+    (vec (remove nil? [(when (= range 1) physical-attack) regular-attack]))))
 
 (defn generate-attack-info
   [units current-force board]

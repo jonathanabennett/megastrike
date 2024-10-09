@@ -27,8 +27,7 @@
   [_])
 
 (defmethod event-handler :default [{:keys [fx/context fx/event]}]
-  (mu/log ::unhandled-event :event event :context context)
-  (prn event))
+  (mu/log ::unhandled-event :event event :context context))
 
 (defmethod event-handler ::text-input
   [{:keys [fx/context key fx/event]}]
@@ -224,12 +223,12 @@
                                :round-report (str report (reports/parse-attack-data data)))}))
 
 (defmethod event-handler ::close-attack-selection
-  [{:keys [fx/context unit on-close ^DialogEvent fx/event]}]
-  (let [selected (.getSelectedItem ^ChoiceDialog (.getTarget event))
-        ctx (get-in context [:internal :attack-dialog])]
-    (.setSelectedItem ^ChoiceDialog (.getTarget event) nil)
-    {:context (fx/swap-context context assoc-in [:internal :attack-dialog] (assoc ctx :showing false :items []))
-     :dispatch (merge on-close {:selected (first (keys selected))})}))
+  [{:keys [fx/context unit selected]}]
+  (let [ctx (get-in context [:internal :attack-dialog])]
+    (if selected
+      {:context (fx/swap-context context assoc-in [:internal :attack-dialog] (assoc ctx :showing false :items []))
+       :dispatch {:event-type ::make-attack :unit unit :selected selected}}
+      {:context (fx/swap-context context assoc-in [:internal :attack-dialog] (assoc ctx :showing false :items []))})))
 
 (defmethod event-handler ::finish-attacks
   [{:keys [fx/context]}]
