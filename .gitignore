@@ -21,3 +21,4 @@ pom.xml.asc
 *.deb
 *.exe
 megastrike.log
+.cpcache/*

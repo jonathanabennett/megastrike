@@ -1,0 +1,9 @@
+{:deps
+ {org.clojure/clojure {:mvn/version "1.11.1"}
+  org.clojure/core.cache {:mvn/version "1.0.225"}
+  com.brunobonacci/mulog {:mvn/version "0.9.0"}
+  metosin/malli {:mvn/version "0.16.2"}
+  cljfx/cljfx {:mvn/version "1.9.3"}
+  clojure-csv/clojure-csv {:mvn/version "2.0.1"}
+  io.github.cljfx/dev {:mvn/version "1.0.39"}}
+ :paths ["src" "resources"]}
