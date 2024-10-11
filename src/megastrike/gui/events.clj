@@ -26,8 +26,9 @@
 (defmethod event-handler ::no-op
   [_])
 
-(defmethod event-handler :default [{:keys [fx/context fx/event]}]
-  (mu/log ::unhandled-event :event event :context context))
+(defmethod event-handler :default [event]
+  (prn "EVENT!")
+  (mu/log ::unhandled-event :event event))
 
 (defmethod event-handler ::text-input
   [{:keys [fx/context key fx/event]}]
@@ -105,8 +106,14 @@
         (let [u (assoc active-unit :path (movement/find-path active-unit (board/find-hex unit (subs/board context)) (subs/board context)))
               can-charge? (movement/can-move? (merge u {:movement-mode :walk}) (subs/board context))
               can-dfa? (if (contains? (:movement u) :jump) (movement/can-move? (merge u {:movement-mode :jump}) (subs/board context)) false)
+              kind (cond
+                     can-charge? :charge
+                     can-dfa? :dfa
+                     :else :none)
               ctx (get-in context [:internal (:id unit)])]
-          {:context (fx/swap-context context assoc-in [:internal (:id unit)] (assoc ctx :showing true :items (attacks/physical-confirmation-choices active-unit unit board can-charge? can-dfa?)))})
+          (when (not= kind :none)
+            {:context (fx/swap-context context assoc-in [:internal (:id unit)]
+                                       (assoc ctx :showing true :items (attacks/physical-confirmation-choices active-unit unit board kind)))}))
         (and (= phase :combat) (not (= active-force (:force unit))))
         (let [ctx (get-in context [:internal :attack-dialog])]
           {:context (fx/swap-context context assoc-in [:internal :attack-dialog]

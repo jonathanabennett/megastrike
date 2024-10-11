@@ -10,14 +10,15 @@
 
 (defn attack-buttons
   [attacks unit]
+  (prn attacks)
   (loop [ret [{:fx/type :button
                :text "No Attack"
                :on-action {:event-type ::events/close-attack-selection :selected false :unit unit}}]
          attacks attacks]
     (if (empty? attacks)
       ret
-      (recur (let [atk-type (first (keys attacks))
-                   atk-data (first (vals attacks))]
+      (recur (let [atk-type (first (keys (first attacks)))
+                   atk-data (first (vals (first attacks)))]
                ((comp vec flatten conj) ret {:fx/type :button
                                              :text (str atk-data)
                                              :on-action {:event-type ::events/close-attack-selection  :unit unit :selected atk-type :fx/sync true}}))
@@ -45,6 +46,20 @@
                              :spacing 5
                              :children (attack-buttons attacks unit)}}}))
 
+(defn round-dialog
+  [{:keys [fx/context]}]
+  (let [round (subs/turn-number context)
+        phase (name (subs/phase context))
+        round-report (fx/sub-val context :round-report)]
+    (mu/log ::round-report
+            :round round
+            :phase phase
+            :report round-report)
+    {:fx/type :dialog
+     :showing (fx/sub-val context get-in [:internal :round-dialog :showing] false)
+     :on-close-request (fn [^DialogEvent event]
+                         (when (nil? (.getResult ^Dialog (.getSource event)))
+                           (.consume event)))}))
 (defn prop-label
   "Creates a text-flow, which contains a label and a value tied to that label."
   [{:keys [label value]}]

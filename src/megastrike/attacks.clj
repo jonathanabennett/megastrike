@@ -239,11 +239,10 @@
   {atk-flag (print-attack-roll (produce-attack-roll attacker target board atk-class) false)})
 
 (defn physical-confirmation-choices
-  [attacker target board can-charge? can-dfa?]
-  (let [charge-attack (produce-attack-roll attacker target board :regular)
-        dfa-attack (produce-attack-roll attacker target board :physical)]
-    [{:charge (str (print-attack-roll charge-attack false) ": " (:damage charge-attack) " damage.")}
-     {:dfa (str (print-attack-roll dfa-attack false) ": " (:damage dfa-attack) " damage.")}]))
+  [attacker target board kind]
+  (when (not= kind :none)
+    (let [attack (produce-attack-roll attacker target board kind)]
+      [kind attack])))
 
 (defn attack-confirmation-choices
   [attacker target board]
