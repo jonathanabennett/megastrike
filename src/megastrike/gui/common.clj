@@ -2,7 +2,6 @@
   (:require [cljfx.api :as fx]
             [megastrike.board]
             [megastrike.combat-unit :as cu]
-            [megastrike.attacks :as attacks]
             [megastrike.gui.events :as events]
             [com.brunobonacci.mulog :as mu]
             [megastrike.gui.subs :as subs])
@@ -59,7 +58,14 @@
      :showing (fx/sub-val context get-in [:internal :round-dialog :showing] false)
      :on-close-request (fn [^DialogEvent event]
                          (when (nil? (.getResult ^Dialog (.getSource event)))
-                           (.consume event)))}))
+                           (.consume event)))
+     :header-text (str "Turn " round " / " phase " phase")
+     :on-hidden {:event-type ::events/close-dialog}
+     :dialog-pane {:fx/type :dialog-pane
+                   :button-types [:ok]
+                   :content {:fx/type :scroll-pane
+                             :content {:}}}}))
+
 (defn prop-label
   "Creates a text-flow, which contains a label and a value tied to that label."
   [{:keys [label value]}]

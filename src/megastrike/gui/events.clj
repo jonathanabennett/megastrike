@@ -4,19 +4,18 @@
             [clojure.pprint :as pprint]
             [com.brunobonacci.mulog :as mu]
             [megastrike.attacks :as attacks]
-            [megastrike.board :as board]
             [megastrike.gui.subs :as subs]
             [megastrike.hexagons.hex :as hex]
             [megastrike.movement :as movement]
             [megastrike.phases :as initiative]
             [megastrike.gui.reports :as reports]
             [megastrike.logs :as logs]
-            [megastrike.utils :as utils])
+            [megastrike.utils :as utils]
+            [megastrike.combat-unit :as cu])
   (:import [javafx.application Platform]
            [javafx.scene.control
             ButtonBar$ButtonData
             ButtonType
-            ChoiceDialog
             Dialog
             DialogEvent]))
 
@@ -103,9 +102,8 @@
         (and (= active-force (:force unit)) (not (:acted unit)))
         (when true (mu/log ::select-unit) {:context (fx/swap-context context assoc :active-unit (:id unit))})
         (and (= phase :movement) (not (= active-force (:force unit))))
-        (let [u (assoc active-unit :path (movement/find-path active-unit (board/find-hex unit (subs/board context)) (subs/board context)))
-              can-charge? (movement/can-move? (merge u {:movement-mode :walk}) (subs/board context))
-              can-dfa? (if (contains? (:movement u) :jump) (movement/can-move? (merge u {:movement-mode :jump}) (subs/board context)) false)
+        (let [can-charge? (cu/can-charge? active-unit unit)
+              can-dfa? (and (= (:movement-mode unit) :jump) (cu/can-charge? active-unit unit))
               kind (cond
                      can-charge? :charge
                      can-dfa? :dfa
