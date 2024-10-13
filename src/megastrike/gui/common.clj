@@ -64,7 +64,8 @@
      :dialog-pane {:fx/type :dialog-pane
                    :button-types [:ok]
                    :content {:fx/type :scroll-pane
-                             :content {:}}}}))
+                             :content {:fx/type :text
+                                       :text round-report}}}}))
 
 (defn prop-label
   "Creates a text-flow, which contains a label and a value tied to that label."

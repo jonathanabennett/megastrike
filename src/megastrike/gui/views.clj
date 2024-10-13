@@ -117,14 +117,11 @@
         units (subs/units context)
         current-force (subs/current-forces context)
         board (subs/board context)
-        common-buttons [{:fx/type next-phase-button
-                         :state-id ::next-phase-button
-                         :button {:text "Next Phase"}
-                         ; :button {:text "Next Phase"
-                         ;          :disable #_{:clj-kondo/ignore [:not-empty?]}
-                         ;          (not (empty? turn-order))}
-                         :dialog-pane {:content-text (fx/sub-val context :round-report)}
-                         :on-confirmed {:event-type ::events/no-op}}
+        common-buttons [{:fx/type :button
+                         :text "Next Phase"
+                         :on-action {:event-type ::events/next-phase}
+                         :disable #_{:clj-kondo/ignore [:not-empty?]}
+                         (not (empty? turn-order))}
                         {:fx/type :separator
                          :orientation :vertical
                          :padding 15}
@@ -184,5 +181,6 @@
                 (= view :lobby) lobby/view
                 (= view :game) game-view
                 :else lobby/view)}}
-            {:fx/type common/attack-dialog}]}))
+            {:fx/type common/attack-dialog}
+            {:fx/type common/round-dialog}]}))
 

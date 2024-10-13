@@ -35,10 +35,14 @@
 
 (defmethod event-handler ::show-popup
   [{:keys [fx/context state-id]}]
+  (mu/log ::showing-popup
+          :popup state-id)
   {:context (fx/swap-context context assoc-in [:internal state-id :showing] true)})
 
 (defmethod event-handler ::hide-popup
   [{:keys [fx/context ^DialogEvent fx/event state-id on-confirmed]}]
+  (mu/log ::hiding-popup
+          :popup state-id)
   (condp = (.getButtonData ^ButtonType (.getResult ^Dialog (.getSource event)))
     ButtonBar$ButtonData/OK_DONE
     {:context (fx/swap-context context assoc-in [:internal state-id :showing] false)
@@ -70,7 +74,7 @@
   (Platform/exit))
 
 (defmethod event-handler ::next-phase
-  [{:keys [fx/context state-id]}]
+  [{:keys [fx/context]}]
   (let [phase (subs/phase context)
         turn-number (subs/turn-number context)
         forces (subs/forces context)
@@ -81,7 +85,7 @@
                                          :units units
                                          :round-report (fx/sub-val context :round-report)})]
     {:context (fx/swap-context context merge response)
-     :dispatch {:event-type ::show-popup :state-id state-id}}))
+     :dispatch {:event-type ::show-popup :state-id :round-dialog}}))
 
 ;; Unit selection
 (defmethod event-handler ::stats-clicked
