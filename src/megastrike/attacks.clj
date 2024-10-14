@@ -11,15 +11,16 @@
 (def probabilities
   {2  100, 3  98, 4  92, 5  83, 6  72, 7  58, 8  42, 9  28, 10 17, 11 8, 12 3})
 
-(def criticals {2 :ammo
-                3 :engine
-                4 :fire-control
-                6 :weapon
-                7 :mv
-                8 :weapon
-                10 :fire-control
-                11 :engine
-                12 :destroyed})
+(def criticals
+  {2 :ammo
+   3 :engine
+   4 :fire-control
+   6 :weapon
+   7 :mv
+   8 :weapon
+   10 :fire-control
+   11 :engine
+   12 :destroyed})
 
 (defn get-tmm
   ([{:keys [tmm crits]}]
