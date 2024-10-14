@@ -25,9 +25,9 @@
 (defmethod event-handler ::no-op
   [_])
 
-(defmethod event-handler :default [event]
+(defmethod event-handler :default [{:keys [event-type]}]
   (prn "EVENT!")
-  (mu/log ::unhandled-event :event event))
+  (mu/log ::unhandled-event :event-type event-type))
 
 (defmethod event-handler ::text-input
   [{:keys [fx/context key fx/event]}]
