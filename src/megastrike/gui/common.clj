@@ -28,8 +28,6 @@
   (let [unit (fx/sub-val context get-in [:internal :attack-dialog :unit])
         attacks (fx/sub-val context get-in [:internal :attack-dialog :items])
         active (subs/active-unit context)]
-    (mu/log ::check-attacks
-            :attacks attacks)
     {:fx/type :dialog
      :showing (fx/sub-val context get-in [:internal :attack-dialog :showing] false)
      :on-close-request (fn [^DialogEvent event]
