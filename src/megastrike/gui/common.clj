@@ -1,6 +1,7 @@
 (ns megastrike.gui.common
   (:require [cljfx.api :as fx]
             [megastrike.board]
+            [megastrike.attacks :as attacks]
             [megastrike.combat-unit :as cu]
             [megastrike.gui.events :as events]
             [com.brunobonacci.mulog :as mu]
@@ -16,11 +17,10 @@
          attacks attacks]
     (if (empty? attacks)
       ret
-      (recur (let [atk-type (first (keys (first attacks)))
-                   atk-data (first (vals (first attacks)))]
+      (recur (let [atk-data (first (vals (first attacks)))]
                ((comp vec flatten conj) ret {:fx/type :button
-                                             :text (str atk-data)
-                                             :on-action {:event-type ::events/close-attack-selection  :unit unit :selected atk-type :fx/sync true}}))
+                                             :text (attacks/print-attack-roll atk-data false)
+                                             :on-action {:event-type ::events/close-attack-selection  :unit unit :selected atk-data :fx/sync true}}))
              (rest attacks)))))
 
 (defn attack-dialog

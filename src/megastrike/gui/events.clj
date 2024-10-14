@@ -104,7 +104,9 @@
     (mu/with-context {:unit-clicked unit :phase phase}
       (cond
         (and (= active-force (:force unit)) (not (:acted unit)))
-        (when true (mu/log ::select-unit) {:context (fx/swap-context context assoc :active-unit (:id unit))})
+        (do
+          (mu/log ::select-unit)
+          {:context (fx/swap-context context assoc :active-unit (:id unit))})
         (and (= phase :movement) (not (= active-force (:force unit))))
         (let [can-charge? (cu/can-charge? active-unit unit)
               can-dfa? (and (= (:movement-mode unit) :jump) (cu/can-charge? active-unit unit))
@@ -112,10 +114,17 @@
                      can-charge? :charge
                      can-dfa? :dfa
                      :else :none)
-              ctx (get-in context [:internal (:id unit)])]
+              attacks (attacks/physical-confirmation-choices active-unit unit board kind)
+              ctx (get-in context [:internal :attack-dialog])]
+          (mu/log ::attempted-charge
+                  :active (:full-name active-unit)
+                  :target (:full-name unit)
+                  :can-charge? can-charge?
+                  :can-dfa? can-dfa?
+                  :attacks attacks)
           (when (not= kind :none)
-            {:context (fx/swap-context context assoc-in [:internal (:id unit)]
-                                       (assoc ctx :showing true :items (attacks/physical-confirmation-choices active-unit unit board kind)))}))
+            {:context (fx/swap-context context assoc-in [:internal :attack-dialog]
+                                       (assoc ctx :showing true :items attacks :unit unit))}))
         (and (= phase :combat) (not (= active-force (:force unit))))
         (let [ctx (get-in context [:internal :attack-dialog])]
           {:context (fx/swap-context context assoc-in [:internal :attack-dialog]
@@ -221,9 +230,8 @@
   (let [active-id (subs/active-id context)
         active (subs/active-unit context)
         upd (assoc active :target (:id unit) :attack selected)
-        nodes (subs/board context)
         report (fx/sub-val context :round-report)
-        data (attacks/make-attack upd unit nodes (fx/sub-val context :layout))
+        data (attacks/make-attack upd unit selected)
         units (assoc (subs/units context)
                      active-id upd
                      (:id unit) (:result data))]
