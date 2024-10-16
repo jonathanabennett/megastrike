@@ -100,7 +100,8 @@
   (let [phase (subs/phase context)
         active-force (first (subs/turn-order context))
         active-unit (subs/active-unit context)
-        board (subs/board context)]
+        board (subs/board context)
+        layout (subs/layout context)]
     (mu/with-context {:unit-clicked unit :phase phase}
       (cond
         (and (= active-force (:force unit)) (not (:acted unit)))
@@ -114,7 +115,7 @@
                      can-charge? :charge
                      can-dfa? :dfa
                      :else :none)
-              attacks (attacks/physical-confirmation-choices active-unit unit board kind)
+              attacks (attacks/physical-confirmation-choices active-unit unit board layout kind)
               ctx (get-in context [:internal :attack-dialog])]
           (mu/log ::attempted-charge
                   :active (:full-name active-unit)
@@ -129,7 +130,7 @@
         (let [ctx (get-in context [:internal :attack-dialog])]
           {:context (fx/swap-context context assoc-in [:internal :attack-dialog]
                                      (assoc ctx :showing true
-                                            :items (attacks/attack-confirmation-choices active-unit unit board)
+                                            :items (attacks/attack-confirmation-choices active-unit unit board layout)
                                             :unit unit))})))))
 
 ;; Initiative Phase

@@ -285,11 +285,25 @@
     (>= 30 range) (print-extreme unit)
     :else 0))
 
+(defn calc-charge-damage
+  [size tmm]
+  (Math/floor (+ size (double (/ tmm 2)))))
+
+(defn calc-dfa-damage
+  [size tmm]
+  (inc (calc-charge-damage size tmm)))
+
+(defn calc-physical-damage
+  [size mel?]
+  (+ size (if mel? 1 0)))
+
 (defn calculate-damage
   "Returns the damage done by a unit at a given range. Calculates 0* damage correctly."
-  [{:keys [attack size abilities s s* m m* l l* e e*]} range rear-attack?]
+  [{:keys [attack size abilities s s* m m* l l* e e*] :as unit} range rear-attack?]
   (let [damage (cond
-                 (and (= range 1) (= attack :physical)) (+ size (if (str/includes? abilities "MEL") 1 0))
+                 (and (= range 1) (= (:flag attack) :physical)) (calc-physical-damage size (str/includes? abilities "MEL"))
+                 (and (= range 1) (= (:flag attack) :charge)) (calc-charge-damage size (get-tmm unit))
+                 (and (= range 1) (= (:flag attack) :dfa)) (calc-dfa-damage size (get-tmm unit))
                  (>= 3 range) (if (and  s* (<= 4 (utils/roll-die))) 1 s)
                  (>= 12 range) (if (and m* (<= 4 (utils/roll-die))) 1 m)
                  (>= 21 range) (if (and l* (<= 4 (utils/roll-die))) 1 l)

@@ -139,11 +139,12 @@
                              [{:desc "clear line of sight" :value 0}])
                            (woods-mod line)
                            (calculate-range-mod range))
-         damage (cu/print-damage attacker range (= type :physical))]
-     {:targeting attack-roll
-      :flag flag
-      :rear-attack? (detect-direction target attacker (get-in cu/directions [(:direction target) :rear]) layout)
-      :damage damage}))
+         damage (cu/print-damage attacker range (= type :physical))
+         attack-data {:targeting attack-roll
+                      :flag flag
+                      :rear-attack? (detect-direction target attacker (get-in cu/directions [(:direction target) :rear]) layout)
+                      :damage damage}]
+     attack-data))
   ([attacker target board layout type]
    (produce-attack-roll attacker target board layout type type)))
 
@@ -230,19 +231,19 @@
        {:crit crits :result upd}))))
 
 (defn create-confirmation-choice
-  [attacker target board atk-flag atk-class]
-  {atk-flag (produce-attack-roll attacker target board atk-class atk-flag)})
+  [attacker target board layout atk-flag atk-class]
+  {atk-flag (produce-attack-roll attacker target board layout atk-class atk-flag)})
 
 (defn physical-confirmation-choices
-  [attacker target board kind]
+  [attacker target board layout kind]
   (when (not= kind :none)
-    [(create-confirmation-choice attacker target board kind :physical)]))
+    [(create-confirmation-choice attacker target board layout kind :physical)]))
 
 (defn attack-confirmation-choices
-  [attacker target board]
+  [attacker target board layout]
   (let [range (hex/distance attacker target)
-        regular-attack (create-confirmation-choice attacker target board :regular :regular)
-        physical-attack (create-confirmation-choice attacker target board :physical :physical)]
+        regular-attack (create-confirmation-choice attacker target board layout :regular :regular)
+        physical-attack (create-confirmation-choice attacker target board layout :physical :physical)]
     (vec (remove nil? [(when (= range 1) physical-attack) regular-attack]))))
 
 (defn make-attack
