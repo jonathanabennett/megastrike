@@ -1,12 +1,13 @@
 (ns megastrike.attacks
   (:require
-   [clojure.math :as math]
    [clojure.string :as str]
    [com.brunobonacci.mulog :as mu]
+   [malli.core :as m]
    [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
    [megastrike.hexagons.hex :as hex]
-   [megastrike.utils :as utils]))
+   [megastrike.utils :as utils]
+   [megastrike.schemas :as schemas]))
 
 (def probabilities
   {2  100, 3  98, 4  92, 5  83, 6  72, 7  58, 8  42, 9  28, 10 17, 11 8, 12 3})
@@ -21,17 +22,6 @@
    10 :fire-control
    11 :engine
    12 :destroyed})
-
-(defn get-tmm
-  ([{:keys [tmm crits]}]
-   (let [div (count (filter #(= :mv %) crits))]
-     (loop [tmm tmm
-            n 0]
-       (if (= n div)
-         tmm
-         (recur (let [new-tmm (math/round (/ tmm 2.0))]
-                  (if (>= (- tmm new-tmm) 1) new-tmm 0))
-                (inc n)))))))
 
 (defn attacker-skill
   [{:keys [pilot]}]
@@ -58,8 +48,8 @@
   (condp = movement-mode
     :immobile [{:desc "target immobile" :value -4}]
     :stand-still [{:desc "target did not move" :value 0}]
-    :jump [{:desc "target jumped" :value (inc (get-tmm unit))}]
-    [{:desc "target moved" :value (get-tmm unit)}]))
+    :jump [{:desc "target jumped" :value (inc (cu/get-tmm unit))}]
+    [{:desc "target moved" :value (cu/get-tmm unit)}]))
 
 (defn calculate-heat-mod
   [{:keys [current-heat] :or {current-heat 0}}]

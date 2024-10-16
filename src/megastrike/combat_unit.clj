@@ -198,6 +198,17 @@
   ([unit]
    (get-mv unit (get unit :movement :walk))))
 
+(defn get-tmm
+  ([{:keys [tmm crits]}]
+   (let [div (count (filter #(= :mv %) crits))]
+     (loop [tmm tmm
+            n 0]
+       (if (= n div)
+         tmm
+         (recur (let [new-tmm (math/round (/ tmm 2.0))]
+                  (if (>= (- tmm new-tmm) 1) new-tmm 0))
+                (inc n)))))))
+
 (defn get-armor
   [unit]
   (get-in unit [:changes :current-armor]

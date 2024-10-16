@@ -103,7 +103,7 @@
                                        :value (str (:size unit))}
                                       {:fx/type common/prop-label
                                        :label "TMM: "
-                                       :value (str (attacks/get-tmm unit))}]}
+                                       :value (str (cu/get-tmm unit))}]}
                           {:fx/type common/prop-label
                            :label "Pilot (skill): "
                            :value (str (:name (:pilot unit)) " (" (:skill (:pilot unit)) ")")}
