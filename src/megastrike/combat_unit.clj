@@ -297,6 +297,12 @@
   [size mel?]
   (+ size (if mel? 1 0)))
 
+(defn calc-self-damage
+  [{:keys [attack] :as unit}]
+  (if (= (get attack :flag) :charge)
+    (+ (Math/floor (/ (get-tmm unit) 2)) (if (>= (get-in attack [:target :size]) 3) 1 0))
+    (:size unit)))
+
 (defn calculate-damage
   "Returns the damage done by a unit at a given range. Calculates 0* damage correctly."
   [{:keys [attack size abilities s s* m m* l l* e e*] :as unit} range rear-attack?]
