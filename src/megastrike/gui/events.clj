@@ -25,9 +25,11 @@
 (defmethod event-handler ::no-op
   [_])
 
-(defmethod event-handler :default [{:keys [event-type]}]
+(defmethod event-handler :default [{:keys [event-type] :as event}]
   (prn "EVENT!")
-  (mu/log ::unhandled-event :event-type event-type))
+  (mu/log ::unhandled-event
+          :event-type event-type
+          :keys (keys event)))
 
 (defmethod event-handler ::text-input
   [{:keys [fx/context key fx/event]}]
@@ -228,25 +230,41 @@
 
 (defmethod event-handler ::make-attack
   [{:keys [fx/context unit selected]}]
-  (let [active-id (subs/active-id context)
-        active (subs/active-unit context)
-        upd (assoc active :target (:id unit) :attack selected)
-        report (fx/sub-val context :round-report)
+  (let [active (subs/active-unit context)
+        upd (assoc active :target (:id unit) :attack selected :acted true)
         data (attacks/make-attack upd unit selected)
-        units (assoc (subs/units context)
-                     active-id upd
-                     (:id unit) (:result data))]
-    {:context (fx/swap-context context assoc
-                               :units units
-                               :round-report (str report (reports/parse-attack-data data)))}))
+        units (merge (subs/units context) (:result data))
+        report (str (fx/sub-val context :round-report) (reports/parse-attack-data data))]
+    {:context (fx/swap-context context assoc :units units :round-report report)}))
 
 (defmethod event-handler ::close-attack-selection
   [{:keys [fx/context unit selected]}]
   (let [ctx (get-in context [:internal :attack-dialog])]
-    (if selected
+    (cond
+      (= (:flag selected) nil)
+      {:context (fx/swap-context context assoc-in [:internal :attack-dialog] (assoc ctx :showing false :items []))}
+      (contains? #{:regular :physical} (:flag selected))
       {:context (fx/swap-context context assoc-in [:internal :attack-dialog] (assoc ctx :showing false :items []))
        :dispatch {:event-type ::make-attack :unit unit :selected selected}}
-      {:context (fx/swap-context context assoc-in [:internal :attack-dialog] (assoc ctx :showing false :items []))})))
+      (contains? #{:charge :dfa} (:flag selected))
+      {:context (fx/swap-context context assoc-in [:internal :attack-dialog] (assoc ctx :showing false :items []))
+       :dispatch {:event-type ::set-attack :unit unit :selected selected}})))
+
+(defmethod event-handler ::resolve-attacks
+  [{:keys [fx/context]}]
+  (loop [results {:units (subs/units context)
+                  :round-report (fx/sub-val context :round-report)}
+         attackers (filter #(contains? #{:charge :dfa} (get-in % [:attack :flag]))
+                           (subs/units context))]
+    (prn attackers)
+    (if (empty? attackers)
+      {:context (fx/swap-context context merge results)}
+      (recur (let [attacker (merge (first attackers) {:acted true})
+                   attack-result (attacks/make-attack attacker (get-in attacker [:attack :target]) (:attack attacker))
+                   units (merge (:units results) (:results attack-result))
+                   report (str (:round-report results) (reports/parse-attack-data attack-result))]
+               (assoc results :units units :round-report report))
+             (rest attackers)))))
 
 (defmethod event-handler ::finish-attacks
   [{:keys [fx/context]}]

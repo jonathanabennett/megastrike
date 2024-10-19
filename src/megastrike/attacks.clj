@@ -142,6 +142,7 @@
          damage (cu/print-damage attacker range (= type :physical))
          attack-data {:targeting attack-roll
                       :flag flag
+                      :target target
                       :rear-attack? (detect-direction target attacker (get-in cu/directions [(:direction target) :rear]) layout)
                       :damage damage}]
      attack-data))
@@ -185,7 +186,8 @@
     (if (empty? crits)
       unit
       (recur
-       (let [crit (first crits)]
+       (let [crit (first crits)
+             changes (:changes unit)]
          (prn crit)
          (case crit
            :ammo (let [case (str/includes? (:abilities unit) "CASE")
@@ -193,9 +195,9 @@
                        ene (str/includes? (:abilities unit) "ENE")]
                    (cond (or case2 ene) unit
                          case (take-damage unit 1)
-                         :else (assoc-in unit [:changes :destroyed?] true)))
+                         :else (assoc unit :changes (assoc changes :destroyed? true :crits (conj (:crits changes) :ammo)))))
            :engine (if (some #(= % :engine) (cu/get-crits unit))
-                     (assoc-in unit [:changes :destroyed?] true)
+                     (assoc unit :changes (assoc changes :destroyed? true :crits (conj (:crits changes) :engine)))
                      (assoc-in unit [:changes :crits] (conj (get-in unit [:changes :crits]) :engine)))
            :fire-control (if (< (count (filter #(= % :fire-control) (cu/get-crits unit))) 4)
                            (assoc-in unit [:changes :crits] (conj (get-in unit [:changes :crits]) :fire-control))
@@ -204,7 +206,7 @@
            :mv (if (< (count (filter #(= % :mv) (cu/get-crits unit))) 4)
                  (assoc-in unit [:changes :crits] (conj (get-in unit [:changes :crits]) :mv))
                  (assoc-in unit [:changes :movement] {:immobile 0}))
-           :destroyed (assoc-in unit [:changes :destroyed?] true)
+           :destroyed (assoc unit :changes (assoc changes :destroyed? true :crits (conj (:crits changes) :destroyed)))
            unit))
        (rest crits)))))
 
@@ -228,7 +230,7 @@
                :damage damage
                :crit crits
                :unit-status upd)
-       {:crit crits :result upd}))))
+       upd))))
 
 (defn create-confirmation-choice
   [attacker target board layout atk-flag atk-class]
@@ -246,21 +248,72 @@
         physical-attack (create-confirmation-choice attacker target board layout :physical :physical)]
     (vec (remove nil? [(when (= range 1) physical-attack) regular-attack]))))
 
+(defn dfa-attack
+  [attacker target attack-data to-hit target-damage attacker-damage]
+  (let [result {(:id attacker) (if (<= (calculate-to-hit attack-data) to-hit)
+                                 (take-damage attacker attacker-damage false)
+                                 (take-damage attacker (inc attacker-damage) false))
+                (:id target) (if (<= (calculate-to-hit attack-data) to-hit)
+                               (take-damage target target-damage (= to-hit 12))
+                               target)}]
+    (mu/log ::make-dfa-attack
+            :targeting-data attack-data
+            :to-hit to-hit
+            :result result)
+    (merge {:targeting-data attack-data
+            :to-hit to-hit
+            :attacker attacker
+            :target-damage target-damage
+            :attacker-damage attacker-damage
+            :target target
+            :result result})))
+
+(defn charge-attack
+  [attacker target attack-data to-hit target-damage attacker-damage]
+  (let [result {(:id attacker) (if (<= (calculate-to-hit attack-data) to-hit)
+                                 (take-damage attacker attacker-damage false)
+                                 attacker)
+                (:id target) (if (<= (calculate-to-hit attack-data) to-hit)
+                               (take-damage target target-damage (= to-hit 12))
+                               target)}]
+    (mu/log ::make-charge-attack
+            :targeting-data attack-data
+            :to-hit to-hit
+            :result result)
+    (merge {:targeting-data attack-data
+            :to-hit to-hit
+            :attacker attacker
+            :target-damage target-damage
+            :attacker-damage attacker-damage
+            :target target
+            :result result})))
+
+(defn basic-attack
+  [attacker target attack-data to-hit damage]
+  (let [result {(:id attacker) attacker
+                (:id target) (if (<= (calculate-to-hit attack-data) to-hit)
+                               (take-damage target damage (= to-hit 12))
+                               target)}]
+    (mu/log ::make-attack
+            :targeting-data attack-data
+            :to-hit to-hit
+            :result result)
+    {:targeting-data attack-data
+     :to-hit to-hit
+     :attacker attacker
+     :target-damage damage
+     :target target
+     :result result}))
+
 (defn make-attack
-  ([attacker target attack-data to-hit]
-   (let [damage (cu/calculate-damage attacker (hex/distance attacker target) (:rear-attack? attack-data))]
-     (mu/log ::make-attack
-             :attacker (:id attacker)
-             :target (:id target)
-             :targeting-data attack-data
-             :to-hit to-hit)
-     (merge {:targeting-data attack-data
-             :to-hit to-hit
-             :attacker attacker
-             :damage damage
-             :target target}
-            (if (<= (calculate-to-hit attack-data) to-hit)
-              (take-damage target damage (= to-hit 12))
-              {:result target}))))
+  ([atk target attack-data to-hit]
+   ;; TODO add logic to damage attackers on successful charge attacks
+   (let [target-damage (cu/calculate-damage atk (hex/distance atk target) (:rear-attack? attack-data))
+         attacker-damage (cu/calc-self-damage atk)
+         attacker (assoc atk :acted true)]
+     (condp = (get-in attacker [:attack :flag])
+       :charge (charge-attack attacker target attack-data to-hit target-damage attacker-damage)
+       :dfa (dfa-attack attacker target attack-data to-hit target-damage attacker-damage)
+       (basic-attack attacker target attack-data to-hit target-damage))))
   ([attacker target attack-data]
    (make-attack attacker target attack-data (utils/roll2d))))
