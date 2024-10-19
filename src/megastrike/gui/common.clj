@@ -10,7 +10,6 @@
 
 (defn attack-buttons
   [attacks unit]
-  (prn attacks)
   (loop [ret [{:fx/type :button
                :text "No Attack"
                :on-action {:event-type ::events/close-attack-selection :selected false :unit unit}}]
@@ -19,7 +18,7 @@
       ret
       (recur (let [atk-data (first (vals (first attacks)))]
                ((comp vec flatten conj) ret {:fx/type :button
-                                             :text (attacks/print-attack-roll atk-data false)
+                                             :text (str (name (:flag atk-data)) ": " (attacks/print-attack-roll atk-data false))
                                              :on-action {:event-type ::events/close-attack-selection  :unit unit :selected atk-data :fx/sync true}}))
              (rest attacks)))))
 
