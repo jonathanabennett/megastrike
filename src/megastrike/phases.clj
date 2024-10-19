@@ -117,12 +117,20 @@
             :current-phase "End")
     {:current-phase :end :turn-order nil :units targeting-removed}))
 
+(defn update-unit
+  "Updates damage, applies weapons crits, resets acted, and then returns the unit IF they
+  are not destroyed."
+  [unit]
+  (let [weapon-count (count (filter #(= :weapon %) (:changes unit)))
+        weaps-applied (cu/take-weapon-hit unit weapon-count)
+        ret (merge weaps-applied (:changes weaps-applied) {:changes {}})]
+    (when-not (cu/destroyed? ret)
+      [(:id ret) ret])))
+
 (defn next-phase
   "Removes destroyed units and resets the acted status on every unit, then dispatches to the correct phase method."
   [{:keys [current-phase turn-number forces units round-report]}]
-  (let [changed-units (into {} (for [[k unit] units] [k (merge unit (:changes unit) {:changes {}})]))
-        remaining (into {} (for [[k unit] changed-units] (when (not (cu/destroyed? unit)) [k unit])))
-        new-units (into {} (for [[k unit] remaining] [k (assoc unit :acted nil)]))]
+  (let [new-units (into {} (for [[_ unit] units] (update-unit unit)))]
     (mu/with-context {:turn-number turn-number}
       (cond
         (= current-phase :initiative) (start-deployment-phase {:forces forces :units new-units :round-report round-report})

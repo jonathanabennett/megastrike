@@ -223,7 +223,7 @@
         units (assoc (subs/units context) active-id upd)]
     (mu/log ::set-attack-event
             :attacker upd
-            :target unit
+            :target (:id unit)
             :attack-type selected
             :instrumentation :player)
     {:context (fx/swap-context context assoc :units units)}))
@@ -255,12 +255,12 @@
   (loop [results {:units (subs/units context)
                   :round-report (fx/sub-val context :round-report)}
          attackers (filter #(contains? #{:charge :dfa} (get-in % [:attack :flag]))
-                           (subs/units context))]
-    (prn attackers)
+                           (subs/current-forces context))]
     (if (empty? attackers)
       {:context (fx/swap-context context merge results)}
       (recur (let [attacker (merge (first attackers) {:acted true})
-                   attack-result (attacks/make-attack attacker (get-in attacker [:attack :target]) (:attack attacker))
+                   target (get (subs/units context) (get-in attacker [:attack :target]))
+                   attack-result (attacks/make-attack attacker target (:attack attacker))
                    units (merge (:units results) (:results attack-result))
                    report (str (:round-report results) (reports/parse-attack-data attack-result))]
                (assoc results :units units :round-report report))

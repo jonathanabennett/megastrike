@@ -2,12 +2,10 @@
   (:require
    [clojure.string :as str]
    [com.brunobonacci.mulog :as mu]
-   [malli.core :as m]
    [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
    [megastrike.hexagons.hex :as hex]
-   [megastrike.utils :as utils]
-   [megastrike.schemas :as schemas]))
+   [megastrike.utils :as utils]))
 
 (def probabilities
   {2  100, 3  98, 4  92, 5  83, 6  72, 7  58, 8  42, 9  28, 10 17, 11 8, 12 3})
@@ -142,7 +140,7 @@
          damage (cu/print-damage attacker range (= type :physical))
          attack-data {:targeting attack-roll
                       :flag flag
-                      :target target
+                      :target (:id target)
                       :rear-attack? (detect-direction target attacker (get-in cu/directions [(:direction target) :rear]) layout)
                       :damage damage}]
      attack-data))
@@ -308,8 +306,9 @@
 (defn make-attack
   ([atk target attack-data to-hit]
    ;; TODO add logic to damage attackers on successful charge attacks
+   (prn target)
    (let [target-damage (cu/calculate-damage atk (hex/distance atk target) (:rear-attack? attack-data))
-         attacker-damage (cu/calc-self-damage atk)
+         attacker-damage (cu/calc-self-damage atk target)
          attacker (assoc atk :acted true)]
      (condp = (get-in attacker [:attack :flag])
        :charge (charge-attack attacker target attack-data to-hit target-damage attacker-damage)

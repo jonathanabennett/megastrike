@@ -298,9 +298,9 @@
   (+ size (if mel? 1 0)))
 
 (defn calc-self-damage
-  [{:keys [attack] :as unit}]
+  [{:keys [attack] :as unit} {:keys [size]}]
   (if (= (get attack :flag) :charge)
-    (+ (Math/floor (/ (get-tmm unit) 2)) (if (>= (get-in attack [:target :size]) 3) 1 0))
+    (+ (Math/floor (/ (get-tmm unit) 2)) (if (>= size 3) 1 0))
     (:size unit)))
 
 (defn calculate-damage
@@ -320,17 +320,16 @@
       damage)))
 
 (defn take-weapon-hit
-  [unit]
+  [unit count]
   (assoc unit
-         :s (max (dec (:s unit)) 0)
+         :s (max (- (:s unit) count) 0)
          :s* false
-         :m (max (dec (:m unit)) 0)
+         :m (max (- (:m unit) count) 0)
          :m* false
-         :l (max (dec (:l unit)) 0)
+         :l (max (- (:l unit) count) 0)
          :l* false
-         :e (max (dec (:e unit)) 0)
-         :e* false
-         :crits (conj (:crits unit) :weapon)))
+         :e (max (- (:e unit) count) 0)
+         :e* false))
 
 (defn destroyed?
   [unit]
@@ -341,6 +340,3 @@
   [unit target]
   (and (:acted target) (pos? (count (:path unit))) (= (hex/distance (last (:path unit)) target) 1)))
 
-(defn destroyed?
-  [unit]
-  (or (:destroyed? unit) (not (pos? (get-structure unit)))))

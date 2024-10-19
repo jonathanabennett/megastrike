@@ -50,23 +50,26 @@
 (def attack-buttons
   [{:fx/type :button
     :text "Overheat +1"
-    :on-action {:event-type ::events/overheat :value 1}}
+    :on-action {:event-type ::events/overheat :value 1 :fx/sync true}}
    {:fx/type :button
     :text "Overheat -1"
-    :on-action {:event-type ::events/overheat :value -1}}
+    :on-action {:event-type ::events/overheat :value -1 :fx/sync true}}
    {:fx/type :button
     :text "Resolve Charges/DFAs"
-    :on-action {:event-type ::events/resolve-attacks}}
+    :on-action {:event-type ::events/resolve-attacks :fx/sync true}}
    {:fx/type :button
     :text "Finish Attacks"
-    :on-action {:event-type ::events/finish-attacks}}])
+    :on-action {:event-type ::events/finish-attacks :fx/sync true}}])
 
 (defn command-palette [{:keys [fx/context]}]
   (let [phase (subs/phase context)
         turn (subs/turn-number context)
         turn-order (subs/turn-order context)
         unit (subs/active-unit context)
-        common-buttons [{:fx/type :button
+        common-buttons [{:fx/type :separator
+                         :orientation :vertical
+                         :padding 15}
+                        {:fx/type :button
                          :text "Next Phase"
                          :on-action {:event-type ::events/next-phase}
                          :disable #_{:clj-kondo/ignore [:not-empty?]}
