@@ -55,6 +55,9 @@
     :text "Overheat -1"
     :on-action {:event-type ::events/overheat :value -1}}
    {:fx/type :button
+    :text "Resolve Charges/DFAs"
+    :on-action {:event-type ::events/resolve-attacks}}
+   {:fx/type :button
     :text "Finish Attacks"
     :on-action {:event-type ::events/finish-attacks}}])
 
@@ -68,6 +71,10 @@
                          :on-action {:event-type ::events/next-phase}
                          :disable #_{:clj-kondo/ignore [:not-empty?]}
                          (not (empty? turn-order))}
+                        {:fx/type :button
+                         :text "Round Report"
+                         :on-action {:event-type ::events/show-popup
+                                     :state-id :round-dialog}}
                         {:fx/type :separator
                          :orientation :vertical
                          :padding 15}
