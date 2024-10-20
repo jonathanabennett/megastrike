@@ -10,9 +10,9 @@ A Clojure App to play Alphastrike on the computer.
 
 ## What works
 
-Right now (v0.4), the game allows you to simulate combat between armies of any size using units exported from Megamek via their AlphaStrike stat generator. While the game won't stop you from using them, note that *FLYING UNITS DO NOT FLY* and none of the rules for them have been implemented yet. I am currently hiding all the Aero elements and many of the conventional fighters, but VTOLs and Support Vehicles which fly are still in the lists, so you could "use" them.
+Right now (v0.5), the game allows you to simulate combat between armies of any size using units exported from Megamek via their AlphaStrike stat generator. While the game won't stop you from using them, note that *FLYING UNITS DO NOT FLY* and none of the rules for them have been implemented yet. I am currently hiding all the Aero elements and many of the conventional fighters, but VTOLs and Support Vehicles which fly are still in the lists, so you could "use" them.
 
-Terrain and attacks (including physical attacks, rear attacks, critical hits and their effects) work. Special attacks (Charges, DFS, and attacks Special Abilities) do not work.
+Terrain and attacks work. Attacks from special abilities do not work (other than the MEL special ability).
 
 Scenario reading (from MegaMek Scenario files, .mms) works but not everything works. Things known not to work include:
 
@@ -74,9 +74,16 @@ If you want to turn the unit, click "Turn" and then click anywhere on the map. T
 
 When you're ready to move that unit, click "Move Unit". If a unit is standing still, click them, click "Stand Still", and then click "Move Unit". When everyone has moved, click "Next Phase".
 
+#### Charging
+If you want to charge or DFA a target, move next to them (selecting the Jump movement mode, for DFA), and then click them. It will pop up a window to select your attack mode. Then, follow the instructions in the Combat Phase.
+
 ### Combat Phase
 
-To declare an attack, select the unit on the right and then select their target. This will pop up a window where you can select what kind of attack. A `:regular` attack uses the default damage line. `:physical` attacks are calculated per the physical attack rules. In Alpha Strike, all attacks for a side are declared and resolved simultaneously, therefore you should declare all your attacks before clicking "Resolve Attacks". Once both sides have resolved their attacks, click "Next Phase".
+#### Resolving Charges
+Once you've charged, at the start of your attacks, click the "Resolve Charges/DFAs" buttons to resolve those attacks. Then go ahead with the rest of the attacks. The attacks will not be resolved unless you click this button.
+
+#### Other attacks
+To declare an attack, select the unit on the right and then select their target. This will pop up a window where you can select what kind of attack. A `:regular` attack uses the default damage line. `:physical` attacks are calculated per the physical attack rules. To see the effects of the attack, click on the targeted unit in the unit view on the right sidebar. You will be able to see the effects at the bottom.
 
 If you do not have line of sight to the target, the To Hit number will be infinity. You will see detailed calculation details for the attack in the round report.
 
@@ -100,28 +107,30 @@ This release focuses on adding support for Scenarios, terrain, and movement. The
 
 The next step is to make the terrain on the map actually mean something and make the map easier to read. It affects movement, but does not yet affect combat
 
-### 0.3.0 Previous Release
+### 0.3.0
 
 This release focuses on the combat phase. It adds LOS, terrain affecting To-hit rolls, and critical hits. Still missing are abilities, physicals, and rear attacks.
 
-### 0.4.0 This Release
+### 0.4.0 Previous Release
 
 This release focuses on round reports and on physical attacks.
+
+### 0.5.0 This Release
+
+This release focuses on some slight GUI reworks and on Special Physical Attacks. 
 
 ## Roadmap
 ### Next Release
 
-This release will focus on Special attack and having unit attacks respect facing (i.e. you won't be able to attack units behind you unless you have a REAR special ability).
+This release will focus on cleanup and bugfixes. If possible, it will also begin to implement a UI overhaul.
 
 ### R+2
 
-Cleanup and bugfixes
-- Any specials not directly related to damage will not be implemented.
-- Flying and aerial movement will not be implemented.
+There will be an intial attemp at implementing specials.
 
 ### R+3
 
-User Interface Update and Refresh
+I'm unsure. I want this to either be networked play or Computer Players, but I'm not sure which one it will be. Depends which one I can actually do.
 
 ## How to Contribute
 
