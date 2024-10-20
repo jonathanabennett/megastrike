@@ -63,16 +63,17 @@
           :fx.opt/type->lifecycle #(or (fx/keyword->lifecycle %)
                                        (fx/fn->lifecycle-with-context %))}))
 
-(def dev-renderer
-  (fx/create-renderer
-   :middleware (comp
-                fx/wrap-context-desc
-                (fx/wrap-map-desc (fn [_] {:fx/type views/root})))
-   :error-handler (bound-fn [^Throwable ex]
-                    (.printStackTrace ^Throwable ex *err*))
-   :opts {:fx.opt/map-event-handler event-handler
-          :fx.opt/type->lifecycle (dev/wrap-type->lifecycle #(or (fx/keyword->lifecycle %)
-                                                                 (fx/fn->lifecycle-with-context %)))}))
+; (def dev-renderer
+;   (fx/create-renderer
+;    :middleware (comp
+;                 fx/wrap-context-desc
+;                 (fx/wrap-map-desc (fn [_] {:fx/type views/root})))
+;    :error-handler (bound-fn [^Throwable ex]
+;                     (.printStackTrace ^Throwable ex *err*))
+;    :opts {:fx.opt/map-event-handler event-handler
+;           :fx.opt/type->lifecycle (dev/wrap-type->lifecycle #(or (fx/keyword->lifecycle %)
+                                                                 ; (fx/fn->lifecycle-with-context %)))}))
+
 (defn regular-launch
   []
   (mu/log ::launch-game)
@@ -83,7 +84,7 @@
   []
   (mu/log ::launch-game
           :development true)
-  (fx/mount-renderer *state dev-renderer))
+  (fx/mount-renderer *state renderer))
 
 (defn -main
   "The main entry point for the game."
