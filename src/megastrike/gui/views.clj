@@ -96,6 +96,7 @@
                         (= phase :deployment) (deploy-buttons (empty? turn-order))
                         (= phase :movement) (move-buttons unit)
                         (= phase :combat) attack-buttons
+
                         :else [])
         buttons ((comp vec flatten vector) phase-buttons common-buttons)]
     {:fx/type :v-box
@@ -139,4 +140,3 @@
                 :else lobby/view)}}
             {:fx/type common/attack-dialog}
             {:fx/type common/round-dialog}]}))
-

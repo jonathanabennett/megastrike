@@ -150,6 +150,7 @@
   ([s]
    (let [non-standard (str/replace s #"\(Standard\)" "")
          matching-muls (filter-units mul :full-name s =)
+
          non-standard-mul (filter-units mul :full-name non-standard =)]
      (mu/log ::get-unit-function
              :search-term s
@@ -170,6 +171,7 @@
               (str (:full-name mul-unit) " #" (inc (count matching-units)))
               (str (:full-name mul-unit)))
          unit (merge mul-unit {:id id} game-data {:changes {}})]
+
      (mu/log ::element-created
              :element unit)
      (merge units {id unit}))))
@@ -222,6 +224,7 @@
 (defn get-crits
   [unit]
   (conj (get unit :crits) (get-in unit [:changes :crits])))
+
 
 (defn print-movement-helper
   "Consumes a vector containing a move type as a keyword and a distance and prints it for human consumption."
@@ -339,4 +342,3 @@
   "You can charge a unit if they have acted, you have moved, and they are adjacent to you."
   [unit target]
   (and (:acted target) (pos? (count (:path unit))) (= (hex/distance (last (:path unit)) target) 1)))
-
