@@ -48,7 +48,7 @@
   (if (re-find #"\d+=" line)
     (let [[faction _ data] (parse-unit-string line)
           [unit pilot pskill gskill direction x y] (str/split data #",")
-          loc (if (and x y) (hex/hex-from-offset (Integer/parseInt (str/trim x)) (Integer/parseInt (str/trim y))) {})
+          loc (if (and x y) (hex/offset->hex (Integer/parseInt (str/trim x)) (Integer/parseInt (str/trim y))) {})
           skill (int (math/floor (/ (+ (Integer/parseInt pskill) (Integer/parseInt gskill)) 2)))
           mul (cu/get-unit unit)] 
       (cu/create-element (get state :units {}) 
@@ -116,20 +116,20 @@
   (board/create-mapsheet (str "file:" (.getPath filename))))
 
 (defn set-maps
-  [scenario]
-  (if (:map-dirs scenario)
-    (let [boards (board-files (:map-dirs scenario)) 
+  [{:keys [map-dirs map-width map-height maps]}]
+  (if map-dirs
+    (let [boards (board-files map-dirs) 
           size-setter (map-processor (rand-nth boards))
-          maps (for [x (range (:map-width scenario)) 
-                     y (range (:map-height scenario))] 
+          maps (for [x (range map-width) 
+                     y (range map-height)] 
                  [x y])] 
       {:map-boards (into [] (map #(pick-map % boards size-setter) maps))}) 
 
-    (let [maps (map #(map-rotator (str/trim %)) (:maps scenario)) 
+    (let [maps (map #(map-rotator (str/trim %)) maps) 
           width (get-in (first maps) [:temp :width])
           height (get-in (first maps) [:temp :height])
-          offsets (for [x (range (:map-width scenario))
-                        y (range (:map-height scenario))]
+          offsets (for [x (range map-width)
+                        y (range map-height)]
                     [(* width x) 
                      (* height y)])] 
       (loop [ret []

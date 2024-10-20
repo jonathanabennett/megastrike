@@ -1,16 +1,17 @@
 (ns megastrike.attacks-test
-  (:require [clojure.test :as t]
-            [megastrike.attacks :as sut]
-            [megastrike.board :as board]
-            [megastrike.combat-unit :as cu]
-            [megastrike.hexagons.hex :as hex]))
+  (:require
+   [clojure.test :as t]
+   [megastrike.attacks :as sut]
+   [megastrike.board :as board]
+   [megastrike.combat-unit :as cu]
+   [megastrike.hexagons.hex :as hex]))
 
-(def board (board/create-board "data/boards/AGoAC Maps/16x17 Grassland 2.board")) 
+(def board (board/create-board "data/boards/AGoAC Maps/16x17 Grassland 2.board"))
 (def attacker1 (cu/create-element (cu/get-unit "Wolfhound WLF-2") {:id "Wolfhound WLF-2" :path [] :p 1 :q 1 :r -2 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s}))
 (def target1 (cu/create-element (cu/get-unit "Wolfhound WLF-2") {:id "Wolfhound WLF-2" :path [] :p 2 :q 1 :r -3 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s}))
 (def wooded-unit (cu/create-element (cu/get-unit "Wolfhound WLF-2") {:id "Wolfhound WLF-2" :path [] :p 4 :q 0 :r -4 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s}))
 (def blinded-attacker (cu/create-element (cu/get-unit "Wolfhound WLF-2") {:id "Wolfhound WLF-2" :path [] :p 3 :q 4 :r -7 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s}))
-(def blinded-target (cu/create-element (cu/get-unit "Wolfhound WLF-2") {:id "Wolfhound WLF-2" :path [] :p 7 :q 2 :r -9 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s})) 
+(def blinded-target (cu/create-element (cu/get-unit "Wolfhound WLF-2") {:id "Wolfhound WLF-2" :path [] :p 7 :q 2 :r -9 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s}))
 (def heated-attacker (cu/create-element (cu/get-unit "Wolfhound WLF-2") {:id "Wolfhound WLF-2" :path [] :p 1 :q 1 :r -2 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 1 :current-armor 4 :movement-mode :walk :direction :s}))
 
 (t/deftest attacker-skill-test
@@ -53,7 +54,7 @@
         empty-hex {:p 12, :q 4, :r -16, :elevation 0, :terrain "", :palette "grass"}
         rough-hex {:p 13, :q 4, :r -17, :elevation 0, :terrain "rough:1:20", :palette "grass"}
         ground-fluff-hex {:p 2, :q 9, :r -11, :elevation 0, :terrain "ground_fluff:1:1", :palette "grass"}]
-    (t/testing "Calculate woods mod" 
+    (t/testing "Calculate woods mod"
       (t/is (= (sut/woods-mod [empty-hex rough-hex ground-fluff-hex]) [{:desc "no intervening woods" :value 0}]) "Testing no woods at all")
       (t/is (= (sut/woods-mod [woods-hex empty-hex empty-hex]) [{:desc "no intervening woods" :value 0}]) "Testing attacker standing in woods.")
       (t/is (= (sut/woods-mod [empty-hex woods-hex empty-hex]) [{:desc "intervening woods" :value 1}]))
@@ -83,127 +84,166 @@
 
 (t/deftest height-checker-test
   (t/testing "Check for LOS"
-    (t/is (= (sut/height-checker 
-              attacker1 target1 
-              (board/hex-line 
+    (t/is (= (sut/height-checker
+              attacker1 target1
+              (board/line
                (board/find-hex attacker1 board)
                (board/find-hex target1 board) board)) false))
-    (t/is (= (sut/height-checker 
-              attacker1 wooded-unit 
-              (board/hex-line 
+    (t/is (= (sut/height-checker
+              attacker1 wooded-unit
+              (board/line
                (board/find-hex attacker1 board)
                (board/find-hex wooded-unit board) board)) false))
-    (t/is (= (sut/height-checker 
+    (t/is (= (sut/height-checker
               blinded-attacker blinded-target
-              (board/hex-line 
+              (board/line
                (board/find-hex blinded-attacker board)
                (board/find-hex blinded-target board) board)) true))
-    (t/is (= (sut/height-checker 
+    (t/is (= (sut/height-checker
               blinded-target blinded-attacker
-              (board/hex-line 
+              (board/line
                (board/find-hex blinded-target board)
                (board/find-hex blinded-attacker board) board)) true))
-    (t/is (= (sut/height-checker 
-              heated-attacker target1 
-              (board/hex-line
+    (t/is (= (sut/height-checker
+              heated-attacker target1
+              (board/line
                (board/find-hex heated-attacker board)
                (board/find-hex target1 board) board)) false))
-    (t/is (= (sut/height-checker 
-              heated-attacker wooded-unit 
-              (board/hex-line 
+    (t/is (= (sut/height-checker
+              heated-attacker wooded-unit
+              (board/line
                (board/find-hex heated-attacker board)
                (board/find-hex wooded-unit board) board)) false))
-    (t/is (= (sut/height-checker 
-              heated-attacker blinded-target 
-              (board/hex-line 
+    (t/is (= (sut/height-checker
+              heated-attacker blinded-target
+              (board/line
                (board/find-hex heated-attacker board)
                (board/find-hex blinded-target board) board)) false))))
 
 (t/deftest produce-attack-roll-test
   (t/testing "Testing attack rolls"
-    (t/is (= (sut/produce-attack-roll attacker1 target1 board) 
-             [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] nil [{:desc "clear line of sight", :value 0}] [{:desc "no intervening woods", :value 0}] [{:desc "target 1 hexes away", :value 0}]]))
-    (t/is (= (sut/produce-attack-roll heated-attacker target1 board) 
-             [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] [{:desc "attacker heat", :value 1}] [{:desc "clear line of sight", :value 0}] [{:desc "no intervening woods", :value 0}] [{:desc "target 1 hexes away", :value 0}]]))
-    (t/is (= (sut/produce-attack-roll wooded-unit target1 board) 
-             [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] nil [{:desc "clear line of sight", :value 0}] [{:desc "no intervening woods", :value 0}] [{:desc "target 2 hexes away", :value 0}]]))
-    (t/is (= (sut/produce-attack-roll attacker1 wooded-unit board) 
-             [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] nil [{:desc "clear line of sight", :value 0}] [{:desc "target in woods", :value 1}] [{:desc "target 3 hexes away", :value 0}]]))
-    (t/is (= (sut/produce-attack-roll target1 attacker1 board) 
-             [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] nil [{:desc "clear line of sight", :value 0}] [{:desc "no intervening woods", :value 0}] [{:desc "target 1 hexes away", :value 0}]]))
-    (t/is (= (sut/produce-attack-roll blinded-attacker blinded-target board) 
-             [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] nil [{:desc "Line of Sight Blocked", :value ##Inf}] [{:desc "no intervening woods", :value 0}] [{:desc "target 4 hexes away", :value 2}]]))
-    (t/is (= (sut/produce-attack-roll blinded-target blinded-attacker board) 
-             [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] nil [{:desc "Line of Sight Blocked", :value ##Inf}] [{:desc "no intervening woods", :value 0}] [{:desc "target 4 hexes away", :value 2}]]))))
+    (t/is (= (sut/produce-attack-roll attacker1 target1 board :regular)
+             {:targeting [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] nil [{:desc "clear line of sight", :value 0}] [{:desc "no intervening woods", :value 0}] [{:desc "target 1 hexes away", :value 0}]]
+              :damage "3"}))
+    (t/is (= (sut/produce-attack-roll heated-attacker target1 board :regular)
+             {:targeting [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] [{:desc "attacker heat", :value 1}] [{:desc "clear line of sight", :value 0}] [{:desc "no intervening woods", :value 0}] [{:desc "target 1 hexes away", :value 0}]]
+              :damage "3"}))
+    (t/is (= (sut/produce-attack-roll wooded-unit target1 board :regular)
+             {:targeting [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] nil [{:desc "clear line of sight", :value 0}] [{:desc "no intervening woods", :value 0}] [{:desc "target 2 hexes away", :value 0}]]
+              :damage "3"}))
+    (t/is (= (sut/produce-attack-roll attacker1 wooded-unit board :regular)
+             {:targeting [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] nil [{:desc "clear line of sight", :value 0}] [{:desc "target in woods", :value 1}] [{:desc "target 3 hexes away", :value 0}]]
+              :damage "3"}))
+    (t/is (= (sut/produce-attack-roll target1 attacker1 board :regular)
+             {:targeting [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] nil [{:desc "clear line of sight", :value 0}] [{:desc "no intervening woods", :value 0}] [{:desc "target 1 hexes away", :value 0}]]
+              :damage "3"}))
+    (t/is (= (sut/produce-attack-roll blinded-attacker blinded-target board :regular)
+             {:targeting [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] nil [{:desc "Line of Sight Blocked", :value ##Inf}] [{:desc "no intervening woods", :value 0}] [{:desc "target 4 hexes away", :value 2}]]
+              :damage "3"}))
+    (t/is (= (sut/produce-attack-roll blinded-target blinded-attacker board :regular)
+             {:targeting [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] nil [{:desc "Line of Sight Blocked", :value ##Inf}] [{:desc "no intervening woods", :value 0}] [{:desc "target 4 hexes away", :value 2}]]
+              :damage "3"}))))
 
 (t/deftest calculate-to-hit-test
-  (t/testing "return to-hit numbers for attacks" 
-    (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll attacker1 target1 board)) 6))
-    (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll heated-attacker target1 board)) 7))
-    (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll wooded-unit target1 board)) 6))
-    (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll attacker1 wooded-unit board)) 7))
-    (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll target1 attacker1 board)) 6))
-    (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll blinded-attacker blinded-target board)) ##Inf))
-    (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll blinded-target blinded-attacker board)) ##Inf))
-    ))
+  (t/testing "return to-hit numbers for attacks"
+    (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll attacker1 target1 board :regular)) 6))
+    (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll heated-attacker target1 board :regular)) 7))
+    (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll wooded-unit target1 board :regular)) 6))
+    (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll attacker1 wooded-unit board :regular)) 7))
+    (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll target1 attacker1 board :regular)) 6))
+    (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll blinded-attacker blinded-target board :regular)) ##Inf))
+    (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll blinded-target blinded-attacker board :regular)) ##Inf))))
 
 (t/deftest print-attack-roll
-  (t/testing "Return minimum attack roll result" 
-    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll attacker1 target1 board) false) "To Hit: 6 (72%)"))
-    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll heated-attacker target1 board) false) "To Hit: 7 (58%)"))
-    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll wooded-unit target1 board) false) "To Hit: 6 (72%)"))
-    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll attacker1 wooded-unit board) false) "To Hit: 7 (58%)"))
-    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll target1 attacker1 board) false) "To Hit: 6 (72%)"))
-    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll blinded-attacker blinded-target board) false) 
+  (t/testing "Return minimum attack roll result"
+    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll attacker1 target1 board :regular) false) "To Hit: 6 (72%)"))
+    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll heated-attacker target1 board :regular) false) "To Hit: 7 (58%)"))
+    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll wooded-unit target1 board :regular) false) "To Hit: 6 (72%)"))
+    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll attacker1 wooded-unit board :regular) false) "To Hit: 7 (58%)"))
+    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll target1 attacker1 board :regular) false) "To Hit: 6 (72%)"))
+    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll blinded-attacker blinded-target board :regular) false)
              "Line of Sight Blocked"))
-    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll blinded-target blinded-attacker board) false) 
+    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll blinded-target blinded-attacker board :regular) false)
              "Line of Sight Blocked")))
-  (t/testing "Return full attack roll result" 
-    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll attacker1 target1 board) true)
+  (t/testing "Return full attack roll result"
+    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll attacker1 target1 board :regular) true)
              "To Hit: 6 (72%): + 4 (pilot skill) + 0 (0 fire control hits) + 0 (attacker moved) + 2 (target moved) + 0 () + 0 (clear line of sight) + 0 (no intervening woods) + 0 (target 1 hexes away)"))
-    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll heated-attacker target1 board) true) 
+    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll heated-attacker target1 board :regular) true)
              "To Hit: 7 (58%): + 4 (pilot skill) + 0 (0 fire control hits) + 0 (attacker moved) + 2 (target moved) + 1 (attacker heat) + 0 (clear line of sight) + 0 (no intervening woods) + 0 (target 1 hexes away)"))
-    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll wooded-unit target1 board) true) 
+    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll wooded-unit target1 board :regular) true)
              "To Hit: 6 (72%): + 4 (pilot skill) + 0 (0 fire control hits) + 0 (attacker moved) + 2 (target moved) + 0 () + 0 (clear line of sight) + 0 (no intervening woods) + 0 (target 2 hexes away)"))
-    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll attacker1 wooded-unit board) true) 
+    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll attacker1 wooded-unit board :regular) true)
              "To Hit: 7 (58%): + 4 (pilot skill) + 0 (0 fire control hits) + 0 (attacker moved) + 2 (target moved) + 0 () + 0 (clear line of sight) + 1 (target in woods) + 0 (target 3 hexes away)"))
-    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll target1 attacker1 board) true) 
+    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll target1 attacker1 board :regular) true)
              "To Hit: 6 (72%): + 4 (pilot skill) + 0 (0 fire control hits) + 0 (attacker moved) + 2 (target moved) + 0 () + 0 (clear line of sight) + 0 (no intervening woods) + 0 (target 1 hexes away)"))
-    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll blinded-attacker blinded-target board) true) 
+    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll blinded-attacker blinded-target board :regular) true)
              "Line of Sight Blocked"))
-    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll blinded-target blinded-attacker board) true) 
-             "Line of Sight Blocked"))
-    ))
+    (t/is (= (sut/print-attack-roll (sut/produce-attack-roll blinded-target blinded-attacker board :regular) true)
+             "Line of Sight Blocked"))))
 
 (t/deftest test-take-damage
   (t/testing "Test armor only damage."
     (t/is (= (sut/take-damage attacker1 2)
-             (assoc attacker1 :current-armor 2)))
+             {:crit [nil nil]
+              :result (assoc attacker1 :changes {:current-armor 2 :current-structure 3})}))
     (t/is (= (sut/take-damage attacker1 3)
-             (assoc attacker1 :current-armor 1)))
+             {:crit [nil nil]
+              :result (assoc attacker1 :changes {:current-armor 1 :current-structure 3})}))
     (t/is (= (sut/take-damage attacker1 0)
-             (assoc attacker1 :current-armor 4)))
+             {:crit [nil nil]
+              :result attacker1}))
     (t/is (= (sut/take-damage attacker1 4)
-             (assoc attacker1 :current-armor 0 :current-structure 3))))
+             {:crit [nil nil]
+              :result (assoc attacker1 :changes {:current-armor 0 :current-structure 3})})))
   (t/testing "Test penetration."
-    (let [tgt (sut/take-damage attacker1 5)] 
-      (t/is (= (:current-armor tgt) 0))
-      (t/is (= (:current-structure tgt) 2)))))
+    (let [tgt (:result (sut/take-damage attacker1 5))]
+      (t/is (= (get-in tgt [:changes :current-armor]) 0))
+      (t/is (= (get-in tgt [:changes :current-structure]) 2)))))
 
 (t/deftest test-make-attack
   (t/testing "Test attack that hits"
     (t/is (= (sut/make-attack (merge attacker1 {:direction :n}) (merge target1 {:direction :n}) board (hex/create-layout) 11)
-             {:targeting-data [[{:desc "pilot skill", :value 4}]
-                               [{:desc "0 fire control hits", :value 0}]
-                               [{:desc "attacker moved", :value 0}]
-                               [{:desc "target moved", :value 2}]
-                               nil
-                               [{:desc "clear line of sight", :value 0}]
-                               [{:desc "no intervening woods", :value 0}]
-                               [{:desc "target 1 hexes away", :value 0}]]
-              :rear-attack? false
-              :to-hit 11
-              :hit? true
-              :attacker (merge attacker1 {:direction :n})
-              :target (merge target1 {:direction :n})
-              :result {:role "Striker", :path [], :tmm 2, :q 1, :left-arc "", :e* false, :movement {:walk 6}, :r -3, :right-arc "", :pilot {:name " Lieutenant Ciro Ramirez", :skill 4}, :force :1stsomersetstrikers, :mul-id 3563, :l* false, :m 3, :type "BM", :front-arc "", :current-structure 3, :abilities "ENE, REAR1/1/-", :acted nil, :e 0, :s 3, :threshold -1, :l 1, :size 1, :m* false, :rear-arc "", :point-value 28, :overheat 0, :chassis "Wolfhound", :structure 3, :crits [], :id "Wolfhound WLF-2", :full-name "Wolfhound WLF-2", :armor 4, :current-heat 0, :current-armor 1, :s* false, :p 2, :movement-mode :walk, :direction :n, :model "WLF-2"}}))))
+             {:targeting-data
+              {:targeting [[{:desc "pilot skill", :value 4}]
+                           [{:desc "0 fire control hits", :value 0}]
+                           [{:desc "attacker moved", :value 0}]
+                           [{:desc "target moved", :value 2}]
+                           nil
+                           [{:desc "clear line of sight", :value 0}]
+                           [{:desc "no intervening woods", :value 0}]
+                           [{:desc "target 1 hexes away", :value 0}]],
+               :damage "3"},
+              :rear-attack? false,
+              :to-hit 11,
+              :attacker {:role "Striker", :path [], :tmm 2, :q 1, :left-arc "", :e* false, :movement {:walk 6}, :r -2, :right-arc "", :pilot {:name " Lieutenant Ciro Ramirez", :skill 4}, :force :1stsomersetstrikers, :mul-id 3563, :l* false, :m 3, :type "BM", :front-arc "", :current-structure 3, :abilities "ENE, REAR1/1/-", :acted nil, :e 0, :s 3, :threshold -1, :l 1, :size 1, :m* false, :rear-arc "", :point-value 28, :overheat 0, :chassis "Wolfhound", :structure 3, :crits [], :id "Wolfhound WLF-2", :full-name "Wolfhound WLF-2", :armor 4, :current-heat 0, :current-armor 4, :s* false, :p 1, :movement-mode :walk, :direction :n, :changes {}, :model "WLF-2"},
+              :damage 3,
+              :target {:role "Striker", :path [], :tmm 2, :q 1, :left-arc "",
+                       :e* false, :movement {:walk 6}, :r -3, :right-arc "",
+                       :pilot {:name " Lieutenant Ciro Ramirez", :skill 4},
+                       :force :1stsomersetstrikers, :mul-id 3563, :l* false,
+                       :m 3, :type "BM", :front-arc "",
+                       :abilities "ENE, REAR1/1/-", :acted nil, :e 0, :s 3,
+                       :threshold -1, :l 1, :size 1, :m* false, :rear-arc "",
+                       :point-value 28, :overheat 0, :chassis "Wolfhound",
+                       :id "Wolfhound WLF-2", :full-name "Wolfhound WLF-2",
+                       :current-heat 0, :s* false, :p 2, :movement-mode :walk,
+                       :armor 4, :current-armor 4,
+                       :current-structure 3, :structure 3, :crits [],
+                       :changes {}
+                       :direction :n, :model "WLF-2"},
+              :crit [nil nil],
+              :result {:role "Striker", :path [], :tmm 2, :q 1, :left-arc "",
+                       :e* false, :movement {:walk 6}, :r -3, :right-arc "",
+                       :pilot {:name " Lieutenant Ciro Ramirez", :skill 4},
+                       :force :1stsomersetstrikers, :mul-id 3563, :l* false,
+                       :m 3, :type "BM", :front-arc "",
+                       :abilities "ENE, REAR1/1/-", :acted nil, :e 0, :s 3,
+                       :threshold -1, :l 1, :size 1, :m* false, :rear-arc "",
+                       :point-value 28, :overheat 0, :chassis "Wolfhound",
+                       :id "Wolfhound WLF-2", :full-name "Wolfhound WLF-2",
+                       :current-heat 0, :s* false, :p 2, :movement-mode :walk,
+                       :armor 4, :current-armor 4,
+                       :current-structure 3, :structure 3, :crits [],
+                       :changes {:current-armor 1 :current-structure 3},
+                       :direction :n, :model "WLF-2"}}))))
+

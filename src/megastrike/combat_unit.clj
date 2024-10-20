@@ -46,6 +46,20 @@
                       :points [6 7 8 9]
                       :rear :se}})
 
+(defn parse-ability
+  [str]
+  (cond
+    (str/includes? "LRM" str) {:ability/type :lrm :s 0 :m 0 :l 0}
+    (str/includes? "ENE" str) {:ability/type :ene}
+    (str/includes? "OMNI" str) {:ability/type :omni}
+    (str/includes? "JMPS" str) {:ability/type :jmps :value 0}
+    (str/includes? "ECM" str) {:ability/type :ecm}
+    (str/includes? "CASE" str) {:ability/type :case}
+    (str/includes? "MEL" str) {:ability/type :mel}
+    (str/includes? "REAR" str) {:ability/type :rear :s 0 :m 0 :l 0}
+    (str/includes? "IF" str) {:ability/type :if :value 0}
+    (str/includes? "HEAT" str) {:ability/type :heat :s 0 :m 0 :l 0}))
+
 (defn move-keyword
   "Creates a move keyword from a stat line imported from the mul export."
   [mv-type]
@@ -133,12 +147,13 @@
    (filter #(filter-membership-helper % field values) units)))
 
 (defn get-unit
-  ([unit]
-   (let [non-standard (str/replace unit #"\(Standard\)" "")
-         matching-muls (filter-units mul :full-name unit =)
+  ([s]
+   (let [non-standard (str/replace s #"\(Standard\)" "")
+         matching-muls (filter-units mul :full-name s =)
+
          non-standard-mul (filter-units mul :full-name non-standard =)]
      (mu/log ::get-unit-function
-             :search-term unit
+             :search-term s
              :matching-mul-results matching-muls
              :non-standard-results non-standard-mul)
      (if (first matching-muls)
@@ -148,39 +163,68 @@
 (defn create-element
   "Creates an element for use in the game."
   ([mul-unit game-data]
-   (merge mul-unit game-data))
+   (merge mul-unit game-data {:changes {}}))
   ([units mul-unit game-data]
    (let [matching-units (filter (fn [x] (when (and (:id x) (:full-name mul-unit))
                                           (str/includes? (:id x) (:full-name mul-unit)))) (vals units))
          id (if (seq matching-units)
               (str (:full-name mul-unit) " #" (inc (count matching-units)))
               (str (:full-name mul-unit)))
-         unit (merge mul-unit {:id id} game-data)]
+         unit (merge mul-unit {:id id} game-data {:changes {}})]
+
      (mu/log ::element-created
              :element unit)
      (merge units {id unit}))))
 
 (defn find-sprite
   "Searches a the mechset to determine which images to use and returns the path to that image."
-  [unit]
-  (let [chassis-match (filter (fn [row] (= (second row) (:chassis unit))) mechset)
-        exact-match (filter (fn [row] (str/includes? (second row) (:full-name unit))) mechset)
+  [{:keys [chassis full-name]}]
+  (let [chassis-match (filter (fn [row] (= (second row) chassis)) mechset)
+        exact-match (filter (fn [row] (str/includes? (second row) full-name)) mechset)
         match-row (or (first exact-match) (first chassis-match))]
     (utils/load-resource :data (str "images/units/" (nth match-row 2)))))
 
 (defn get-mv
-  ([unit move-type]
-   (let [base-move (move-type (:movement unit))
-         div (count (filter #(= :mv %) (:crits unit)))]
+  ([{:keys [movement crits current-heat]
+     :or {crits [] current-heat 0}}
+    move-type]
+   (let [base-move (move-type movement)
+         div (count (filter #(= :mv %) crits))]
      (loop [mv base-move
             n 0]
        (if (= n div)
-         (max (- mv (get unit :current-heat 0)) 0)
+         (max (- mv current-heat) 0)
          (recur (let [new-mv (math/round (/ mv 2.0))]
                   (if (>= (- mv new-mv) 1) new-mv 0))
                 (inc n))))))
   ([unit]
    (get-mv unit (get unit :movement :walk))))
+
+(defn get-tmm
+  ([{:keys [tmm crits]}]
+   (let [div (count (filter #(= :mv %) crits))]
+     (loop [tmm tmm
+            n 0]
+       (if (= n div)
+         tmm
+         (recur (let [new-tmm (math/round (/ tmm 2.0))]
+                  (if (>= (- tmm new-tmm) 1) new-tmm 0))
+                (inc n)))))))
+
+(defn get-armor
+  [unit]
+  (get-in unit [:changes :current-armor]
+          (get unit :current-armor (unit :armor))))
+
+(defn get-structure
+  [unit]
+  (get-in unit [:changes :current-structure]
+          (get unit :current-structure (unit :structure))))
+
+(defn get-crits
+  [unit]
+  (conj (get unit :crits) (get-in unit [:changes :crits])))
+
 
 (defn print-movement-helper
   "Consumes a vector containing a move type as a keyword and a distance and prints it for human consumption."
@@ -198,80 +242,103 @@
 
 (defn pv-mod
   "Calculates the skill-based mod for PV based on the algorithm provided in the book."
-  [unit]
-  (let [skill-diff (- 4 (get-in unit [:pilot :skill] 4))]
+  [{:keys [pilot point-value]}]
+  (let [skill-diff (- 4 (:skill pilot))]
     (cond
-      (> 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- (:point-value unit) 5) 10)))
-      (< 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- (:point-value unit) 3) 5)))
+      (> 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- point-value 5) 10)))
+      (< 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- point-value 3) 5)))
       :else 0)))
 
 (defn pv
   "Returns the modified PV."
-  [unit]
-  (+ (:point-value unit) (pv-mod unit)))
+  [{:keys [point-value] :as unit}]
+  (+ point-value (pv-mod unit)))
 
 (defn print-short
-  [unit]
-  (if (:s* unit)
+  [{:keys [s s*]}]
+  (if s*
     "0*"
-    (str (:s unit))))
+    (str s)))
 
 (defn print-medium
-  [unit]
-  (if (:m* unit)
+  [{:keys [m m*]}]
+  (if m*
     "0*"
-    (str (:m unit))))
+    (str m)))
 
 (defn print-long
-  [unit]
-  (if (:l* unit)
+  [{:keys [l l*]}]
+  (if l*
     "0*"
-    (str (:l unit))))
+    (str l)))
 
 (defn print-extreme
-  [unit]
-  (if (:e* unit)
+  [{:keys [e e*]}]
+  (if e*
     "0*"
-    (str (:e unit))))
+    (str e)))
 
 (defn print-damage
-  [unit range physical]
+  [{:keys [size abilities] :as unit} range physical]
   (cond
-    (and (= range 1) physical) (+ (:size unit) (if (str/includes? (:abilities unit) "MEL") 1 0))
+    (and (= range 1) physical) (+ size (if (str/includes? abilities "MEL") 1 0))
     (>= 3 range) (print-short unit)
     (>= 12 range) (print-medium unit)
     (>= 21 range) (print-long unit)
     (>= 30 range) (print-extreme unit)
     :else 0))
 
+(defn calc-charge-damage
+  [size tmm]
+  (Math/floor (+ size (double (/ tmm 2)))))
+
+(defn calc-dfa-damage
+  [size tmm]
+  (inc (calc-charge-damage size tmm)))
+
+(defn calc-physical-damage
+  [size mel?]
+  (+ size (if mel? 1 0)))
+
+(defn calc-self-damage
+  [{:keys [attack] :as unit} {:keys [size]}]
+  (if (= (get attack :flag) :charge)
+    (+ (Math/floor (/ (get-tmm unit) 2)) (if (>= size 3) 1 0))
+    (:size unit)))
+
 (defn calculate-damage
   "Returns the damage done by a unit at a given range. Calculates 0* damage correctly."
-  [unit range rear-attack?]
+  [{:keys [attack size abilities s s* m m* l l* e e*] :as unit} range rear-attack?]
   (let [damage (cond
-                 (and (= range 1) (= (:attack unit) :physical)) (+ (:size unit) (if (str/includes? (:abilities unit) "MEL") 1 0))
-                 (>= 3 range) (if (and (:s* unit) (<= 4 (utils/roll-die))) 1 (:s unit))
-                 (>= 12 range) (if (and (:m* unit) (<= 4 (utils/roll-die))) 1 (:m unit))
-                 (>= 21 range) (if (and (:l* unit) (<= 4 (utils/roll-die))) 1 (:l unit))
-                 (>= 30 range) (if (and (:e* unit) (<= 4 (utils/roll-die))) 1 (:e unit))
+                 (and (= range 1) (= (:flag attack) :physical)) (calc-physical-damage size (str/includes? abilities "MEL"))
+                 (and (= range 1) (= (:flag attack) :charge)) (calc-charge-damage size (get-tmm unit))
+                 (and (= range 1) (= (:flag attack) :dfa)) (calc-dfa-damage size (get-tmm unit))
+                 (>= 3 range) (if (and  s* (<= 4 (utils/roll-die))) 1 s)
+                 (>= 12 range) (if (and m* (<= 4 (utils/roll-die))) 1 m)
+                 (>= 21 range) (if (and l* (<= 4 (utils/roll-die))) 1 l)
+                 (>= 30 range) (if (and e* (<= 4 (utils/roll-die))) 1 e)
                  :else 0)]
     (if rear-attack?
       (inc damage)
       damage)))
 
 (defn take-weapon-hit
-  [unit]
+  [unit count]
   (assoc unit
-         :s (max (dec (:s unit)) 0)
+         :s (max (- (:s unit) count) 0)
          :s* false
-         :m (max (dec (:m unit)) 0)
+         :m (max (- (:m unit) count) 0)
          :m* false
-         :l (max (dec (:l unit)) 0)
+         :l (max (- (:l unit) count) 0)
          :l* false
-         :e (max (dec (:e unit)) 0)
-         :e* false
-         :crits (conj (:crits unit) :weapon)))
+         :e (max (- (:e unit) count) 0)
+         :e* false))
+
+(defn destroyed?
+  [unit]
+  (or (:destroyed? unit) (not (pos? (get-structure unit)))))
 
 (defn can-charge?
   "You can charge a unit if they have acted, you have moved, and they are adjacent to you."
   [unit target]
-  (and (:acted target) (pos? (count (:path unit))) (= (hex/hex-distance unit target) 1)))
+  (and (:acted target) (pos? (count (:path unit))) (= (hex/distance (last (:path unit)) target) 1)))

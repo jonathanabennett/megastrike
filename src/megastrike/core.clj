@@ -2,6 +2,7 @@
   (:gen-class
    :main true)
   (:require [cljfx.api :as fx]
+            [cljfx.dev :as dev]
             [clojure.core.cache :as cache]
             [com.brunobonacci.mulog :as mu]
             [megastrike.combat-unit :as cu]
@@ -11,6 +12,8 @@
   (:import (javafx.application Platform)))
 
 (mu/set-global-context! {:app-name "MegaStrike" :version "0.3.0"})
+
+(def in-development? false)
 
 (def *state
   (atom
@@ -33,6 +36,7 @@
      :active-unit nil
      :map-boards []
      :round-report ""
+     :attacked-units {}
      :game-board []
      :layout (hex/create-layout)
      :map-width "1"
@@ -44,23 +48,47 @@
 (def event-handler
   (-> events/event-handler
       (fx/wrap-co-effects
-        {:fx/context (fx/make-deref-co-effect *state)})
+       {:fx/context (fx/make-deref-co-effect *state)})
       (fx/wrap-effects
-        {:context (fx/make-reset-effect *state)
-         :dispatch fx/dispatch-effect})))
+       {:context (fx/make-reset-effect *state)
+        :dispatch fx/dispatch-effect})))
 
 (def renderer
   (fx/create-renderer
-    :middleware (comp
-                  fx/wrap-context-desc
-                  (fx/wrap-map-desc (fn [_] {:fx/type views/root})))
-    :opts {:fx.opt/map-event-handler event-handler
-           :fx.opt/type->lifecycle #(or (fx/keyword->lifecycle %)
-                                        (fx/fn->lifecycle-with-context %))}))
+   :middleware (comp
+                fx/wrap-context-desc
+                (fx/wrap-map-desc (fn [_] {:fx/type views/root})))
+   :error-handler (bound-fn [^Throwable ex]
+                    (.printStackTrace ^Throwable ex *err*))
+   :opts {:fx.opt/map-event-handler event-handler
+          :fx.opt/type->lifecycle #(or (fx/keyword->lifecycle %)
+                                       (fx/fn->lifecycle-with-context %))}))
 
-(defn -main
-  "The main entry point for the game."
+(def dev-renderer
+  (fx/create-renderer
+   :middleware (comp
+                fx/wrap-context-desc
+                (fx/wrap-map-desc (fn [_] {:fx/type views/root})))
+   :error-handler (bound-fn [^Throwable ex]
+                    (.printStackTrace ^Throwable ex *err*))
+   :opts {:fx.opt/map-event-handler event-handler
+          :fx.opt/type->lifecycle (dev/wrap-type->lifecycle #(or (fx/keyword->lifecycle %)
+                                                                 (fx/fn->lifecycle-with-context %)))}))
+(defn regular-launch
   []
   (mu/log ::launch-game)
   (Platform/setImplicitExit true)
   (fx/mount-renderer *state renderer))
+
+(defn dev-launch
+  []
+  (mu/log ::launch-game
+          :development true)
+  (fx/mount-renderer *state dev-renderer))
+
+(defn -main
+  "The main entry point for the game."
+  []
+  (if in-development?
+    (dev-launch)
+    (regular-launch)))

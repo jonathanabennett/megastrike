@@ -4,7 +4,7 @@
             [clojure.test :as t]))
 
 (t/deftest test-move-parser
-  (t/testing "Valid Mv Strings" 
+  (t/testing "Valid Mv Strings"
     (t/is (= (sut/parse-movement "8\\\"") {:walk 4}))
     (t/is (= (sut/parse-movement "8\\\"j") {:jump 4 :walk 4}))
     (t/is (= (sut/parse-movement "6\\\"t") {:t 3}))
@@ -49,11 +49,11 @@
 (t/deftest test-create-element
   (t/testing "Verify new keys merged."
     (t/is (contains? (sut/create-element (first (sut/filter-units sut/mul :full-name "Archer ARC-2K" =))
-                                        {:pilot {:name "Bobby McSkillface" :skill 4}}) :pilot)))
+                                         {:pilot {:name "Bobby McSkillface" :skill 4}}) :pilot)))
   (t/testing "Test Creation with units"
     (t/is (= (sut/create-element (sut/get-unit "Wolfhound WLF-2")
-                                 {:id "Wolfhound WLF-2" :path [] :p 11 :q 5 :r -16 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s}) 
-             {:role "Striker", :path [], :tmm 2, :q 5, :left-arc "", :e* false, :movement {:walk 6}, :r -16, :right-arc "", :pilot {:name " Lieutenant Ciro Ramirez", :skill 4}, :force :1stsomersetstrikers, :mul-id 3563, :l* false, :m 3, :type "BM", :front-arc "", :current-structure 3, :abilities "ENE, REAR1/1/-", :acted nil, :e 0, :s 3, :threshold -1, :l 1, :size 1, :m* false, :rear-arc "", :point-value 28, :overheat 0, :chassis "Wolfhound", :structure 3, :crits [], :id "Wolfhound WLF-2", :full-name "Wolfhound WLF-2", :armor 4, :current-heat 0, :current-armor 4, :s* false, :p 11, :movement-mode :walk, :direction :s, :model "WLF-2"}))
+                                 {:id "Wolfhound WLF-2" :path [] :p 11 :q 5 :r -16 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s})
+             {:role "Striker", :path [], :tmm 2, :q 5, :left-arc "", :e* false, :movement {:walk 6}, :r -16, :right-arc "", :pilot {:name " Lieutenant Ciro Ramirez", :skill 4}, :force :1stsomersetstrikers, :mul-id 3563, :l* false, :m 3, :type "BM", :front-arc "", :current-structure 3, :abilities "ENE, REAR1/1/-", :acted nil, :e 0, :s 3, :threshold -1, :l 1, :size 1, :m* false, :rear-arc "", :point-value 28, :overheat 0, :chassis "Wolfhound", :structure 3, :crits [], :id "Wolfhound WLF-2", :full-name "Wolfhound WLF-2", :armor 4, :current-heat 0, :current-armor 4, :s* false, :p 11, :movement-mode :walk, :direction :s, :model "WLF-2" :changes {}}))
     ;; This should be expanded much further to handle edge cases.
     ))
 
@@ -110,7 +110,7 @@
     (t/is (= (sut/calculate-damage {:id "Unit 1" :m 4} 4 true) 5))
     (t/is (= (sut/calculate-damage {:id "Unit 1" :l 4} 13 true) 5))
     (t/is (= (sut/calculate-damage {:id "Unit 1" :e 4} 22 true) 5)))
-  (t/testing "Test Damage with a *." 
+  (t/testing "Test Damage with a *."
     (let [s-damage (sut/calculate-damage {:id "Unit 1" :s 0 :s* true} 2 false)
           m-damage (sut/calculate-damage {:id "Unit 1" :m 0 :m* true} 9 false)
           l-damage (sut/calculate-damage {:id "Unit 1" :l 0 :l* true} 13 false)
@@ -118,13 +118,12 @@
           sr-damage (sut/calculate-damage {:id "Unit 1" :s 0 :s* true} 2 true)
           mr-damage (sut/calculate-damage {:id "Unit 1" :m 0 :m* true} 9 true)
           lr-damage (sut/calculate-damage {:id "Unit 1" :l 0 :l* true} 13 true)
-          er-damage (sut/calculate-damage {:id "Unit 1" :e 0 :e* true} 22 true)] 
-      (t/is (or (= s-damage 0) (= s-damage 1))) 
-      (t/is (or (= m-damage 0) (= m-damage 1))) 
-      (t/is (or (= l-damage 0) (= l-damage 1))) 
+          er-damage (sut/calculate-damage {:id "Unit 1" :e 0 :e* true} 22 true)]
+      (t/is (or (= s-damage 0) (= s-damage 1)))
+      (t/is (or (= m-damage 0) (= m-damage 1)))
+      (t/is (or (= l-damage 0) (= l-damage 1)))
       (t/is (or (= e-damage 0) (= e-damage 1)))
-      (t/is (or (= sr-damage 1) (= sr-damage 2))) 
-      (t/is (or (= mr-damage 1) (= mr-damage 2))) 
-      (t/is (or (= lr-damage 1) (= lr-damage 2))) 
-      (t/is (or (= er-damage 1) (= er-damage 2)))
-      )))
+      (t/is (or (= sr-damage 1) (= sr-damage 2)))
+      (t/is (or (= mr-damage 1) (= mr-damage 2)))
+      (t/is (or (= lr-damage 1) (= lr-damage 2)))
+      (t/is (or (= er-damage 1) (= er-damage 2))))))

@@ -1,7 +1,6 @@
 (ns megastrike.utils
   (:require [clojure.java.io :as io]
-            [clojure.string :as string])
-  )
+            [clojure.string :as string]))
 
 (def application-directory (subs (.getAbsolutePath (io/file ".")) 0 (dec (.length (.getAbsolutePath (io/file "."))))))
 

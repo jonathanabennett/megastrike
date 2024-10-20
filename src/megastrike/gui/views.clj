@@ -1,45 +1,12 @@
 (ns megastrike.gui.views
   (:require [cljfx.api :as fx]
             [clojure.string :as str]
-            [megastrike.attacks :as attacks]
-            [megastrike.combat-unit :as cu]
             [megastrike.gui.board.views :as board]
+            [megastrike.gui.common :as common]
             [megastrike.gui.events :as events]
             [megastrike.gui.forces.views :as force]
             [megastrike.gui.lobby.views :as lobby]
             [megastrike.gui.subs :as subs]))
-
-(defn attack-report-button
-  [{:keys [fx/context state-id on-confirmed button dialog-pane]}]
-  {:fx/type fx/ext-let-refs
-   :refs {::dialog {:fx/type :dialog
-                    :showing (fx/sub-val context get-in [:internal state-id :showing] false)
-                    :on-hidden {:event-type ::events/hide-popup
-                                :state-id state-id
-                                :on-confirmed on-confirmed}
-                    :dialog-pane (merge {:fx/type :dialog-pane
-                                         :button-types [:ok]}
-                                        dialog-pane)}}
-   :desc (merge {:fx/type :button
-                 :on-action {:event-type ::events/show-popup
-                             :state-id state-id}}
-                button)})
-
-(defn next-phase-button
-  [{:keys [fx/context state-id on-confirmed button dialog-pane]}]
-  {:fx/type fx/ext-let-refs
-   :refs {::dialog {:fx/type :dialog
-                    :showing (fx/sub-val context get-in [:internal state-id :showing] false)
-                    :on-hidden {:event-type ::events/hide-popup
-                                :state-id state-id
-                                :on-confirmed on-confirmed}
-                    :dialog-pane (merge {:fx/type :dialog-pane
-                                         :button-types [:ok]}
-                                        dialog-pane)}}
-   :desc (merge {:fx/type :button
-                 :on-action {:event-type ::events/next-phase
-                             :state-id state-id}}
-                button)})
 
 (defn deploy-buttons [finished-deployment]
   [{:fx/type :button
@@ -52,18 +19,6 @@
    {:fx/type :button
     :text "Undeploy Unit"
     :on-action {:event-type ::events/undeploy-unit :fx/sync true}}])
-
-(defn charge-buttons [{:keys [fx/context]}]
-  (let [active (subs/active-unit context)
-        units (subs/units context)
-        boards (subs/boards context)
-        attackable (filter #(cu/can-charge active %) units)]
-    (when (seq attackable)
-      [{:fx/type attack-report-button
-        :text (if (= (:movement-mode active) :jump)
-                "DFA"
-                "Charge")
-        :on-action {:event-type ::events/charge-attack :targets attackable}}])))
 
 (defn move-buttons [unit]
   (let [movement (:movement unit)
@@ -92,40 +47,37 @@
        :text "Confirm Move"
        :on-action {:event-type ::events/confirm-move :unit unit :fx/sync true}}])))
 
-(defn attack-buttons [units current-force board]
+(def attack-buttons
   [{:fx/type :button
     :text "Overheat +1"
-    :on-action {:event-type ::events/overheat :value 1}}
+    :on-action {:event-type ::events/overheat :value 1 :fx/sync true}}
    {:fx/type :button
     :text "Overheat -1"
-    :on-action {:event-type ::events/overheat :value -1}}
-   {:fx/type attack-report-button
-    :state-id ::attack-info
-    :button {:text "Review Attacks"}
-    :dialog-pane {:content-text (attacks/generate-attack-info units current-force board)}
-    :on-confirmed {:event-type ::events/no-op}}
+    :on-action {:event-type ::events/overheat :value -1 :fx/sync true}}
    {:fx/type :button
-    :text "Clear Target"
-    :on-action {:event-type ::events/clear-target}}
+    :text "Resolve Charges/DFAs"
+    :on-action {:event-type ::events/resolve-attacks :fx/sync true}}
    {:fx/type :button
-    :text "Resolve Attacks"
-    :on-action {:event-type ::events/make-attacks}}])
+    :text "Finish Attacks"
+    :on-action {:event-type ::events/finish-attacks :fx/sync true}}])
 
 (defn command-palette [{:keys [fx/context]}]
   (let [phase (subs/phase context)
         turn (subs/turn-number context)
         turn-order (subs/turn-order context)
         unit (subs/active-unit context)
-        units (subs/units context)
-        current-force (subs/current-forces context)
-        board (subs/board context)
-        common-buttons [{:fx/type next-phase-button
-                         :state-id ::next-phase-button
-                         :button {:text "Next Phase"
-                                  :disable #_{:clj-kondo/ignore [:not-empty?]}
-                                  (not (empty? turn-order))}
-                         :dialog-pane {:content-text (fx/sub-val context :round-report)}
-                         :on-confirmed {:event-type ::events/no-op}}
+        common-buttons [{:fx/type :separator
+                         :orientation :vertical
+                         :padding 15}
+                        {:fx/type :button
+                         :text "Next Phase"
+                         :on-action {:event-type ::events/next-phase}
+                         :disable #_{:clj-kondo/ignore [:not-empty?]}
+                         (not (empty? turn-order))}
+                        {:fx/type :button
+                         :text "Round Report"
+                         :on-action {:event-type ::events/show-popup
+                                     :state-id :round-dialog}}
                         {:fx/type :separator
                          :orientation :vertical
                          :padding 15}
@@ -143,7 +95,8 @@
         phase-buttons (cond
                         (= phase :deployment) (deploy-buttons (empty? turn-order))
                         (= phase :movement) (move-buttons unit)
-                        (= phase :combat) (attack-buttons units current-force board)
+                        (= phase :combat) attack-buttons
+
                         :else [])
         buttons ((comp vec flatten vector) phase-buttons common-buttons)]
     {:fx/type :v-box
@@ -172,15 +125,18 @@
 
 (defn root [{:keys [fx/context]}]
   (let [view (subs/get-view context)]
-    {:fx/type :stage
-     :showing true
-     :title (subs/title-string context)
-     :scene
-     {:fx/type :scene
-      :accelerators {[:minus] {:event-type ::events/change-size :direction :minus :fx/sync true}
-                     [:shift :equals] {:event-type ::events/change-size :direction :plus}}
-      :root
-      (cond
-        (= view :lobby) lobby/view
-        (= view :game) game-view
-        :else lobby/view)}}))
+    {:fx/type fx/ext-many
+     :desc [{:fx/type :stage
+             :showing true
+             :title (subs/title-string context)
+             :scene
+             {:fx/type :scene
+              :accelerators {[:minus] {:event-type ::events/change-size :direction :minus :fx/sync true}
+                             [:shift :equals] {:event-type ::events/change-size :direction :plus}}
+              :root
+              (cond
+                (= view :lobby) lobby/view
+                (= view :game) game-view
+                :else lobby/view)}}
+            {:fx/type common/attack-dialog}
+            {:fx/type common/round-dialog}]}))
