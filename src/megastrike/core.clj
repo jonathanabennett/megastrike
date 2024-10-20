@@ -12,8 +12,6 @@
 
 (mu/set-global-context! {:app-name "MegaStrike" :version "0.3.0"})
 
-(def in-development? false)
-
 (def *state
   (atom
    (fx/create-context
@@ -57,22 +55,9 @@
    :middleware (comp
                 fx/wrap-context-desc
                 (fx/wrap-map-desc (fn [_] {:fx/type views/root})))
-   :error-handler (bound-fn [^Throwable ex]
-                    (.printStackTrace ^Throwable ex *err*))
    :opts {:fx.opt/map-event-handler event-handler
           :fx.opt/type->lifecycle #(or (fx/keyword->lifecycle %)
                                        (fx/fn->lifecycle-with-context %))}))
-
-; (def dev-renderer
-;   (fx/create-renderer
-;    :middleware (comp
-;                 fx/wrap-context-desc
-;                 (fx/wrap-map-desc (fn [_] {:fx/type views/root})))
-;    :error-handler (bound-fn [^Throwable ex]
-;                     (.printStackTrace ^Throwable ex *err*))
-;    :opts {:fx.opt/map-event-handler event-handler
-;           :fx.opt/type->lifecycle (dev/wrap-type->lifecycle #(or (fx/keyword->lifecycle %)
-                                                                 ; (fx/fn->lifecycle-with-context %)))}))
 
 (defn regular-launch
   []
@@ -80,15 +65,7 @@
   (Platform/setImplicitExit true)
   (fx/mount-renderer *state renderer))
 
-(defn dev-launch
-  []
-  (mu/log ::launch-game
-          :development true)
-  (fx/mount-renderer *state renderer))
-
 (defn -main
   "The main entry point for the game."
   []
-  (if in-development?
-    (dev-launch)
-    (regular-launch)))
+  (regular-launch))

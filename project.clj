@@ -18,4 +18,4 @@
   :profiles {:uberjar {:aot :all
                        :uberjar-name "megastrike.jar"
                        :jvm-opts ["-Dcljfx.skip-javafx-initialization=true"]}
-             :dev {:dependencies [[io.github.cljfx/dev "1.0.38"]]}})
+             :dev {}})
