@@ -123,8 +123,9 @@
   [unit]
   (let [weapon-count (count (filter #(= :weapon %) (:changes unit)))
         weaps-applied (cu/take-weapon-hit unit weapon-count)
-        ret (merge weaps-applied (:changes weaps-applied) {:changes {}})]
+        ret (merge weaps-applied (:changes weaps-applied) {:changes {} :acted false})]
     (when-not (cu/destroyed? ret)
+      (prn ret)
       [(:id ret) ret])))
 
 (defn next-phase
