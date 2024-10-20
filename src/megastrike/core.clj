@@ -2,7 +2,6 @@
   (:gen-class
    :main true)
   (:require [cljfx.api :as fx]
-            [cljfx.dev :as dev]
             [clojure.core.cache :as cache]
             [com.brunobonacci.mulog :as mu]
             [megastrike.combat-unit :as cu]
