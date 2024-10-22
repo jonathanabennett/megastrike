@@ -2,7 +2,6 @@
   (:require [clojure.string :as str]
             [megastrike.combat-unit :as cu]
             [megastrike.gui.common :as common]
-            [megastrike.attacks :as attacks]
             [megastrike.gui.subs :as subs]
             [megastrike.gui.events :as events]))
 
