@@ -10,7 +10,7 @@
             [megastrike.hexagons.hex :as hex])
   (:import (javafx.application Platform)))
 
-(mu/set-global-context! {:app-name "MegaStrike" :version "0.3.0"})
+(mu/set-global-context! {:app-name "MegaStrike" :version "0.5.0"})
 
 (def *state
   (atom
