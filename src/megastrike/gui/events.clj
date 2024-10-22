@@ -25,7 +25,8 @@
 (defmethod event-handler ::no-op
   [_])
 
-(defmethod event-handler :default [{:keys [event-type] :as event}]
+(defmethod event-handler :default
+  [{:keys [event-type] :as event}]
   (prn "EVENT!")
   (mu/log ::unhandled-event
           :event-type event-type

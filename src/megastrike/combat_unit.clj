@@ -105,7 +105,8 @@
             :abilities (:abilities mul-row)
             :point-value (Integer/parseInt (:point-value mul-row))))))
 
-(def mul (map parse-row (rest (csv/parse-csv (slurp (utils/load-resource :resources "mul.csv")) :delimiter \tab))))
+(def mul
+  (map parse-row (rest (csv/parse-csv (slurp (utils/load-resource :resources "mul.csv")) :delimiter \tab))))
 
 (defn parse-mechset-line
   "Parses a single line from a mechset file. Mechset files define which images match which units."
@@ -224,7 +225,6 @@
 (defn get-crits
   [unit]
   (conj (get unit :crits) (get-in unit [:changes :crits])))
-
 
 (defn print-movement-helper
   "Consumes a vector containing a move type as a keyword and a distance and prints it for human consumption."
