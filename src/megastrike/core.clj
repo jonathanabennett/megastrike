@@ -26,14 +26,12 @@
      :pilot-skill "4"
      :forces {}
      :units {}
-     :ghosts []
      :internal {}
      :active-mul nil
      :active-force nil
      :active-unit nil
      :map-boards []
      :round-report ""
-     :attacked-units {}
      :game-board []
      :layout (hex/create-layout)
      :map-width "1"

@@ -7,7 +7,7 @@
   (let [force (first (fx/sub-val context :turn-order))
         phase (fx/sub-val context :current-phase)
         turn (fx/sub-val context :turn-number)]
-    (if (and force phase turn) 
+    (if (and force phase turn)
       (str "Megastrike | " (str/capitalize (name force)) " | " (str/capitalize (name phase)) " Phase | Turn #" turn)
       (str "Megastrike"))))
 
@@ -20,7 +20,7 @@
   [context]
   (filter #(not (:q %)) (vals (units context))))
 
-(defn active-id 
+(defn active-id
   "Returns the ID of the active unit. For use in lookups."
   [context]
   (fx/sub-val context :active-unit))
@@ -30,15 +30,11 @@
   [context]
   (get (units context) (active-id context)))
 
-(defn deployed-units 
+(defn deployed-units
   [context]
   (filter #(:q %) (vals (units context))))
 
-(defn unit-ghosts 
-  [context]
-  (fx/sub-val context :ghosts))
-
-(defn forces 
+(defn forces
   [context]
   (fx/sub-val context :forces))
 
@@ -46,7 +42,7 @@
   [context]
   (fx/sub-val context :turn-number))
 
-(defn phase 
+(defn phase
   [context]
   (fx/sub-val context :current-phase))
 
@@ -66,10 +62,10 @@
   [context]
   (fx/sub-val context :display))
 
-(defn layout 
+(defn layout
   [context]
   (fx/sub-val context :layout))
 
-(defn board 
+(defn board
   [context]
   (fx/sub-val context :game-board))
