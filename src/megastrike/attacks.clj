@@ -186,7 +186,6 @@
       (recur
        (let [crit (first crits)
              changes (:changes unit)]
-         (prn crit)
          (case crit
            :ammo (let [case (str/includes? (:abilities unit) "CASE")
                        case2 (str/includes? (:abilities unit) "CASEII")
@@ -306,7 +305,6 @@
 (defn make-attack
   ([atk target attack-data to-hit]
    ;; TODO add logic to damage attackers on successful charge attacks
-   (prn target)
    (let [target-damage (cu/calculate-damage atk (hex/distance atk target) (:rear-attack? attack-data))
          attacker-damage (cu/calc-self-damage atk target)
          attacker (assoc atk :acted true)]
