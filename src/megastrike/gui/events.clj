@@ -38,14 +38,10 @@
 
 (defmethod event-handler ::show-popup
   [{:keys [fx/context state-id]}]
-  (mu/log ::showing-popup
-          :popup state-id)
   {:context (fx/swap-context context assoc-in [:internal state-id :showing] true)})
 
 (defmethod event-handler ::hide-popup
   [{:keys [fx/context ^DialogEvent fx/event state-id on-confirmed]}]
-  (mu/log ::hiding-popup
-          :popup state-id)
   (condp = (.getButtonData ^ButtonType (.getResult ^Dialog (.getSource event)))
     ButtonBar$ButtonData/OK_DONE
     {:context (fx/swap-context context assoc-in [:internal state-id :showing] false)
@@ -95,7 +91,7 @@
   [{:keys [fx/context unit]}]
   (let [u (get (subs/units context) unit)]
     (when (and (= (:force u) (first (subs/turn-order context))) (not (:acted u)))
-      (mu/log ::stats-clicked-event :clicked unit)
+      (mu/log ::select-unit :unit-clicked unit)
       {:context (fx/swap-context context assoc :active-unit unit)})))
 
 (defn charge-unit
