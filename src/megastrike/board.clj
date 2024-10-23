@@ -74,7 +74,7 @@
 (defprotocol BOARD
   (nodes [board])
   (neighbors [board node])
-  (mapsheets [board])
+  ;; (mapsheets [board])
   (weight [board from to mv-type]))
 
 (defn find-hex

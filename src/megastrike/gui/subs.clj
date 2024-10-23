@@ -17,10 +17,6 @@
   [context]
   (fx/sub-val context :units))
 
-(defn undeployed-units
-  [context]
-  (filter #(not (:q %)) (vals (units context))))
-
 (defn active-id
   "Returns the ID of the active unit. For use in lookups."
   [context]

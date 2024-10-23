@@ -57,8 +57,6 @@
                  :translate-x (* 10 (:scale layout))
                  :translate-y (* 10 (:scale layout))}]}))
 
-(defn draw-indicator-bar [{:keys [fx/context unit layout]}])
-
 (defn draw-unit [{:keys [fx/context unit layout]}]
   (let [hex (hex/points unit layout)
         forces (subs/forces context)
