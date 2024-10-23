@@ -21,30 +21,31 @@
 (def vehicle-units ["SV" "CV"])
 (def infantry-units ["BA" "CI"])
 
-(def directions {:n  {:angle 0
-                      :ordinal 2
-                      :points [8 9 10 11]
-                      :rear :s}
-                 :ne {:angle 60
-                      :ordinal 1
-                      :points [10 11 0 1]
-                      :rear :sw}
-                 :se {:angle 120
-                      :ordinal 0
-                      :points [0 1 2 3]
-                      :rear :nw}
-                 :s  {:angle 180
-                      :ordinal 5
-                      :points [2 3 4 5]
-                      :rear :n}
-                 :sw {:angle 240
-                      :ordinal 4
-                      :points [4 5 6 7]
-                      :rear :ne}
-                 :nw {:angle 300
-                      :ordinal 3
-                      :points [6 7 8 9]
-                      :rear :se}})
+(def directions
+  {:n  {:angle 0
+        :ordinal 2
+        :points [8 9 10 11]
+        :rear :s}
+   :ne {:angle 60
+        :ordinal 1
+        :points [10 11 0 1]
+        :rear :sw}
+   :se {:angle 120
+        :ordinal 0
+        :points [0 1 2 3]
+        :rear :nw}
+   :s  {:angle 180
+        :ordinal 5
+        :points [2 3 4 5]
+        :rear :n}
+   :sw {:angle 240
+        :ordinal 4
+        :points [4 5 6 7]
+        :rear :ne}
+   :nw {:angle 300
+        :ordinal 3
+        :points [6 7 8 9]
+        :rear :se}})
 
 (defn parse-ability
   [str]
