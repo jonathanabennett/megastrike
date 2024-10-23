@@ -1,19 +1,21 @@
 (ns megastrike.gui.lobby.events
-  (:require [cljfx.api :as fx]
-            [clojure.edn :as edn]
-            [clojure.java.io :as io]
-            [clojure.string :as str]
-            [megastrike.board :as board]
-            [megastrike.combat-unit :as cu]
-            [megastrike.gui.events :as e]
-            [megastrike.gui.subs :as subs]
-            [com.brunobonacci.mulog :as mu]
-            [megastrike.phases :as phases]
-            [megastrike.scenario :as scenario]
-            [megastrike.utils :as utils])
-  (:import [javafx.event ActionEvent]
-           [javafx.scene Node]
-           [javafx.stage FileChooser]))
+  (:require
+   [cljfx.api :as fx]
+   [clojure.edn :as edn]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [com.brunobonacci.mulog :as mu]
+   [megastrike.board :as board]
+   [megastrike.combat-unit :as cu]
+   [megastrike.gui.events :as e]
+   [megastrike.gui.subs :as subs]
+   [megastrike.phases :as phases]
+   [megastrike.scenario :as scenario]
+   [megastrike.utils :as utils])
+  (:import
+   [javafx.event ActionEvent]
+   [javafx.scene Node]
+   [javafx.stage FileChooser]))
 
 ;; Make camo separate from color and, in the event of a camo being supplied, select a color from the camo.
 (defmethod e/event-handler ::select-camo

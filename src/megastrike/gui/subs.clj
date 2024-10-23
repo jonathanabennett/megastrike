@@ -1,6 +1,7 @@
 (ns megastrike.gui.subs
-  (:require [cljfx.api :as fx]
-            [clojure.string :as str]))
+  (:require
+   [cljfx.api :as fx]
+   [clojure.string :as str]))
 
 (defn title-string
   [context]

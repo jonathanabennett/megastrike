@@ -1,7 +1,8 @@
 (ns megastrike.movement
-  (:require [megastrike.board :as board]
-            [megastrike.combat-unit :as cu]
-            [megastrike.hexagons.hex :as hex]))
+  (:require
+   [megastrike.board :as board]
+   [megastrike.combat-unit :as cu]
+   [megastrike.hexagons.hex :as hex]))
 
 (defn find-path
   [{:keys [movement-mode] :or {movement-mode :walk} :as unit} destination board]

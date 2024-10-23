@@ -1,8 +1,9 @@
 (ns megastrike.phases
-  (:require [clojure.math :as math]
-            [com.brunobonacci.mulog :as mu]
-            [megastrike.combat-unit :as cu]
-            [megastrike.utils :as utils]))
+  (:require
+   [clojure.math :as math]
+   [com.brunobonacci.mulog :as mu]
+   [megastrike.combat-unit :as cu]
+   [megastrike.utils :as utils]))
 
 (defn roll-initiative
   "Rolls initiative for the units, repeating the roll until all the forces have unique rolls."

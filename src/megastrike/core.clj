@@ -1,14 +1,16 @@
 (ns megastrike.core
   (:gen-class
    :main true)
-  (:require [cljfx.api :as fx]
-            [clojure.core.cache :as cache]
-            [com.brunobonacci.mulog :as mu]
-            [megastrike.combat-unit :as cu]
-            [megastrike.gui.events :as events]
-            [megastrike.gui.views :as views]
-            [megastrike.hexagons.hex :as hex])
-  (:import (javafx.application Platform)))
+  (:require
+   [cljfx.api :as fx]
+   [clojure.core.cache :as cache]
+   [com.brunobonacci.mulog :as mu]
+   [megastrike.combat-unit :as cu]
+   [megastrike.gui.events :as events]
+   [megastrike.gui.views :as views]
+   [megastrike.hexagons.hex :as hex])
+  (:import
+   (javafx.application Platform)))
 
 (mu/set-global-context! {:app-name "MegaStrike" :version "0.5.0"})
 

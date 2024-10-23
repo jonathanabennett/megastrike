@@ -1,12 +1,13 @@
 (ns megastrike.gui.views
-  (:require [cljfx.api :as fx]
-            [clojure.string :as str]
-            [megastrike.gui.board.views :as board]
-            [megastrike.gui.common :as common]
-            [megastrike.gui.events :as events]
-            [megastrike.gui.forces.views :as force]
-            [megastrike.gui.lobby.views :as lobby]
-            [megastrike.gui.subs :as subs]))
+  (:require
+   [cljfx.api :as fx]
+   [clojure.string :as str]
+   [megastrike.gui.board.views :as board]
+   [megastrike.gui.common :as common]
+   [megastrike.gui.events :as events]
+   [megastrike.gui.forces.views :as force]
+   [megastrike.gui.lobby.views :as lobby]
+   [megastrike.gui.subs :as subs]))
 
 (defn deploy-buttons [finished-deployment]
   [{:fx/type :button

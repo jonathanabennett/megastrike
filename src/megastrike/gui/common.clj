@@ -1,12 +1,14 @@
 (ns megastrike.gui.common
-  (:require [cljfx.api :as fx]
-            [megastrike.board]
-            [megastrike.attacks :as attacks]
-            [megastrike.combat-unit :as cu]
-            [megastrike.gui.events :as events]
-            [com.brunobonacci.mulog :as mu]
-            [megastrike.gui.subs :as subs])
-  (:import [javafx.scene.control Dialog DialogEvent]))
+  (:require
+   [cljfx.api :as fx]
+   [com.brunobonacci.mulog :as mu]
+   [megastrike.attacks :as attacks]
+   [megastrike.board]
+   [megastrike.combat-unit :as cu]
+   [megastrike.gui.events :as events]
+   [megastrike.gui.subs :as subs])
+  (:import
+   [javafx.scene.control Dialog DialogEvent]))
 
 (defn attack-buttons
   [attacks unit]

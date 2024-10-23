@@ -1,23 +1,25 @@
 (ns megastrike.gui.events
-  (:require [cljfx.api :as fx]
-            [clojure.java.io :as io]
-            [clojure.pprint :as pprint]
-            [com.brunobonacci.mulog :as mu]
-            [megastrike.attacks :as attacks]
-            [megastrike.gui.subs :as subs]
-            [megastrike.hexagons.hex :as hex]
-            [megastrike.movement :as movement]
-            [megastrike.phases :as initiative]
-            [megastrike.gui.reports :as reports]
-            [megastrike.logs :as logs]
-            [megastrike.utils :as utils]
-            [megastrike.combat-unit :as cu])
-  (:import [javafx.application Platform]
-           [javafx.scene.control
-            ButtonBar$ButtonData
-            ButtonType
-            Dialog
-            DialogEvent]))
+  (:require
+   [cljfx.api :as fx]
+   [clojure.java.io :as io]
+   [clojure.pprint :as pprint]
+   [com.brunobonacci.mulog :as mu]
+   [megastrike.attacks :as attacks]
+   [megastrike.combat-unit :as cu]
+   [megastrike.gui.reports :as reports]
+   [megastrike.gui.subs :as subs]
+   [megastrike.hexagons.hex :as hex]
+   [megastrike.logs :as logs]
+   [megastrike.movement :as movement]
+   [megastrike.phases :as initiative]
+   [megastrike.utils :as utils])
+  (:import
+   [javafx.application Platform]
+   [javafx.scene.control
+    ButtonBar$ButtonData
+    ButtonType
+    Dialog
+    DialogEvent]))
 
 ;; Defaults and common operations
 (defmulti event-handler :event-type)

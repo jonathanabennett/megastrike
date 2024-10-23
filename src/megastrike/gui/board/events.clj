@@ -1,13 +1,15 @@
 (ns megastrike.gui.board.events
-  (:require [cljfx.api :as fx]
-            [com.brunobonacci.mulog :as mu]
-            [megastrike.attacks :as attacks]
-            [megastrike.combat-unit :as cu]
-            [megastrike.gui.events :as events]
-            [megastrike.gui.subs :as subs]
-            [megastrike.hexagons.hex :as hex]
-            [megastrike.movement :as movement])
-  (:import [javafx.scene.input MouseEvent]))
+  (:require
+   [cljfx.api :as fx]
+   [com.brunobonacci.mulog :as mu]
+   [megastrike.attacks :as attacks]
+   [megastrike.combat-unit :as cu]
+   [megastrike.gui.events :as events]
+   [megastrike.gui.subs :as subs]
+   [megastrike.hexagons.hex :as hex]
+   [megastrike.movement :as movement])
+  (:import
+   [javafx.scene.input MouseEvent]))
 
 ;; Add arctan(x2-x1 / y2-y1) formula to handle facing change.
 (defmethod events/event-handler ::hex-clicked

@@ -1,9 +1,10 @@
 (ns megastrike.gui.forces.views
-  (:require [clojure.string :as str]
-            [megastrike.combat-unit :as cu]
-            [megastrike.gui.common :as common]
-            [megastrike.gui.subs :as subs]
-            [megastrike.gui.events :as events]))
+  (:require
+   [clojure.string :as str]
+   [megastrike.combat-unit :as cu]
+   [megastrike.gui.common :as common]
+   [megastrike.gui.events :as events]
+   [megastrike.gui.subs :as subs]))
 
 (defn attack-table
   "Helper Method that generates the attack table used in a stat block."

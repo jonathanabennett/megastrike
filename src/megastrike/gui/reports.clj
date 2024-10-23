@@ -1,6 +1,7 @@
 (ns megastrike.gui.reports
-  (:require [megastrike.attacks :as attacks]
-            [megastrike.combat-unit :as cu]))
+  (:require
+   [megastrike.attacks :as attacks]
+   [megastrike.combat-unit :as cu]))
 
 (defn parse-attack-data
   [{:keys [attacker target target-damage targeting-data to-hit result]}]

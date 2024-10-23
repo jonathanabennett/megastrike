@@ -1,10 +1,11 @@
 (ns megastrike.combat-unit
-  (:require [clojure-csv.core :as csv]
-            [clojure.math :as math]
-            [clojure.string :as str]
-            [com.brunobonacci.mulog :as mu]
-            [megastrike.hexagons.hex :as hex]
-            [megastrike.utils :as utils]))
+  (:require
+   [clojure-csv.core :as csv]
+   [clojure.math :as math]
+   [clojure.string :as str]
+   [com.brunobonacci.mulog :as mu]
+   [megastrike.hexagons.hex :as hex]
+   [megastrike.utils :as utils]))
 
 (def header-row
   "Defines the header row which will serve as the keys for the creation of combat units."

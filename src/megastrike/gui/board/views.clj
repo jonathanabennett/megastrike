@@ -1,16 +1,13 @@
 (ns megastrike.gui.board.views
-  (:require [cljfx.api :as fx]
-            [clojure.string :as str]
-            [megastrike.board :as board]
-            [megastrike.combat-unit :as cu]
-            [megastrike.movement :as movement]
-            [megastrike.gui.board.events :as board-events]
-            [megastrike.gui.common :as common]
-            [megastrike.gui.events :as events]
-            [megastrike.gui.subs :as subs]
-            [megastrike.hexagons.hex :as hex]
-            [megastrike.attacks :as attacks])
-  (:import [javafx.scene.control Dialog DialogEvent]))
+  (:require
+   [clojure.string :as str]
+   [megastrike.board :as board]
+   [megastrike.gui.board.events :as board-events]
+   [megastrike.gui.common :as common]
+   [megastrike.gui.events :as events]
+   [megastrike.gui.subs :as subs]
+   [megastrike.hexagons.hex :as hex]
+   [megastrike.movement :as movement]))
 
 (defn draw-hex [{:keys [hex layout]}]
   (let [points (hex/points hex layout)
