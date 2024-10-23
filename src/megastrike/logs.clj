@@ -1,4 +1,4 @@
-(ns megastrike.logs 
+(ns megastrike.logs
   (:require [clojure.java.io :as io]
             [com.brunobonacci.mulog :as mu]
             [megastrike.utils :as utils]))
@@ -10,5 +10,6 @@
 (def logs
   (mu/start-publisher! {:type :multi
                         :publishers
-                        [{:type :console :pretty? true} 
+                        [{:type :console :pretty? true}
                          {:type :simple-file :filename log-file}]}))
+
