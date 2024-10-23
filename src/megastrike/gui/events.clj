@@ -98,6 +98,26 @@
       (mu/log ::stats-clicked-event :clicked unit)
       {:context (fx/swap-context context assoc :active-unit unit)})))
 
+(defn charge-unit
+  [context unit target board layout]
+  (let [can-charge? (cu/can-charge? unit target)
+        can-dfa? (and (= (:movement-mode unit) :jump) (cu/can-charge? unit target))
+        kind (cond
+               can-dfa? :dfa
+               can-charge? :charge
+               :else :none)
+        attacks (attacks/physical-confirmation-choices unit target board layout kind)
+        ctx (get-in context [:internal :attack-dialog])]
+    (mu/log ::attempted-charge
+            :active (:full-name unit)
+            :target (:full-name target)
+            :can-charge? can-charge?
+            :can-dfa? can-dfa?
+            :attacks attacks)
+    (when (not= kind :none)
+      {:context (fx/swap-context context assoc-in [:internal :attack-dialog]
+                                 (assoc ctx :showing true :items attacks :unit target))})))
+
 (defmethod event-handler ::unit-clicked
   [{:keys [fx/context unit]}]
   (let [phase (subs/phase context)
@@ -112,23 +132,7 @@
           (mu/log ::select-unit)
           {:context (fx/swap-context context assoc :active-unit (:id unit))})
         (and (= phase :movement) (not (= active-force (:force unit))))
-        (let [can-charge? (cu/can-charge? active-unit unit)
-              can-dfa? (and (= (:movement-mode unit) :jump) (cu/can-charge? active-unit unit))
-              kind (cond
-                     can-dfa? :dfa
-                     can-charge? :charge
-                     :else :none)
-              attacks (attacks/physical-confirmation-choices active-unit unit board layout kind)
-              ctx (get-in context [:internal :attack-dialog])]
-          (mu/log ::attempted-charge
-                  :active (:full-name active-unit)
-                  :target (:full-name unit)
-                  :can-charge? can-charge?
-                  :can-dfa? can-dfa?
-                  :attacks attacks)
-          (when (not= kind :none)
-            {:context (fx/swap-context context assoc-in [:internal :attack-dialog]
-                                       (assoc ctx :showing true :items attacks :unit unit))}))
+        (charge-unit context active-unit unit board layout)
         (and (= phase :combat) (not (= active-force (:force unit))))
         (let [ctx (get-in context [:internal :attack-dialog])]
           {:context (fx/swap-context context assoc-in [:internal :attack-dialog]
