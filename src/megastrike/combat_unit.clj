@@ -11,15 +11,15 @@
   (map utils/keyword-maker
        (first (csv/parse-csv (slurp (utils/load-resource :resources "mul.csv")) :delimiter \tab))))
 
-(def all-types ["BM" "IM" "PM" "SV" "CV" "BA" "CI" "SS"
-                "WS" "JS" "DS" "DA" "SC" "CF" "AF"])
-(def ground-units ["BM" "IM" "PM" "SV" "CV" "BA" "CI"])
-(def aero-units ["SS" "WS" "JS" "DS" "DA" "SC" "CF" "AF"])
-(def bm-units ["BM"])
-(def mech-units ["BM" "IM" "PM"])
-(def conventional-units ["SV" "CV" "BA" "CI"])
-(def vehicle-units ["SV" "CV"])
-(def infantry-units ["BA" "CI"])
+(def all-types #{"BM" "IM" "PM" "SV" "CV" "BA" "CI" "SS"
+                 "WS" "JS" "DS" "DA" "SC" "CF" "AF"})
+(def ground-units #{"BM" "IM" "PM" "SV" "CV" "BA" "CI"})
+(def aero-units #{"SS" "WS" "JS" "DS" "DA" "SC" "CF" "AF"})
+(def bm-units #{"BM"})
+(def mech-units #{"BM" "IM" "PM"})
+(def conventional-units #{"SV" "CV" "BA" "CI"})
+(def vehicle-units #{"SV" "CV"})
+(def infantry-units #{"BA" "CI"})
 
 (def directions
   {:n  {:angle 0
