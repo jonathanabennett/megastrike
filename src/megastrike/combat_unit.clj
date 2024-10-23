@@ -255,38 +255,21 @@
   [{:keys [point-value] :as unit}]
   (+ point-value (pv-mod unit)))
 
-(defn print-short
-  [{:keys [s s*]}]
-  (if s*
-    "0*"
-    (str s)))
-
-(defn print-medium
-  [{:keys [m m*]}]
-  (if m*
-    "0*"
-    (str m)))
-
-(defn print-long
-  [{:keys [l l*]}]
-  (if l*
-    "0*"
-    (str l)))
-
-(defn print-extreme
-  [{:keys [e e*]}]
-  (if e*
-    "0*"
-    (str e)))
+(defn print-damage-bracket
+  [unit bracket]
+  (let [bracket* (keyword (str (name bracket) "*"))]
+    (if (get unit bracket*)
+      "0*"
+      (str (get unit bracket)))))
 
 (defn print-damage
   [{:keys [size abilities] :as unit} range physical]
   (cond
     (and (= range 1) physical) (+ size (if (str/includes? abilities "MEL") 1 0))
-    (>= 3 range) (print-short unit)
-    (>= 12 range) (print-medium unit)
-    (>= 21 range) (print-long unit)
-    (>= 30 range) (print-extreme unit)
+    (>= 3 range) (print-damage-bracket unit :s)
+    (>= 12 range) (print-damage-bracket unit :m)
+    (>= 21 range) (print-damage-bracket unit :l)
+    (>= 30 range) (print-damage-bracket unit :e)
     :else 0))
 
 (defn calc-charge-damage

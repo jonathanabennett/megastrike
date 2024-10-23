@@ -102,22 +102,22 @@
                        :text "S"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (cu/print-short x)})}}
+                                      :describe (fn [x] {:text (cu/print-damage-bracket x :s)})}}
                       {:fx/type :table-column
                        :text "M"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (cu/print-medium x)})}}
+                                      :describe (fn [x] {:text (cu/print-damage-bracket x :m)})}}
                       {:fx/type :table-column
                        :text "L"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (cu/print-long x)})}}
+                                      :describe (fn [x] {:text (cu/print-damage-bracket x :l)})}}
                       {:fx/type :table-column
                        :text "E"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (cu/print-extreme x)})}}
+                                      :describe (fn [x] {:text (cu/print-damage-bracket x :e)})}}
                       {:fx/type :table-column
                        :text "OV"
                        :cell-value-factory identity
