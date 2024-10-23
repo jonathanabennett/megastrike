@@ -115,8 +115,8 @@
         (let [can-charge? (cu/can-charge? active-unit unit)
               can-dfa? (and (= (:movement-mode unit) :jump) (cu/can-charge? active-unit unit))
               kind (cond
-                     can-charge? :charge
                      can-dfa? :dfa
+                     can-charge? :charge
                      :else :none)
               attacks (attacks/physical-confirmation-choices active-unit unit board layout kind)
               ctx (get-in context [:internal :attack-dialog])]
