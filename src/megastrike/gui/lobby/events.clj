@@ -71,7 +71,8 @@
                                               (board/create-board map-boards width height)
                                               (subs/board context))
                                 :display view}
-                               response)}))
+                               response)
+     :dispatch {:event-handler ::e/next-phase}}))
 
 (defmethod e/event-handler ::load-save
   [{:keys [fx/context]}]
