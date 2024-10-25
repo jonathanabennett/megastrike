@@ -74,6 +74,21 @@
   (logs/logs)
   (Platform/exit))
 
+(defmethod event-handler ::open-round-dialog
+  [{:keys [fx/context]}]
+  (let [ctx (get-in context [:internal :round-dialog])
+        advance-phase? (empty? (subs/turn-order context))]
+    {:context (fx/swap-context context assoc-in [:internal :round-dialog]
+                               (assoc ctx :showing true :advance-phase? advance-phase?))}))
+
+(defmethod event-handler ::close-round-dialog
+  [{:keys [fx/context]}]
+  (let [ctx (get-in context [:internal :round-dialog])]
+    (if (get ctx :advance-phase? false)
+      {:context (fx/swap-context context assoc-in [:internal :round-dialog] (assoc ctx :showing :false :advance-phase? false))
+       :dispatch {:event-type ::next-phase}}
+      {:context (fx/swap-context context assoc-in [:internal :round-dialog] (assoc ctx :showing :false :advance-phase? false))})))
+
 (defmethod event-handler ::next-phase
   [{:keys [fx/context]}]
   (let [phase (subs/phase context)
@@ -86,7 +101,7 @@
                                          :units units
                                          :round-report (fx/sub-val context :round-report)})]
     {:context (fx/swap-context context merge response)
-     :dispatch {:event-type ::show-popup :state-id :round-dialog}}))
+     :dispatch {:event-type ::open-round-dialog}}))
 
 ;; Unit selection
 (defmethod event-handler ::stats-clicked

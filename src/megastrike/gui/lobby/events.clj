@@ -72,7 +72,7 @@
                                               (subs/board context))
                                 :display view}
                                response)
-     :dispatch {:event-handler ::e/next-phase}}))
+     :dispatch {:event-type ::e/next-phase}}))
 
 (defmethod e/event-handler ::load-save
   [{:keys [fx/context]}]

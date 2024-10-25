@@ -59,8 +59,7 @@
                          (when (nil? (.getResult ^Dialog (.getSource event)))
                            (.consume event)))
      :header-text (str "Turn " round " / " phase " phase")
-     :on-hidden {:event-type ::events/hide-popup
-                 :state-id :round-dialog}
+     :on-hidden {:event-type ::events/close-round-dialog :phase-advance? false}
      :dialog-pane {:fx/type :dialog-pane
                    :button-types [:ok]
                    :content {:fx/type :scroll-pane
