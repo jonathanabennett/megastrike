@@ -5,6 +5,7 @@
    [cljfx.api :as fx]
    [clojure.core.cache :as cache]
    [com.brunobonacci.mulog :as mu]
+   [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
    [megastrike.gui.events :as events]
    [megastrike.gui.views :as views]
@@ -36,10 +37,12 @@
      :active-unit nil
      :map-boards []
      :round-report ""
-     :game-board []
+     :game-board (board/create-board 16 17)
      :layout (hex/create-layout)
      :map-width "1"
      :map-height "1"
+     :lobby true
+     :game false
      :current-phase :lobby
      :turn-number 0}
     cache/lru-cache-factory)))

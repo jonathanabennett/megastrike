@@ -56,7 +56,7 @@
   {:context (fx/swap-context context assoc :force-color event)})
 
 (defmethod e/event-handler ::launch-game
-  [{:keys [fx/context view]}]
+  [{:keys [fx/context]}]
   (let [width (fx/sub-val context :width)
         height (fx/sub-val context :height)
         map-boards (fx/sub-val context :map-boards)
@@ -67,10 +67,11 @@
     (mu/log ::game-started
             :game-state response)
     {:context (fx/swap-context context merge
-                               {:game-board (if (empty? (subs/board context))
-                                              (board/create-board map-boards width height)
-                                              (subs/board context))
-                                :display view}
+                               {:game-board (if (empty? map-boards)
+                                              (subs/board context)
+                                              (board/create-board map-boards width height))
+                                :lobby false
+                                :game true}
                                response)
      :dispatch {:event-type ::e/open-round-dialog}}))
 

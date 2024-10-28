@@ -3,7 +3,7 @@
    [cljfx.api :as fx]
    [cljfx.ext.table-view :as tables]
    [megastrike.combat-unit :as cu]
-   [megastrike.gui.common :as common]
+   [megastrike.gui.elements :as elements]
    [megastrike.gui.lobby.events :as lobby-events]
    [megastrike.gui.subs :as sub]
    [megastrike.utils :as utils]))
@@ -135,7 +135,7 @@
   {:fx/type :h-box
    :spacing 5
    :alignment :top-center
-   :children [{:fx/type common/text-input
+   :children [{:fx/type elements/text-input
                :label "Search:"
                :key :mul-search-term}
               {:fx/type :button
@@ -146,10 +146,10 @@
   {:fx/type :h-box
    :spacing 5
    :alignment :top-center
-   :children [{:fx/type common/text-input
+   :children [{:fx/type elements/text-input
                :label "Pilot Name"
                :key :pilot-name}
-              {:fx/type common/text-input
+              {:fx/type elements/text-input
                :label "Pilot Skill"
                :key :pilot-skill}
               {:fx/type :button
@@ -217,10 +217,10 @@
    :fill-width true
    :alignment :top-center
    :children [{:fx/type :label :text "Forces"}
-              {:fx/type common/text-input
+              {:fx/type elements/text-input
                :label "Force Name"
                :key :force-name}
-              {:fx/type common/text-input
+              {:fx/type elements/text-input
                :label "Force Deployment"
                :key :force-zone}
               {:fx/type :h-box
@@ -263,7 +263,7 @@
                          :text "Image"
                          :cell-value-factory identity
                          :cell-factory {:fx/cell-type :table-cell
-                                        :describe (fn [x] {:graphic {:fx/type common/draw-sprite
+                                        :describe (fn [x] {:graphic {:fx/type elements/draw-sprite
                                                                      :unit x
                                                                      :force ((:force x) forces)
                                                                      :x 0
@@ -320,10 +320,10 @@
    :grid-pane/vgrow :always
    :children [{:fx/type :label
                :text "Map Setup"}
-              {:fx/type common/text-input
+              {:fx/type elements/text-input
                :label "Map Width (in boards)"
                :key :map-width}
-              {:fx/type common/text-input
+              {:fx/type elements/text-input
                :label "Map Height (in boards)"
                :key :map-height}
               {:fx/type map-grid}
@@ -336,15 +336,4 @@
               {:fx/type :button
                :text "Launch Game"
                :on-action {:event-type ::lobby-events/launch-game :fx/sync true :view :game}}]})
-
-(def view
-  {:fx/type :grid-pane
-   :children [mul-pane
-              {:fx/type force-pane
-               :grid-pane/row 0
-               :grid-pane/column 1
-               :grid-pane/hgrow :always
-               :grid-pane/vgrow :always}
-              unit-pane
-              map-pane]})
 

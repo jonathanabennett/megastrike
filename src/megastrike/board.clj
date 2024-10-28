@@ -71,15 +71,9 @@
 
 ;; Why is a protocol required here, can I get by without one?
 
-(defprotocol BOARD
-  (nodes [board])
-  (neighbors [board node])
-  (mapsheets [board])
-  (weight [board from to mv-type]))
-
 (defn find-hex
   [h board]
-  (first (filter #(hex/same-hex h %) (nodes board))))
+  (first (filter #(hex/same-hex h %) (:tiles board))))
 
 (defn linear-interpolation
   [a b step]
@@ -114,28 +108,23 @@
       (> lvl-change 2) ##Inf
       :else (+ (abs lvl-change) 1))))
 
+(defn neighbors
+  [node board]
+  (into [] (remove nil? (map #(find-hex % (:tiles board)) (hex/neighbors node)))))
+
 (defn create-board
   ([filename]
    (let [mapsheet (create-mapsheet filename)]
-     (reify BOARD
-       (nodes [_] (:tiles mapsheet))
-       (neighbors [board node] (into [] (remove nil? (map #(find-hex % board) (hex/neighbors node)))))
-       (mapsheets [_] [[mapsheet]])
-       (weight [_ from to mv-type] (step-cost from to mv-type)))))
+     {:tiles (:tiles mapsheet)
+      :mapsheets [[mapsheet]]}))
   ([mapsheet-array _ _]
    (let [tiles ((comp vec flatten vector) (for [m mapsheet-array] (:tiles m nil)))]
-     (reify BOARD
-       (nodes [_] tiles)
-       (neighbors [board node] (into [] (remove nil? (map #(find-hex % board) (hex/neighbors node)))))
-       (mapsheets [_] mapsheet-array)
-       (weight [_ from to mv-type] (step-cost from to mv-type)))))
+     {:tiles tiles
+      :mapsheets mapsheet-array}))
   ([width height]
    (let [mapsheet (create-mapsheet width height)]
-     (reify BOARD
-       (nodes [_] (:tiles mapsheet))
-       (neighbors [board node] (into [] (remove nil? (map #(find-hex % board) (hex/neighbors node)))))
-       (mapsheets [_] [[mapsheet]])
-       (weight [_ from to mv-type] (step-cost from to mv-type))))))
+     {:tiles (:tiles mapsheet)
+      :mapsheets [[mapsheet]]})))
 
 (defn- calc-approx-dist [h dist]
   (for [[node d] dist]
@@ -144,9 +133,9 @@
 (defn astar
   [start goal graph heuristic mv-type]
   (let [guess-goal-dist #(heuristic % goal)
-        nodes (nodes graph)
+        nodes (:tiles graph)
         neighbors #(neighbors graph %)
-        weight #(weight graph %1 %2 mv-type)]
+        weight #(step-cost %1 %2 mv-type)]
     (loop [known-dist (merge (into {} (for [x nodes] [x ##Inf]))
                              {start 0})
            guess-unseen-dist (into (priority-map/priority-map)

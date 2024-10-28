@@ -15,11 +15,7 @@
    [megastrike.utils :as utils])
   (:import
    [javafx.application Platform]
-   [javafx.scene.control
-    ButtonBar$ButtonData
-    ButtonType
-    Dialog
-    DialogEvent]))
+   [javafx.scene.input MouseEvent]))
 
 ;; Defaults and common operations
 (defmulti event-handler :event-type)
@@ -34,22 +30,39 @@
           :event-type event-type
           :keys (keys event)))
 
+;; board events
+(defn- facing-change
+  [unit event layout]
+  (let [e ^MouseEvent event
+        u (if (:path unit) (last (:path unit)) unit)
+        dest {:x (.getX e) :y (.getY e)}
+        facing (hex/facing u dest layout)]
+    {:dispatch {:event-type ::change-facing :unit unit :facing facing}}))
+
+(defmethod event-handler ::hex-clicked
+  [{:keys [fx/context hex fx/event]}]
+  (let [phase (subs/phase context)
+        active (subs/active-id context)
+        units (subs/units context)
+        unit (subs/active-unit context)
+        next-force (first (subs/turn-order context))]
+    (if unit
+      (cond
+        (and (= phase :deployment) (not (get unit :acted)) (= (get unit :force) next-force))
+        (let [updated (merge unit (select-keys hex [:p :q :r]))
+              new-units (assoc units active updated)]
+          {:context (fx/swap-context context assoc :units new-units)})
+        (and (some #{phase} [:deployment :movement]) (not (nil? unit)) (fx/sub-val context :turn-flag))
+        (facing-change unit event (subs/layout context))
+        (and (= phase :movement) (not (get unit :acted)) (= (get unit :force) next-force))
+        (let [updated (assoc unit :path (movement/find-path unit hex (subs/board context)))
+              new-units (assoc units active updated)]
+          {:context (fx/swap-context context assoc :units new-units)}))
+      (mu/log ::no-active-unit))))
+
 (defmethod event-handler ::text-input
   [{:keys [fx/context key fx/event]}]
   {:context (fx/swap-context context assoc key event)})
-
-(defmethod event-handler ::show-popup
-  [{:keys [fx/context state-id]}]
-  {:context (fx/swap-context context assoc-in [:internal state-id :showing] true)})
-
-(defmethod event-handler ::hide-popup
-  [{:keys [fx/context ^DialogEvent fx/event state-id on-confirmed]}]
-  (condp = (.getButtonData ^ButtonType (.getResult ^Dialog (.getSource event)))
-    ButtonBar$ButtonData/OK_DONE
-    {:context (fx/swap-context context assoc-in [:internal state-id :showing] false)
-     :dispatch on-confirmed}
-    ButtonBar$ButtonData/CANCEL_CLOSE
-    {:context (fx/swap-context context assoc-in [:internal state-id :showing] false)}))
 
 (defmethod event-handler ::change-size
   [{:keys [fx/context direction]}]
