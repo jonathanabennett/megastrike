@@ -76,18 +76,18 @@
 
 (defmethod event-handler ::open-round-dialog
   [{:keys [fx/context]}]
-  (let [ctx (get-in context [:internal :round-dialog])
+  (let [ctx (get context :round-dialog)
         advance-phase? (empty? (subs/turn-order context))]
-    {:context (fx/swap-context context assoc-in [:internal :round-dialog]
+    {:context (fx/swap-context context assoc :round-dialog
                                (assoc ctx :showing true :advance-phase? advance-phase?))}))
 
 (defmethod event-handler ::close-round-dialog
   [{:keys [fx/context]}]
-  (let [ctx (get-in context [:internal :round-dialog])]
+  (let [ctx (get context :round-dialog)]
     (if (get ctx :advance-phase? false)
-      {:context (fx/swap-context context assoc-in [:internal :round-dialog] (assoc ctx :showing :false :advance-phase? false))
+      {:context (fx/swap-context context assoc :round-dialog {:showing false :advance-phase? false})
        :dispatch {:event-type ::next-phase}}
-      {:context (fx/swap-context context assoc-in [:internal :round-dialog] (assoc ctx :showing :false :advance-phase? false))})))
+      {:context (fx/swap-context context assoc :round-dialog {:showing false :advance-phase? false})})))
 
 (defmethod event-handler ::next-phase
   [{:keys [fx/context]}]

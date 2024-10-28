@@ -29,6 +29,8 @@
      :forces {}
      :units {}
      :internal {}
+     :round-dialog {:showing false
+                    :advance-phase? false}
      :active-mul nil
      :active-force nil
      :active-unit nil

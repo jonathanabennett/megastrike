@@ -51,13 +51,11 @@
         round-report (fx/sub-val context :round-report)]
     (mu/log ::round-report
             :round round
+            :round-dialog (fx/sub-val context get-in [:round-dialog :showing])
             :phase phase
             :report round-report)
     {:fx/type :dialog
-     :showing (fx/sub-val context get-in [:internal :round-dialog :showing] false)
-     :on-close-request (fn [^DialogEvent event]
-                         (when (nil? (.getResult ^Dialog (.getSource event)))
-                           (.consume event)))
+     :showing (fx/sub-val context get-in [:round-dialog :showing] false)
      :header-text (str "Turn " round " / " phase " phase")
      :on-hidden {:event-type ::events/close-round-dialog :phase-advance? false}
      :dialog-pane {:fx/type :dialog-pane
