@@ -408,7 +408,8 @@
     :text "Finish Attacks"
     :on-action {:event-type ::events/finish-attacks :fx/sync true}}])
 
-(defn command-palette [{:keys [fx/context]}]
+(defn command-palette
+  [{:keys [fx/context]}]
   (let [phase (subs/phase context)
         turn (subs/turn-number context)
         turn-order (subs/turn-order context)

@@ -5,8 +5,7 @@
    [megastrike.gui.elements :as elements]
    [megastrike.gui.events :as events]
    [megastrike.gui.lobby.views :as lobby]
-   [megastrike.gui.subs :as subs]
-   [megastrike.board :as board])
+   [megastrike.gui.subs :as subs])
   (:import
    [javafx.scene.control Dialog DialogEvent]))
 
