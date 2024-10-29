@@ -15,6 +15,8 @@
 
 (mu/set-global-context! {:app-name "MegaStrike" :version "0.5.0"})
 
+(def in-development? true)
+
 (def *state
   (atom
    (fx/create-context
@@ -55,14 +57,25 @@
        {:context (fx/make-reset-effect *state)
         :dispatch fx/dispatch-effect})))
 
+(def type->lifecycle #(or (fx/keyword->lifecycle %)
+                          (fx/fn->lifecycle-with-context %)))
+
 (def renderer
   (fx/create-renderer
    :middleware (comp
                 fx/wrap-context-desc
                 (fx/wrap-map-desc (fn [_] {:fx/type views/root})))
+   :error-handler (bound-fn [^Throwable ex]
+                    (.printStackTrace ^Throwable ex *err*))
    :opts {:fx.opt/map-event-handler event-handler
-          :fx.opt/type->lifecycle #(or (fx/keyword->lifecycle %)
-                                       (fx/fn->lifecycle-with-context %))}))
+          :fx.opt/type->lifecycle (if in-development?
+                                    (@(requiring-resolve 'cljfx.dev/wrap-type->lifecycle) {:type->lifecycle type->lifecycle})
+                                    type->lifecycle)}))
+(defn dev-launch
+  []
+  (mu/log ::launch-game
+          :development true)
+  (fx/mount-renderer *state renderer))
 
 (defn regular-launch
   []
@@ -73,4 +86,6 @@
 (defn -main
   "The main entry point for the game."
   []
-  (regular-launch))
+  (if in-development?
+    (dev-launch)
+    (regular-launch)))
