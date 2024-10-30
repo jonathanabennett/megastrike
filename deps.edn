@@ -12,4 +12,4 @@
   :run {:main-opts ["-m" "megastrike.core"]}
   :build {:deps {io.github.clojure/tools.build {:git/tag "v0.10.5" :git/sha "2a21b7a"}}
           :ns-default build
-          :jvm-opts ["-Dcljfx.skip-javafx-initialization=true" "-XX:-OmitStackTraceInFastThrow"]}}}
+          :jvm-opts ["-Dcljfx.skip-javafx-initialization=true" "-Dclojure.main.report=stderr"]}}}
