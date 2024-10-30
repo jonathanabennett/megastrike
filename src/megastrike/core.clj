@@ -71,6 +71,7 @@
           :fx.opt/type->lifecycle (if in-development?
                                     (@(requiring-resolve 'cljfx.dev/wrap-type->lifecycle) {:type->lifecycle type->lifecycle})
                                     type->lifecycle)}))
+
 (defn dev-launch
   []
   (mu/log ::launch-game
