@@ -19,7 +19,7 @@
                :target-dir class-dir})
   (b/compile-clj {:basis @basis
                   :src-dirs ["src/megastrike"]
-                  :jvm-opts ["-Dcljfx.skip-javafx-initialization=true"]
+                  :java-opts ["-Dcljfx.skip-javafx-initialization=true"]
                   :ns-compile '[megastrike.core]
                   :class-dir class-dir})
   (b/uber {:class-dir class-dir
