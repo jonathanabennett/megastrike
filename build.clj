@@ -18,6 +18,7 @@
   (b/copy-dir {:src-dirs ["src" "resources"]
                :target-dir class-dir})
   (b/compile-clj {:basis @basis
+                  :src-dirs ["src/megastrike"]
                   :ns-compile '[megastrike.core]
                   :class-dir class-dir})
   (b/uber {:class-dir class-dir
