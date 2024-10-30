@@ -15,7 +15,7 @@
 
 (mu/set-global-context! {:app-name "MegaStrike" :version "0.5.0"})
 
-(def in-development? true)
+(def in-development? false)
 
 (def *state
   (atom
