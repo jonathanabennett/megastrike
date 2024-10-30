@@ -14,10 +14,9 @@ jobs:
       - uses: DeLaGuardo/setup-clojure@12.5
         with:
           cli: '1.11.1.1413'
-          lein: '2.10.0'
       - name: Create Uberjar
         shell: cmd
-        run: lein uberjar
+        run: clojure -T:build uber
       - uses: ksm2/archive-action@v1
         id: archive
         with: 
