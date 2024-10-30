@@ -8,6 +8,19 @@ A Clojure App to play Alphastrike on the computer.
 2. Make the appropriate `startup` file executable for your OS
 3. Execute the file
 
+### Manual Installation
+1. Have Java 17 installed
+2. Install Clojure >= 1.11 on your computer
+3. Clone this repository and `cd` into the directory
+4. Run `clojure -M:build uber`
+5. Make the appropriate `startup` file executable
+6. Execute the file
+
+### Developer Mode
+If you want to run it from source, rather than compiling, follow steps 1-3 from the Manual Installation steps, but at step 4, you should run `clojure -Mrun`.
+
+This will start up and run more slowly, but it would allow you to develop the program.
+
 ## What works
 
 Right now (v0.5), the game allows you to simulate combat between armies of any size using units exported from Megamek via their AlphaStrike stat generator. While the game won't stop you from using them, note that *FLYING UNITS DO NOT FLY* and none of the rules for them have been implemented yet. I am currently hiding all the Aero elements and many of the conventional fighters, but VTOLs and Support Vehicles which fly are still in the lists, so you could "use" them.
