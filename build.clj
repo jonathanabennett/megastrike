@@ -12,6 +12,7 @@
 
 (defn uber [_]
   (clean nil)
+  (b/java-command {:jvm-opts ["-Dcljfx.skip-javafx-initialization=true"]})
   (b/copy-dir {:src-dirs ["src" "resources"]
                :target-dir class-dir})
   (b/compile-clj {:basis @basis
