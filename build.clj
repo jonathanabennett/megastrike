@@ -12,7 +12,9 @@
 
 (defn uber [_]
   (clean nil)
-  (b/java-command {:jvm-opts ["-Dcljfx.skip-javafx-initialization=true"]})
+  (b/java-command {:jvm-opts ["-Dcljfx.skip-javafx-initialization=true"]
+                   :basis basis
+                   :main 'megastrike.core})
   (b/copy-dir {:src-dirs ["src" "resources"]
                :target-dir class-dir})
   (b/compile-clj {:basis @basis
