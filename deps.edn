@@ -10,7 +10,5 @@
  :aliases
  {;; Run with clj -T:build function-in-build
   :run {:main-opts ["-m" "megastrike.core"]}
-  :test {}
   :build {:deps {io.github.clojure/tools.build {:git/tag "v0.10.5" :git/sha "2a21b7a"}}
-          :ns-default build
-          :jvm-opts ["-Dcljfx.skip-javafx-initialization=true"]}}}
+          :ns-default build}}}
