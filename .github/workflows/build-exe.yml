@@ -16,7 +16,7 @@ jobs:
           cli: '1.11.1.1413'
       - name: Create Uberjar
         shell: cmd
-        run: clojure -T:build uber
+        run: clj -T:build uber
       - uses: ksm2/archive-action@v1
         id: archive
         with: 
