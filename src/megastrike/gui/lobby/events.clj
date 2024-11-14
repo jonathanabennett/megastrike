@@ -95,7 +95,7 @@
 
 (defmethod e/event-handler ::add-unit
   [{:keys [fx/context]}]
-  (let [units (fx/sub-val context :units)
+  (let [units (subs/units context)
         mul-unit (fx/sub-val context :active-mul)
         game-data {:force (fx/sub-val context :active-force)
                    :pilot {:name (fx/sub-val context :pilot-name)

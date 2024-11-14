@@ -35,6 +35,10 @@
   [context]
   (fx/sub-val context :forces))
 
+(defn round-report
+  [context]
+  (fx/sub-val context :round-report))
+
 (defn turn-number
   [context]
   (fx/sub-val context :turn-number))

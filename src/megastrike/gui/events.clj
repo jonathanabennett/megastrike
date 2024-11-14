@@ -66,19 +66,18 @@
 
 (defmethod event-handler ::change-size
   [{:keys [fx/context direction]}]
-  (when (= (fx/sub-val context :display) :game)
-    (let [layout (fx/sub-val context :layout)
-          new-layout (if (= direction :plus)
-                       (assoc layout :scale (+ (:scale layout) 0.1))
-                       (assoc layout :scale (- (:scale layout) 0.1)))]
-      {:context (fx/swap-context context assoc :layout new-layout)})))
+  (let [layout (subs/layout context)
+        new-layout (if (= direction :plus)
+                     (assoc layout :scale (+ (:scale layout) 0.1))
+                     (assoc layout :scale (- (:scale layout) 0.1)))]
+    {:context (fx/swap-context context assoc :layout new-layout)}))
 
 ;; Saving, loading, and Phases
 (defmethod event-handler ::auto-save
   [{:keys [fx/context]}]
-  (let [save {:game-board (fx/sub-val context :game-board)
+  (let [save {:game-board (subs/board context)
               :units (subs/units context)
-              :forces (fx/sub-val context :forces)}]
+              :forces (subs/forces context)}]
     (mu/log ::auto-save-event)
     (pprint/pprint save (io/writer (utils/load-resource :data "save.edn")))))
 
@@ -112,7 +111,7 @@
                                          :turn-number turn-number
                                          :forces forces
                                          :units units
-                                         :round-report (fx/sub-val context :round-report)})]
+                                         :round-report (subs/round-report context)})]
     {:context (fx/swap-context context merge response)
      :dispatch {:event-type ::open-round-dialog}}))
 
@@ -169,7 +168,7 @@
 ;; Initiative Phase
 (defmethod event-handler ::roll-initiative
   [{:keys [fx/context]}]
-  (let [forces (initiative/roll-initiative (fx/sub-val context :forces))
+  (let [forces (initiative/roll-initiative (subs/forces context))
         turn-order (initiative/generate-turn-order forces (vals (subs/units context)))]
     {:context (fx/swap-context context merge
                                {:forces forces
@@ -265,7 +264,7 @@
         upd (assoc active :target (:id unit) :attack selected :acted true)
         data (attacks/make-attack upd unit selected)
         units (merge (subs/units context) (:result data))
-        report (str (fx/sub-val context :round-report) (reports/parse-attack-data data))]
+        report (str (subs/round-report context) (reports/parse-attack-data data))]
     {:context (fx/swap-context context assoc :units units :round-report report)}))
 
 (defmethod event-handler ::close-attack-selection
@@ -284,7 +283,7 @@
 (defmethod event-handler ::resolve-attacks
   [{:keys [fx/context]}]
   (loop [results {:units (subs/units context)
-                  :round-report (fx/sub-val context :round-report)}
+                  :round-report (subs/round-report context)}
          attackers (filter #(contains? #{:charge :dfa} (get-in % [:attack :flag]))
                            (subs/current-forces context))]
     (if (empty? attackers)

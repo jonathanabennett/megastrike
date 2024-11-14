@@ -6,6 +6,7 @@
    [megastrike.gui.elements :as elements]
    [megastrike.gui.lobby.events :as lobby-events]
    [megastrike.gui.subs :as sub]
+   [megastrike.gui.subs :as subs]
    [megastrike.utils :as utils]))
 
 (defn filter-button
@@ -174,7 +175,7 @@
 
 (defn forces-table
   [{:keys [fx/context]}]
-  (let [forces (fx/sub-val context :forces)
+  (let [forces (subs/forces context)
         selected (fx/sub-val context :active-force)
         counts (fx/sub-ctx context sub/units-by-force)]
     (if (empty? forces)
@@ -243,8 +244,8 @@
               {:fx/type forces-table}]})
 
 (defn units-table [{:keys [fx/context]}]
-  (let [units (fx/sub-val context :units)
-        forces (fx/sub-val context :forces)
+  (let [units (subs/units context)
+        forces (subs/forces context)
         selected nil]
     (if (empty? units)
       {:fx/type :label

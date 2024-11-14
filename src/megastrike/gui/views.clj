@@ -33,7 +33,7 @@
   [{:keys [fx/context]}]
   (let [round (subs/turn-number context)
         phase (name (subs/phase context))
-        round-report (fx/sub-val context :round-report)]
+        round-report (subs/round-report context)]
     (mu/log ::round-report
             :round round
             :round-dialog (fx/sub-val context get-in [:round-dialog :showing])
