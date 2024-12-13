@@ -206,6 +206,7 @@
           (get unit :current-armor (unit :armor))))
 
 (defn get-structure
+  "Returns the structure of the unit, accounting for unapplied damage."
   [unit]
   (get-in unit [:changes :current-structure]
           (get unit :current-structure (unit :structure))))
