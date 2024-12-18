@@ -1,4 +1,6 @@
 (ns megastrike.core
+  "This launches the Megastrike Game. State management, development flags, etc
+  are all handled from here."
   (:gen-class
    :main true)
   (:require

@@ -187,11 +187,11 @@
        (let [crit (first crits)
              changes (:changes unit)]
          (case crit
-           :ammo (let [case (str/includes? (:abilities unit) "CASE")
-                       case2 (str/includes? (:abilities unit) "CASEII")
-                       ene (str/includes? (:abilities unit) "ENE")]
+           :ammo (let [case-ability (contains? (:abilities unit) :case)
+                       case2 (contains? (:abilities unit) :caseii)
+                       ene (contains? (:abilities unit) :ene)]
                    (cond (or case2 ene) unit
-                         case (take-damage unit 1)
+                         case-ability (take-damage unit 1)
                          :else (assoc unit :changes (assoc changes :destroyed? true :crits (conj (:crits changes) :ammo)))))
            :engine (if (some #(= % :engine) (cu/get-crits unit))
                      (assoc unit :changes (assoc changes :destroyed? true :crits (conj (:crits changes) :engine)))

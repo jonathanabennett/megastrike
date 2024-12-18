@@ -4,6 +4,7 @@
    [clojure.math :as math]
    [clojure.string :as str]
    [com.brunobonacci.mulog :as mu]
+   [megastrike.abilities :as abilities]
    [megastrike.hexagons.hex :as hex]
    [megastrike.utils :as utils]))
 
@@ -90,7 +91,7 @@
             :e (Integer/parseInt (:e mul-row))
             :e* (if (= "TRUE" (:e* mul-row)) true false)
             :overheat (Integer/parseInt (:overheat mul-row))
-            :abilities (:abilities mul-row)
+            :abilities (abilities/parse-abilities (:abilities mul-row))
             :point-value (Integer/parseInt (:point-value mul-row))))))
 
 (def mul
