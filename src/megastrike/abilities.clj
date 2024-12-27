@@ -1,11 +1,18 @@
 (ns megastrike.abilities
+  "Namespace for interacting with abilities."
   (:require
    [clojure.string :as str]))
+
+(defn has? [abilities ability]
+  (ability abilities))
 
 (defn parse-value
   [kword ability-str default]
   (let [[_ value] (re-matches #"(\d+)" ability-str)]
     {kword {:value (if value (parse-double value) default) :output ability-str}}))
+
+(defn jmpw-special [ability]
+  (assoc-in ability :jmpw :value (* (get-in :jmpw :value) -1)))
 
 (defn parse-damage [range damage-str]
   {range (if (= damage-str "-") 0 (Integer/parseInt (str/replace  damage-str "*" "")))
@@ -323,7 +330,7 @@
     (parse-value :rsd ability-str 1)
 
     (re-matches #"JMPW(\d+)?" ability-str)
-    (parse-value :jmpw ability-str 1)
+    (jmpw-special (parse-value :jmpw ability-str 1))
 
     (re-matches #"JMPS(\d+)?" ability-str)
     (parse-value :jmps ability-str 1)

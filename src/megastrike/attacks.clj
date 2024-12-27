@@ -137,7 +137,7 @@
                              [{:desc "clear line of sight" :value 0}])
                            (woods-mod line)
                            (calculate-range-mod range))
-         damage (cu/print-damage attacker range (= type :physical))
+         damage (cu/print-damage attacker range type flag)
          attack-data {:targeting attack-roll
                       :flag flag
                       :target (:id target)
@@ -241,6 +241,8 @@
 (defn attack-confirmation-choices
   [attacker target board layout]
   (let [range (hex/distance attacker target)
+        specials (map first (filter #(some #{:ht} %) (:abilities attacker)))
+        attacks (map #(create-confirmation-choice attacker target board layout % :regular) specials)
         regular-attack (create-confirmation-choice attacker target board layout :regular :regular)
         physical-attack (create-confirmation-choice attacker target board layout :physical :physical)]
     (vec (remove nil? [(when (= range 1) physical-attack) regular-attack]))))
