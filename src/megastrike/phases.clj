@@ -34,7 +34,7 @@
   ([forces units]
    (let [forces (sort-by :initiative (vals forces))]
      (loop [turn-order []
-            unit-totals (frequencies (map :force units))]
+            unit-totals (frequencies (map cu/get-force units))]
        (if (= (reduce + (vals unit-totals)) 0)
          (flatten turn-order)
          (let [unit-pairs (move-generator unit-totals forces)]
@@ -63,7 +63,7 @@
 (defn start-deployment-phase
   "Generates the turn order based on the number of units who haven't been deployed yet."
   [{:keys [forces units round-report]}]
-  (let [deployable-units (remove (fn [unit] (number? (:q unit))) (vals units))
+  (let [deployable-units (remove (fn [unit] (cu/deployed? unit)) (vals units))
         turn-order (generate-turn-order forces deployable-units)
         round-string (str "Deployment Phase\n" "Deployment order: " (reduce str (map #(str % ", ") turn-order)) "\n\n----------\n")
         report (str round-report round-string)]
@@ -101,37 +101,15 @@
 (defn start-end-phase
   "Remove all targeting as part of the end phase process."
   [{:keys [units]}]
-  (let [movement-cleared (into {} (for [[k unit] units] [k (assoc unit :movement-mode nil)]))
-        heat-applied (into {} (for [[k unit] movement-cleared]
-                                (if (some #(= :engine %) (:crits unit))
-                                  [k (assoc unit :current-heat (inc (:current-heat unit)))]
-                                  [k unit])))
-        heat-removed (into {} (for [[k unit] heat-applied]
-                                (if (not (:target unit))
-                                  [k (assoc unit :current-heat 0)]
-                                  [k unit])))
-        targeting-removed (into {} (for [[k unit] heat-removed]
-                                     (if (not-any? #(= (:target unit) %) (keys units))
-                                       [k (assoc unit :target nil)]
-                                       [k unit])))]
+  (let [units (into {} (for [[_ unit] units] (cu/end-turn unit)))]
     (mu/log ::begin-end-phase
             :current-phase "End")
-    {:current-phase :end :turn-order nil :units targeting-removed}))
-
-(defn update-unit
-  "Updates damage, applies weapons crits, resets acted, and then returns the unit IF they
-  are not destroyed."
-  [unit]
-  (let [weapon-count (count (filter #(= :weapon %) (:changes unit)))
-        weaps-applied (cu/take-weapon-hit unit weapon-count)
-        ret (merge weaps-applied (:changes weaps-applied) {:changes {} :acted false})]
-    (when-not (cu/destroyed? ret)
-      [(:id ret) ret])))
+    {:current-phase :end :turn-order nil :units units}))
 
 (defn next-phase
   "Removes destroyed units and resets the acted status on every unit, then dispatches to the correct phase method."
   [{:keys [current-phase turn-number forces units round-report]}]
-  (let [new-units (into {} (for [[_ unit] units] (update-unit unit)))]
+  (let [new-units (into {} (for [[k unit] units] [k (cu/end-phase unit)]))]
     (mu/with-context {:turn-number turn-number}
       (cond
         (= current-phase :initiative) (start-deployment-phase {:forces forces :units new-units :round-report round-report})

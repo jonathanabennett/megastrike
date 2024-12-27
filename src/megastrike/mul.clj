@@ -4,8 +4,8 @@
    [clojure.string :as str]
    [com.brunobonacci.mulog :as mu]
    [megastrike.abilities :as abilities]
-   [megastrike.attack :as attack]
-   [megastrike.combat :as combat]
+   [megastrike.attacks :as attacks]
+   [megastrike.damage :as damage]
    [megastrike.heat :as heat]
    [megastrike.movement :as movement]
    [megastrike.utils :as utils]))
@@ -33,14 +33,13 @@
    (let [mul-row (zipmap hr row)
          movement (movement/->movement mul-row)
          abilities (abilities/parse-abilities (:abilities mul-row))]
-     (assoc mul-row
+     (assoc (select-keys mul-row [:chassis :model :role :type :threshold])
             :full-name (str (:chassis mul-row) " " (:model mul-row))
             :mul-id (Integer/parseInt (:mul-id mul-row))
             :movement (movement/->movement mul-row)
-            :size (Integer/parseInt (:size mul-row))
-            :attacks (attack/->attacks mul-row movement abilities)
-            :combat (combat/->combat mul-row)
-            :heat (heat/->heat 0 (Integer/parseInt (:overheat mul-row)))
+            :attacks (attacks/->attacks mul-row movement abilities)
+            :damage (damage/->damage mul-row)
+            :heat (heat/->heat {:current 0 :overheat (Integer/parseInt (:overheat mul-row))})
             :abilities abilities
             :point-value (Integer/parseInt (:point-value mul-row))))))
 
@@ -92,10 +91,6 @@
          matching-muls (filter-units mul :full-name s =)
 
          non-standard-mul (filter-units mul :full-name non-standard =)]
-     (mu/log ::get-unit-function
-             :search-term s
-             :matching-mul-results matching-muls
-             :non-standard-results non-standard-mul)
      (if (first matching-muls)
        (first matching-muls)
        (first non-standard-mul)))))

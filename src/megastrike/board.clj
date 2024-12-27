@@ -73,7 +73,8 @@
 
 (defn find-hex
   [h board]
-  (first (filter #(hex/same-hex h %) (:tiles board))))
+  (let [found (first (filter #(hex/same-hex h %) (:tiles board)))]
+    found))
 
 (defn linear-interpolation
   [a b step]
@@ -109,8 +110,9 @@
       :else (+ (abs lvl-change) 1))))
 
 (defn neighbors
-  [node board]
-  (into [] (remove nil? (map #(find-hex % (:tiles board)) (hex/neighbors node)))))
+  [board node]
+  (let [return (map #(find-hex % board) (hex/neighbors node))]
+    (into [] (remove nil? return))))
 
 (defn create-board
   ([filename]
@@ -146,7 +148,8 @@
         (if (or (= (known-dist best-unseen) ##Inf)
                 (visited? goal)
                 (empty? guess-unseen-dist))
-          (if goal (path goal) path)
+          (do
+            (if goal (path goal) path))
           (let [closer-nbrs (for [nbr (neighbors best-unseen)
                                   :let [new-known-dist (+ (known-dist best-unseen)
                                                           (weight best-unseen nbr))]

@@ -2,6 +2,7 @@
   (:require
    [cljfx.api :as fx]
    [com.brunobonacci.mulog :as mu]
+   [megastrike.combat-unit :as cu]
    [megastrike.gui.elements :as elements]
    [megastrike.gui.events :as events]
    [megastrike.gui.lobby.views :as lobby]
@@ -14,6 +15,8 @@
   (let [unit (fx/sub-val context get-in [:internal :attack-dialog :unit])
         attacks (fx/sub-val context get-in [:internal :attack-dialog :items])
         active (subs/active-unit context)]
+    (mu/log ::attack-dialog-attacks
+            :attacks attacks)
     {:fx/type :dialog
      :showing (fx/sub-val context get-in [:internal :attack-dialog :showing] false)
      :on-close-request (fn [^DialogEvent event]
@@ -54,7 +57,7 @@
   (let [gb (:tiles (subs/board context))
         layout (subs/layout context)
         unit-locations (subs/deployed-units context)
-        destinations (filter #(seq (:path %)) (vals (subs/units context)))]
+        destinations (filter #(pos? (count (cu/get-path %))) (vals (subs/units context)))]
     {:fx/type :scroll-pane
      :content {:fx/type :group
                :children (concat

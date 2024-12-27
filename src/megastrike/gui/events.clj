@@ -4,13 +4,11 @@
    [clojure.java.io :as io]
    [clojure.pprint :as pprint]
    [com.brunobonacci.mulog :as mu]
-   [megastrike.attacks :as attacks]
    [megastrike.combat-unit :as cu]
    [megastrike.gui.reports :as reports]
    [megastrike.gui.subs :as subs]
    [megastrike.hexagons.hex :as hex]
    [megastrike.logs :as logs]
-   [megastrike.movement :as movement]
    [megastrike.phases :as initiative]
    [megastrike.utils :as utils])
   (:import
@@ -34,7 +32,9 @@
 (defn- facing-change
   [unit event layout]
   (let [e ^MouseEvent event
-        u (if (:path unit) (last (:path unit)) unit)
+        u (if (pos? (count (cu/get-path unit)))
+            (last (cu/get-path unit))
+            (cu/get-location unit))
         dest {:x (.getX e) :y (.getY e)}
         facing (hex/facing u dest layout)]
     {:dispatch {:event-type ::change-facing :unit unit :facing facing}}))
@@ -48,14 +48,14 @@
         next-force (first (subs/turn-order context))]
     (if unit
       (cond
-        (and (= phase :deployment) (not (get unit :acted)) (= (get unit :force) next-force))
-        (let [updated (merge unit (select-keys hex [:p :q :r]))
-              new-units (assoc units active updated)]
-          {:context (fx/swap-context context assoc :units new-units)})
         (and (some #{phase} [:deployment :movement]) (not (nil? unit)) (fx/sub-val context :turn-flag))
         (facing-change unit event (subs/layout context))
-        (and (= phase :movement) (not (get unit :acted)) (= (get unit :force) next-force))
-        (let [updated (assoc unit :path (movement/find-path unit hex (subs/board context)))
+        (and (= phase :deployment) (not (cu/acted? unit)) (= (cu/get-force unit) next-force))
+        (let [updated (cu/set-location unit (select-keys hex [:p :q :r]))
+              new-units (assoc units active updated)]
+          {:context (fx/swap-context context assoc :units new-units)})
+        (and (= phase :movement) (not (cu/acted? unit)) (= (cu/get-force unit) next-force))
+        (let [updated (cu/set-path unit hex (subs/board context))
               new-units (assoc units active updated)]
           {:context (fx/swap-context context assoc :units new-units)}))
       (mu/log ::no-active-unit))))
@@ -119,29 +119,32 @@
 (defmethod event-handler ::stats-clicked
   [{:keys [fx/context unit]}]
   (let [u (get (subs/units context) unit)]
-    (when (and (= (:force u) (first (subs/turn-order context))) (not (:acted u)))
-      (mu/log ::select-unit :unit-clicked unit)
+    (when (and (= (cu/get-force u) (first (subs/turn-order context))) (not (:acted u)))
       {:context (fx/swap-context context assoc :active-unit unit)})))
 
 (defn charge-unit
   [context unit target board layout]
-  (let [can-charge? (cu/can-charge? unit target)
-        can-dfa? (and (= (:movement-mode unit) :jump) (cu/can-charge? unit target))
+  (let [mv-type (cu/get-movement unit false)
+        can-charge? (cu/can-charge? unit target)
+        can-dfa? (and (= mv-type :jump) (cu/can-charge? unit target))
         kind (cond
                can-dfa? :dfa
                can-charge? :charge
                :else :none)
-        attacks (attacks/physical-confirmation-choices unit target board layout kind)
+        attacks (cu/attack-confirmation-choices unit target board layout)
         ctx (get-in context [:internal :attack-dialog])]
     (mu/log ::attempted-charge
-            :active (:full-name unit)
-            :target (:full-name target)
+            :active (cu/full-name unit)
+            :target (cu/full-name target)
             :can-charge? can-charge?
             :can-dfa? can-dfa?
             :attacks attacks)
     (when (not= kind :none)
       {:context (fx/swap-context context assoc-in [:internal :attack-dialog]
-                                 (assoc ctx :showing true :items attacks :unit target))})))
+                                 (assoc ctx :showing true
+                                        :items (cu/attack-confirmation-choices unit target board layout)
+                                        :phase :movement
+                                        :unit unit))})))
 
 (defmethod event-handler ::unit-clicked
   [{:keys [fx/context unit]}]
@@ -152,17 +155,16 @@
         layout (subs/layout context)]
     (mu/with-context {:unit-clicked unit :phase phase}
       (cond
-        (and (= active-force (:force unit)) (not (:acted unit)))
-        (do
-          (mu/log ::select-unit)
-          {:context (fx/swap-context context assoc :active-unit (:id unit))})
-        (and (= phase :movement) (not (= active-force (:force unit))))
+        (and (= active-force (cu/get-force unit)) (not (cu/acted? unit)))
+        {:context (fx/swap-context context assoc :active-unit (cu/id unit))}
+        (and (= phase :movement) (not (= active-force (cu/get-force unit))))
         (charge-unit context active-unit unit board layout)
-        (and (= phase :combat) (not (= active-force (:force unit))))
+        (and (= phase :combat) (not (= active-force (cu/get-force unit))))
         (let [ctx (get-in context [:internal :attack-dialog])]
           {:context (fx/swap-context context assoc-in [:internal :attack-dialog]
                                      (assoc ctx :showing true
-                                            :items (attacks/attack-confirmation-choices active-unit unit board layout)
+                                            :items (cu/attack-confirmation-choices active-unit unit board layout)
+                                            :phase phase
                                             :unit unit))})))))
 
 ;; Initiative Phase
@@ -182,21 +184,21 @@
         units (subs/units context)
         active (subs/active-id context)
         unit (subs/active-unit context)]
-    (when (:q unit)
+    (when (cu/deployed? unit)
       (mu/log ::unit-deployed
               :turn-order turn-order
               :unit unit
               :instrumentation :player)
       {:context (fx/swap-context context assoc
                                  :turn-order (rest turn-order)
-                                 :units (assoc units active (merge unit {:acted true}))
+                                 :units (assoc units active (cu/take-action unit))
                                  :active-unit nil)})))
 
 (defmethod event-handler ::undeploy-unit
   [{:keys [fx/context]}]
   (let [units (subs/units context)
         active (subs/active-id context)
-        unit (merge (subs/active-unit context) {:p nil :q nil :r nil})]
+        unit (cu/undeploy (subs/active-unit context))]
     {:context (fx/swap-context context assoc :units (assoc units active unit))}))
 
 ;; Movement Phase
@@ -207,21 +209,21 @@
 
 (defmethod event-handler ::change-facing
   [{:keys [fx/context unit facing]}]
-  (let [upd (merge unit {:direction facing})
-        units (assoc (subs/units context) (:full-name upd) upd)]
+  (let [upd (cu/set-facing unit facing)
+        units (assoc (subs/units context) (subs/active-id context) upd)]
     {:context (fx/swap-context context assoc :units units :turn-flag nil)}))
 
 (defmethod event-handler ::set-movement-mode
   [{:keys [fx/context mode unit]}]
   (let [units (subs/units context)
-        u (merge unit {:movement-mode mode})
+        u (cu/set-movement-mode unit mode)
         upd (assoc units (:id u) u)]
     {:context (fx/swap-context context assoc :units upd)}))
 
 (defmethod event-handler ::cancel-move
   [{:keys [fx/context unit]}]
   (let [active (subs/active-id context)
-        upd (assoc unit :path [])
+        upd (cu/cancel-movement unit)
         units (assoc (subs/units context) active upd)]
     {:context (fx/swap-context context assoc :units units)}))
 
@@ -230,69 +232,85 @@
   (let [turn-order (subs/turn-order context)
         units (subs/units context)
         active (subs/active-id context)
-        upd (when (and (= (first turn-order) (:force unit)) (= active (:id unit)))
-              (movement/move-unit unit (subs/board context)))]
-    (when (:acted upd)
-      (mu/log ::move-confirmed
-              :unit upd
-              :destination (hex/hex->offset (select-keys upd [:p :q :r]))
-              :remaining-moves (rest turn-order)
-              :instrumentation :player)
-      {:context (fx/swap-context context assoc
-                                 :turn-order (rest turn-order)
-                                 :units (assoc units active upd)
-                                 :turn-flag nil
-                                 :active-unit nil)})))
+        upd (if (and (= (first turn-order) (cu/get-force unit)) (= active (cu/id unit)))
+              (cu/move-unit unit (subs/board context))
+              unit)]
+    (if (cu/acted? upd)
+      (do (mu/log ::move-confirmed
+                  :unit upd
+                  :destination (cu/get-location unit)
+                  :remaining-moves (rest turn-order)
+                  :instrumentation :player)
+          {:context (fx/swap-context context assoc
+                                     :turn-order (rest turn-order)
+                                     :units (assoc units active upd)
+                                     :turn-flag nil
+                                     :active-unit nil)})
+      (do (mu/log ::move-failed
+                  :origin (cu/get-location unit)
+                  :force (cu/get-force unit)
+                  :force-conditional (= (first turn-order) (cu/get-force unit))
+                  :active (cu/id unit)
+                  :active-conditional (= active (cu/id unit))
+                  :path (cu/get-path unit))
+          {:context (fx/swap-context context assoc
+                                     :turn-order turn-order
+                                     :units units
+                                     :turn-flag nil
+                                     :active-unit active)}))))
 
 ;; Combat Phase
 (defmethod event-handler ::set-attack
-  [{:keys [fx/context unit selected]}]
-  (let [active-id (subs/active-id context)
-        active (subs/active-unit context)
-        upd (assoc active :target (:id unit) :attack selected)
-        units (assoc (subs/units context) active-id upd)]
-    (mu/log ::set-attack-event
-            :attacker upd
-            :target (:id unit)
-            :attack-type selected
-            :instrumentation :player)
+  [{:keys [fx/context selected]}]
+  (mu/log ::setting-attack
+          :selected selected)
+  (let [units (assoc (subs/units context)
+                     (subs/active-id context)
+                     (-> (subs/active-unit context)
+                         (assoc :target (cu/id (:target selected)) :targeting selected)
+                         (cu/move-unit (subs/board context))))]
     {:context (fx/swap-context context assoc :units units)}))
 
 (defmethod event-handler ::make-attack
-  [{:keys [fx/context unit selected]}]
-  (let [active (subs/active-unit context)
-        upd (assoc active :target (:id unit) :attack selected :acted true)
-        data (attacks/make-attack upd unit selected)
-        units (merge (subs/units context) (:result data))
-        report (str (subs/round-report context) (reports/parse-attack-data data))]
+  [{:keys [fx/context targeting]}]
+  (let [attack-result (cu/make-attack targeting)
+        units (merge (subs/units context) (:result attack-result))
+        report (str (subs/round-report context) (reports/parse-attack-data attack-result))]
     {:context (fx/swap-context context assoc :units units :round-report report)}))
 
 (defmethod event-handler ::close-attack-selection
-  [{:keys [fx/context unit selected]}]
+  [{:keys [fx/context selected]}]
   (let [ctx (get-in context [:internal :attack-dialog])]
     (cond
-      (= (:flag selected) nil)
+      (= (:attack selected) nil)
       {:context (fx/swap-context context assoc-in [:internal :attack-dialog] (assoc ctx :showing false :items []))}
-      (contains? #{:regular :physical} (:flag selected))
+
+      (contains? #{:charge :dfa} (:attack selected))
       {:context (fx/swap-context context assoc-in [:internal :attack-dialog] (assoc ctx :showing false :items []))
-       :dispatch {:event-type ::make-attack :unit unit :selected selected}}
-      (contains? #{:charge :dfa} (:flag selected))
+       :dispatch {:event-type ::set-attack :targeting selected}}
+
+      :else
       {:context (fx/swap-context context assoc-in [:internal :attack-dialog] (assoc ctx :showing false :items []))
-       :dispatch {:event-type ::set-attack :unit unit :selected selected}})))
+       :dispatch {:event-type ::make-attack :targeting selected}})))
 
 (defmethod event-handler ::resolve-attacks
   [{:keys [fx/context]}]
   (loop [results {:units (subs/units context)
                   :round-report (subs/round-report context)}
-         attackers (filter #(contains? #{:charge :dfa} (get-in % [:attack :flag]))
+         attackers (filter #(contains? #{:charge :dfa} (get-in % [:targeting :attack]))
                            (subs/current-forces context))]
     (if (empty? attackers)
-      {:context (fx/swap-context context merge results)}
-      (recur (let [attacker (merge (first attackers) {:acted true})
-                   target (get (subs/units context) (get-in attacker [:attack :target]))
-                   attack-result (attacks/make-attack attacker target (:attack attacker))
+      (do
+        (mu/log ::resolve-specials-completed
+                :results results)
+        {:context (fx/swap-context context merge results)})
+      (recur (let [attacker (first attackers)
+                   attack-result (cu/make-attack (:targeting attacker))
                    units (merge (:units results) (:results attack-result))
                    report (str (:round-report results) (reports/parse-attack-data attack-result))]
+               (mu/log ::resolve-single-special
+                       :attacker attacker
+                       :result attack-result)
                (assoc results :units units :round-report report))
              (rest attackers)))))
 

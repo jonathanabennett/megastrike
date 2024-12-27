@@ -1,6 +1,7 @@
 (ns megastrike.hexagons.hex
   (:require
    [clojure.math :as math]
+   [com.brunobonacci.mulog :as mu]
    [malli.core :as m]
    [megastrike.schemas :as schemas]))
 

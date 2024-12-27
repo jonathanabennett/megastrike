@@ -4,11 +4,15 @@ A Clojure App to play Alphastrike on the computer.
 
 ## Usage
 
+### Package Install
+
 1. Have Java 17 installed
-2. Make the appropriate `startup` file executable for your OS
-3. Execute the file
+2. Download the package file from Github for your OS
+3. Make the appropriate `startup` file executable for your OS
+4. Execute the file
 
 ### Manual Installation
+
 1. Have Java 17 installed
 2. Install Clojure >= 1.11 on your computer
 3. Clone this repository and `cd` into the directory
@@ -17,7 +21,7 @@ A Clojure App to play Alphastrike on the computer.
 6. Execute the file
 
 ### Developer Mode
-If you want to run it from source, rather than compiling, follow steps 1-3 from the Manual Installation steps, but at step 4, you should run `clojure -Mrun`.
+If you want to run it from source, rather than compiling, follow steps 1-3 from the Manual Installation steps, but at step 4, you should run `clojure -M:run`.
 
 This will start up and run more slowly, but it would allow you to develop the program.
 
@@ -25,7 +29,7 @@ This will start up and run more slowly, but it would allow you to develop the pr
 
 Right now (v0.5), the game allows you to simulate combat between armies of any size using units exported from Megamek via their AlphaStrike stat generator. While the game won't stop you from using them, note that *FLYING UNITS DO NOT FLY* and none of the rules for them have been implemented yet. I am currently hiding all the Aero elements and many of the conventional fighters, but VTOLs and Support Vehicles which fly are still in the lists, so you could "use" them.
 
-Terrain and attacks work. Attacks from special abilities do not work (other than the MEL special ability).
+Terrain and attacks work. Most special abilities are not implemented. Exceptions are listed below.
 
 Scenario reading (from MegaMek Scenario files, .mms) works but not everything works. Things known not to work include:
 
@@ -35,6 +39,17 @@ Scenario reading (from MegaMek Scenario files, .mms) works but not everything wo
 4. Minefields
 5. Planetary Conditions
 6. Some units may not be selected correctly (I think I've got all the Mechs working).
+
+### Working Abilities
+
+- CASE
+- CASEII
+- ENE
+- JMPW#
+- JMPS#
+- SRM/LRM/AC Attacks not in turrets
+- HT Attacks not in turrets
+- MEL
 
 ## How to Play
 
@@ -63,11 +78,11 @@ Finally, initialize the map by entering number of boards wide by high you want t
 
 #### Ready to Play
 
-If you have completed all of these steps, click the "Launch Game" button.
+Once you have completed all of these steps, click the "Launch Game" button.
 
 #### Zooming the map
 
-In addition to the zoom in and zoom out buttons, the keyboard shortcuts for + and - should also zoom the map.
+In addition to the zoom in and zoom out buttons, the keyboard shortcuts for + and - also zoom the map.
 
 ### Initiative Phase
 
@@ -77,13 +92,13 @@ Initiative is rolled automatically. In this phase, simply press "Next Phase".
 
 To deploy a unit, click on the unit in the list on the right, then click on the hex you want to deploy in. Right now, you can deploy anywhere, you will have to manually enforce deployment zones. When you are happy with that unit's deployment, click "Deploy unit". If you want to deploy a different unit, click "Undeploy" **before** you select the next unit. When everyone has deployed, the "Next phase" will become active. 
 
-Deploying units later in the game is not yet supported.
+Deploying units later in the game is not yet supported yet.
 
 ### Movement Phase
 
 To move a unit, select the unit you want to move and then the button for the movement type you want (Stand Still, Walk, or Jump). The walk button is also the button for tracked, wheeled, etc. If a unit only has a single move type, click the "walk" button to move. Then click a hex. You will see a black line indicating which hexes the unit will pass through and the cost to move there.
 
-If you want to turn the unit, click "Turn" and then click anywhere on the map. The mech will turn to face where you clicked. If you have already clicked the hex you want to move to, then the turn will be calculated based on your destination.
+If you want to turn the unit, click "Turn" and then click anywhere on the map. The unit will turn to face where you clicked. If you have already clicked the hex you want to move to, then the turn will be calculated based on your destination.
 
 When you're ready to move that unit, click "Move Unit". If a unit is standing still, click them, click "Stand Still", and then click "Move Unit". When everyone has moved, click "Next Phase".
 
@@ -93,16 +108,18 @@ If you want to charge or DFA a target, move next to them (selecting the Jump mov
 ### Combat Phase
 
 #### Resolving Charges
-Once you've charged, at the start of your attacks, click the "Resolve Charges/DFAs" buttons to resolve those attacks. Then go ahead with the rest of the attacks. The attacks will not be resolved unless you click this button.
+If you declared a charge during the movement phase, use the "Resolve Charges/DFAs" buttons to resolve those attacks. Units will not be marked "done" with their turn until you click this button, so I recommend clicking it first. Then go ahead with the rest of the attacks. The attacks will not be resolved unless you click this button.
 
 #### Other attacks
-To declare an attack, select the unit on the right and then select their target. This will pop up a window where you can select what kind of attack. A `:regular` attack uses the default damage line. `:physical` attacks are calculated per the physical attack rules. To see the effects of the attack, click on the targeted unit in the unit view on the right sidebar. You will be able to see the effects at the bottom.
+To declare an attack, select the unit on the right and then select their target. This will pop up a window where you can select what kind of attack. A `:regular` attack uses the default damage line. `:physical` attacks are calculated per the physical attack rules. The other attacks use their relevant special abilities lines. To see the effects of the attack, click on the targeted unit in the unit view on the right sidebar. You will be able to see the effects at the bottom.
 
 If you do not have line of sight to the target, the To Hit number will be infinity. You will see detailed calculation details for the attack in the round report.
 
+The attack menu does not filter out invalid attacks yet.
+
 ### End Phase
 
-Destroyed units will be removed automatically at the end of the end phase, movement-modes will be reset, and heat from the engine will be applied. Click "Next Phase" to start the next round.
+Destroyed units will be removed automatically at the end of the end phase, movement-modes will be reset, and heat effects will be applied. Click "Next Phase" to start the next round.
 
 ### Next round
 
@@ -124,26 +141,30 @@ The next step is to make the terrain on the map actually mean something and make
 
 This release focuses on the combat phase. It adds LOS, terrain affecting To-hit rolls, and critical hits. Still missing are abilities, physicals, and rear attacks.
 
-### 0.4.0 Previous Release
+0.4.0
 
 This release focuses on round reports and on physical attacks.
 
-### 0.5.0 This Release
+### 0.5.0 Previous Release
 
 This release focuses on some slight GUI reworks and on Special Physical Attacks. 
+
+### 0.5.1 Abilities
+
+While working on cleanup and bugfixes, I realized how to do attack abilities (and how to set up all future abilities), so implemented that independently.
 
 ## Roadmap
 ### Next Release
 
-This release will focus on cleanup and bugfixes. If possible, it will also begin to implement a UI overhaul.
+This release will overhaul the UI and make it harder for users to "freeze" the game by misclicking.
 
 ### R+2
 
-There will be an intial attemp at implementing specials.
+There will be an intial attempt at Computer Players.
 
 ### R+3
 
-I'm unsure. I want this to either be networked play or Computer Players, but I'm not sure which one it will be. Depends which one I can actually do.
+This will be either an expansion of Computer Players or an initial attempt at network play.
 
 ## How to Contribute
 

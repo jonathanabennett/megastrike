@@ -6,6 +6,7 @@
    [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
    [megastrike.hexagons.hex :as hex]
+   [megastrike.mul :as mul]
    [megastrike.utils :as utils]))
 
 (defn initialize-forces
@@ -47,22 +48,13 @@
 (defn configure-unit
   [state line]
   (if (re-find #"\d+=" line)
-    (let [[faction _ data] (parse-unit-string line)
+    (let [units (get state :units {})
+          [faction _ data] (parse-unit-string line)
           [unit pilot pskill gskill direction x y] (str/split data #",")
           loc (if (and x y) (hex/offset->hex (Integer/parseInt (str/trim x)) (Integer/parseInt (str/trim y))) {})
           skill (int (math/floor (/ (+ (Integer/parseInt pskill) (Integer/parseInt gskill)) 2)))
-          mul (cu/get-unit unit)]
-      (cu/create-element (get state :units {})
-                         mul
-                         (merge loc {:force (utils/keyword-maker faction)
-                                     :pilot
-                                     {:name pilot
-                                      :skill skill}
-                                     :crits []
-                                     :direction (if direction (utils/keyword-maker direction) :n)
-                                     :current-armor (:armor mul)
-                                     :current-structure (:structure mul)
-                                     :current-heat 0})))
+          mul (mul/get-unit unit)]
+      (cu/->element units mul {:name pilot :skill skill} (if direction (utils/keyword-maker direction) :n) loc (utils/keyword-maker faction)))
     (:units state)))
 
 (defn set-map-dirs
@@ -141,7 +133,7 @@
 
 (defn parse-scenario-file
   [file]
-  (loop [state {}
+  (loop [state {:units {}}
          f (str/split-lines (slurp (io/file file)))]
     (if (empty? f)
       state

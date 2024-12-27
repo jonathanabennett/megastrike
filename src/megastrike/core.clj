@@ -8,7 +8,7 @@
    [clojure.core.cache :as cache]
    [com.brunobonacci.mulog :as mu]
    [megastrike.board :as board]
-   [megastrike.combat-unit :as cu]
+   [megastrike.mul :as mul]
    [megastrike.gui.events :as events]
    [megastrike.gui.views :as views]
    [megastrike.hexagons.hex :as hex])
@@ -22,7 +22,7 @@
 (def *state
   (atom
    (fx/create-context
-    {:mul (cu/filter-units cu/mul :type cu/ground-units)
+    {:mul (mul/filter-units mul/mul :type mul/ground-units)
      :mul-search-term ""
      :display :lobby
      :title "Megastrike"
