@@ -3,6 +3,7 @@
   attack options for the GUI to consume."
   (:require
    [clojure.string :as str]
+   [com.brunobonacci.mulog :as mu]
    [megastrike.abilities :as abilities]
    [megastrike.movement :as movement]
    [megastrike.utils :as utils]))
@@ -33,25 +34,29 @@
                (add-attack attacks (merge (second atk) {:kind (first atk)})))
              (rest atk-abilities)))))
 
+(defn add-dfa
+  [attacks movement]
+  (if (movement/has-mode? movement :jump)
+    (add-attack attacks {:kind :dfa})
+    attacks))
+
 (defn ->attacks
   [{:keys [size s s* m m* l l* e e*]} movement abilities]
-  (let [attacks {:fc-mod 0
-                 :size size
-                 :attacks (-> {}
-                              (add-attack {:kind :regular
-                                           :s s :s* s*
-                                           :m m :m* m*
-                                           :l l :l* l*
-                                           :e e :e* e*})
-                              (add-attack {:kind :physical
-                                           :s (if (abilities/has? abilities :mel)
-                                                (inc (Integer/parseInt size))
-                                                (Integer/parseInt size))})
-                              (add-attack {:kind :charge})
-                              (add-special-attacks abilities))}]
-    (if (movement/has-mode? movement :jump)
-      (add-attack attacks {:kind :dfa})
-      attacks)))
+  {:fc-mod 0
+   :size (Integer/parseInt size)
+   :attacks (-> {}
+                (add-attack {:kind :regular
+                             :s s :s* s*
+                             :m m :m* m*
+                             :l l :l* l*
+                             :e e :e* e*})
+                (add-attack {:kind :physical
+                             :s (if (abilities/has? abilities :mel)
+                                  (inc (Integer/parseInt size))
+                                  (Integer/parseInt size))})
+                (add-attack {:kind :charge})
+                (add-dfa movement)
+                (add-special-attacks abilities))})
 
 (defn get-size
   [attacks]
@@ -113,22 +118,22 @@
   (into {} (for [[k v] attacks] (weaps-hit-helper k v))))
 
 (defn calc-charge-damage
-  [attacks tmm]
-  (Math/floor (+ (get-size attacks) (double (/ tmm 2)))))
+  [{:keys [size]} tmm]
+  (int (Math/floor (+ size (double (/ tmm 2))))))
 
 (defn calc-dfa-damage
   [attacks tmm]
-  (inc (calc-charge-damage (get-size attacks) tmm)))
+  (inc (calc-charge-damage attacks tmm)))
 
 (defn calc-self-charge
   [tmm target-size]
-  (+ (Math/floor (/ tmm 2)) (if (>= target-size 3) 1 0)))
+  (int (+ (Math/floor (/ tmm 2)) (if (>= target-size 3) 1 0))))
 
 (defn calc-self-dfa
   [attacks atk-type]
   (condp = atk-type
-    :self-dfa (:size attacks)
-    :missed-dfa (inc (:size attacks))))
+    :self-dfa (get-size attacks)
+    :missed-dfa (inc (get-size attacks))))
 
 (defn roll-damage
   ([attacks attack range rear-attack?]
@@ -142,7 +147,7 @@
   ([attacks attack tmm target-size rear-attack?]
    (let [dmg (condp = attack
                :dfa (calc-dfa-damage attacks tmm)
-               :charge (calc-charge-damage attack tmm)
+               :charge (calc-charge-damage attacks tmm)
                :self-charge (calc-self-charge tmm target-size)
                :self-dfa (calc-self-dfa attacks attack)
                :missed-dfa (calc-self-dfa attacks attack))]

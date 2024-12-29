@@ -1871,16 +1871,17 @@
     :mv-hits 0,
     :default :walk,
     :selected nil,
-    :location {},
+    :location {:p 5, :q 1, :r -6},
     :path [],
-    :facing :n},
+    :facing :s},
    :pilot {:name "Trainee A1", :skill 2},
    :force :traineea,
    :mul-id 3520,
    :type "BM",
    :abilities {:unknown {:output ""}},
-   :acted false,
+   :acted true,
    :threshold "-1",
+   :size 1,
    :point-value 14,
    :attacked? false,
    :damage
@@ -1894,7 +1895,7 @@
    :full-name "Wasp WSP-1A",
    :attacks
    {:fc-mod 0,
-    :size "1",
+    :size 1,
     :attacks
     {:regular
      {:e* false,
@@ -1925,17 +1926,17 @@
       :l 0,
       :m* false,
       :s* false,
-      :self 0}},
-    :dfa
-    {:e* false,
-     :l* false,
-     :m 0,
-     :e 0,
-     :s 0,
-     :l 0,
-     :m* false,
-     :s* false,
-     :self 0}},
+      :self 0},
+     :dfa
+     {:e* false,
+      :l* false,
+      :m 0,
+      :e 0,
+      :s 0,
+      :l 0,
+      :m* false,
+      :s* false,
+      :self 0}}},
    :model "WSP-1A"},
   "Griffin GRF-1N"
   {:role "Sniper",
@@ -1945,16 +1946,17 @@
     :mv-hits 0,
     :default :walk,
     :selected nil,
-    :location {},
+    :location {:p 1, :q 3, :r -4},
     :path [],
-    :facing :n},
+    :facing :s},
    :pilot {:name "Trainee A2", :skill 2},
    :force :traineea,
    :mul-id 1297,
    :type "BM",
    :abilities {:if {:output "IF1", :value 1, :value* false}},
-   :acted false,
+   :acted true,
    :threshold "-1",
+   :size 2,
    :point-value 31,
    :attacked? false,
    :damage
@@ -1968,7 +1970,7 @@
    :full-name "Griffin GRF-1N",
    :attacks
    {:fc-mod 0,
-    :size "2",
+    :size 2,
     :attacks
     {:regular
      {:e* false,
@@ -2000,6 +2002,16 @@
       :m* false,
       :s* false,
       :self 0},
+     :dfa
+     {:e* false,
+      :l* false,
+      :m 0,
+      :e 0,
+      :s 0,
+      :l 0,
+      :m* false,
+      :s* false,
+      :self 0},
      :if
      {:e* false,
       :l* false,
@@ -2009,17 +2021,7 @@
       :l 0,
       :m* false,
       :s* false,
-      :self 0}},
-    :dfa
-    {:e* false,
-     :l* false,
-     :m 0,
-     :e 0,
-     :s 0,
-     :l 0,
-     :m* false,
-     :s* false,
-     :self 0}},
+      :self 0}}},
    :model "GRF-1N"},
   "Stinger STG-3R"
   {:role "Scout",
@@ -2029,7 +2031,7 @@
     :mv-hits 0,
     :default :walk,
     :selected nil,
-    :location {},
+    :location {:p 5, :q 5, :r -10},
     :path [],
     :facing :n},
    :pilot {:name "Trainee B1", :skill 2},
@@ -2037,8 +2039,9 @@
    :mul-id 3061,
    :type "BM",
    :abilities {:unknown {:output ""}},
-   :acted false,
+   :acted true,
    :threshold "-1",
+   :size 1,
    :point-value 14,
    :attacked? false,
    :damage
@@ -2052,7 +2055,7 @@
    :full-name "Stinger STG-3R",
    :attacks
    {:fc-mod 0,
-    :size "1",
+    :size 1,
     :attacks
     {:regular
      {:e* false,
@@ -2083,17 +2086,17 @@
       :l 0,
       :m* false,
       :s* false,
-      :self 0}},
-    :dfa
-    {:e* false,
-     :l* false,
-     :m 0,
-     :e 0,
-     :s 0,
-     :l 0,
-     :m* false,
-     :s* false,
-     :self 0}},
+      :self 0},
+     :dfa
+     {:e* false,
+      :l* false,
+      :m 0,
+      :e 0,
+      :s 0,
+      :l 0,
+      :m* false,
+      :s* false,
+      :self 0}}},
    :model "STG-3R"},
   "Wolverine WVR-6R"
   {:role "Skirmisher",
@@ -2103,7 +2106,7 @@
     :mv-hits 0,
     :default :walk,
     :selected nil,
-    :location {},
+    :location {:p 1, :q 7, :r -8},
     :path [],
     :facing :n},
    :pilot {:name "Trainee B2", :skill 2},
@@ -2111,8 +2114,9 @@
    :mul-id 3573,
    :type "BM",
    :abilities {:unknown {:output ""}},
-   :acted false,
+   :acted true,
    :threshold "-1",
+   :size 2,
    :point-value 30,
    :attacked? false,
    :damage
@@ -2126,7 +2130,7 @@
    :full-name "Wolverine WVR-6R",
    :attacks
    {:fc-mod 0,
-    :size "2",
+    :size 2,
     :attacks
     {:regular
      {:e* false,
@@ -2157,17 +2161,17 @@
       :l 0,
       :m* false,
       :s* false,
-      :self 0}},
-    :dfa
-    {:e* false,
-     :l* false,
-     :m 0,
-     :e 0,
-     :s 0,
-     :l 0,
-     :m* false,
-     :s* false,
-     :self 0}},
+      :self 0},
+     :dfa
+     {:e* false,
+      :l* false,
+      :m 0,
+      :e 0,
+      :s 0,
+      :l 0,
+      :m* false,
+      :s* false,
+      :self 0}}},
    :model "WVR-6R"}},
  :forces
  {:traineea
@@ -2175,12 +2179,12 @@
    :deploy nil,
    :color :gold,
    :camo
-   "file:/home/jonathanb/src/megastrike/data/images/camo/Federated Suns/Federated Suns Armored Cavalry/1st Federated Suns Armoured Cavalry.jpg",
-   :initiative 9},
+   "file:/home/jonathanb/src/megastrike/data/images/camo/Aurigan Coalition/Arano Royal Guard.jpg",
+   :initiative 11},
   :traineeb
   {:name "TraineeB",
    :deploy nil,
    :color :white,
    :camo
-   "file:/home/jonathanb/src/megastrike/data/images/camo/Marian Hegemony/I Legio Martia Victrix.jpg",
-   :initiative 4}}}
+   "file:/home/jonathanb/src/megastrike/data/images/camo/Capellan Confederation/Capellan Defense Force/4th Capellan Defense Force.jpg",
+   :initiative 7}}}

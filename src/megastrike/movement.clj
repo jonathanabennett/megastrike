@@ -115,6 +115,12 @@
   [{:keys [location]} board]
   (board/find-hex location board))
 
+(defn get-atk-loc
+  [{:keys [location path]} board]
+  (if (seq path)
+    (board/find-hex (last path) board)
+    (board/find-hex location board)))
+
 (defn get-location
   [{:keys [location]}]
   location)

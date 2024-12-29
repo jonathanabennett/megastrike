@@ -360,7 +360,7 @@
 
 (defn ->targeting
   [{:keys [movement pilot attacks heat] :as attacker} target board layout attack]
-  (let [atk-hex (movement/get-hex movement board)
+  (let [atk-hex (movement/get-atk-loc movement board)
         tgt-hex (movement/get-hex (:movement target) board)
         line (board/line atk-hex tgt-hex board)
         range (hex/distance atk-hex tgt-hex)
@@ -419,24 +419,36 @@
       (assoc :attacked? true)
       (assoc :targeting false)))
 
+(defn declare-special-attack
+  [unit targeting board]
+  (-> unit
+      (assoc :target (id (:target targeting)))
+      (assoc :atk-type (:attack targeting))
+      (move-unit board)))
+
+(defn take-damage
+  [{:keys [damage abilities] :as unit} damage-num crit?]
+  (assoc unit :damage (damage/take-damage damage abilities damage-num crit?)))
+
 (defn dfa-attack
-  [{:keys [attacker target attack-data rear-attack?] :as targeting} to-hit]
+  [{:keys [attacker target rear-attack?] :as targeting} to-hit]
   (let [hit? (<= (calculate-to-hit targeting) to-hit)
         attacker (set-attacked attacker)
-        attacker-damage (attacks/roll-damage (:attacks attacker) (if hit? :self-dfa :missed-dfa) (movement/tmm (:movement attacker) (:abilities attacker) (high-heat? attacker)) (attacks/get-size target) rear-attack?)
-        target-damage (attacks/roll-damage (:attacks attacker) :dfa (movement/tmm (:movement attacker) (:abilities attacker) (high-heat? attacker)) (attacks/get-size target) rear-attack?)
-        result {(:id attacker) (damage/take-damage attacker attacker-damage false)
-                (:id target) (if hit? (damage/take-damage target target-damage (= to-hit 12)) target)}]
+        attacker-tmm (:value (first (movement/tmm (:movement attacker) (:abilities attacker) (high-heat? attacker))))
+        attacker-damage (attacks/roll-damage (:attacks attacker) (if hit? :self-dfa :missed-dfa) attacker-tmm (get-size target) rear-attack?)
+        target-damage (attacks/roll-damage (:attacks attacker) :dfa attacker-tmm (get-size target) rear-attack?)
+        result {(:id attacker) (take-damage attacker attacker-damage false)
+                (:id target) (if hit? (take-damage target target-damage (= to-hit 12)) target)}]
     (mu/log ::dfa-attack
             :hit? hit?
-            :targeting-data attack-data
+            :targeting-data targeting
             :to-hit to-hit
             :attacker (:id attacker)
             :attacker-damage attacker-damage
             :target-damage target-damage
             :target (:id target)
             :result result)
-    {:targeting-data attack-data
+    {:targeting-data targeting
      :to-hit to-hit
      :attacker attacker
      :target-damage target-damage
@@ -445,23 +457,24 @@
      :result result}))
 
 (defn charge-attack
-  [{:keys [attacker target attack-data rear-attack?] :as targeting} to-hit]
+  [{:keys [attacker target rear-attack?] :as targeting} to-hit]
   (let [hit? (<= (calculate-to-hit targeting) to-hit)
         attacker (set-attacked attacker)
-        attacker-damage (attacks/roll-damage (:attacks attacker) :self-charge (movement/tmm (:movement attacker) (:abilities attacker) (high-heat? attacker)) (attacks/get-size target) rear-attack?)
-        target-damage (attacks/roll-damage (:attacks attacker) :charge (movement/tmm (:movement attacker) (:abilities attacker) (high-heat? attacker)) (attacks/get-size target) rear-attack?)
-        result {(:id attacker) (if hit? (damage/take-damage attacker attacker-damage false) attacker)
-                (:id target) (if hit? (damage/take-damage target target-damage (= to-hit 12)) target)}]
+        attacker-tmm (:value (first (movement/tmm (:movement attacker) (:abilities attacker) (high-heat? attacker))))
+        attacker-damage (attacks/roll-damage (:attacks attacker) :self-charge attacker-tmm (get-size target) rear-attack?)
+        target-damage (attacks/roll-damage (:attacks attacker) :charge attacker-tmm (get-size target) rear-attack?)
+        result {(:id attacker) (if hit? (take-damage attacker attacker-damage false) attacker)
+                (:id target) (if hit? (take-damage target target-damage (= to-hit 12)) target)}]
     (mu/log ::charge-attack
             :hit? hit?
-            :targeting-data attack-data
+            :targeting-data targeting
             :to-hit to-hit
             :attacker (:id attacker)
             :attacker-damage attacker-damage
             :target-damage target-damage
             :target (:id target)
             :result result)
-    {:targeting-data attack-data
+    {:targeting-data targeting
      :to-hit to-hit
      :attacker attacker
      :target-damage target-damage
@@ -474,7 +487,7 @@
   (let [damage (attacks/roll-damage (:attacks attacker) attack range rear-attack?)
         result {(:id attacker) (set-attacked attacker)
                 (:id target) (if (<= (calculate-to-hit atk-data) to-hit)
-                               (damage/take-damage target damage (= to-hit 12))
+                               (take-damage target damage (= to-hit 12))
                                target)}]
     {:targeting-data atk-data
      :to-hit to-hit
@@ -486,7 +499,7 @@
   (let [damage (attacks/roll-damage (:attacks attacker) attack range rear-attack?)
         result {(:id attacker) (set-attacked attacker)
                 (:id target) (if (<= (calculate-to-hit atk-data) to-hit)
-                               (damage/heat-damage target damage)
+                               (assoc target :damage (damage/heat-damage target damage))
                                target)}]
     {:targeting-data atk-data
      :to-hit to-hit
@@ -495,6 +508,8 @@
 
 (defn make-attack
   ([{:keys [attack] :as atk-data} to-hit]
+   (mu/log ::making-attack
+           :atk-data atk-data)
    (condp = attack
      :charge (charge-attack atk-data to-hit)
      :dfa (dfa-attack atk-data to-hit)

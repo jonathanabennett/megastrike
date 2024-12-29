@@ -99,6 +99,42 @@
 
 (declare take-damage)
 
+(defn add-crit
+  [damage crit]
+  (update-in damage [:changes :crits] conj crit))
+
+(defn destroyed-by-crit
+  [damage crit]
+  (-> damage
+      (add-crit crit)
+      (assoc-in [:changes :destroyed?] true)))
+
+(defn ammo-crit
+  [damage abilities]
+  (let [case-ability (abilities/has? abilities :case)
+        case2 (abilities/has? abilities :caseii)
+        ene (abilities/has? abilities :ene)]
+    (cond (or case2 ene) damage
+          case-ability (take-damage (add-crit damage :ammo) abilities 1)
+          :else (destroyed-by-crit damage :ammo))))
+
+(defn engine-crit
+  [damage]
+  (if (some #(= % :engine) (get-crits damage))
+    (destroyed-by-crit damage :engine)
+    (add-crit damage :engine)))
+
+(defn take-crit
+  [damage abilities crit]
+  (condp = crit
+    :ammo (ammo-crit damage abilities)
+    :engine (engine-crit damage)
+    :fire-control (add-crit damage :fire-control)
+    :weapon (add-crit damage :weapon)
+    :mv (add-crit damage :mv)
+    :destroyed? (destroyed-by-crit damage :destroyed)
+    damage))
+
 (defn take-crits
   [damage abilities crits]
   (loop [damage damage
@@ -106,46 +142,34 @@
     (if (empty? crits)
       damage
       (recur
-       (let [crit (first crits)
-             changes (:changes damage)]
-         (case crit
-           :ammo (let [case-ability (abilities/has? abilities :case)
-                       case2 (abilities/has? abilities :caseii)
-                       ene (abilities/has? abilities :ene)]
-                   (cond (or case2 ene) damage
-                         case-ability (take-damage damage abilities 1)
-                         :else (assoc damage :changes (assoc changes :destroyed? true :crits (conj (:crits changes) :ammo)))))
-           :engine (if (some #(= % :engine) (get-crits damage))
-                     (assoc damage :changes (assoc changes :destroyed? true :crits (conj (:crits changes) :engine)))
-                     (assoc-in damage [:changes :crits] (conj (get-in damage [:changes :crits]) :engine)))
-           :fire-control (if (< (count (filter #(= % :fire-control) (get-crits damage))) 4)
-                           (assoc-in damage [:changes :crits] (conj (get-in damage [:changes :crits]) :fire-control))
-                           damage)
-           :weapon (assoc-in damage [:changes :crits] (conj (get-in damage [:changes :crits]) :weapon))
-           :mv (assoc-in damage [:changes :crits] (conj (get-in damage [:changes :crits]) :mv))
-           :destroyed (assoc damage :changes (assoc changes :destroyed? true :crits (conj (:crits changes) :destroyed)))
-           damage))
+       (do
+         (mu/log ::taking-crit
+                 :damage damage
+                 :crit (first crits)) (take-crit damage abilities (first crits)))
        (rest crits)))))
 
 (defn heat-damage
-  [{:keys [damage] :as target} damage-num]
+  [damage damage-num]
   (let [ext-heat (get-in damage [:changes :external-heat] 0)]
-    (assoc-in target [:damage :changes :external-heat] (min (+ ext-heat damage-num) 2))))
+    (assoc-in damage [:changes :external-heat] (min (+ ext-heat damage-num) 2))))
 
 (defn take-damage
-  ([target damage]
-   (take-damage target damage false))
-  ([{:keys [damage abilities] :as target} damage-num tac]
+  ([damage abilities damage-num]
+   (take-damage damage abilities damage-num false))
+  ([damage abilities damage-num tac]
    (if (zero? damage-num)
-     {:crit [nil nil] :result target}
+     damage
      (let [armor (max (- (get-remaining-armor damage) damage-num) 0)
            penetration (- damage-num (get-remaining-armor damage))
            structure (if (zero? armor)
                        (- (get-remaining-structure damage) penetration)
                        (get-remaining-structure damage))
            crits (roll-crits tac penetration)
-           upd (if crits
-                 (take-crits (assoc damage :changes {:armor armor :structure structure}) abilities crits)
-                 (assoc damage :changes {:armor armor :structure structure}))]
-       (assoc target :damage upd)))))
+           damage-applied (update-in damage [:changes] merge {:armor armor :structure structure})]
+       (mu/log ::take-damage
+               :damage-applied damage-applied
+               :crits crits)
+       (if crits
+         (take-crits damage-applied abilities crits)
+         damage-applied)))))
 

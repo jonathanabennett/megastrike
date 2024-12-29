@@ -36,6 +36,7 @@
      (assoc (select-keys mul-row [:chassis :model :role :type :threshold])
             :full-name (str (:chassis mul-row) " " (:model mul-row))
             :mul-id (Integer/parseInt (:mul-id mul-row))
+            :size (Integer/parseInt (:size mul-row))
             :movement (movement/->movement mul-row)
             :attacks (attacks/->attacks mul-row movement abilities)
             :damage (damage/->damage mul-row)

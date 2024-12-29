@@ -14,7 +14,9 @@
   [{:keys [fx/context]}]
   (let [unit (fx/sub-val context get-in [:internal :attack-dialog :unit])
         attacks (fx/sub-val context get-in [:internal :attack-dialog :items])
-        active (subs/active-unit context)]
+        phase (subs/phase context)
+        active (subs/active-unit context)
+        mv-type (cu/get-movement active false)]
     (mu/log ::attack-dialog-attacks
             :attacks attacks)
     {:fx/type :dialog
@@ -30,7 +32,7 @@
                    :button-types [:cancel]
                    :content {:fx/type :v-box
                              :spacing 5
-                             :children (elements/attack-buttons attacks unit)}}}))
+                             :children (elements/attack-buttons attacks unit phase mv-type)}}}))
 
 (defn round-dialog
   [{:keys [fx/context]}]

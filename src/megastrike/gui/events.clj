@@ -133,12 +133,6 @@
                :else :none)
         attacks (cu/attack-confirmation-choices unit target board layout)
         ctx (get-in context [:internal :attack-dialog])]
-    (mu/log ::attempted-charge
-            :active (cu/full-name unit)
-            :target (cu/full-name target)
-            :can-charge? can-charge?
-            :can-dfa? can-dfa?
-            :attacks attacks)
     (when (not= kind :none)
       {:context (fx/swap-context context assoc-in [:internal :attack-dialog]
                                  (assoc ctx :showing true
@@ -164,7 +158,6 @@
           {:context (fx/swap-context context assoc-in [:internal :attack-dialog]
                                      (assoc ctx :showing true
                                             :items (cu/attack-confirmation-choices active-unit unit board layout)
-                                            :phase phase
                                             :unit unit))})))))
 
 ;; Initiative Phase
@@ -261,15 +254,15 @@
 
 ;; Combat Phase
 (defmethod event-handler ::set-attack
-  [{:keys [fx/context selected]}]
-  (mu/log ::setting-attack
-          :selected selected)
-  (let [units (assoc (subs/units context)
-                     (subs/active-id context)
-                     (-> (subs/active-unit context)
-                         (assoc :target (cu/id (:target selected)) :targeting selected)
-                         (cu/move-unit (subs/board context))))]
-    {:context (fx/swap-context context assoc :units units)}))
+  [{:keys [fx/context targeting]}]
+  (let [upd (cu/declare-special-attack (subs/active-unit context)
+                                       targeting
+                                       (subs/board context))
+        units (assoc (subs/units context) (subs/active-id context) upd)]
+    (mu/log ::SETTING-ATTACK
+            :unit upd
+            :selected targeting)
+    {:context (fx/swap-context context assoc :units units :turn-order (rest (subs/turn-order context)))}))
 
 (defmethod event-handler ::make-attack
   [{:keys [fx/context targeting]}]
@@ -295,24 +288,24 @@
 
 (defmethod event-handler ::resolve-attacks
   [{:keys [fx/context]}]
-  (loop [results {:units (subs/units context)
-                  :round-report (subs/round-report context)}
-         attackers (filter #(contains? #{:charge :dfa} (get-in % [:targeting :attack]))
-                           (subs/current-forces context))]
-    (if (empty? attackers)
-      (do
-        (mu/log ::resolve-specials-completed
-                :results results)
-        {:context (fx/swap-context context merge results)})
-      (recur (let [attacker (first attackers)
-                   attack-result (cu/make-attack (:targeting attacker))
-                   units (merge (:units results) (:results attack-result))
-                   report (str (:round-report results) (reports/parse-attack-data attack-result))]
-               (mu/log ::resolve-single-special
-                       :attacker attacker
-                       :result attack-result)
-               (assoc results :units units :round-report report))
-             (rest attackers)))))
+  (let [layout (subs/layout context)
+        board (subs/board context)]
+    (loop [results {:units (subs/units context)
+                    :round-report (subs/round-report context)}
+           attackers (filter #(contains? #{:charge :dfa} (get % :atk-type false)) (subs/current-forces context))]
+      (if (empty? attackers)
+        (let [units (:units results)
+              round-report (:round-report results)]
+          {:context (fx/swap-context context assoc :units units :round-report round-report)})
+        (recur (let [attacker (first attackers)
+                     tgt-id (:target attacker)
+                     target (get (:units results) tgt-id)
+                     targeting (second (cu/->targeting attacker target board layout (:atk-type attacker)))
+                     attack-result (cu/make-attack targeting)
+                     units (merge (:units results) (:result attack-result))
+                     report (str (:round-report results) (reports/parse-attack-data attack-result))]
+                 (assoc results :units units :round-report report))
+               (rest attackers))))))
 
 (defmethod event-handler ::finish-attacks
   [{:keys [fx/context]}]

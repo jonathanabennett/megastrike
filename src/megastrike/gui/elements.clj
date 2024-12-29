@@ -340,16 +340,24 @@
 
 ;; Button Widgets
 (defn attack-buttons
-  [attacks unit]
+  [attacks unit phase mv-type]
   (loop [ret [{:fx/type :button
                :text "No Attack"
                :on-action {:event-type ::events/close-attack-selection :selected false :unit unit}}]
          attacks attacks]
     (if (empty? attacks)
       ret
-      (recur (let [atk-data (second (first attacks))]
+      (recur (let [atk-data (second (first attacks))
+                   range (:range atk-data)
+                   attack (:attack atk-data)
+                   disabled? (cond
+                               (and (= phase :movement) (= mv-type :jump)) (not= :dfa attack)
+                               (= phase :movement) (not= :charge attack)
+                               (and (= phase :combat) (not= range 1)) (contains? #{:physical :charge :dfa} attack)
+                               :else (contains? #{:charge :dfa} attack))]
                ((comp vec flatten conj) ret {:fx/type :button
                                              :text (str (name (:attack atk-data)) ": " (cu/print-attack-roll atk-data false))
+                                             :disable disabled?
                                              :on-action {:event-type ::events/close-attack-selection  :unit unit :selected atk-data :fx/sync true}}))
              (rest attacks)))))
 
