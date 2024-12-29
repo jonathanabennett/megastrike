@@ -1,19 +1,22 @@
 (ns megastrike.gui.lobby.events
-  (:require [cljfx.api :as fx]
-            [clojure.edn :as edn]
-            [clojure.java.io :as io]
-            [clojure.string :as str]
-            [megastrike.board :as board]
-            [megastrike.combat-unit :as cu]
-            [megastrike.gui.events :as e]
-            [megastrike.gui.subs :as subs]
-            [com.brunobonacci.mulog :as mu]
-            [megastrike.phases :as phases]
-            [megastrike.scenario :as scenario]
-            [megastrike.utils :as utils])
-  (:import [javafx.event ActionEvent]
-           [javafx.scene Node]
-           [javafx.stage FileChooser]))
+  (:require
+   [cljfx.api :as fx]
+   [clojure.edn :as edn]
+   [clojure.java.io :as io]
+   [clojure.string :as str]
+   [com.brunobonacci.mulog :as mu]
+   [megastrike.board :as board]
+   [megastrike.combat-unit :as cu]
+   [megastrike.gui.events :as e]
+   [megastrike.gui.subs :as subs]
+   [megastrike.mul :as mul]
+   [megastrike.phases :as phases]
+   [megastrike.scenario :as scenario]
+   [megastrike.utils :as utils])
+  (:import
+   [javafx.event ActionEvent]
+   [javafx.scene Node]
+   [javafx.stage FileChooser]))
 
 ;; Make camo separate from color and, in the event of a camo being supplied, select a color from the camo.
 (defmethod e/event-handler ::select-camo
@@ -47,14 +50,14 @@
 
 (defmethod e/event-handler ::filter-changed
   [{:keys [fx/context field values]}]
-  {:context (fx/swap-context context assoc :mul (cu/filter-units cu/mul field values))})
+  {:context (fx/swap-context context assoc :mul (mul/filter-units mul/mul field values))})
 
 (defmethod e/event-handler ::color-changed
   [{:keys [fx/context fx/event]}]
   {:context (fx/swap-context context assoc :force-color event)})
 
 (defmethod e/event-handler ::launch-game
-  [{:keys [fx/context view]}]
+  [{:keys [fx/context]}]
   (let [width (fx/sub-val context :width)
         height (fx/sub-val context :height)
         map-boards (fx/sub-val context :map-boards)
@@ -62,14 +65,14 @@
                                      :turn-number (subs/turn-number context)
                                      :forces (subs/forces context)
                                      :units (subs/units context)})]
-    (mu/log ::game-started
-            :game-state response)
     {:context (fx/swap-context context merge
-                               {:game-board (if (empty? (subs/board context))
-                                              (board/create-board map-boards width height)
-                                              (subs/board context))
-                                :display view}
-                               response)}))
+                               {:game-board (if (empty? map-boards)
+                                              (subs/board context)
+                                              (board/create-board map-boards width height))
+                                :lobby false
+                                :game true}
+                               response)
+     :dispatch {:event-type ::e/open-round-dialog}}))
 
 (defmethod e/event-handler ::load-save
   [{:keys [fx/context]}]
@@ -91,21 +94,17 @@
 
 (defmethod e/event-handler ::add-unit
   [{:keys [fx/context]}]
-  (let [units (fx/sub-val context :units)
+  (let [units (subs/units context)
         mul-unit (fx/sub-val context :active-mul)
-        game-data {:force (fx/sub-val context :active-force)
-                   :pilot {:name (fx/sub-val context :pilot-name)
-                           :skill (Integer/parseInt (fx/sub-val context :pilot-skill))}
-                   :current-armor (:armor mul-unit)
-                   :current-structure (:structure mul-unit)
-                   :crits []
-                   :current-heat 0}]
-    {:context (fx/swap-context context assoc :units (cu/create-element units mul-unit game-data))}))
+        pilot {:name (fx/sub-val context :pilot-name)
+               :skill (Integer/parseInt (fx/sub-val context :pilot-skill))}
+        force (fx/sub-val context :active-force)]
+    {:context (fx/swap-context context assoc :units (cu/->element units mul-unit pilot force))}))
 
 (defmethod e/event-handler ::filter-mul
   [{:keys [fx/context field]}]
   (let [term (fx/sub-val context :mul-search-term)]
-    {:context (fx/swap-context context assoc :mul (cu/filter-units cu/mul field term str/includes?))}))
+    {:context (fx/swap-context context assoc :mul (mul/filter-units mul/mul field term str/includes?))}))
 
 (defmethod e/event-handler ::force-selection-changed
   [{:keys [fx/context fx/event]}]

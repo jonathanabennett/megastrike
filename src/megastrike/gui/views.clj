@@ -1,142 +1,125 @@
 (ns megastrike.gui.views
-  (:require [cljfx.api :as fx]
-            [clojure.string :as str]
-            [megastrike.gui.board.views :as board]
-            [megastrike.gui.common :as common]
-            [megastrike.gui.events :as events]
-            [megastrike.gui.forces.views :as force]
-            [megastrike.gui.lobby.views :as lobby]
-            [megastrike.gui.subs :as subs]))
+  (:require
+   [cljfx.api :as fx]
+   [com.brunobonacci.mulog :as mu]
+   [megastrike.combat-unit :as cu]
+   [megastrike.gui.elements :as elements]
+   [megastrike.gui.events :as events]
+   [megastrike.gui.lobby.views :as lobby]
+   [megastrike.gui.subs :as subs])
+  (:import
+   [javafx.scene.control Dialog DialogEvent]))
 
-(defn deploy-buttons [finished-deployment]
-  [{:fx/type :button
-    :text "Deploy Unit"
-    :disable finished-deployment
-    :on-action {:event-type ::events/deploy-unit :fx/sync true}}
-   {:fx/type :button
-    :text "Turn"
-    :on-action {:event-type ::events/turn-button-clicked :fx/sync true}}
-   {:fx/type :button
-    :text "Undeploy Unit"
-    :on-action {:event-type ::events/undeploy-unit :fx/sync true}}])
+(defn attack-dialog
+  [{:keys [fx/context]}]
+  (let [unit (fx/sub-val context get-in [:internal :attack-dialog :unit])
+        attacks (fx/sub-val context get-in [:internal :attack-dialog :items])
+        phase (subs/phase context)
+        active (subs/active-unit context)
+        mv-type (cu/get-movement active false)]
+    (mu/log ::attack-dialog-attacks
+            :attacks attacks)
+    {:fx/type :dialog
+     :showing (fx/sub-val context get-in [:internal :attack-dialog :showing] false)
+     :on-close-request (fn [^DialogEvent event]
+                         (when (nil? (.getResult ^Dialog (.getSource event)))
+                           (.consume event)))
+     :header-text (str (:full-name active) " attacking " (:full-name unit))
+     :on-hidden {:event-type ::events/close-attack-selection
+                 :unit unit
+                 :on-close {:event-type ::events/make-attack :unit unit}}
+     :dialog-pane {:fx/type :dialog-pane
+                   :button-types [:cancel]
+                   :content {:fx/type :v-box
+                             :spacing 5
+                             :children (elements/attack-buttons attacks unit phase mv-type)}}}))
 
-(defn move-buttons [unit]
-  (let [movement (:movement unit)
-        buttons (if (contains? movement :jump)
-                  [{:fx/type :button
-                    :text "Walk"
-                    :on-action {:event-type ::events/set-movement-mode :mode :walk :unit unit :fx/sync true}}
-                   {:fx/type :button
-                    :text "Jump"
-                    :on-action {:event-type ::events/set-movement-mode :mode :jump :unit unit :fx/sync true}}]
-                  [{:fx/type :button
-                    :text "Walk"
-                    :on-action {:event-type ::events/set-movement-mode :mode :walk :unit unit :fx/sync true}}])]
-    ((comp vec flatten vector)
-     [{:fx/type :button
-       :text "Stand Still"
-       :on-action {:event-type ::events/set-movement-mode :mode :stand-still :unit unit :fx/sync true}}
-      {:fx/type :button
-       :text "Turn"
-       :on-action {:event-type ::events/turn-button-clicked :fx/sync true}}]
-     buttons
-     [{:fx/type :button
-       :text "Cancel Move"
-       :on-action {:event-type ::events/cancel-move :unit unit :fx/sync true}}
-      {:fx/type :button
-       :text "Confirm Move"
-       :on-action {:event-type ::events/confirm-move :unit unit :fx/sync true}}])))
+(defn round-dialog
+  [{:keys [fx/context]}]
+  (let [round (subs/turn-number context)
+        phase (name (subs/phase context))
+        round-report (subs/round-report context)]
+    (mu/log ::round-report
+            :round round
+            :round-dialog (fx/sub-val context get-in [:round-dialog :showing])
+            :phase phase
+            :report round-report)
+    {:fx/type :dialog
+     :showing (fx/sub-val context get-in [:round-dialog :showing] false)
+     :header-text (str "Turn " round " / " phase " phase")
+     :on-hidden {:event-type ::events/close-round-dialog :phase-advance? false}
+     :dialog-pane {:fx/type :dialog-pane
+                   :button-types [:ok]
+                   :content {:fx/type :scroll-pane
+                             :content {:fx/type :text
+                                       :text round-report}}}}))
 
-(def attack-buttons
-  [{:fx/type :button
-    :text "Overheat +1"
-    :on-action {:event-type ::events/overheat :value 1 :fx/sync true}}
-   {:fx/type :button
-    :text "Overheat -1"
-    :on-action {:event-type ::events/overheat :value -1 :fx/sync true}}
-   {:fx/type :button
-    :text "Resolve Charges/DFAs"
-    :on-action {:event-type ::events/resolve-attacks :fx/sync true}}
-   {:fx/type :button
-    :text "Finish Attacks"
-    :on-action {:event-type ::events/finish-attacks :fx/sync true}}])
+(defn game-board
+  [{:keys [fx/context]}]
+  (let [gb (:tiles (subs/board context))
+        layout (subs/layout context)
+        unit-locations (subs/deployed-units context)
+        destinations (filter #(pos? (count (cu/get-path %))) (vals (subs/units context)))]
+    {:fx/type :scroll-pane
+     :content {:fx/type :group
+               :children (concat
+                          (for [h gb]
+                            {:fx/type elements/draw-hex
+                             :hex h
+                             :layout layout})
+                          (for [t unit-locations]
+                            {:fx/type elements/draw-unit
+                             :unit t
+                             :layout layout})
+                          (when (seq destinations)
+                            (for [t destinations]
+                              {:fx/type elements/draw-movement-path
+                               :unit t
+                               :layout layout})))}}))
 
-(defn command-palette [{:keys [fx/context]}]
-  (let [phase (subs/phase context)
-        turn (subs/turn-number context)
-        turn-order (subs/turn-order context)
-        unit (subs/active-unit context)
-        common-buttons [{:fx/type :separator
-                         :orientation :vertical
-                         :padding 15}
-                        {:fx/type :button
-                         :text "Next Phase"
-                         :on-action {:event-type ::events/next-phase}
-                         :disable #_{:clj-kondo/ignore [:not-empty?]}
-                         (not (empty? turn-order))}
-                        {:fx/type :button
-                         :text "Round Report"
-                         :on-action {:event-type ::events/show-popup
-                                     :state-id :round-dialog}}
-                        {:fx/type :separator
-                         :orientation :vertical
-                         :padding 15}
-                        {:fx/type :button
-                         :text "Save Game"
-                         :on-action {:event-type ::events/auto-save :fx/sync true}}
-                        {:fx/type :button
-                         :text "Zoom In"
-                         :on-action {:event-type ::events/change-size :direction :plus :fx/sync true}}
-                        {:fx/type :button
-                         :text "Zoom Out"
-                         :on-action {:event-type ::events/change-size :direction :minus :fx/sync true}}
-                        {:fx/type :button :text "Exit"
-                         :on-action {:event-type ::events/quit-game}}]
-        phase-buttons (cond
-                        (= phase :deployment) (deploy-buttons (empty? turn-order))
-                        (= phase :movement) (move-buttons unit)
-                        (= phase :combat) attack-buttons
+(defn game-view
+  [{:keys [fx/context]}]
+  {:fx/type :stage
+   :showing (fx/sub-val context :game)
+   :title (subs/title-string context)
+   :scene {:fx/type :scene
+           :accelerators {[:minus] {:event-type ::events/change-size :direction :minus :fx/sync true}
+                          [:shift :equals] {:event-type ::events/change-size :direction :plus}}
+           :root {:fx/type :grid-pane
+                  :children [{:fx/type game-board
+                              :grid-pane/row 0
+                              :grid-pane/column 0}
+                             {:fx/type elements/command-palette
+                              :grid-pane/row 1
+                              :grid-pane/column 0
+                              :grid-pane/column-span 2
+                              :grid-pane/hgrow :always
+                              :grid-pane/vgrow :always}
+                             {:fx/type elements/stat-blocks
+                              :grid-pane/row 0
+                              :grid-pane/column 1
+                              :grid-pane/hgrow :always
+                              :grid-pane/vgrow :always}]}}})
 
-                        :else [])
-        buttons ((comp vec flatten vector) phase-buttons common-buttons)]
-    {:fx/type :v-box
-     :spacing 5
-     :children [{:fx/type :label
-                 :text (str (str/capitalize (name phase)) " Phase | Turn " (str turn) " | " (prn-str turn-order))}
-                {:fx/type :h-box
-                 :children buttons}]}))
+(defn lobby-view
+  [{:keys [fx/context]}]
+  {:fx/type :stage
+   :showing (fx/sub-val context :lobby)
+   :title (subs/title-string context)
+   :scene {:fx/type :scene
+           :root {:fx/type :grid-pane
+                  :children [lobby/mul-pane
+                             {:fx/type lobby/force-pane
+                              :grid-pane/row 0
+                              :grid-pane/column 1
+                              :grid-pane/hgrow :always
+                              :grid-pane/vgrow :always}
+                             lobby/unit-pane
+                             lobby/map-pane]}}})
 
-(def game-view
-  {:fx/type :grid-pane
-   :children [{:fx/type board/game-board
-               :grid-pane/row 0
-               :grid-pane/column 0}
-              {:fx/type command-palette
-               :grid-pane/row 1
-               :grid-pane/column 0
-               :grid-pane/column-span 2
-               :grid-pane/hgrow :always
-               :grid-pane/vgrow :always}
-              {:fx/type force/stat-blocks
-               :grid-pane/row 0
-               :grid-pane/column 1
-               :grid-pane/hgrow :always
-               :grid-pane/vgrow :always}]})
-
-(defn root [{:keys [fx/context]}]
-  (let [view (subs/get-view context)]
-    {:fx/type fx/ext-many
-     :desc [{:fx/type :stage
-             :showing true
-             :title (subs/title-string context)
-             :scene
-             {:fx/type :scene
-              :accelerators {[:minus] {:event-type ::events/change-size :direction :minus :fx/sync true}
-                             [:shift :equals] {:event-type ::events/change-size :direction :plus}}
-              :root
-              (cond
-                (= view :lobby) lobby/view
-                (= view :game) game-view
-                :else lobby/view)}}
-            {:fx/type common/attack-dialog}
-            {:fx/type common/round-dialog}]}))
+(defn root [_]
+  {:fx/type fx/ext-many
+   :desc [{:fx/type game-view}
+          {:fx/type lobby-view}
+          {:fx/type attack-dialog}
+          {:fx/type round-dialog}]})

@@ -1,7 +1,9 @@
 (ns megastrike.hexagons.hex
-  (:require [clojure.math :as math]
-            [malli.core :as m]
-            [megastrike.schemas :as schemas]))
+  (:require
+   [clojure.math :as math]
+   [com.brunobonacci.mulog :as mu]
+   [malli.core :as m]
+   [megastrike.schemas :as schemas]))
 
 (defn hexagon
   "Creates a Hexagon using a 3d addressing system."
