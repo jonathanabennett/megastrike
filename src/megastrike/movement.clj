@@ -9,7 +9,6 @@
   (:require
    [clojure.math :as math]
    [clojure.string :as str]
-   [com.brunobonacci.mulog :as mu]
    [megastrike.abilities :as abilities]
    [megastrike.board :as board]
    [megastrike.hexagons.hex :as hex]
@@ -93,33 +92,43 @@
     movement))
 
 (defn deployed?
+  "Checks if a unit has been deployed by checking if it has a location."
   [{:keys [location]}]
   (:q location))
 
-(defn set-mode
-  [movement mode]
-  (assoc movement :selected mode))
-
 (defn get-modes
+  "Gets all movement modes for a unit."
   [movement]
   (:options movement))
 
-(defn get-rear [{:keys [facing]}]
-  (get-in directions [facing :rear]))
+(defn has-mode?
+  [movement mode]
+  (contains? (get-modes movement) mode))
 
-(defn get-direction
+(defn set-mode
+  "Sets the movement mode for a unit to mode. Does nothing if mode is not
+  valid for this unit."
+  [movement mode]
+  (if (has-mode? movement mode)
+    (assoc movement :selected mode)
+    movement))
+
+(defn selected
+  ([{:keys [selected default]} no-default?]
+   (if no-default?
+     selected
+     (or selected default))))
+
+(defn set-facing
+  [movement facing]
+  (assoc movement :facing facing))
+
+(defn get-facing
   [{:keys [facing]}]
   (get directions facing))
 
-(defn get-hex
-  [{:keys [location]} board]
-  (board/find-hex location board))
-
-(defn get-atk-loc
-  [{:keys [location path]} board]
-  (if (seq path)
-    (board/find-hex (last path) board)
-    (board/find-hex location board)))
+(defn get-rear [{:keys [facing]}]
+  (get-in directions [facing :rear]))
 
 (defn get-location
   [{:keys [location]}]
@@ -161,14 +170,6 @@
   [unit heat]
   (str/join "/" (map #(print-movement-helper unit % heat) (get-modes unit))))
 
-(defn has-mode?
-  [movement mode]
-  (contains? (get-modes movement) mode))
-
-(defn set-facing
-  [movement facing]
-  (assoc movement :facing facing))
-
 (defn print-tmm
   [{:keys [tmm mv-hits]} high-heat?]
   (if (pos? mv-hits)
@@ -185,13 +186,14 @@
       (dec tmm)
       tmm)))
 
-(defn tmm [{:keys [selected] :as movement} abilities high-heat?]
+(defn tmm-value
+  [{:keys [selected] :as movement} abilities high-heat?]
   (let [jump-mod (:value (or (abilities/has? abilities :jmpw) (abilities/has? abilities :jmps) {:value 0}))]
     (condp = selected
-      :immobile [{:desc "Target immobile" :value -4}]
-      :stand-still [{:desc "Target did not move" :value 0}]
-      :jump [{:desc "Target jumped" :value (+ jump-mod (print-tmm movement high-heat?) 1)}]
-      [{:desc "Target moved" :value (print-tmm movement high-heat?)}])))
+      :immobile -4
+      :stand-still 0
+      :jump (+ jump-mod (print-tmm movement high-heat?) 1)
+      (print-tmm movement high-heat?))))
 
 (defn immobilize
   [movement]
@@ -202,19 +204,6 @@
   (if (< (:mv-hits movement) 3)
     (assoc movement :mv-hits (inc (:mv-hits movement)))
     (immobilize movement)))
-
-(defn amm [{:keys [selected]}]
-  (condp = selected
-    :immobile [{:desc "Attacker immobile" :value -1}]
-    :stand-still [{:desc "Attacker stood still" :value -1}]
-    :jump [{:desc "Attacker jumped" :value 2}]
-    [{:desc "Attacker moved" :value 0}]))
-
-(defn selected
-  ([{:keys [selected default]} no-default?]
-   (if no-default?
-     selected
-     (or selected default))))
 
 (defn cancel-movement
   [movement]
@@ -267,6 +256,6 @@
         (set-hex unit (last (:path unit)))
         unit))))
 
-(defn clear-movement
+(defn clear-mode
   [movement]
   (assoc movement :selected nil))

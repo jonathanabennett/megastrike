@@ -2,8 +2,6 @@
   (:require
    [cljfx.api :as fx]
    [clojure.string :as str]
-   [com.brunobonacci.mulog :as mu]
-   [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
    [megastrike.gui.events :as events]
    [megastrike.gui.subs :as subs]
@@ -113,7 +111,7 @@
                  :force force
                  :x (nth hex 8)
                  :y (nth hex 9)
-                 :direction (cu/get-direction unit)
+                 :direction (cu/get-facing unit)
                  :shift (/ (* (layout :y-size) (:scale layout)) 3)}
                 {:fx/type :label
                  :text (unit :full-name)

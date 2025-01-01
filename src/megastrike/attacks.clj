@@ -3,7 +3,6 @@
   attack options for the GUI to consume."
   (:require
    [clojure.string :as str]
-   [com.brunobonacci.mulog :as mu]
    [megastrike.abilities :as abilities]
    [megastrike.movement :as movement]
    [megastrike.utils :as utils]))
@@ -74,12 +73,9 @@
   [attacks]
   (assoc attacks :fc-mod (+ (:fc-mod attacks) 2)))
 
-(defn calculate-fc-hits
+(defn fc-hits
   [{:keys [fc-mod]}]
-  (let [s (if (= fc-mod 1)
-            "fire control hit"
-            "fire control hits")]
-    [{:desc (str fc-mod " " s) :value (* fc-mod 2)}]))
+  fc-mod)
 
 (defn print-damage-bracket
   [attack bracket]

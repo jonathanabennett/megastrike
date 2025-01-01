@@ -1,6 +1,5 @@
 (ns megastrike.gui.reports
   (:require
-   [com.brunobonacci.mulog :as mu]
    [megastrike.combat-unit :as cu]))
 
 (defn parse-attack-data

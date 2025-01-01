@@ -5,6 +5,10 @@
 
 (def application-directory (subs (.getAbsolutePath (io/file ".")) 0 (dec (.length (.getAbsolutePath (io/file "."))))))
 
+(def probabilities
+  "maps to-hit numbers to hit precentages for display."
+  {2  100, 3  98, 4  92, 5  83, 6  72, 7  58, 8  42, 9  28, 10 17, 11 8, 12 3})
+
 (def data-directory (io/file application-directory "data/"))
 
 (defn load-resource

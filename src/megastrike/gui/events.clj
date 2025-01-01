@@ -131,7 +131,6 @@
                can-dfa? :dfa
                can-charge? :charge
                :else :none)
-        attacks (cu/attack-confirmation-choices unit target board layout)
         ctx (get-in context [:internal :attack-dialog])]
     (when (not= kind :none)
       {:context (fx/swap-context context assoc-in [:internal :attack-dialog]

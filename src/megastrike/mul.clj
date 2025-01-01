@@ -2,7 +2,6 @@
   (:require
    [clojure-csv.core :as csv]
    [clojure.string :as str]
-   [com.brunobonacci.mulog :as mu]
    [megastrike.abilities :as abilities]
    [megastrike.attacks :as attacks]
    [megastrike.damage :as damage]

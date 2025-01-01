@@ -148,8 +148,7 @@
         (if (or (= (known-dist best-unseen) ##Inf)
                 (visited? goal)
                 (empty? guess-unseen-dist))
-          (do
-            (if goal (path goal) path))
+          (if goal (path goal) path)
           (let [closer-nbrs (for [nbr (neighbors best-unseen)
                                   :let [new-known-dist (+ (known-dist best-unseen)
                                                           (weight best-unseen nbr))]
