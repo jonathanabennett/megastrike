@@ -227,11 +227,11 @@
   "Checks whether or not a unit can move from its location to a destination."
   [{:keys [path selected] :as unit} heat board]
   (cond
-    (seq path)
+    (pos? (count path))
     (let [sum (reduce + (move-costs unit board))
           move (get-mv unit heat)]
       (<= sum move))
-    (contains? #{:stand-still :immobile} selected) true
+    (and (contains? #{:did-not-move :stand-still :immobile} selected) (empty? path)) true
     :else false))
 
 (defn find-path
