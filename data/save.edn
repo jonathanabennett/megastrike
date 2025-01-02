@@ -1,1221 +1,1161 @@
 {:game-board
  {:tiles
-  [{:p 1, :q 1, :r -2, :elevation 0, :terrain "", :palette ""}
-   {:p 2, :q 0, :r -2, :elevation 0, :terrain "", :palette ""}
-   {:p 3, :q 0, :r -3, :elevation 0, :terrain "", :palette ""}
-   {:p 4, :q -1, :r -3, :elevation 0, :terrain "", :palette ""}
-   {:p 5, :q -1, :r -4, :elevation 0, :terrain "", :palette ""}
-   {:p 6, :q -2, :r -4, :elevation 0, :terrain "", :palette ""}
-   {:p 7, :q -2, :r -5, :elevation 0, :terrain "", :palette ""}
-   {:p 8, :q -3, :r -5, :elevation 0, :terrain "", :palette ""}
+  [{:p 1, :q 1, :r -2, :elevation 10, :terrain "", :palette ""}
+   {:p 2, :q 0, :r -2, :elevation 10, :terrain "", :palette ""}
+   {:p 3, :q 0, :r -3, :elevation 10, :terrain "", :palette ""}
+   {:p 4, :q -1, :r -3, :elevation 10, :terrain "", :palette ""}
+   {:p 5, :q -1, :r -4, :elevation 10, :terrain "", :palette ""}
+   {:p 6, :q -2, :r -4, :elevation 10, :terrain "", :palette ""}
+   {:p 7, :q -2, :r -5, :elevation 10, :terrain "", :palette ""}
+   {:p 8, :q -3, :r -5, :elevation 10, :terrain "", :palette ""}
    {:p 9, :q -3, :r -6, :elevation 0, :terrain "", :palette ""}
    {:p 10, :q -4, :r -6, :elevation 0, :terrain "", :palette ""}
    {:p 11, :q -4, :r -7, :elevation 0, :terrain "", :palette ""}
-   {:p 12, :q -5, :r -7, :elevation 0, :terrain "", :palette ""}
+   {:p 12, :q -5, :r -7, :elevation 0, :terrain "rough:1", :palette ""}
    {:p 13, :q -5, :r -8, :elevation 0, :terrain "", :palette ""}
    {:p 14, :q -6, :r -8, :elevation 0, :terrain "", :palette ""}
    {:p 15, :q -6, :r -9, :elevation 0, :terrain "", :palette ""}
-   {:p 16, :q -7, :r -9, :elevation 0, :terrain "", :palette ""}
-   {:p 1, :q 2, :r -3, :elevation 0, :terrain "", :palette ""}
-   {:p 2,
-    :q 1,
-    :r -3,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 3,
-    :q 1,
-    :r -4,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 4,
-    :q 0,
-    :r -4,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 5, :q 0, :r -5, :elevation 0, :terrain "", :palette ""}
-   {:p 6, :q -1, :r -5, :elevation 0, :terrain "", :palette ""}
-   {:p 7, :q -1, :r -6, :elevation 0, :terrain "", :palette ""}
-   {:p 8, :q -2, :r -6, :elevation 0, :terrain "", :palette ""}
-   {:p 9,
-    :q -2,
-    :r -7,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 10, :q -3, :r -7, :elevation 0, :terrain "rough:1", :palette ""}
-   {:p 11, :q -3, :r -8, :elevation 1, :terrain "", :palette ""}
-   {:p 12, :q -4, :r -8, :elevation 2, :terrain "", :palette ""}
-   {:p 13, :q -4, :r -9, :elevation 1, :terrain "", :palette ""}
-   {:p 14, :q -5, :r -9, :elevation 2, :terrain "", :palette ""}
+   {:p 16, :q -7, :r -9, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 2, :r -3, :elevation 10, :terrain "", :palette ""}
+   {:p 2, :q 1, :r -3, :elevation 10, :terrain "", :palette ""}
+   {:p 3, :q 1, :r -4, :elevation 10, :terrain "", :palette ""}
+   {:p 4, :q 0, :r -4, :elevation 10, :terrain "", :palette ""}
+   {:p 5, :q 0, :r -5, :elevation 10, :terrain "", :palette ""}
+   {:p 6, :q -1, :r -5, :elevation 10, :terrain "", :palette ""}
+   {:p 7, :q -1, :r -6, :elevation 10, :terrain "", :palette ""}
+   {:p 8, :q -2, :r -6, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q -2, :r -7, :elevation 0, :terrain "", :palette ""}
+   {:p 10, :q -3, :r -7, :elevation 0, :terrain "", :palette ""}
+   {:p 11, :q -3, :r -8, :elevation 0, :terrain "", :palette ""}
+   {:p 12, :q -4, :r -8, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 13, :q -4, :r -9, :elevation 0, :terrain "", :palette ""}
+   {:p 14, :q -5, :r -9, :elevation 0, :terrain "", :palette ""}
    {:p 15, :q -5, :r -10, :elevation 0, :terrain "", :palette ""}
-   {:p 16, :q -6, :r -10, :elevation 0, :terrain "", :palette ""}
-   {:p 1, :q 3, :r -4, :elevation 0, :terrain "", :palette ""}
-   {:p 2, :q 2, :r -4, :elevation 0, :terrain "", :palette ""}
-   {:p 3,
-    :q 2,
-    :r -5,
-    :elevation 0,
-    :terrain "woods:2;foliage_elev:2",
-    :palette ""}
-   {:p 4,
-    :q 1,
-    :r -5,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 5, :q 1, :r -6, :elevation 0, :terrain "", :palette ""}
-   {:p 6, :q 0, :r -6, :elevation 0, :terrain "", :palette ""}
-   {:p 7, :q 0, :r -7, :elevation 0, :terrain "", :palette ""}
-   {:p 8, :q -1, :r -7, :elevation 0, :terrain "", :palette ""}
+   {:p 16, :q -6, :r -10, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 3, :r -4, :elevation 10, :terrain "", :palette ""}
+   {:p 2, :q 2, :r -4, :elevation 10, :terrain "", :palette ""}
+   {:p 3, :q 2, :r -5, :elevation 10, :terrain "", :palette ""}
+   {:p 4, :q 1, :r -5, :elevation 10, :terrain "", :palette ""}
+   {:p 5, :q 1, :r -6, :elevation 10, :terrain "", :palette ""}
+   {:p 6, :q 0, :r -6, :elevation 10, :terrain "", :palette ""}
+   {:p 7, :q 0, :r -7, :elevation 10, :terrain "", :palette ""}
+   {:p 8, :q -1, :r -7, :elevation 10, :terrain "", :palette ""}
    {:p 9, :q -1, :r -8, :elevation 0, :terrain "", :palette ""}
    {:p 10, :q -2, :r -8, :elevation 0, :terrain "", :palette ""}
-   {:p 11, :q -2, :r -9, :elevation 0, :terrain "rough:1", :palette ""}
-   {:p 12, :q -3, :r -9, :elevation 0, :terrain "", :palette ""}
+   {:p 11, :q -2, :r -9, :elevation 0, :terrain "", :palette ""}
+   {:p 12, :q -3, :r -9, :elevation 0, :terrain "rough:1", :palette ""}
    {:p 13,
     :q -3,
     :r -10,
-    :elevation 2,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 14, :q -4, :r -10, :elevation 3, :terrain "", :palette ""}
-   {:p 15, :q -4, :r -11, :elevation 0, :terrain "", :palette ""}
-   {:p 16, :q -5, :r -11, :elevation 0, :terrain "", :palette ""}
-   {:p 1, :q 4, :r -5, :elevation 0, :terrain "", :palette ""}
-   {:p 2, :q 3, :r -5, :elevation 0, :terrain "", :palette ""}
-   {:p 3, :q 3, :r -6, :elevation 0, :terrain "", :palette ""}
-   {:p 4, :q 2, :r -6, :elevation 0, :terrain "", :palette ""}
-   {:p 5, :q 2, :r -7, :elevation 0, :terrain "", :palette ""}
-   {:p 6, :q 1, :r -7, :elevation 0, :terrain "", :palette ""}
-   {:p 7, :q 1, :r -8, :elevation 0, :terrain "", :palette ""}
-   {:p 8, :q 0, :r -8, :elevation 0, :terrain "", :palette ""}
-   {:p 9, :q 0, :r -9, :elevation 0, :terrain "", :palette ""}
-   {:p 10, :q -1, :r -9, :elevation 0, :terrain "", :palette ""}
-   {:p 11, :q -1, :r -10, :elevation 0, :terrain "", :palette ""}
-   {:p 12, :q -2, :r -10, :elevation 2, :terrain "", :palette ""}
-   {:p 13, :q -2, :r -11, :elevation 3, :terrain "", :palette ""}
-   {:p 14, :q -3, :r -11, :elevation 0, :terrain "", :palette ""}
-   {:p 15, :q -3, :r -12, :elevation 0, :terrain "", :palette ""}
-   {:p 16, :q -4, :r -12, :elevation 0, :terrain "", :palette ""}
-   {:p 1, :q 5, :r -6, :elevation 0, :terrain "", :palette ""}
-   {:p 2, :q 4, :r -6, :elevation 0, :terrain "", :palette ""}
-   {:p 3, :q 4, :r -7, :elevation 0, :terrain "", :palette ""}
-   {:p 4, :q 3, :r -7, :elevation 0, :terrain "", :palette ""}
-   {:p 5, :q 3, :r -8, :elevation 0, :terrain "", :palette ""}
-   {:p 6, :q 2, :r -8, :elevation 0, :terrain "", :palette ""}
-   {:p 7, :q 2, :r -9, :elevation 0, :terrain "", :palette ""}
-   {:p 8, :q 1, :r -9, :elevation 0, :terrain "", :palette ""}
-   {:p 9, :q 1, :r -10, :elevation 0, :terrain "", :palette ""}
-   {:p 10, :q 0, :r -10, :elevation 0, :terrain "", :palette ""}
-   {:p 11,
-    :q 0,
-    :r -11,
     :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 12,
-    :q -1,
-    :r -11,
-    :elevation 0,
-    :terrain "woods:2;foliage_elev:2",
-    :palette ""}
-   {:p 13, :q -1, :r -12, :elevation 1, :terrain "", :palette ""}
-   {:p 14, :q -2, :r -12, :elevation 1, :terrain "", :palette ""}
-   {:p 15, :q -2, :r -13, :elevation 0, :terrain "", :palette ""}
-   {:p 16, :q -3, :r -13, :elevation 0, :terrain "", :palette ""}
-   {:p 1, :q 6, :r -7, :elevation 0, :terrain "", :palette ""}
-   {:p 2, :q 5, :r -7, :elevation 0, :terrain "", :palette ""}
-   {:p 3, :q 5, :r -8, :elevation 0, :terrain "", :palette ""}
-   {:p 4, :q 4, :r -8, :elevation 0, :terrain "", :palette ""}
-   {:p 5, :q 4, :r -9, :elevation 0, :terrain "", :palette ""}
-   {:p 6, :q 3, :r -9, :elevation 0, :terrain "", :palette ""}
-   {:p 7, :q 3, :r -10, :elevation 0, :terrain "", :palette ""}
-   {:p 8, :q 2, :r -10, :elevation 0, :terrain "", :palette ""}
-   {:p 9, :q 2, :r -11, :elevation 0, :terrain "", :palette ""}
-   {:p 10,
-    :q 1,
-    :r -11,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 11, :q 1, :r -12, :elevation 0, :terrain "", :palette ""}
-   {:p 12, :q 0, :r -12, :elevation 0, :terrain "", :palette ""}
-   {:p 13,
-    :q 0,
-    :r -13,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 14, :q -1, :r -13, :elevation 0, :terrain "", :palette ""}
-   {:p 15, :q -1, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 16, :q -2, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 1, :q 7, :r -8, :elevation 0, :terrain "", :palette ""}
-   {:p 2, :q 6, :r -8, :elevation 0, :terrain "", :palette ""}
-   {:p 3, :q 6, :r -9, :elevation 0, :terrain "", :palette ""}
-   {:p 4, :q 5, :r -9, :elevation 0, :terrain "", :palette ""}
-   {:p 5, :q 5, :r -10, :elevation 0, :terrain "", :palette ""}
-   {:p 6, :q 4, :r -10, :elevation 0, :terrain "water:1", :palette ""}
-   {:p 7, :q 4, :r -11, :elevation 0, :terrain "water:1", :palette ""}
-   {:p 8, :q 3, :r -11, :elevation 0, :terrain "", :palette ""}
-   {:p 9,
-    :q 3,
-    :r -12,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 10,
-    :q 2,
-    :r -12,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 11, :q 2, :r -13, :elevation 0, :terrain "", :palette ""}
-   {:p 12, :q 1, :r -13, :elevation 0, :terrain "", :palette ""}
-   {:p 13, :q 1, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 14, :q 0, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 15, :q 0, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 16, :q -1, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 1, :q 8, :r -9, :elevation 0, :terrain "", :palette ""}
-   {:p 2, :q 7, :r -9, :elevation 0, :terrain "", :palette ""}
-   {:p 3, :q 7, :r -10, :elevation 0, :terrain "", :palette ""}
-   {:p 4, :q 6, :r -10, :elevation 0, :terrain "", :palette ""}
-   {:p 5, :q 6, :r -11, :elevation 0, :terrain "", :palette ""}
-   {:p 6, :q 5, :r -11, :elevation 0, :terrain "", :palette ""}
-   {:p 7, :q 5, :r -12, :elevation 0, :terrain "water:2", :palette ""}
-   {:p 8, :q 4, :r -12, :elevation 0, :terrain "water:1", :palette ""}
-   {:p 9, :q 4, :r -13, :elevation 0, :terrain "water:1", :palette ""}
-   {:p 10, :q 3, :r -13, :elevation 0, :terrain "", :palette ""}
-   {:p 11, :q 3, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 12, :q 2, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 13, :q 2, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 14, :q 1, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 15, :q 1, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 16, :q 0, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 1, :q 9, :r -10, :elevation 0, :terrain "", :palette ""}
-   {:p 2, :q 8, :r -10, :elevation 0, :terrain "", :palette ""}
-   {:p 3, :q 8, :r -11, :elevation 0, :terrain "", :palette ""}
-   {:p 4, :q 7, :r -11, :elevation 0, :terrain "", :palette ""}
-   {:p 5, :q 7, :r -12, :elevation 0, :terrain "", :palette ""}
-   {:p 6,
-    :q 6,
-    :r -12,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 7, :q 6, :r -13, :elevation 0, :terrain "", :palette ""}
-   {:p 8, :q 5, :r -13, :elevation 0, :terrain "water:1", :palette ""}
-   {:p 9, :q 5, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 10, :q 4, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 11, :q 4, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 12, :q 3, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 13, :q 3, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 14, :q 2, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 15, :q 2, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 16, :q 1, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 1, :q 10, :r -11, :elevation 0, :terrain "", :palette ""}
-   {:p 2, :q 9, :r -11, :elevation 0, :terrain "", :palette ""}
-   {:p 3, :q 9, :r -12, :elevation 0, :terrain "", :palette ""}
-   {:p 4, :q 8, :r -12, :elevation 0, :terrain "", :palette ""}
-   {:p 5, :q 8, :r -13, :elevation 0, :terrain "", :palette ""}
-   {:p 6,
-    :q 7,
-    :r -13,
-    :elevation 0,
-    :terrain "woods:2;foliage_elev:2",
-    :palette ""}
-   {:p 7, :q 7, :r -14, :elevation 0, :terrain "water:1", :palette ""}
-   {:p 8, :q 6, :r -14, :elevation 0, :terrain "water:2", :palette ""}
-   {:p 9, :q 6, :r -15, :elevation 0, :terrain "water:1", :palette ""}
-   {:p 10, :q 5, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 11, :q 5, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 12, :q 4, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 13,
-    :q 4,
-    :r -17,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
+    :terrain "rough:1",
     :palette ""}
    {:p 14,
-    :q 3,
-    :r -17,
+    :q -4,
+    :r -10,
     :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
+    :terrain "rough:1",
     :palette ""}
-   {:p 15, :q 3, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 16, :q 2, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 1, :q 11, :r -12, :elevation 0, :terrain "", :palette ""}
-   {:p 2, :q 10, :r -12, :elevation 0, :terrain "", :palette ""}
-   {:p 3, :q 10, :r -13, :elevation 0, :terrain "", :palette ""}
-   {:p 4, :q 9, :r -13, :elevation 0, :terrain "", :palette ""}
-   {:p 5,
-    :q 9,
-    :r -14,
+   {:p 15,
+    :q -4,
+    :r -11,
     :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
+    :terrain "rough:1",
     :palette ""}
-   {:p 6, :q 8, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 7, :q 8, :r -15, :elevation 0, :terrain "water:1", :palette ""}
-   {:p 8, :q 7, :r -15, :elevation 0, :terrain "", :palette ""}
+   {:p 16, :q -5, :r -11, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 4, :r -5, :elevation 10, :terrain "", :palette ""}
+   {:p 2, :q 3, :r -5, :elevation 10, :terrain "", :palette ""}
+   {:p 3, :q 3, :r -6, :elevation 10, :terrain "", :palette ""}
+   {:p 4, :q 2, :r -6, :elevation 10, :terrain "", :palette ""}
+   {:p 5, :q 2, :r -7, :elevation 10, :terrain "", :palette ""}
+   {:p 6, :q 1, :r -7, :elevation 10, :terrain "", :palette ""}
+   {:p 7, :q 1, :r -8, :elevation 10, :terrain "", :palette ""}
+   {:p 8, :q 0, :r -8, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 0, :r -9, :elevation 0, :terrain "", :palette ""}
+   {:p 10, :q -1, :r -9, :elevation 0, :terrain "", :palette ""}
+   {:p 11,
+    :q -1,
+    :r -10,
+    :elevation 0,
+    :terrain "rough:1",
+    :palette ""}
+   {:p 12, :q -2, :r -10, :elevation 0, :terrain "", :palette ""}
+   {:p 13,
+    :q -2,
+    :r -11,
+    :elevation 0,
+    :terrain "rough:1",
+    :palette ""}
+   {:p 14,
+    :q -3,
+    :r -11,
+    :elevation 0,
+    :terrain "rough:1",
+    :palette ""}
+   {:p 15,
+    :q -3,
+    :r -12,
+    :elevation 0,
+    :terrain "rough:1",
+    :palette ""}
+   {:p 16, :q -4, :r -12, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 5, :r -6, :elevation 10, :terrain "", :palette ""}
+   {:p 2, :q 4, :r -6, :elevation 10, :terrain "", :palette ""}
+   {:p 3, :q 4, :r -7, :elevation 10, :terrain "", :palette ""}
+   {:p 4, :q 3, :r -7, :elevation 10, :terrain "", :palette ""}
+   {:p 5, :q 3, :r -8, :elevation 10, :terrain "", :palette ""}
+   {:p 6, :q 2, :r -8, :elevation 10, :terrain "", :palette ""}
+   {:p 7, :q 2, :r -9, :elevation 10, :terrain "", :palette ""}
+   {:p 8, :q 1, :r -9, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 1, :r -10, :elevation 0, :terrain "", :palette ""}
+   {:p 10, :q 0, :r -10, :elevation 0, :terrain "", :palette ""}
+   {:p 11, :q 0, :r -11, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 12, :q -1, :r -11, :elevation 0, :terrain "", :palette ""}
+   {:p 13, :q -1, :r -12, :elevation 0, :terrain "", :palette ""}
+   {:p 14, :q -2, :r -12, :elevation 0, :terrain "", :palette ""}
+   {:p 15,
+    :q -2,
+    :r -13,
+    :elevation 0,
+    :terrain "rough:1",
+    :palette ""}
+   {:p 16, :q -3, :r -13, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 6, :r -7, :elevation 10, :terrain "", :palette ""}
+   {:p 2, :q 5, :r -7, :elevation 10, :terrain "", :palette ""}
+   {:p 3, :q 5, :r -8, :elevation 10, :terrain "", :palette ""}
+   {:p 4, :q 4, :r -8, :elevation 10, :terrain "", :palette ""}
+   {:p 5, :q 4, :r -9, :elevation 10, :terrain "", :palette ""}
+   {:p 6, :q 3, :r -9, :elevation 10, :terrain "", :palette ""}
+   {:p 7, :q 3, :r -10, :elevation 10, :terrain "", :palette ""}
+   {:p 8, :q 2, :r -10, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 2, :r -11, :elevation 0, :terrain "", :palette ""}
+   {:p 10, :q 1, :r -11, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 11, :q 1, :r -12, :elevation 0, :terrain "", :palette ""}
+   {:p 12, :q 0, :r -12, :elevation 0, :terrain "", :palette ""}
+   {:p 13, :q 0, :r -13, :elevation 0, :terrain "", :palette ""}
+   {:p 14,
+    :q -1,
+    :r -13,
+    :elevation 0,
+    :terrain "rough:1",
+    :palette ""}
+   {:p 15, :q -1, :r -14, :elevation 0, :terrain "", :palette ""}
+   {:p 16, :q -2, :r -14, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 7, :r -8, :elevation 10, :terrain "", :palette ""}
+   {:p 2, :q 6, :r -8, :elevation 10, :terrain "", :palette ""}
+   {:p 3, :q 6, :r -9, :elevation 10, :terrain "", :palette ""}
+   {:p 4, :q 5, :r -9, :elevation 10, :terrain "", :palette ""}
+   {:p 5, :q 5, :r -10, :elevation 10, :terrain "", :palette ""}
+   {:p 6, :q 4, :r -10, :elevation 10, :terrain "", :palette ""}
+   {:p 7, :q 4, :r -11, :elevation 10, :terrain "", :palette ""}
+   {:p 8, :q 3, :r -11, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 3, :r -12, :elevation 0, :terrain "", :palette ""}
+   {:p 10, :q 2, :r -12, :elevation 0, :terrain "", :palette ""}
+   {:p 11, :q 2, :r -13, :elevation 0, :terrain "", :palette ""}
+   {:p 12, :q 1, :r -13, :elevation 0, :terrain "", :palette ""}
+   {:p 13, :q 1, :r -14, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 14, :q 0, :r -14, :elevation 0, :terrain "", :palette ""}
+   {:p 15, :q 0, :r -15, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 16, :q -1, :r -15, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 8, :r -9, :elevation 10, :terrain "", :palette ""}
+   {:p 2, :q 7, :r -9, :elevation 10, :terrain "", :palette ""}
+   {:p 3, :q 7, :r -10, :elevation 10, :terrain "", :palette ""}
+   {:p 4, :q 6, :r -10, :elevation 10, :terrain "", :palette ""}
+   {:p 5, :q 6, :r -11, :elevation 10, :terrain "", :palette ""}
+   {:p 6, :q 5, :r -11, :elevation 10, :terrain "", :palette ""}
+   {:p 7, :q 5, :r -12, :elevation 10, :terrain "", :palette ""}
+   {:p 8, :q 4, :r -12, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 4, :r -13, :elevation 0, :terrain "", :palette ""}
+   {:p 10, :q 3, :r -13, :elevation 0, :terrain "", :palette ""}
+   {:p 11, :q 3, :r -14, :elevation 0, :terrain "", :palette ""}
+   {:p 12, :q 2, :r -14, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 13, :q 2, :r -15, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 14, :q 1, :r -15, :elevation 0, :terrain "", :palette ""}
+   {:p 15, :q 1, :r -16, :elevation 0, :terrain "", :palette ""}
+   {:p 16, :q 0, :r -16, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 9, :r -10, :elevation 10, :terrain "", :palette ""}
+   {:p 2, :q 8, :r -10, :elevation 10, :terrain "", :palette ""}
+   {:p 3, :q 8, :r -11, :elevation 10, :terrain "", :palette ""}
+   {:p 4, :q 7, :r -11, :elevation 10, :terrain "", :palette ""}
+   {:p 5, :q 7, :r -12, :elevation 10, :terrain "", :palette ""}
+   {:p 6, :q 6, :r -12, :elevation 10, :terrain "", :palette ""}
+   {:p 7, :q 6, :r -13, :elevation 10, :terrain "", :palette ""}
+   {:p 8, :q 5, :r -13, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 5, :r -14, :elevation 0, :terrain "", :palette ""}
+   {:p 10, :q 4, :r -14, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 11, :q 4, :r -15, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 12, :q 3, :r -15, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 13, :q 3, :r -16, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 14, :q 2, :r -16, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 15, :q 2, :r -17, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 16, :q 1, :r -17, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 10, :r -11, :elevation 10, :terrain "", :palette ""}
+   {:p 2, :q 9, :r -11, :elevation 10, :terrain "", :palette ""}
+   {:p 3, :q 9, :r -12, :elevation 10, :terrain "", :palette ""}
+   {:p 4, :q 8, :r -12, :elevation 10, :terrain "", :palette ""}
+   {:p 5, :q 8, :r -13, :elevation 10, :terrain "", :palette ""}
+   {:p 6, :q 7, :r -13, :elevation 10, :terrain "", :palette ""}
+   {:p 7, :q 7, :r -14, :elevation 10, :terrain "", :palette ""}
+   {:p 8, :q 6, :r -14, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 6, :r -15, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 10, :q 5, :r -15, :elevation 0, :terrain "", :palette ""}
+   {:p 11, :q 5, :r -16, :elevation 0, :terrain "", :palette ""}
+   {:p 12, :q 4, :r -16, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 13, :q 4, :r -17, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 14, :q 3, :r -17, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 15, :q 3, :r -18, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 16, :q 2, :r -18, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 11, :r -12, :elevation 10, :terrain "", :palette ""}
+   {:p 2, :q 10, :r -12, :elevation 10, :terrain "", :palette ""}
+   {:p 3, :q 10, :r -13, :elevation 10, :terrain "", :palette ""}
+   {:p 4, :q 9, :r -13, :elevation 10, :terrain "", :palette ""}
+   {:p 5, :q 9, :r -14, :elevation 10, :terrain "", :palette ""}
+   {:p 6, :q 8, :r -14, :elevation 10, :terrain "", :palette ""}
+   {:p 7, :q 8, :r -15, :elevation 10, :terrain "", :palette ""}
+   {:p 8, :q 7, :r -15, :elevation 10, :terrain "", :palette ""}
    {:p 9, :q 7, :r -16, :elevation 0, :terrain "", :palette ""}
    {:p 10, :q 6, :r -16, :elevation 0, :terrain "", :palette ""}
    {:p 11, :q 6, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 12, :q 5, :r -17, :elevation 0, :terrain "", :palette ""}
+   {:p 12, :q 5, :r -17, :elevation 0, :terrain "rough:1", :palette ""}
    {:p 13, :q 5, :r -18, :elevation 0, :terrain "rough:1", :palette ""}
    {:p 14, :q 4, :r -18, :elevation 0, :terrain "", :palette ""}
    {:p 15, :q 4, :r -19, :elevation 0, :terrain "", :palette ""}
-   {:p 16, :q 3, :r -19, :elevation 0, :terrain "", :palette ""}
+   {:p 16, :q 3, :r -19, :elevation 10, :terrain "", :palette ""}
    {:p 1, :q 12, :r -13, :elevation 0, :terrain "", :palette ""}
    {:p 2, :q 11, :r -13, :elevation 0, :terrain "", :palette ""}
    {:p 3, :q 11, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 4, :q 10, :r -14, :elevation 0, :terrain "", :palette ""}
+   {:p 4, :q 10, :r -14, :elevation 0, :terrain "rough:1", :palette ""}
    {:p 5, :q 10, :r -15, :elevation 0, :terrain "", :palette ""}
    {:p 6, :q 9, :r -15, :elevation 0, :terrain "", :palette ""}
    {:p 7, :q 9, :r -16, :elevation 0, :terrain "", :palette ""}
    {:p 8, :q 8, :r -16, :elevation 0, :terrain "", :palette ""}
    {:p 9, :q 8, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 10, :q 7, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 11,
-    :q 7,
-    :r -18,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 12,
-    :q 6,
-    :r -18,
-    :elevation 0,
-    :terrain "woods:2;foliage_elev:2",
-    :palette ""}
-   {:p 13, :q 6, :r -19, :elevation 1, :terrain "", :palette ""}
+   {:p 10, :q 7, :r -17, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 11, :q 7, :r -18, :elevation 0, :terrain "", :palette ""}
+   {:p 12, :q 6, :r -18, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 13, :q 6, :r -19, :elevation 0, :terrain "rough:1", :palette ""}
    {:p 14, :q 5, :r -19, :elevation 0, :terrain "", :palette ""}
    {:p 15, :q 5, :r -20, :elevation 0, :terrain "", :palette ""}
-   {:p 16, :q 4, :r -20, :elevation 0, :terrain "", :palette ""}
+   {:p 16, :q 4, :r -20, :elevation 10, :terrain "", :palette ""}
    {:p 1, :q 13, :r -14, :elevation 0, :terrain "", :palette ""}
    {:p 2, :q 12, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 3, :q 12, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 4, :q 11, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 5, :q 11, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 6, :q 10, :r -16, :elevation 0, :terrain "", :palette ""}
+   {:p 3, :q 12, :r -15, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 4, :q 11, :r -15, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 5, :q 11, :r -16, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 6, :q 10, :r -16, :elevation 0, :terrain "rough:1", :palette ""}
    {:p 7, :q 10, :r -17, :elevation 0, :terrain "", :palette ""}
    {:p 8, :q 9, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 9, :q 9, :r -18, :elevation 0, :terrain "", :palette ""}
+   {:p 9, :q 9, :r -18, :elevation 0, :terrain "rough:1", :palette ""}
    {:p 10, :q 8, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 11,
-    :q 8,
-    :r -19,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 12, :q 7, :r -19, :elevation 2, :terrain "", :palette ""}
-   {:p 13, :q 7, :r -20, :elevation 2, :terrain "", :palette ""}
-   {:p 14, :q 6, :r -20, :elevation 2, :terrain "", :palette ""}
+   {:p 11, :q 8, :r -19, :elevation 0, :terrain "", :palette ""}
+   {:p 12, :q 7, :r -19, :elevation 0, :terrain "", :palette ""}
+   {:p 13, :q 7, :r -20, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 14, :q 6, :r -20, :elevation 0, :terrain "rough:1", :palette ""}
    {:p 15, :q 6, :r -21, :elevation 0, :terrain "", :palette ""}
-   {:p 16, :q 5, :r -21, :elevation 0, :terrain "", :palette ""}
+   {:p 16, :q 5, :r -21, :elevation 10, :terrain "", :palette ""}
    {:p 1, :q 14, :r -15, :elevation 0, :terrain "", :palette ""}
    {:p 2, :q 13, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 3, :q 13, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 4,
-    :q 12,
-    :r -16,
-    :elevation 0,
-    :terrain "woods:2;foliage_elev:2",
-    :palette ""}
-   {:p 5,
-    :q 12,
-    :r -17,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 6, :q 11, :r -17, :elevation 0, :terrain "", :palette ""}
+   {:p 3, :q 13, :r -16, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 4, :q 12, :r -16, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 5, :q 12, :r -17, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 6, :q 11, :r -17, :elevation 0, :terrain "rough:1", :palette ""}
    {:p 7, :q 11, :r -18, :elevation 0, :terrain "", :palette ""}
    {:p 8, :q 10, :r -18, :elevation 0, :terrain "", :palette ""}
    {:p 9, :q 10, :r -19, :elevation 0, :terrain "", :palette ""}
-   {:p 10, :q 9, :r -19, :elevation 0, :terrain "", :palette ""}
-   {:p 11, :q 9, :r -20, :elevation 0, :terrain "", :palette ""}
-   {:p 12,
-    :q 8,
-    :r -20,
-    :elevation 3,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 13,
-    :q 8,
-    :r -21,
-    :elevation 3,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 14, :q 7, :r -21, :elevation 2, :terrain "", :palette ""}
-   {:p 15, :q 7, :r -22, :elevation 0, :terrain "", :palette ""}
-   {:p 16, :q 6, :r -22, :elevation 0, :terrain "", :palette ""}
+   {:p 10, :q 9, :r -19, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 11, :q 9, :r -20, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 12, :q 8, :r -20, :elevation 0, :terrain "", :palette ""}
+   {:p 13, :q 8, :r -21, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 14, :q 7, :r -21, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 15, :q 7, :r -22, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 16, :q 6, :r -22, :elevation 10, :terrain "", :palette ""}
    {:p 1, :q 15, :r -16, :elevation 0, :terrain "", :palette ""}
    {:p 2, :q 14, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 3,
-    :q 14,
-    :r -17,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 4, :q 13, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 5,
-    :q 13,
-    :r -18,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 6, :q 12, :r -18, :elevation 0, :terrain "", :palette ""}
+   {:p 3, :q 14, :r -17, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 4, :q 13, :r -17, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 5, :q 13, :r -18, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 6, :q 12, :r -18, :elevation 0, :terrain "rough:1", :palette ""}
    {:p 7, :q 12, :r -19, :elevation 0, :terrain "", :palette ""}
    {:p 8, :q 11, :r -19, :elevation 0, :terrain "", :palette ""}
    {:p 9, :q 11, :r -20, :elevation 0, :terrain "", :palette ""}
-   {:p 10,
+   {:p 10, :q 10, :r -20, :elevation 0, :terrain "", :palette ""}
+   {:p 11,
     :q 10,
-    :r -20,
+    :r -21,
     :elevation 0,
     :terrain "rough:1",
     :palette ""}
-   {:p 11, :q 10, :r -21, :elevation 1, :terrain "", :palette ""}
-   {:p 12, :q 9, :r -21, :elevation 2, :terrain "", :palette ""}
-   {:p 13,
-    :q 9,
-    :r -22,
-    :elevation 3,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
+   {:p 12, :q 9, :r -21, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 13, :q 9, :r -22, :elevation 0, :terrain "", :palette ""}
    {:p 14, :q 8, :r -22, :elevation 0, :terrain "", :palette ""}
-   {:p 15, :q 8, :r -23, :elevation 0, :terrain "", :palette ""}
-   {:p 16, :q 7, :r -23, :elevation 0, :terrain "", :palette ""}
+   {:p 15, :q 8, :r -23, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 16, :q 7, :r -23, :elevation 10, :terrain "", :palette ""}
    {:p 1, :q 16, :r -17, :elevation 0, :terrain "", :palette ""}
    {:p 2, :q 15, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 3, :q 15, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 4, :q 14, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 5, :q 14, :r -19, :elevation 0, :terrain "", :palette ""}
+   {:p 3, :q 15, :r -18, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 4, :q 14, :r -18, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 5, :q 14, :r -19, :elevation 0, :terrain "rough:1", :palette ""}
    {:p 6, :q 13, :r -19, :elevation 0, :terrain "", :palette ""}
    {:p 7, :q 13, :r -20, :elevation 0, :terrain "", :palette ""}
    {:p 8, :q 12, :r -20, :elevation 0, :terrain "", :palette ""}
    {:p 9, :q 12, :r -21, :elevation 0, :terrain "", :palette ""}
    {:p 10, :q 11, :r -21, :elevation 0, :terrain "", :palette ""}
-   {:p 11, :q 11, :r -22, :elevation 1, :terrain "", :palette ""}
-   {:p 12, :q 10, :r -22, :elevation 0, :terrain "", :palette ""}
-   {:p 13, :q 10, :r -23, :elevation 1, :terrain "", :palette ""}
-   {:p 14, :q 9, :r -23, :elevation 0, :terrain "", :palette ""}
-   {:p 15, :q 9, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 16, :q 8, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 1, :q 17, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 2, :q 16, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 3, :q 16, :r -19, :elevation 0, :terrain "", :palette ""}
-   {:p 4, :q 15, :r -19, :elevation 0, :terrain "", :palette ""}
-   {:p 5, :q 15, :r -20, :elevation 0, :terrain "", :palette ""}
-   {:p 6, :q 14, :r -20, :elevation 0, :terrain "", :palette ""}
-   {:p 7, :q 14, :r -21, :elevation 0, :terrain "", :palette ""}
-   {:p 8, :q 13, :r -21, :elevation 0, :terrain "", :palette ""}
-   {:p 9, :q 13, :r -22, :elevation 0, :terrain "", :palette ""}
-   {:p 10, :q 12, :r -22, :elevation 0, :terrain "", :palette ""}
-   {:p 11, :q 12, :r -23, :elevation 0, :terrain "", :palette ""}
-   {:p 12, :q 11, :r -23, :elevation 0, :terrain "", :palette ""}
-   {:p 13, :q 11, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 14, :q 10, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 15, :q 10, :r -25, :elevation 0, :terrain "", :palette ""}
-   {:p 16, :q 9, :r -25, :elevation 0, :terrain "", :palette ""}
-   {:p 17, :q -7, :r -10, :elevation 0, :terrain "", :palette ""}
-   {:p 18, :q -8, :r -10, :elevation 0, :terrain "", :palette ""}
-   {:p 19, :q -8, :r -11, :elevation 0, :terrain "", :palette ""}
-   {:p 20, :q -9, :r -11, :elevation 0, :terrain "", :palette ""}
-   {:p 21, :q -9, :r -12, :elevation 0, :terrain "", :palette ""}
-   {:p 22, :q -10, :r -12, :elevation 0, :terrain "", :palette ""}
-   {:p 23, :q -10, :r -13, :elevation 0, :terrain "", :palette ""}
-   {:p 24, :q -11, :r -13, :elevation 0, :terrain "", :palette ""}
-   {:p 25, :q -11, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 26, :q -12, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 27, :q -12, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 28, :q -13, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 29, :q -13, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 30, :q -14, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 31, :q -14, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 32, :q -15, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 17, :q -6, :r -11, :elevation 0, :terrain "", :palette ""}
-   {:p 18,
-    :q -7,
-    :r -11,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 19,
-    :q -7,
-    :r -12,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 20,
-    :q -8,
-    :r -12,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 21, :q -8, :r -13, :elevation 0, :terrain "", :palette ""}
-   {:p 22, :q -9, :r -13, :elevation 0, :terrain "", :palette ""}
-   {:p 23, :q -9, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 24, :q -10, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 25,
-    :q -10,
-    :r -15,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 26,
-    :q -11,
-    :r -15,
+   {:p 11, :q 11, :r -22, :elevation 0, :terrain "", :palette ""}
+   {:p 12,
+    :q 10,
+    :r -22,
     :elevation 0,
     :terrain "rough:1",
     :palette ""}
-   {:p 27, :q -11, :r -16, :elevation 1, :terrain "", :palette ""}
-   {:p 28, :q -12, :r -16, :elevation 2, :terrain "", :palette ""}
-   {:p 29, :q -12, :r -17, :elevation 1, :terrain "", :palette ""}
-   {:p 30, :q -13, :r -17, :elevation 2, :terrain "", :palette ""}
-   {:p 31, :q -13, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 32, :q -14, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 17, :q -5, :r -12, :elevation 0, :terrain "", :palette ""}
-   {:p 18, :q -6, :r -12, :elevation 0, :terrain "", :palette ""}
-   {:p 19,
-    :q -6,
-    :r -13,
-    :elevation 0,
-    :terrain "woods:2;foliage_elev:2",
-    :palette ""}
-   {:p 20,
-    :q -7,
-    :r -13,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 21, :q -7, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 22, :q -8, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 23, :q -8, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 24, :q -9, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 25, :q -9, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 26, :q -10, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 27,
-    :q -10,
-    :r -17,
-    :elevation 0,
-    :terrain "rough:1",
-    :palette ""}
-   {:p 28, :q -11, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 29,
-    :q -11,
-    :r -18,
-    :elevation 2,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 30, :q -12, :r -18, :elevation 3, :terrain "", :palette ""}
-   {:p 31, :q -12, :r -19, :elevation 0, :terrain "", :palette ""}
-   {:p 32, :q -13, :r -19, :elevation 0, :terrain "", :palette ""}
-   {:p 17, :q -4, :r -13, :elevation 0, :terrain "", :palette ""}
-   {:p 18, :q -5, :r -13, :elevation 0, :terrain "", :palette ""}
-   {:p 19, :q -5, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 20, :q -6, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 21, :q -6, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 22, :q -7, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 23, :q -7, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 24, :q -8, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 25, :q -8, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 26, :q -9, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 27, :q -9, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 28, :q -10, :r -18, :elevation 2, :terrain "", :palette ""}
-   {:p 29, :q -10, :r -19, :elevation 3, :terrain "", :palette ""}
-   {:p 30, :q -11, :r -19, :elevation 0, :terrain "", :palette ""}
-   {:p 31, :q -11, :r -20, :elevation 0, :terrain "", :palette ""}
-   {:p 32, :q -12, :r -20, :elevation 0, :terrain "", :palette ""}
-   {:p 17, :q -3, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 18, :q -4, :r -14, :elevation 0, :terrain "", :palette ""}
-   {:p 19, :q -4, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 20, :q -5, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 21, :q -5, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 22, :q -6, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 23, :q -6, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 24, :q -7, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 25, :q -7, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 26, :q -8, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 27,
-    :q -8,
-    :r -19,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 28,
-    :q -9,
-    :r -19,
-    :elevation 0,
-    :terrain "woods:2;foliage_elev:2",
-    :palette ""}
-   {:p 29, :q -9, :r -20, :elevation 1, :terrain "", :palette ""}
-   {:p 30, :q -10, :r -20, :elevation 1, :terrain "", :palette ""}
-   {:p 31, :q -10, :r -21, :elevation 0, :terrain "", :palette ""}
-   {:p 32, :q -11, :r -21, :elevation 0, :terrain "", :palette ""}
-   {:p 17, :q -2, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 18, :q -3, :r -15, :elevation 0, :terrain "", :palette ""}
-   {:p 19, :q -3, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 20, :q -4, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 21, :q -4, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 22, :q -5, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 23, :q -5, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 24, :q -6, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 25, :q -6, :r -19, :elevation 0, :terrain "", :palette ""}
-   {:p 26,
-    :q -7,
-    :r -19,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 27, :q -7, :r -20, :elevation 0, :terrain "", :palette ""}
-   {:p 28, :q -8, :r -20, :elevation 0, :terrain "", :palette ""}
-   {:p 29,
-    :q -8,
-    :r -21,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 30, :q -9, :r -21, :elevation 0, :terrain "", :palette ""}
-   {:p 31, :q -9, :r -22, :elevation 0, :terrain "", :palette ""}
-   {:p 32, :q -10, :r -22, :elevation 0, :terrain "", :palette ""}
-   {:p 17, :q -1, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 18, :q -2, :r -16, :elevation 0, :terrain "", :palette ""}
-   {:p 19, :q -2, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 20, :q -3, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 21, :q -3, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 22,
-    :q -4,
-    :r -18,
-    :elevation 0,
-    :terrain "water:1",
-    :palette ""}
-   {:p 23,
-    :q -4,
-    :r -19,
-    :elevation 0,
-    :terrain "water:1",
-    :palette ""}
-   {:p 24, :q -5, :r -19, :elevation 0, :terrain "", :palette ""}
-   {:p 25,
-    :q -5,
-    :r -20,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 26,
-    :q -6,
-    :r -20,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 27, :q -6, :r -21, :elevation 0, :terrain "", :palette ""}
-   {:p 28, :q -7, :r -21, :elevation 0, :terrain "", :palette ""}
-   {:p 29, :q -7, :r -22, :elevation 0, :terrain "", :palette ""}
-   {:p 30, :q -8, :r -22, :elevation 0, :terrain "", :palette ""}
-   {:p 31, :q -8, :r -23, :elevation 0, :terrain "", :palette ""}
-   {:p 32, :q -9, :r -23, :elevation 0, :terrain "", :palette ""}
-   {:p 17, :q 0, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 18, :q -1, :r -17, :elevation 0, :terrain "", :palette ""}
-   {:p 19, :q -1, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 20, :q -2, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 21, :q -2, :r -19, :elevation 0, :terrain "", :palette ""}
-   {:p 22, :q -3, :r -19, :elevation 0, :terrain "", :palette ""}
-   {:p 23,
-    :q -3,
-    :r -20,
-    :elevation 0,
-    :terrain "water:2",
-    :palette ""}
-   {:p 24,
-    :q -4,
-    :r -20,
-    :elevation 0,
-    :terrain "water:1",
-    :palette ""}
-   {:p 25,
-    :q -4,
-    :r -21,
-    :elevation 0,
-    :terrain "water:1",
-    :palette ""}
-   {:p 26, :q -5, :r -21, :elevation 0, :terrain "", :palette ""}
-   {:p 27, :q -5, :r -22, :elevation 0, :terrain "", :palette ""}
-   {:p 28, :q -6, :r -22, :elevation 0, :terrain "", :palette ""}
-   {:p 29, :q -6, :r -23, :elevation 0, :terrain "", :palette ""}
-   {:p 30, :q -7, :r -23, :elevation 0, :terrain "", :palette ""}
-   {:p 31, :q -7, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 32, :q -8, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 17, :q 1, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 18, :q 0, :r -18, :elevation 0, :terrain "", :palette ""}
-   {:p 19, :q 0, :r -19, :elevation 0, :terrain "", :palette ""}
-   {:p 20, :q -1, :r -19, :elevation 0, :terrain "", :palette ""}
-   {:p 21, :q -1, :r -20, :elevation 0, :terrain "", :palette ""}
-   {:p 22,
-    :q -2,
-    :r -20,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 23, :q -2, :r -21, :elevation 0, :terrain "", :palette ""}
-   {:p 24,
-    :q -3,
-    :r -21,
-    :elevation 0,
-    :terrain "water:1",
-    :palette ""}
-   {:p 25, :q -3, :r -22, :elevation 0, :terrain "", :palette ""}
-   {:p 26, :q -4, :r -22, :elevation 0, :terrain "", :palette ""}
-   {:p 27, :q -4, :r -23, :elevation 0, :terrain "", :palette ""}
-   {:p 28, :q -5, :r -23, :elevation 0, :terrain "", :palette ""}
-   {:p 29, :q -5, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 30, :q -6, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 31, :q -6, :r -25, :elevation 0, :terrain "", :palette ""}
-   {:p 32, :q -7, :r -25, :elevation 0, :terrain "", :palette ""}
-   {:p 17, :q 2, :r -19, :elevation 0, :terrain "", :palette ""}
-   {:p 18, :q 1, :r -19, :elevation 0, :terrain "", :palette ""}
-   {:p 19, :q 1, :r -20, :elevation 0, :terrain "", :palette ""}
-   {:p 20, :q 0, :r -20, :elevation 0, :terrain "", :palette ""}
-   {:p 21, :q 0, :r -21, :elevation 0, :terrain "", :palette ""}
-   {:p 22,
-    :q -1,
-    :r -21,
-    :elevation 0,
-    :terrain "woods:2;foliage_elev:2",
-    :palette ""}
-   {:p 23,
-    :q -1,
-    :r -22,
-    :elevation 0,
-    :terrain "water:1",
-    :palette ""}
-   {:p 24,
-    :q -2,
-    :r -22,
-    :elevation 0,
-    :terrain "water:2",
-    :palette ""}
-   {:p 25,
-    :q -2,
+   {:p 13,
+    :q 10,
     :r -23,
     :elevation 0,
-    :terrain "water:1",
-    :palette ""}
-   {:p 26, :q -3, :r -23, :elevation 0, :terrain "", :palette ""}
-   {:p 27, :q -3, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 28, :q -4, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 29,
-    :q -4,
-    :r -25,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 30,
-    :q -5,
-    :r -25,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 31, :q -5, :r -26, :elevation 0, :terrain "", :palette ""}
-   {:p 32, :q -6, :r -26, :elevation 0, :terrain "", :palette ""}
-   {:p 17, :q 3, :r -20, :elevation 0, :terrain "", :palette ""}
-   {:p 18, :q 2, :r -20, :elevation 0, :terrain "", :palette ""}
-   {:p 19, :q 2, :r -21, :elevation 0, :terrain "", :palette ""}
-   {:p 20, :q 1, :r -21, :elevation 0, :terrain "", :palette ""}
-   {:p 21,
-    :q 1,
-    :r -22,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 22, :q 0, :r -22, :elevation 0, :terrain "", :palette ""}
-   {:p 23, :q 0, :r -23, :elevation 0, :terrain "water:1", :palette ""}
-   {:p 24, :q -1, :r -23, :elevation 0, :terrain "", :palette ""}
-   {:p 25, :q -1, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 26, :q -2, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 27, :q -2, :r -25, :elevation 0, :terrain "", :palette ""}
-   {:p 28, :q -3, :r -25, :elevation 0, :terrain "", :palette ""}
-   {:p 29,
-    :q -3,
-    :r -26,
-    :elevation 0,
     :terrain "rough:1",
     :palette ""}
-   {:p 30, :q -4, :r -26, :elevation 0, :terrain "", :palette ""}
-   {:p 31, :q -4, :r -27, :elevation 0, :terrain "", :palette ""}
-   {:p 32, :q -5, :r -27, :elevation 0, :terrain "", :palette ""}
-   {:p 17, :q 4, :r -21, :elevation 0, :terrain "", :palette ""}
-   {:p 18, :q 3, :r -21, :elevation 0, :terrain "", :palette ""}
-   {:p 19, :q 3, :r -22, :elevation 0, :terrain "", :palette ""}
-   {:p 20, :q 2, :r -22, :elevation 0, :terrain "", :palette ""}
-   {:p 21, :q 2, :r -23, :elevation 0, :terrain "", :palette ""}
-   {:p 22, :q 1, :r -23, :elevation 0, :terrain "", :palette ""}
-   {:p 23, :q 1, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 24, :q 0, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 25, :q 0, :r -25, :elevation 0, :terrain "", :palette ""}
-   {:p 26, :q -1, :r -25, :elevation 0, :terrain "", :palette ""}
-   {:p 27,
-    :q -1,
-    :r -26,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 28,
-    :q -2,
-    :r -26,
-    :elevation 0,
-    :terrain "woods:2;foliage_elev:2",
-    :palette ""}
-   {:p 29, :q -2, :r -27, :elevation 1, :terrain "", :palette ""}
-   {:p 30, :q -3, :r -27, :elevation 0, :terrain "", :palette ""}
-   {:p 31, :q -3, :r -28, :elevation 0, :terrain "", :palette ""}
-   {:p 32, :q -4, :r -28, :elevation 0, :terrain "", :palette ""}
-   {:p 17, :q 5, :r -22, :elevation 0, :terrain "", :palette ""}
-   {:p 18, :q 4, :r -22, :elevation 0, :terrain "", :palette ""}
-   {:p 19, :q 4, :r -23, :elevation 0, :terrain "", :palette ""}
-   {:p 20, :q 3, :r -23, :elevation 0, :terrain "", :palette ""}
-   {:p 21, :q 3, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 22, :q 2, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 23, :q 2, :r -25, :elevation 0, :terrain "", :palette ""}
-   {:p 24, :q 1, :r -25, :elevation 0, :terrain "", :palette ""}
-   {:p 25, :q 1, :r -26, :elevation 0, :terrain "", :palette ""}
-   {:p 26, :q 0, :r -26, :elevation 0, :terrain "", :palette ""}
-   {:p 27,
-    :q 0,
-    :r -27,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 28, :q -1, :r -27, :elevation 2, :terrain "", :palette ""}
-   {:p 29, :q -1, :r -28, :elevation 2, :terrain "", :palette ""}
-   {:p 30, :q -2, :r -28, :elevation 2, :terrain "", :palette ""}
-   {:p 31, :q -2, :r -29, :elevation 0, :terrain "", :palette ""}
-   {:p 32, :q -3, :r -29, :elevation 0, :terrain "", :palette ""}
-   {:p 17, :q 6, :r -23, :elevation 0, :terrain "", :palette ""}
-   {:p 18, :q 5, :r -23, :elevation 0, :terrain "", :palette ""}
-   {:p 19, :q 5, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 20,
-    :q 4,
-    :r -24,
-    :elevation 0,
-    :terrain "woods:2;foliage_elev:2",
-    :palette ""}
-   {:p 21,
-    :q 4,
-    :r -25,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 22, :q 3, :r -25, :elevation 0, :terrain "", :palette ""}
-   {:p 23, :q 3, :r -26, :elevation 0, :terrain "", :palette ""}
-   {:p 24, :q 2, :r -26, :elevation 0, :terrain "", :palette ""}
-   {:p 25, :q 2, :r -27, :elevation 0, :terrain "", :palette ""}
-   {:p 26, :q 1, :r -27, :elevation 0, :terrain "", :palette ""}
-   {:p 27, :q 1, :r -28, :elevation 0, :terrain "", :palette ""}
-   {:p 28,
-    :q 0,
-    :r -28,
-    :elevation 3,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 29,
-    :q 0,
+   {:p 14, :q 9, :r -23, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 15, :q 9, :r -24, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 16, :q 8, :r -24, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 17, :r -18, :elevation 0, :terrain "", :palette ""}
+   {:p 2, :q 16, :r -18, :elevation 0, :terrain "", :palette ""}
+   {:p 3, :q 16, :r -19, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 4, :q 15, :r -19, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 5, :q 15, :r -20, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 6, :q 14, :r -20, :elevation 0, :terrain "", :palette ""}
+   {:p 7, :q 14, :r -21, :elevation 0, :terrain "", :palette ""}
+   {:p 8, :q 13, :r -21, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 13, :r -22, :elevation 0, :terrain "", :palette ""}
+   {:p 10, :q 12, :r -22, :elevation 10, :terrain "", :palette ""}
+   {:p 11, :q 12, :r -23, :elevation 0, :terrain "", :palette ""}
+   {:p 12, :q 11, :r -23, :elevation 10, :terrain "", :palette ""}
+   {:p 13, :q 11, :r -24, :elevation 0, :terrain "", :palette ""}
+   {:p 14, :q 10, :r -24, :elevation 10, :terrain "", :palette ""}
+   {:p 15, :q 10, :r -25, :elevation 0, :terrain "", :palette ""}
+   {:p 16, :q 9, :r -25, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 18, :r -19, :elevation 0, :terrain "", :palette ""}
+   {:p 2, :q 17, :r -19, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 3, :q 17, :r -20, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 4, :q 16, :r -20, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 5, :q 16, :r -21, :elevation 0, :terrain "", :palette ""}
+   {:p 6, :q 15, :r -21, :elevation 0, :terrain "", :palette ""}
+   {:p 7, :q 15, :r -22, :elevation 0, :terrain "", :palette ""}
+   {:p 8, :q 14, :r -22, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 14, :r -23, :elevation 10, :terrain "", :palette ""}
+   {:p 10, :q 13, :r -23, :elevation 10, :terrain "", :palette ""}
+   {:p 11, :q 13, :r -24, :elevation 10, :terrain "", :palette ""}
+   {:p 12, :q 12, :r -24, :elevation 10, :terrain "", :palette ""}
+   {:p 13, :q 12, :r -25, :elevation 10, :terrain "", :palette ""}
+   {:p 14, :q 11, :r -25, :elevation 10, :terrain "", :palette ""}
+   {:p 15, :q 11, :r -26, :elevation 10, :terrain "", :palette ""}
+   {:p 16, :q 10, :r -26, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 19, :r -20, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 2, :q 18, :r -20, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 3, :q 18, :r -21, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 4, :q 17, :r -21, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 5, :q 17, :r -22, :elevation 0, :terrain "", :palette ""}
+   {:p 6, :q 16, :r -22, :elevation 0, :terrain "", :palette ""}
+   {:p 7, :q 16, :r -23, :elevation 0, :terrain "", :palette ""}
+   {:p 8, :q 15, :r -23, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 15, :r -24, :elevation 10, :terrain "", :palette ""}
+   {:p 10, :q 14, :r -24, :elevation 10, :terrain "", :palette ""}
+   {:p 11, :q 14, :r -25, :elevation 10, :terrain "", :palette ""}
+   {:p 12, :q 13, :r -25, :elevation 10, :terrain "", :palette ""}
+   {:p 13, :q 13, :r -26, :elevation 10, :terrain "", :palette ""}
+   {:p 14, :q 12, :r -26, :elevation 10, :terrain "", :palette ""}
+   {:p 15, :q 12, :r -27, :elevation 10, :terrain "", :palette ""}
+   {:p 16, :q 11, :r -27, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 20, :r -21, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 2, :q 19, :r -21, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 3, :q 19, :r -22, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 4, :q 18, :r -22, :elevation 0, :terrain "", :palette ""}
+   {:p 5, :q 18, :r -23, :elevation 0, :terrain "", :palette ""}
+   {:p 6, :q 17, :r -23, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 7, :q 17, :r -24, :elevation 0, :terrain "", :palette ""}
+   {:p 8, :q 16, :r -24, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 16, :r -25, :elevation 10, :terrain "", :palette ""}
+   {:p 10, :q 15, :r -25, :elevation 10, :terrain "", :palette ""}
+   {:p 11, :q 15, :r -26, :elevation 10, :terrain "", :palette ""}
+   {:p 12, :q 14, :r -26, :elevation 10, :terrain "", :palette ""}
+   {:p 13, :q 14, :r -27, :elevation 10, :terrain "", :palette ""}
+   {:p 14, :q 13, :r -27, :elevation 10, :terrain "", :palette ""}
+   {:p 15, :q 13, :r -28, :elevation 10, :terrain "", :palette ""}
+   {:p 16, :q 12, :r -28, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 21, :r -22, :elevation 0, :terrain "", :palette ""}
+   {:p 2, :q 20, :r -22, :elevation 0, :terrain "", :palette ""}
+   {:p 3, :q 20, :r -23, :elevation 0, :terrain "", :palette ""}
+   {:p 4, :q 19, :r -23, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 5, :q 19, :r -24, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 6, :q 18, :r -24, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 7, :q 18, :r -25, :elevation 0, :terrain "", :palette ""}
+   {:p 8, :q 17, :r -25, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 17, :r -26, :elevation 10, :terrain "", :palette ""}
+   {:p 10, :q 16, :r -26, :elevation 10, :terrain "", :palette ""}
+   {:p 11, :q 16, :r -27, :elevation 10, :terrain "", :palette ""}
+   {:p 12, :q 15, :r -27, :elevation 10, :terrain "", :palette ""}
+   {:p 13, :q 15, :r -28, :elevation 10, :terrain "", :palette ""}
+   {:p 14, :q 14, :r -28, :elevation 10, :terrain "", :palette ""}
+   {:p 15, :q 14, :r -29, :elevation 10, :terrain "", :palette ""}
+   {:p 16, :q 13, :r -29, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 22, :r -23, :elevation 0, :terrain "", :palette ""}
+   {:p 2, :q 21, :r -23, :elevation 0, :terrain "", :palette ""}
+   {:p 3, :q 21, :r -24, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 4, :q 20, :r -24, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 5, :q 20, :r -25, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 6, :q 19, :r -25, :elevation 0, :terrain "", :palette ""}
+   {:p 7, :q 19, :r -26, :elevation 0, :terrain "", :palette ""}
+   {:p 8, :q 18, :r -26, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 18, :r -27, :elevation 10, :terrain "", :palette ""}
+   {:p 10, :q 17, :r -27, :elevation 10, :terrain "", :palette ""}
+   {:p 11, :q 17, :r -28, :elevation 10, :terrain "", :palette ""}
+   {:p 12, :q 16, :r -28, :elevation 10, :terrain "", :palette ""}
+   {:p 13, :q 16, :r -29, :elevation 10, :terrain "", :palette ""}
+   {:p 14, :q 15, :r -29, :elevation 10, :terrain "", :palette ""}
+   {:p 15, :q 15, :r -30, :elevation 10, :terrain "", :palette ""}
+   {:p 16, :q 14, :r -30, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 23, :r -24, :elevation 0, :terrain "", :palette ""}
+   {:p 2, :q 22, :r -24, :elevation 0, :terrain "", :palette ""}
+   {:p 3, :q 22, :r -25, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 4, :q 21, :r -25, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 5, :q 21, :r -26, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 6, :q 20, :r -26, :elevation 0, :terrain "", :palette ""}
+   {:p 7, :q 20, :r -27, :elevation 0, :terrain "", :palette ""}
+   {:p 8, :q 19, :r -27, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 19, :r -28, :elevation 10, :terrain "", :palette ""}
+   {:p 10, :q 18, :r -28, :elevation 10, :terrain "", :palette ""}
+   {:p 11, :q 18, :r -29, :elevation 10, :terrain "", :palette ""}
+   {:p 12, :q 17, :r -29, :elevation 10, :terrain "", :palette ""}
+   {:p 13, :q 17, :r -30, :elevation 10, :terrain "", :palette ""}
+   {:p 14, :q 16, :r -30, :elevation 10, :terrain "", :palette ""}
+   {:p 15, :q 16, :r -31, :elevation 10, :terrain "", :palette ""}
+   {:p 16, :q 15, :r -31, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 24, :r -25, :elevation 0, :terrain "", :palette ""}
+   {:p 2, :q 23, :r -25, :elevation 0, :terrain "", :palette ""}
+   {:p 3, :q 23, :r -26, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 4, :q 22, :r -26, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 5, :q 22, :r -27, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 6, :q 21, :r -27, :elevation 0, :terrain "", :palette ""}
+   {:p 7, :q 21, :r -28, :elevation 0, :terrain "", :palette ""}
+   {:p 8, :q 20, :r -28, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 20, :r -29, :elevation 10, :terrain "", :palette ""}
+   {:p 10, :q 19, :r -29, :elevation 10, :terrain "", :palette ""}
+   {:p 11, :q 19, :r -30, :elevation 10, :terrain "", :palette ""}
+   {:p 12, :q 18, :r -30, :elevation 10, :terrain "", :palette ""}
+   {:p 13, :q 18, :r -31, :elevation 10, :terrain "", :palette ""}
+   {:p 14, :q 17, :r -31, :elevation 10, :terrain "", :palette ""}
+   {:p 15, :q 17, :r -32, :elevation 10, :terrain "", :palette ""}
+   {:p 16, :q 16, :r -32, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 25, :r -26, :elevation 0, :terrain "", :palette ""}
+   {:p 2, :q 24, :r -26, :elevation 0, :terrain "", :palette ""}
+   {:p 3, :q 24, :r -27, :elevation 0, :terrain "", :palette ""}
+   {:p 4, :q 23, :r -27, :elevation 0, :terrain "", :palette ""}
+   {:p 5, :q 23, :r -28, :elevation 0, :terrain "", :palette ""}
+   {:p 6, :q 22, :r -28, :elevation 0, :terrain "", :palette ""}
+   {:p 7, :q 22, :r -29, :elevation 0, :terrain "", :palette ""}
+   {:p 8, :q 21, :r -29, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 21, :r -30, :elevation 10, :terrain "", :palette ""}
+   {:p 10, :q 20, :r -30, :elevation 10, :terrain "", :palette ""}
+   {:p 11, :q 20, :r -31, :elevation 10, :terrain "", :palette ""}
+   {:p 12, :q 19, :r -31, :elevation 10, :terrain "", :palette ""}
+   {:p 13, :q 19, :r -32, :elevation 10, :terrain "", :palette ""}
+   {:p 14, :q 18, :r -32, :elevation 10, :terrain "", :palette ""}
+   {:p 15, :q 18, :r -33, :elevation 10, :terrain "", :palette ""}
+   {:p 16, :q 17, :r -33, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 26, :r -27, :elevation 0, :terrain "", :palette ""}
+   {:p 2, :q 25, :r -27, :elevation 0, :terrain "", :palette ""}
+   {:p 3, :q 25, :r -28, :elevation 0, :terrain "", :palette ""}
+   {:p 4, :q 24, :r -28, :elevation 0, :terrain "", :palette ""}
+   {:p 5, :q 24, :r -29, :elevation 0, :terrain "", :palette ""}
+   {:p 6, :q 23, :r -29, :elevation 0, :terrain "", :palette ""}
+   {:p 7, :q 23, :r -30, :elevation 0, :terrain "", :palette ""}
+   {:p 8, :q 22, :r -30, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 22, :r -31, :elevation 10, :terrain "", :palette ""}
+   {:p 10, :q 21, :r -31, :elevation 10, :terrain "", :palette ""}
+   {:p 11, :q 21, :r -32, :elevation 10, :terrain "", :palette ""}
+   {:p 12, :q 20, :r -32, :elevation 10, :terrain "", :palette ""}
+   {:p 13, :q 20, :r -33, :elevation 10, :terrain "", :palette ""}
+   {:p 14, :q 19, :r -33, :elevation 10, :terrain "", :palette ""}
+   {:p 15, :q 19, :r -34, :elevation 10, :terrain "", :palette ""}
+   {:p 16, :q 18, :r -34, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 27, :r -28, :elevation 0, :terrain "", :palette ""}
+   {:p 2, :q 26, :r -28, :elevation 0, :terrain "", :palette ""}
+   {:p 3, :q 26, :r -29, :elevation 0, :terrain "", :palette ""}
+   {:p 4, :q 25, :r -29, :elevation 0, :terrain "", :palette ""}
+   {:p 5, :q 25, :r -30, :elevation 0, :terrain "", :palette ""}
+   {:p 6, :q 24, :r -30, :elevation 0, :terrain "", :palette ""}
+   {:p 7, :q 24, :r -31, :elevation 0, :terrain "", :palette ""}
+   {:p 8, :q 23, :r -31, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 23, :r -32, :elevation 10, :terrain "", :palette ""}
+   {:p 10, :q 22, :r -32, :elevation 10, :terrain "", :palette ""}
+   {:p 11, :q 22, :r -33, :elevation 10, :terrain "", :palette ""}
+   {:p 12, :q 21, :r -33, :elevation 10, :terrain "", :palette ""}
+   {:p 13, :q 21, :r -34, :elevation 10, :terrain "", :palette ""}
+   {:p 14, :q 20, :r -34, :elevation 10, :terrain "", :palette ""}
+   {:p 15, :q 20, :r -35, :elevation 10, :terrain "", :palette ""}
+   {:p 16, :q 19, :r -35, :elevation 10, :terrain "", :palette ""}
+   {:p 1, :q 28, :r -29, :elevation 0, :terrain "", :palette ""}
+   {:p 2,
+    :q 27,
     :r -29,
-    :elevation 3,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 30, :q -1, :r -29, :elevation 2, :terrain "", :palette ""}
-   {:p 31, :q -1, :r -30, :elevation 0, :terrain "", :palette ""}
-   {:p 32, :q -2, :r -30, :elevation 0, :terrain "", :palette ""}
-   {:p 17, :q 7, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 18, :q 6, :r -24, :elevation 0, :terrain "", :palette ""}
-   {:p 19,
-    :q 6,
-    :r -25,
     :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
+    :terrain "pavement:1",
     :palette ""}
-   {:p 20, :q 5, :r -25, :elevation 0, :terrain "", :palette ""}
-   {:p 21,
-    :q 5,
-    :r -26,
-    :elevation 0,
-    :terrain "woods:1;foliage_elev:2",
-    :palette ""}
-   {:p 22, :q 4, :r -26, :elevation 0, :terrain "", :palette ""}
-   {:p 23, :q 4, :r -27, :elevation 0, :terrain "", :palette ""}
-   {:p 24, :q 3, :r -27, :elevation 0, :terrain "", :palette ""}
-   {:p 25, :q 3, :r -28, :elevation 0, :terrain "", :palette ""}
-   {:p 26, :q 2, :r -28, :elevation 0, :terrain "rough:1", :palette ""}
-   {:p 27, :q 2, :r -29, :elevation 1, :terrain "", :palette ""}
-   {:p 28, :q 1, :r -29, :elevation 2, :terrain "", :palette ""}
-   {:p 29,
-    :q 1,
+   {:p 3, :q 27, :r -30, :elevation 0, :terrain "", :palette ""}
+   {:p 4,
+    :q 26,
     :r -30,
-    :elevation 3,
-    :terrain "woods:1;foliage_elev:2",
+    :elevation 0,
+    :terrain "pavement:1",
     :palette ""}
-   {:p 30, :q 0, :r -30, :elevation 0, :terrain "", :palette ""}
-   {:p 31, :q 0, :r -31, :elevation 0, :terrain "", :palette ""}
-   {:p 32, :q -1, :r -31, :elevation 0, :terrain "", :palette ""}
-   {:p 17, :q 8, :r -25, :elevation 0, :terrain "", :palette ""}
-   {:p 18, :q 7, :r -25, :elevation 0, :terrain "", :palette ""}
-   {:p 19, :q 7, :r -26, :elevation 0, :terrain "", :palette ""}
-   {:p 20, :q 6, :r -26, :elevation 0, :terrain "", :palette ""}
-   {:p 21, :q 6, :r -27, :elevation 0, :terrain "", :palette ""}
-   {:p 22, :q 5, :r -27, :elevation 0, :terrain "", :palette ""}
-   {:p 23, :q 5, :r -28, :elevation 0, :terrain "", :palette ""}
-   {:p 24, :q 4, :r -28, :elevation 0, :terrain "", :palette ""}
-   {:p 25, :q 4, :r -29, :elevation 0, :terrain "", :palette ""}
-   {:p 26, :q 3, :r -29, :elevation 0, :terrain "", :palette ""}
-   {:p 27, :q 3, :r -30, :elevation 1, :terrain "", :palette ""}
-   {:p 28, :q 2, :r -30, :elevation 0, :terrain "", :palette ""}
-   {:p 29, :q 2, :r -31, :elevation 1, :terrain "", :palette ""}
-   {:p 30, :q 1, :r -31, :elevation 0, :terrain "", :palette ""}
-   {:p 31, :q 1, :r -32, :elevation 0, :terrain "", :palette ""}
-   {:p 32, :q 0, :r -32, :elevation 0, :terrain "", :palette ""}
-   {:p 17, :q 9, :r -26, :elevation 0, :terrain "", :palette ""}
-   {:p 18, :q 8, :r -26, :elevation 0, :terrain "", :palette ""}
-   {:p 19, :q 8, :r -27, :elevation 0, :terrain "", :palette ""}
-   {:p 20, :q 7, :r -27, :elevation 0, :terrain "", :palette ""}
-   {:p 21, :q 7, :r -28, :elevation 0, :terrain "", :palette ""}
-   {:p 22, :q 6, :r -28, :elevation 0, :terrain "", :palette ""}
-   {:p 23, :q 6, :r -29, :elevation 0, :terrain "", :palette ""}
-   {:p 24, :q 5, :r -29, :elevation 0, :terrain "", :palette ""}
-   {:p 25, :q 5, :r -30, :elevation 0, :terrain "", :palette ""}
-   {:p 26, :q 4, :r -30, :elevation 0, :terrain "", :palette ""}
-   {:p 27, :q 4, :r -31, :elevation 0, :terrain "", :palette ""}
-   {:p 28, :q 3, :r -31, :elevation 0, :terrain "", :palette ""}
-   {:p 29, :q 3, :r -32, :elevation 0, :terrain "", :palette ""}
-   {:p 30, :q 2, :r -32, :elevation 0, :terrain "", :palette ""}
-   {:p 31, :q 2, :r -33, :elevation 0, :terrain "", :palette ""}
-   {:p 32, :q 1, :r -33, :elevation 0, :terrain "", :palette ""}],
+   {:p 5, :q 26, :r -31, :elevation 0, :terrain "", :palette ""}
+   {:p 6,
+    :q 25,
+    :r -31,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 7, :q 25, :r -32, :elevation 0, :terrain "rough:1", :palette ""}
+   {:p 8, :q 24, :r -32, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 24, :r -33, :elevation 10, :terrain "", :palette ""}
+   {:p 10, :q 23, :r -33, :elevation 10, :terrain "", :palette ""}
+   {:p 11, :q 23, :r -34, :elevation 10, :terrain "", :palette ""}
+   {:p 12, :q 22, :r -34, :elevation 10, :terrain "", :palette ""}
+   {:p 13, :q 22, :r -35, :elevation 10, :terrain "", :palette ""}
+   {:p 14, :q 21, :r -35, :elevation 10, :terrain "", :palette ""}
+   {:p 15, :q 21, :r -36, :elevation 10, :terrain "", :palette ""}
+   {:p 16, :q 20, :r -36, :elevation 10, :terrain "", :palette ""}
+   {:p 1,
+    :q 29,
+    :r -30,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 2,
+    :q 28,
+    :r -30,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 3,
+    :q 28,
+    :r -31,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 4,
+    :q 27,
+    :r -31,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 5,
+    :q 27,
+    :r -32,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 6,
+    :q 26,
+    :r -32,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 7,
+    :q 26,
+    :r -33,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 8, :q 25, :r -33, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 25, :r -34, :elevation 10, :terrain "", :palette ""}
+   {:p 10, :q 24, :r -34, :elevation 10, :terrain "", :palette ""}
+   {:p 11, :q 24, :r -35, :elevation 10, :terrain "", :palette ""}
+   {:p 12, :q 23, :r -35, :elevation 10, :terrain "", :palette ""}
+   {:p 13, :q 23, :r -36, :elevation 10, :terrain "", :palette ""}
+   {:p 14, :q 22, :r -36, :elevation 10, :terrain "", :palette ""}
+   {:p 15, :q 22, :r -37, :elevation 10, :terrain "", :palette ""}
+   {:p 16, :q 21, :r -37, :elevation 10, :terrain "", :palette ""}
+   {:p 1,
+    :q 30,
+    :r -31,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 2,
+    :q 29,
+    :r -31,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 3,
+    :q 29,
+    :r -32,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 4,
+    :q 28,
+    :r -32,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 5,
+    :q 28,
+    :r -33,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 6,
+    :q 27,
+    :r -33,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 7,
+    :q 27,
+    :r -34,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 8, :q 26, :r -34, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 26, :r -35, :elevation 10, :terrain "", :palette ""}
+   {:p 10, :q 25, :r -35, :elevation 10, :terrain "", :palette ""}
+   {:p 11, :q 25, :r -36, :elevation 10, :terrain "", :palette ""}
+   {:p 12, :q 24, :r -36, :elevation 10, :terrain "", :palette ""}
+   {:p 13, :q 24, :r -37, :elevation 10, :terrain "", :palette ""}
+   {:p 14, :q 23, :r -37, :elevation 10, :terrain "", :palette ""}
+   {:p 15, :q 23, :r -38, :elevation 10, :terrain "", :palette ""}
+   {:p 16, :q 22, :r -38, :elevation 10, :terrain "", :palette ""}
+   {:p 1,
+    :q 31,
+    :r -32,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 2,
+    :q 30,
+    :r -32,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 3,
+    :q 30,
+    :r -33,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 4,
+    :q 29,
+    :r -33,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 5,
+    :q 29,
+    :r -34,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 6,
+    :q 28,
+    :r -34,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 7,
+    :q 28,
+    :r -35,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 8, :q 27, :r -35, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 27, :r -36, :elevation 10, :terrain "", :palette ""}
+   {:p 10, :q 26, :r -36, :elevation 10, :terrain "", :palette ""}
+   {:p 11, :q 26, :r -37, :elevation 10, :terrain "", :palette ""}
+   {:p 12, :q 25, :r -37, :elevation 10, :terrain "", :palette ""}
+   {:p 13, :q 25, :r -38, :elevation 10, :terrain "", :palette ""}
+   {:p 14, :q 24, :r -38, :elevation 10, :terrain "", :palette ""}
+   {:p 15, :q 24, :r -39, :elevation 10, :terrain "", :palette ""}
+   {:p 16, :q 23, :r -39, :elevation 10, :terrain "", :palette ""}
+   {:p 1,
+    :q 32,
+    :r -33,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 2,
+    :q 31,
+    :r -33,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 3,
+    :q 31,
+    :r -34,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 4,
+    :q 30,
+    :r -34,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 5,
+    :q 30,
+    :r -35,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 6,
+    :q 29,
+    :r -35,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 7,
+    :q 29,
+    :r -36,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 8, :q 28, :r -36, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 28, :r -37, :elevation 10, :terrain "", :palette ""}
+   {:p 10, :q 27, :r -37, :elevation 10, :terrain "", :palette ""}
+   {:p 11, :q 27, :r -38, :elevation 10, :terrain "", :palette ""}
+   {:p 12, :q 26, :r -38, :elevation 10, :terrain "", :palette ""}
+   {:p 13, :q 26, :r -39, :elevation 10, :terrain "", :palette ""}
+   {:p 14, :q 25, :r -39, :elevation 10, :terrain "", :palette ""}
+   {:p 15, :q 25, :r -40, :elevation 10, :terrain "", :palette ""}
+   {:p 16, :q 24, :r -40, :elevation 10, :terrain "", :palette ""}
+   {:p 1,
+    :q 33,
+    :r -34,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 2,
+    :q 32,
+    :r -34,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 3,
+    :q 32,
+    :r -35,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 4,
+    :q 31,
+    :r -35,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 5,
+    :q 31,
+    :r -36,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 6,
+    :q 30,
+    :r -36,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 7,
+    :q 30,
+    :r -37,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 8, :q 29, :r -37, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 29, :r -38, :elevation 10, :terrain "", :palette ""}
+   {:p 10, :q 28, :r -38, :elevation 10, :terrain "", :palette ""}
+   {:p 11, :q 28, :r -39, :elevation 10, :terrain "", :palette ""}
+   {:p 12, :q 27, :r -39, :elevation 10, :terrain "", :palette ""}
+   {:p 13, :q 27, :r -40, :elevation 10, :terrain "", :palette ""}
+   {:p 14, :q 26, :r -40, :elevation 10, :terrain "", :palette ""}
+   {:p 15, :q 26, :r -41, :elevation 10, :terrain "", :palette ""}
+   {:p 16, :q 25, :r -41, :elevation 10, :terrain "", :palette ""}
+   {:p 1,
+    :q 34,
+    :r -35,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 2,
+    :q 33,
+    :r -35,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 3,
+    :q 33,
+    :r -36,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 4,
+    :q 32,
+    :r -36,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 5,
+    :q 32,
+    :r -37,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 6,
+    :q 31,
+    :r -37,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 7,
+    :q 31,
+    :r -38,
+    :elevation 0,
+    :terrain "pavement:1",
+    :palette ""}
+   {:p 8, :q 30, :r -38, :elevation 10, :terrain "", :palette ""}
+   {:p 9, :q 30, :r -39, :elevation 10, :terrain "", :palette ""}
+   {:p 10, :q 29, :r -39, :elevation 10, :terrain "", :palette ""}
+   {:p 11, :q 29, :r -40, :elevation 10, :terrain "", :palette ""}
+   {:p 12, :q 28, :r -40, :elevation 10, :terrain "", :palette ""}
+   {:p 13, :q 28, :r -41, :elevation 10, :terrain "", :palette ""}
+   {:p 14, :q 27, :r -41, :elevation 10, :terrain "", :palette ""}
+   {:p 15, :q 27, :r -42, :elevation 10, :terrain "", :palette ""}
+   {:p 16, :q 26, :r -42, :elevation 10, :terrain "", :palette ""}],
   :mapsheets
-  [{:name "16x17 BattleTech.board",
+  [{:name "DustballCanyon1.board",
     :height 17,
     :width 16,
     :tiles
-    [{:p 1, :q 1, :r -2, :elevation 0, :terrain "", :palette ""}
-     {:p 2, :q 0, :r -2, :elevation 0, :terrain "", :palette ""}
-     {:p 3, :q 0, :r -3, :elevation 0, :terrain "", :palette ""}
-     {:p 4, :q -1, :r -3, :elevation 0, :terrain "", :palette ""}
-     {:p 5, :q -1, :r -4, :elevation 0, :terrain "", :palette ""}
-     {:p 6, :q -2, :r -4, :elevation 0, :terrain "", :palette ""}
-     {:p 7, :q -2, :r -5, :elevation 0, :terrain "", :palette ""}
-     {:p 8, :q -3, :r -5, :elevation 0, :terrain "", :palette ""}
+    [{:p 1, :q 1, :r -2, :elevation 10, :terrain "", :palette ""}
+     {:p 2, :q 0, :r -2, :elevation 10, :terrain "", :palette ""}
+     {:p 3, :q 0, :r -3, :elevation 10, :terrain "", :palette ""}
+     {:p 4, :q -1, :r -3, :elevation 10, :terrain "", :palette ""}
+     {:p 5, :q -1, :r -4, :elevation 10, :terrain "", :palette ""}
+     {:p 6, :q -2, :r -4, :elevation 10, :terrain "", :palette ""}
+     {:p 7, :q -2, :r -5, :elevation 10, :terrain "", :palette ""}
+     {:p 8, :q -3, :r -5, :elevation 10, :terrain "", :palette ""}
      {:p 9, :q -3, :r -6, :elevation 0, :terrain "", :palette ""}
      {:p 10, :q -4, :r -6, :elevation 0, :terrain "", :palette ""}
      {:p 11, :q -4, :r -7, :elevation 0, :terrain "", :palette ""}
-     {:p 12, :q -5, :r -7, :elevation 0, :terrain "", :palette ""}
-     {:p 13, :q -5, :r -8, :elevation 0, :terrain "", :palette ""}
-     {:p 14, :q -6, :r -8, :elevation 0, :terrain "", :palette ""}
-     {:p 15, :q -6, :r -9, :elevation 0, :terrain "", :palette ""}
-     {:p 16, :q -7, :r -9, :elevation 0, :terrain "", :palette ""}
-     {:p 1, :q 2, :r -3, :elevation 0, :terrain "", :palette ""}
-     {:p 2,
-      :q 1,
-      :r -3,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 3,
-      :q 1,
-      :r -4,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 4,
-      :q 0,
-      :r -4,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 5, :q 0, :r -5, :elevation 0, :terrain "", :palette ""}
-     {:p 6, :q -1, :r -5, :elevation 0, :terrain "", :palette ""}
-     {:p 7, :q -1, :r -6, :elevation 0, :terrain "", :palette ""}
-     {:p 8, :q -2, :r -6, :elevation 0, :terrain "", :palette ""}
-     {:p 9,
-      :q -2,
-      :r -7,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 10,
-      :q -3,
+     {:p 12,
+      :q -5,
       :r -7,
       :elevation 0,
       :terrain "rough:1",
       :palette ""}
-     {:p 11, :q -3, :r -8, :elevation 1, :terrain "", :palette ""}
-     {:p 12, :q -4, :r -8, :elevation 2, :terrain "", :palette ""}
-     {:p 13, :q -4, :r -9, :elevation 1, :terrain "", :palette ""}
-     {:p 14, :q -5, :r -9, :elevation 2, :terrain "", :palette ""}
+     {:p 13, :q -5, :r -8, :elevation 0, :terrain "", :palette ""}
+     {:p 14, :q -6, :r -8, :elevation 0, :terrain "", :palette ""}
+     {:p 15, :q -6, :r -9, :elevation 0, :terrain "", :palette ""}
+     {:p 16, :q -7, :r -9, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 2, :r -3, :elevation 10, :terrain "", :palette ""}
+     {:p 2, :q 1, :r -3, :elevation 10, :terrain "", :palette ""}
+     {:p 3, :q 1, :r -4, :elevation 10, :terrain "", :palette ""}
+     {:p 4, :q 0, :r -4, :elevation 10, :terrain "", :palette ""}
+     {:p 5, :q 0, :r -5, :elevation 10, :terrain "", :palette ""}
+     {:p 6, :q -1, :r -5, :elevation 10, :terrain "", :palette ""}
+     {:p 7, :q -1, :r -6, :elevation 10, :terrain "", :palette ""}
+     {:p 8, :q -2, :r -6, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q -2, :r -7, :elevation 0, :terrain "", :palette ""}
+     {:p 10, :q -3, :r -7, :elevation 0, :terrain "", :palette ""}
+     {:p 11, :q -3, :r -8, :elevation 0, :terrain "", :palette ""}
+     {:p 12,
+      :q -4,
+      :r -8,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 13, :q -4, :r -9, :elevation 0, :terrain "", :palette ""}
+     {:p 14, :q -5, :r -9, :elevation 0, :terrain "", :palette ""}
      {:p 15, :q -5, :r -10, :elevation 0, :terrain "", :palette ""}
-     {:p 16, :q -6, :r -10, :elevation 0, :terrain "", :palette ""}
-     {:p 1, :q 3, :r -4, :elevation 0, :terrain "", :palette ""}
-     {:p 2, :q 2, :r -4, :elevation 0, :terrain "", :palette ""}
-     {:p 3,
-      :q 2,
-      :r -5,
-      :elevation 0,
-      :terrain "woods:2;foliage_elev:2",
-      :palette ""}
-     {:p 4,
-      :q 1,
-      :r -5,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 5, :q 1, :r -6, :elevation 0, :terrain "", :palette ""}
-     {:p 6, :q 0, :r -6, :elevation 0, :terrain "", :palette ""}
-     {:p 7, :q 0, :r -7, :elevation 0, :terrain "", :palette ""}
-     {:p 8, :q -1, :r -7, :elevation 0, :terrain "", :palette ""}
+     {:p 16, :q -6, :r -10, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 3, :r -4, :elevation 10, :terrain "", :palette ""}
+     {:p 2, :q 2, :r -4, :elevation 10, :terrain "", :palette ""}
+     {:p 3, :q 2, :r -5, :elevation 10, :terrain "", :palette ""}
+     {:p 4, :q 1, :r -5, :elevation 10, :terrain "", :palette ""}
+     {:p 5, :q 1, :r -6, :elevation 10, :terrain "", :palette ""}
+     {:p 6, :q 0, :r -6, :elevation 10, :terrain "", :palette ""}
+     {:p 7, :q 0, :r -7, :elevation 10, :terrain "", :palette ""}
+     {:p 8, :q -1, :r -7, :elevation 10, :terrain "", :palette ""}
      {:p 9, :q -1, :r -8, :elevation 0, :terrain "", :palette ""}
      {:p 10, :q -2, :r -8, :elevation 0, :terrain "", :palette ""}
-     {:p 11,
-      :q -2,
+     {:p 11, :q -2, :r -9, :elevation 0, :terrain "", :palette ""}
+     {:p 12,
+      :q -3,
       :r -9,
       :elevation 0,
       :terrain "rough:1",
       :palette ""}
-     {:p 12, :q -3, :r -9, :elevation 0, :terrain "", :palette ""}
      {:p 13,
       :q -3,
       :r -10,
-      :elevation 2,
-      :terrain "woods:1;foliage_elev:2",
+      :elevation 0,
+      :terrain "rough:1",
       :palette ""}
-     {:p 14, :q -4, :r -10, :elevation 3, :terrain "", :palette ""}
-     {:p 15, :q -4, :r -11, :elevation 0, :terrain "", :palette ""}
-     {:p 16, :q -5, :r -11, :elevation 0, :terrain "", :palette ""}
-     {:p 1, :q 4, :r -5, :elevation 0, :terrain "", :palette ""}
-     {:p 2, :q 3, :r -5, :elevation 0, :terrain "", :palette ""}
-     {:p 3, :q 3, :r -6, :elevation 0, :terrain "", :palette ""}
-     {:p 4, :q 2, :r -6, :elevation 0, :terrain "", :palette ""}
-     {:p 5, :q 2, :r -7, :elevation 0, :terrain "", :palette ""}
-     {:p 6, :q 1, :r -7, :elevation 0, :terrain "", :palette ""}
-     {:p 7, :q 1, :r -8, :elevation 0, :terrain "", :palette ""}
-     {:p 8, :q 0, :r -8, :elevation 0, :terrain "", :palette ""}
+     {:p 14,
+      :q -4,
+      :r -10,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 15,
+      :q -4,
+      :r -11,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 16, :q -5, :r -11, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 4, :r -5, :elevation 10, :terrain "", :palette ""}
+     {:p 2, :q 3, :r -5, :elevation 10, :terrain "", :palette ""}
+     {:p 3, :q 3, :r -6, :elevation 10, :terrain "", :palette ""}
+     {:p 4, :q 2, :r -6, :elevation 10, :terrain "", :palette ""}
+     {:p 5, :q 2, :r -7, :elevation 10, :terrain "", :palette ""}
+     {:p 6, :q 1, :r -7, :elevation 10, :terrain "", :palette ""}
+     {:p 7, :q 1, :r -8, :elevation 10, :terrain "", :palette ""}
+     {:p 8, :q 0, :r -8, :elevation 10, :terrain "", :palette ""}
      {:p 9, :q 0, :r -9, :elevation 0, :terrain "", :palette ""}
      {:p 10, :q -1, :r -9, :elevation 0, :terrain "", :palette ""}
-     {:p 11, :q -1, :r -10, :elevation 0, :terrain "", :palette ""}
-     {:p 12, :q -2, :r -10, :elevation 2, :terrain "", :palette ""}
-     {:p 13, :q -2, :r -11, :elevation 3, :terrain "", :palette ""}
-     {:p 14, :q -3, :r -11, :elevation 0, :terrain "", :palette ""}
-     {:p 15, :q -3, :r -12, :elevation 0, :terrain "", :palette ""}
-     {:p 16, :q -4, :r -12, :elevation 0, :terrain "", :palette ""}
-     {:p 1, :q 5, :r -6, :elevation 0, :terrain "", :palette ""}
-     {:p 2, :q 4, :r -6, :elevation 0, :terrain "", :palette ""}
-     {:p 3, :q 4, :r -7, :elevation 0, :terrain "", :palette ""}
-     {:p 4, :q 3, :r -7, :elevation 0, :terrain "", :palette ""}
-     {:p 5, :q 3, :r -8, :elevation 0, :terrain "", :palette ""}
-     {:p 6, :q 2, :r -8, :elevation 0, :terrain "", :palette ""}
-     {:p 7, :q 2, :r -9, :elevation 0, :terrain "", :palette ""}
-     {:p 8, :q 1, :r -9, :elevation 0, :terrain "", :palette ""}
+     {:p 11,
+      :q -1,
+      :r -10,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 12, :q -2, :r -10, :elevation 0, :terrain "", :palette ""}
+     {:p 13,
+      :q -2,
+      :r -11,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 14,
+      :q -3,
+      :r -11,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 15,
+      :q -3,
+      :r -12,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 16, :q -4, :r -12, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 5, :r -6, :elevation 10, :terrain "", :palette ""}
+     {:p 2, :q 4, :r -6, :elevation 10, :terrain "", :palette ""}
+     {:p 3, :q 4, :r -7, :elevation 10, :terrain "", :palette ""}
+     {:p 4, :q 3, :r -7, :elevation 10, :terrain "", :palette ""}
+     {:p 5, :q 3, :r -8, :elevation 10, :terrain "", :palette ""}
+     {:p 6, :q 2, :r -8, :elevation 10, :terrain "", :palette ""}
+     {:p 7, :q 2, :r -9, :elevation 10, :terrain "", :palette ""}
+     {:p 8, :q 1, :r -9, :elevation 10, :terrain "", :palette ""}
      {:p 9, :q 1, :r -10, :elevation 0, :terrain "", :palette ""}
      {:p 10, :q 0, :r -10, :elevation 0, :terrain "", :palette ""}
      {:p 11,
       :q 0,
       :r -11,
       :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
-     {:p 12,
-      :q -1,
-      :r -11,
+     {:p 12, :q -1, :r -11, :elevation 0, :terrain "", :palette ""}
+     {:p 13, :q -1, :r -12, :elevation 0, :terrain "", :palette ""}
+     {:p 14, :q -2, :r -12, :elevation 0, :terrain "", :palette ""}
+     {:p 15,
+      :q -2,
+      :r -13,
       :elevation 0,
-      :terrain "woods:2;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
-     {:p 13, :q -1, :r -12, :elevation 1, :terrain "", :palette ""}
-     {:p 14, :q -2, :r -12, :elevation 1, :terrain "", :palette ""}
-     {:p 15, :q -2, :r -13, :elevation 0, :terrain "", :palette ""}
-     {:p 16, :q -3, :r -13, :elevation 0, :terrain "", :palette ""}
-     {:p 1, :q 6, :r -7, :elevation 0, :terrain "", :palette ""}
-     {:p 2, :q 5, :r -7, :elevation 0, :terrain "", :palette ""}
-     {:p 3, :q 5, :r -8, :elevation 0, :terrain "", :palette ""}
-     {:p 4, :q 4, :r -8, :elevation 0, :terrain "", :palette ""}
-     {:p 5, :q 4, :r -9, :elevation 0, :terrain "", :palette ""}
-     {:p 6, :q 3, :r -9, :elevation 0, :terrain "", :palette ""}
-     {:p 7, :q 3, :r -10, :elevation 0, :terrain "", :palette ""}
-     {:p 8, :q 2, :r -10, :elevation 0, :terrain "", :palette ""}
+     {:p 16, :q -3, :r -13, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 6, :r -7, :elevation 10, :terrain "", :palette ""}
+     {:p 2, :q 5, :r -7, :elevation 10, :terrain "", :palette ""}
+     {:p 3, :q 5, :r -8, :elevation 10, :terrain "", :palette ""}
+     {:p 4, :q 4, :r -8, :elevation 10, :terrain "", :palette ""}
+     {:p 5, :q 4, :r -9, :elevation 10, :terrain "", :palette ""}
+     {:p 6, :q 3, :r -9, :elevation 10, :terrain "", :palette ""}
+     {:p 7, :q 3, :r -10, :elevation 10, :terrain "", :palette ""}
+     {:p 8, :q 2, :r -10, :elevation 10, :terrain "", :palette ""}
      {:p 9, :q 2, :r -11, :elevation 0, :terrain "", :palette ""}
      {:p 10,
       :q 1,
       :r -11,
       :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
      {:p 11, :q 1, :r -12, :elevation 0, :terrain "", :palette ""}
      {:p 12, :q 0, :r -12, :elevation 0, :terrain "", :palette ""}
-     {:p 13,
-      :q 0,
+     {:p 13, :q 0, :r -13, :elevation 0, :terrain "", :palette ""}
+     {:p 14,
+      :q -1,
       :r -13,
       :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
-     {:p 14, :q -1, :r -13, :elevation 0, :terrain "", :palette ""}
      {:p 15, :q -1, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 16, :q -2, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 1, :q 7, :r -8, :elevation 0, :terrain "", :palette ""}
-     {:p 2, :q 6, :r -8, :elevation 0, :terrain "", :palette ""}
-     {:p 3, :q 6, :r -9, :elevation 0, :terrain "", :palette ""}
-     {:p 4, :q 5, :r -9, :elevation 0, :terrain "", :palette ""}
-     {:p 5, :q 5, :r -10, :elevation 0, :terrain "", :palette ""}
-     {:p 6,
-      :q 4,
-      :r -10,
-      :elevation 0,
-      :terrain "water:1",
-      :palette ""}
-     {:p 7,
-      :q 4,
-      :r -11,
-      :elevation 0,
-      :terrain "water:1",
-      :palette ""}
-     {:p 8, :q 3, :r -11, :elevation 0, :terrain "", :palette ""}
-     {:p 9,
-      :q 3,
-      :r -12,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 10,
-      :q 2,
-      :r -12,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
+     {:p 16, :q -2, :r -14, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 7, :r -8, :elevation 10, :terrain "", :palette ""}
+     {:p 2, :q 6, :r -8, :elevation 10, :terrain "", :palette ""}
+     {:p 3, :q 6, :r -9, :elevation 10, :terrain "", :palette ""}
+     {:p 4, :q 5, :r -9, :elevation 10, :terrain "", :palette ""}
+     {:p 5, :q 5, :r -10, :elevation 10, :terrain "", :palette ""}
+     {:p 6, :q 4, :r -10, :elevation 10, :terrain "", :palette ""}
+     {:p 7, :q 4, :r -11, :elevation 10, :terrain "", :palette ""}
+     {:p 8, :q 3, :r -11, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 3, :r -12, :elevation 0, :terrain "", :palette ""}
+     {:p 10, :q 2, :r -12, :elevation 0, :terrain "", :palette ""}
      {:p 11, :q 2, :r -13, :elevation 0, :terrain "", :palette ""}
      {:p 12, :q 1, :r -13, :elevation 0, :terrain "", :palette ""}
-     {:p 13, :q 1, :r -14, :elevation 0, :terrain "", :palette ""}
+     {:p 13,
+      :q 1,
+      :r -14,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
      {:p 14, :q 0, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 15, :q 0, :r -15, :elevation 0, :terrain "", :palette ""}
-     {:p 16, :q -1, :r -15, :elevation 0, :terrain "", :palette ""}
-     {:p 1, :q 8, :r -9, :elevation 0, :terrain "", :palette ""}
-     {:p 2, :q 7, :r -9, :elevation 0, :terrain "", :palette ""}
-     {:p 3, :q 7, :r -10, :elevation 0, :terrain "", :palette ""}
-     {:p 4, :q 6, :r -10, :elevation 0, :terrain "", :palette ""}
-     {:p 5, :q 6, :r -11, :elevation 0, :terrain "", :palette ""}
-     {:p 6, :q 5, :r -11, :elevation 0, :terrain "", :palette ""}
-     {:p 7,
-      :q 5,
-      :r -12,
+     {:p 15,
+      :q 0,
+      :r -15,
       :elevation 0,
-      :terrain "water:2",
+      :terrain "rough:1",
       :palette ""}
-     {:p 8,
-      :q 4,
-      :r -12,
-      :elevation 0,
-      :terrain "water:1",
-      :palette ""}
-     {:p 9,
-      :q 4,
-      :r -13,
-      :elevation 0,
-      :terrain "water:1",
-      :palette ""}
+     {:p 16, :q -1, :r -15, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 8, :r -9, :elevation 10, :terrain "", :palette ""}
+     {:p 2, :q 7, :r -9, :elevation 10, :terrain "", :palette ""}
+     {:p 3, :q 7, :r -10, :elevation 10, :terrain "", :palette ""}
+     {:p 4, :q 6, :r -10, :elevation 10, :terrain "", :palette ""}
+     {:p 5, :q 6, :r -11, :elevation 10, :terrain "", :palette ""}
+     {:p 6, :q 5, :r -11, :elevation 10, :terrain "", :palette ""}
+     {:p 7, :q 5, :r -12, :elevation 10, :terrain "", :palette ""}
+     {:p 8, :q 4, :r -12, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 4, :r -13, :elevation 0, :terrain "", :palette ""}
      {:p 10, :q 3, :r -13, :elevation 0, :terrain "", :palette ""}
      {:p 11, :q 3, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 12, :q 2, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 13, :q 2, :r -15, :elevation 0, :terrain "", :palette ""}
+     {:p 12,
+      :q 2,
+      :r -14,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 13,
+      :q 2,
+      :r -15,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
      {:p 14, :q 1, :r -15, :elevation 0, :terrain "", :palette ""}
      {:p 15, :q 1, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 16, :q 0, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 1, :q 9, :r -10, :elevation 0, :terrain "", :palette ""}
-     {:p 2, :q 8, :r -10, :elevation 0, :terrain "", :palette ""}
-     {:p 3, :q 8, :r -11, :elevation 0, :terrain "", :palette ""}
-     {:p 4, :q 7, :r -11, :elevation 0, :terrain "", :palette ""}
-     {:p 5, :q 7, :r -12, :elevation 0, :terrain "", :palette ""}
-     {:p 6,
-      :q 6,
-      :r -12,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 7, :q 6, :r -13, :elevation 0, :terrain "", :palette ""}
-     {:p 8,
-      :q 5,
-      :r -13,
-      :elevation 0,
-      :terrain "water:1",
-      :palette ""}
+     {:p 16, :q 0, :r -16, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 9, :r -10, :elevation 10, :terrain "", :palette ""}
+     {:p 2, :q 8, :r -10, :elevation 10, :terrain "", :palette ""}
+     {:p 3, :q 8, :r -11, :elevation 10, :terrain "", :palette ""}
+     {:p 4, :q 7, :r -11, :elevation 10, :terrain "", :palette ""}
+     {:p 5, :q 7, :r -12, :elevation 10, :terrain "", :palette ""}
+     {:p 6, :q 6, :r -12, :elevation 10, :terrain "", :palette ""}
+     {:p 7, :q 6, :r -13, :elevation 10, :terrain "", :palette ""}
+     {:p 8, :q 5, :r -13, :elevation 10, :terrain "", :palette ""}
      {:p 9, :q 5, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 10, :q 4, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 11, :q 4, :r -15, :elevation 0, :terrain "", :palette ""}
-     {:p 12, :q 3, :r -15, :elevation 0, :terrain "", :palette ""}
-     {:p 13, :q 3, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 14, :q 2, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 15, :q 2, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 16, :q 1, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 1, :q 10, :r -11, :elevation 0, :terrain "", :palette ""}
-     {:p 2, :q 9, :r -11, :elevation 0, :terrain "", :palette ""}
-     {:p 3, :q 9, :r -12, :elevation 0, :terrain "", :palette ""}
-     {:p 4, :q 8, :r -12, :elevation 0, :terrain "", :palette ""}
-     {:p 5, :q 8, :r -13, :elevation 0, :terrain "", :palette ""}
-     {:p 6,
-      :q 7,
-      :r -13,
-      :elevation 0,
-      :terrain "woods:2;foliage_elev:2",
-      :palette ""}
-     {:p 7,
-      :q 7,
+     {:p 10,
+      :q 4,
       :r -14,
       :elevation 0,
-      :terrain "water:1",
+      :terrain "rough:1",
       :palette ""}
-     {:p 8,
-      :q 6,
-      :r -14,
+     {:p 11,
+      :q 4,
+      :r -15,
       :elevation 0,
-      :terrain "water:2",
+      :terrain "rough:1",
       :palette ""}
+     {:p 12,
+      :q 3,
+      :r -15,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 13,
+      :q 3,
+      :r -16,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 14,
+      :q 2,
+      :r -16,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 15,
+      :q 2,
+      :r -17,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 16, :q 1, :r -17, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 10, :r -11, :elevation 10, :terrain "", :palette ""}
+     {:p 2, :q 9, :r -11, :elevation 10, :terrain "", :palette ""}
+     {:p 3, :q 9, :r -12, :elevation 10, :terrain "", :palette ""}
+     {:p 4, :q 8, :r -12, :elevation 10, :terrain "", :palette ""}
+     {:p 5, :q 8, :r -13, :elevation 10, :terrain "", :palette ""}
+     {:p 6, :q 7, :r -13, :elevation 10, :terrain "", :palette ""}
+     {:p 7, :q 7, :r -14, :elevation 10, :terrain "", :palette ""}
+     {:p 8, :q 6, :r -14, :elevation 10, :terrain "", :palette ""}
      {:p 9,
       :q 6,
       :r -15,
       :elevation 0,
-      :terrain "water:1",
+      :terrain "rough:1",
       :palette ""}
      {:p 10, :q 5, :r -15, :elevation 0, :terrain "", :palette ""}
      {:p 11, :q 5, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 12, :q 4, :r -16, :elevation 0, :terrain "", :palette ""}
+     {:p 12,
+      :q 4,
+      :r -16,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
      {:p 13,
       :q 4,
       :r -17,
       :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
      {:p 14,
       :q 3,
       :r -17,
       :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
-     {:p 15, :q 3, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 16, :q 2, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 1, :q 11, :r -12, :elevation 0, :terrain "", :palette ""}
-     {:p 2, :q 10, :r -12, :elevation 0, :terrain "", :palette ""}
-     {:p 3, :q 10, :r -13, :elevation 0, :terrain "", :palette ""}
-     {:p 4, :q 9, :r -13, :elevation 0, :terrain "", :palette ""}
-     {:p 5,
-      :q 9,
-      :r -14,
+     {:p 15,
+      :q 3,
+      :r -18,
       :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
-     {:p 6, :q 8, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 7,
-      :q 8,
-      :r -15,
-      :elevation 0,
-      :terrain "water:1",
-      :palette ""}
-     {:p 8, :q 7, :r -15, :elevation 0, :terrain "", :palette ""}
+     {:p 16, :q 2, :r -18, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 11, :r -12, :elevation 10, :terrain "", :palette ""}
+     {:p 2, :q 10, :r -12, :elevation 10, :terrain "", :palette ""}
+     {:p 3, :q 10, :r -13, :elevation 10, :terrain "", :palette ""}
+     {:p 4, :q 9, :r -13, :elevation 10, :terrain "", :palette ""}
+     {:p 5, :q 9, :r -14, :elevation 10, :terrain "", :palette ""}
+     {:p 6, :q 8, :r -14, :elevation 10, :terrain "", :palette ""}
+     {:p 7, :q 8, :r -15, :elevation 10, :terrain "", :palette ""}
+     {:p 8, :q 7, :r -15, :elevation 10, :terrain "", :palette ""}
      {:p 9, :q 7, :r -16, :elevation 0, :terrain "", :palette ""}
      {:p 10, :q 6, :r -16, :elevation 0, :terrain "", :palette ""}
      {:p 11, :q 6, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 12, :q 5, :r -17, :elevation 0, :terrain "", :palette ""}
+     {:p 12,
+      :q 5,
+      :r -17,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
      {:p 13,
       :q 5,
       :r -18,
@@ -1224,760 +1164,966 @@
       :palette ""}
      {:p 14, :q 4, :r -18, :elevation 0, :terrain "", :palette ""}
      {:p 15, :q 4, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 16, :q 3, :r -19, :elevation 0, :terrain "", :palette ""}
+     {:p 16, :q 3, :r -19, :elevation 10, :terrain "", :palette ""}
      {:p 1, :q 12, :r -13, :elevation 0, :terrain "", :palette ""}
      {:p 2, :q 11, :r -13, :elevation 0, :terrain "", :palette ""}
      {:p 3, :q 11, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 4, :q 10, :r -14, :elevation 0, :terrain "", :palette ""}
+     {:p 4,
+      :q 10,
+      :r -14,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
      {:p 5, :q 10, :r -15, :elevation 0, :terrain "", :palette ""}
      {:p 6, :q 9, :r -15, :elevation 0, :terrain "", :palette ""}
      {:p 7, :q 9, :r -16, :elevation 0, :terrain "", :palette ""}
      {:p 8, :q 8, :r -16, :elevation 0, :terrain "", :palette ""}
      {:p 9, :q 8, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 10, :q 7, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 11,
+     {:p 10,
       :q 7,
-      :r -18,
+      :r -17,
       :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
+     {:p 11, :q 7, :r -18, :elevation 0, :terrain "", :palette ""}
      {:p 12,
       :q 6,
       :r -18,
       :elevation 0,
-      :terrain "woods:2;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
-     {:p 13, :q 6, :r -19, :elevation 1, :terrain "", :palette ""}
-     {:p 14, :q 5, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 15, :q 5, :r -20, :elevation 0, :terrain "", :palette ""}
-     {:p 16, :q 4, :r -20, :elevation 0, :terrain "", :palette ""}
-     {:p 1, :q 13, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 2, :q 12, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 3, :q 12, :r -15, :elevation 0, :terrain "", :palette ""}
-     {:p 4, :q 11, :r -15, :elevation 0, :terrain "", :palette ""}
-     {:p 5, :q 11, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 6, :q 10, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 7, :q 10, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 8, :q 9, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 9, :q 9, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 10, :q 8, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 11,
-      :q 8,
+     {:p 13,
+      :q 6,
       :r -19,
       :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
-     {:p 12, :q 7, :r -19, :elevation 2, :terrain "", :palette ""}
-     {:p 13, :q 7, :r -20, :elevation 2, :terrain "", :palette ""}
-     {:p 14, :q 6, :r -20, :elevation 2, :terrain "", :palette ""}
+     {:p 14, :q 5, :r -19, :elevation 0, :terrain "", :palette ""}
+     {:p 15, :q 5, :r -20, :elevation 0, :terrain "", :palette ""}
+     {:p 16, :q 4, :r -20, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 13, :r -14, :elevation 0, :terrain "", :palette ""}
+     {:p 2, :q 12, :r -14, :elevation 0, :terrain "", :palette ""}
+     {:p 3,
+      :q 12,
+      :r -15,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 4,
+      :q 11,
+      :r -15,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 5,
+      :q 11,
+      :r -16,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 6,
+      :q 10,
+      :r -16,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 7, :q 10, :r -17, :elevation 0, :terrain "", :palette ""}
+     {:p 8, :q 9, :r -17, :elevation 0, :terrain "", :palette ""}
+     {:p 9,
+      :q 9,
+      :r -18,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 10, :q 8, :r -18, :elevation 0, :terrain "", :palette ""}
+     {:p 11, :q 8, :r -19, :elevation 0, :terrain "", :palette ""}
+     {:p 12, :q 7, :r -19, :elevation 0, :terrain "", :palette ""}
+     {:p 13,
+      :q 7,
+      :r -20,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 14,
+      :q 6,
+      :r -20,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
      {:p 15, :q 6, :r -21, :elevation 0, :terrain "", :palette ""}
-     {:p 16, :q 5, :r -21, :elevation 0, :terrain "", :palette ""}
+     {:p 16, :q 5, :r -21, :elevation 10, :terrain "", :palette ""}
      {:p 1, :q 14, :r -15, :elevation 0, :terrain "", :palette ""}
      {:p 2, :q 13, :r -15, :elevation 0, :terrain "", :palette ""}
-     {:p 3, :q 13, :r -16, :elevation 0, :terrain "", :palette ""}
+     {:p 3,
+      :q 13,
+      :r -16,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
      {:p 4,
       :q 12,
       :r -16,
       :elevation 0,
-      :terrain "woods:2;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
      {:p 5,
       :q 12,
       :r -17,
       :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
-     {:p 6, :q 11, :r -17, :elevation 0, :terrain "", :palette ""}
+     {:p 6,
+      :q 11,
+      :r -17,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
      {:p 7, :q 11, :r -18, :elevation 0, :terrain "", :palette ""}
      {:p 8, :q 10, :r -18, :elevation 0, :terrain "", :palette ""}
      {:p 9, :q 10, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 10, :q 9, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 11, :q 9, :r -20, :elevation 0, :terrain "", :palette ""}
-     {:p 12,
-      :q 8,
-      :r -20,
-      :elevation 3,
-      :terrain "woods:1;foliage_elev:2",
+     {:p 10,
+      :q 9,
+      :r -19,
+      :elevation 0,
+      :terrain "rough:1",
       :palette ""}
+     {:p 11,
+      :q 9,
+      :r -20,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 12, :q 8, :r -20, :elevation 0, :terrain "", :palette ""}
      {:p 13,
       :q 8,
       :r -21,
-      :elevation 3,
-      :terrain "woods:1;foliage_elev:2",
+      :elevation 0,
+      :terrain "rough:1",
       :palette ""}
-     {:p 14, :q 7, :r -21, :elevation 2, :terrain "", :palette ""}
-     {:p 15, :q 7, :r -22, :elevation 0, :terrain "", :palette ""}
-     {:p 16, :q 6, :r -22, :elevation 0, :terrain "", :palette ""}
+     {:p 14,
+      :q 7,
+      :r -21,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 15,
+      :q 7,
+      :r -22,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 16, :q 6, :r -22, :elevation 10, :terrain "", :palette ""}
      {:p 1, :q 15, :r -16, :elevation 0, :terrain "", :palette ""}
      {:p 2, :q 14, :r -16, :elevation 0, :terrain "", :palette ""}
      {:p 3,
       :q 14,
       :r -17,
       :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
-     {:p 4, :q 13, :r -17, :elevation 0, :terrain "", :palette ""}
+     {:p 4,
+      :q 13,
+      :r -17,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
      {:p 5,
       :q 13,
       :r -18,
       :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
-     {:p 6, :q 12, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 7, :q 12, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 8, :q 11, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 9, :q 11, :r -20, :elevation 0, :terrain "", :palette ""}
-     {:p 10,
-      :q 10,
-      :r -20,
+     {:p 6,
+      :q 12,
+      :r -18,
       :elevation 0,
       :terrain "rough:1",
       :palette ""}
-     {:p 11, :q 10, :r -21, :elevation 1, :terrain "", :palette ""}
-     {:p 12, :q 9, :r -21, :elevation 2, :terrain "", :palette ""}
-     {:p 13,
-      :q 9,
-      :r -22,
-      :elevation 3,
-      :terrain "woods:1;foliage_elev:2",
+     {:p 7, :q 12, :r -19, :elevation 0, :terrain "", :palette ""}
+     {:p 8, :q 11, :r -19, :elevation 0, :terrain "", :palette ""}
+     {:p 9, :q 11, :r -20, :elevation 0, :terrain "", :palette ""}
+     {:p 10, :q 10, :r -20, :elevation 0, :terrain "", :palette ""}
+     {:p 11,
+      :q 10,
+      :r -21,
+      :elevation 0,
+      :terrain "rough:1",
       :palette ""}
+     {:p 12,
+      :q 9,
+      :r -21,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 13, :q 9, :r -22, :elevation 0, :terrain "", :palette ""}
      {:p 14, :q 8, :r -22, :elevation 0, :terrain "", :palette ""}
-     {:p 15, :q 8, :r -23, :elevation 0, :terrain "", :palette ""}
-     {:p 16, :q 7, :r -23, :elevation 0, :terrain "", :palette ""}
+     {:p 15,
+      :q 8,
+      :r -23,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 16, :q 7, :r -23, :elevation 10, :terrain "", :palette ""}
      {:p 1, :q 16, :r -17, :elevation 0, :terrain "", :palette ""}
      {:p 2, :q 15, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 3, :q 15, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 4, :q 14, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 5, :q 14, :r -19, :elevation 0, :terrain "", :palette ""}
+     {:p 3,
+      :q 15,
+      :r -18,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 4,
+      :q 14,
+      :r -18,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 5,
+      :q 14,
+      :r -19,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
      {:p 6, :q 13, :r -19, :elevation 0, :terrain "", :palette ""}
      {:p 7, :q 13, :r -20, :elevation 0, :terrain "", :palette ""}
      {:p 8, :q 12, :r -20, :elevation 0, :terrain "", :palette ""}
      {:p 9, :q 12, :r -21, :elevation 0, :terrain "", :palette ""}
      {:p 10, :q 11, :r -21, :elevation 0, :terrain "", :palette ""}
-     {:p 11, :q 11, :r -22, :elevation 1, :terrain "", :palette ""}
-     {:p 12, :q 10, :r -22, :elevation 0, :terrain "", :palette ""}
-     {:p 13, :q 10, :r -23, :elevation 1, :terrain "", :palette ""}
-     {:p 14, :q 9, :r -23, :elevation 0, :terrain "", :palette ""}
-     {:p 15, :q 9, :r -24, :elevation 0, :terrain "", :palette ""}
-     {:p 16, :q 8, :r -24, :elevation 0, :terrain "", :palette ""}
+     {:p 11, :q 11, :r -22, :elevation 0, :terrain "", :palette ""}
+     {:p 12,
+      :q 10,
+      :r -22,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 13,
+      :q 10,
+      :r -23,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 14,
+      :q 9,
+      :r -23,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 15,
+      :q 9,
+      :r -24,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 16, :q 8, :r -24, :elevation 10, :terrain "", :palette ""}
      {:p 1, :q 17, :r -18, :elevation 0, :terrain "", :palette ""}
      {:p 2, :q 16, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 3, :q 16, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 4, :q 15, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 5, :q 15, :r -20, :elevation 0, :terrain "", :palette ""}
+     {:p 3,
+      :q 16,
+      :r -19,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 4,
+      :q 15,
+      :r -19,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 5,
+      :q 15,
+      :r -20,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
      {:p 6, :q 14, :r -20, :elevation 0, :terrain "", :palette ""}
      {:p 7, :q 14, :r -21, :elevation 0, :terrain "", :palette ""}
-     {:p 8, :q 13, :r -21, :elevation 0, :terrain "", :palette ""}
+     {:p 8, :q 13, :r -21, :elevation 10, :terrain "", :palette ""}
      {:p 9, :q 13, :r -22, :elevation 0, :terrain "", :palette ""}
-     {:p 10, :q 12, :r -22, :elevation 0, :terrain "", :palette ""}
+     {:p 10, :q 12, :r -22, :elevation 10, :terrain "", :palette ""}
      {:p 11, :q 12, :r -23, :elevation 0, :terrain "", :palette ""}
-     {:p 12, :q 11, :r -23, :elevation 0, :terrain "", :palette ""}
+     {:p 12, :q 11, :r -23, :elevation 10, :terrain "", :palette ""}
      {:p 13, :q 11, :r -24, :elevation 0, :terrain "", :palette ""}
-     {:p 14, :q 10, :r -24, :elevation 0, :terrain "", :palette ""}
+     {:p 14, :q 10, :r -24, :elevation 10, :terrain "", :palette ""}
      {:p 15, :q 10, :r -25, :elevation 0, :terrain "", :palette ""}
-     {:p 16, :q 9, :r -25, :elevation 0, :terrain "", :palette ""}]}
-   {:name "16x17 BattleTech.board",
+     {:p 16, :q 9, :r -25, :elevation 10, :terrain "", :palette ""}]}
+   {:name "DustballCanyon2.board",
     :height 17,
     :width 16,
     :tiles
-    [{:p 17, :q -7, :r -10, :elevation 0, :terrain "", :palette ""}
-     {:p 18, :q -8, :r -10, :elevation 0, :terrain "", :palette ""}
-     {:p 19, :q -8, :r -11, :elevation 0, :terrain "", :palette ""}
-     {:p 20, :q -9, :r -11, :elevation 0, :terrain "", :palette ""}
-     {:p 21, :q -9, :r -12, :elevation 0, :terrain "", :palette ""}
-     {:p 22, :q -10, :r -12, :elevation 0, :terrain "", :palette ""}
-     {:p 23, :q -10, :r -13, :elevation 0, :terrain "", :palette ""}
-     {:p 24, :q -11, :r -13, :elevation 0, :terrain "", :palette ""}
-     {:p 25, :q -11, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 26, :q -12, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 27, :q -12, :r -15, :elevation 0, :terrain "", :palette ""}
-     {:p 28, :q -13, :r -15, :elevation 0, :terrain "", :palette ""}
-     {:p 29, :q -13, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 30, :q -14, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 31, :q -14, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 32, :q -15, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 17, :q -6, :r -11, :elevation 0, :terrain "", :palette ""}
-     {:p 18,
-      :q -7,
-      :r -11,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 19,
-      :q -7,
-      :r -12,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 20,
-      :q -8,
-      :r -12,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 21, :q -8, :r -13, :elevation 0, :terrain "", :palette ""}
-     {:p 22, :q -9, :r -13, :elevation 0, :terrain "", :palette ""}
-     {:p 23, :q -9, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 24, :q -10, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 25,
-      :q -10,
-      :r -15,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 26,
-      :q -11,
-      :r -15,
+    [{:p 1, :q 18, :r -19, :elevation 0, :terrain "", :palette ""}
+     {:p 2,
+      :q 17,
+      :r -19,
       :elevation 0,
       :terrain "rough:1",
       :palette ""}
-     {:p 27, :q -11, :r -16, :elevation 1, :terrain "", :palette ""}
-     {:p 28, :q -12, :r -16, :elevation 2, :terrain "", :palette ""}
-     {:p 29, :q -12, :r -17, :elevation 1, :terrain "", :palette ""}
-     {:p 30, :q -13, :r -17, :elevation 2, :terrain "", :palette ""}
-     {:p 31, :q -13, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 32, :q -14, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 17, :q -5, :r -12, :elevation 0, :terrain "", :palette ""}
-     {:p 18, :q -6, :r -12, :elevation 0, :terrain "", :palette ""}
-     {:p 19,
-      :q -6,
-      :r -13,
-      :elevation 0,
-      :terrain "woods:2;foliage_elev:2",
-      :palette ""}
-     {:p 20,
-      :q -7,
-      :r -13,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 21, :q -7, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 22, :q -8, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 23, :q -8, :r -15, :elevation 0, :terrain "", :palette ""}
-     {:p 24, :q -9, :r -15, :elevation 0, :terrain "", :palette ""}
-     {:p 25, :q -9, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 26, :q -10, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 27,
-      :q -10,
-      :r -17,
+     {:p 3,
+      :q 17,
+      :r -20,
       :elevation 0,
       :terrain "rough:1",
       :palette ""}
-     {:p 28, :q -11, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 29,
-      :q -11,
-      :r -18,
-      :elevation 2,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 30, :q -12, :r -18, :elevation 3, :terrain "", :palette ""}
-     {:p 31, :q -12, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 32, :q -13, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 17, :q -4, :r -13, :elevation 0, :terrain "", :palette ""}
-     {:p 18, :q -5, :r -13, :elevation 0, :terrain "", :palette ""}
-     {:p 19, :q -5, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 20, :q -6, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 21, :q -6, :r -15, :elevation 0, :terrain "", :palette ""}
-     {:p 22, :q -7, :r -15, :elevation 0, :terrain "", :palette ""}
-     {:p 23, :q -7, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 24, :q -8, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 25, :q -8, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 26, :q -9, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 27, :q -9, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 28, :q -10, :r -18, :elevation 2, :terrain "", :palette ""}
-     {:p 29, :q -10, :r -19, :elevation 3, :terrain "", :palette ""}
-     {:p 30, :q -11, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 31, :q -11, :r -20, :elevation 0, :terrain "", :palette ""}
-     {:p 32, :q -12, :r -20, :elevation 0, :terrain "", :palette ""}
-     {:p 17, :q -3, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 18, :q -4, :r -14, :elevation 0, :terrain "", :palette ""}
-     {:p 19, :q -4, :r -15, :elevation 0, :terrain "", :palette ""}
-     {:p 20, :q -5, :r -15, :elevation 0, :terrain "", :palette ""}
-     {:p 21, :q -5, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 22, :q -6, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 23, :q -6, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 24, :q -7, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 25, :q -7, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 26, :q -8, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 27,
-      :q -8,
-      :r -19,
+     {:p 4,
+      :q 16,
+      :r -20,
       :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
-     {:p 28,
-      :q -9,
-      :r -19,
+     {:p 5, :q 16, :r -21, :elevation 0, :terrain "", :palette ""}
+     {:p 6, :q 15, :r -21, :elevation 0, :terrain "", :palette ""}
+     {:p 7, :q 15, :r -22, :elevation 0, :terrain "", :palette ""}
+     {:p 8, :q 14, :r -22, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 14, :r -23, :elevation 10, :terrain "", :palette ""}
+     {:p 10, :q 13, :r -23, :elevation 10, :terrain "", :palette ""}
+     {:p 11, :q 13, :r -24, :elevation 10, :terrain "", :palette ""}
+     {:p 12, :q 12, :r -24, :elevation 10, :terrain "", :palette ""}
+     {:p 13, :q 12, :r -25, :elevation 10, :terrain "", :palette ""}
+     {:p 14, :q 11, :r -25, :elevation 10, :terrain "", :palette ""}
+     {:p 15, :q 11, :r -26, :elevation 10, :terrain "", :palette ""}
+     {:p 16, :q 10, :r -26, :elevation 10, :terrain "", :palette ""}
+     {:p 1,
+      :q 19,
+      :r -20,
       :elevation 0,
-      :terrain "woods:2;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
-     {:p 29, :q -9, :r -20, :elevation 1, :terrain "", :palette ""}
-     {:p 30, :q -10, :r -20, :elevation 1, :terrain "", :palette ""}
-     {:p 31, :q -10, :r -21, :elevation 0, :terrain "", :palette ""}
-     {:p 32, :q -11, :r -21, :elevation 0, :terrain "", :palette ""}
-     {:p 17, :q -2, :r -15, :elevation 0, :terrain "", :palette ""}
-     {:p 18, :q -3, :r -15, :elevation 0, :terrain "", :palette ""}
-     {:p 19, :q -3, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 20, :q -4, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 21, :q -4, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 22, :q -5, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 23, :q -5, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 24, :q -6, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 25, :q -6, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 26,
-      :q -7,
-      :r -19,
+     {:p 2,
+      :q 18,
+      :r -20,
       :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
-     {:p 27, :q -7, :r -20, :elevation 0, :terrain "", :palette ""}
-     {:p 28, :q -8, :r -20, :elevation 0, :terrain "", :palette ""}
-     {:p 29,
-      :q -8,
+     {:p 3,
+      :q 18,
       :r -21,
       :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
-     {:p 30, :q -9, :r -21, :elevation 0, :terrain "", :palette ""}
-     {:p 31, :q -9, :r -22, :elevation 0, :terrain "", :palette ""}
-     {:p 32, :q -10, :r -22, :elevation 0, :terrain "", :palette ""}
-     {:p 17, :q -1, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 18, :q -2, :r -16, :elevation 0, :terrain "", :palette ""}
-     {:p 19, :q -2, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 20, :q -3, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 21, :q -3, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 22,
-      :q -4,
-      :r -18,
-      :elevation 0,
-      :terrain "water:1",
-      :palette ""}
-     {:p 23,
-      :q -4,
-      :r -19,
-      :elevation 0,
-      :terrain "water:1",
-      :palette ""}
-     {:p 24, :q -5, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 25,
-      :q -5,
-      :r -20,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 26,
-      :q -6,
-      :r -20,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 27, :q -6, :r -21, :elevation 0, :terrain "", :palette ""}
-     {:p 28, :q -7, :r -21, :elevation 0, :terrain "", :palette ""}
-     {:p 29, :q -7, :r -22, :elevation 0, :terrain "", :palette ""}
-     {:p 30, :q -8, :r -22, :elevation 0, :terrain "", :palette ""}
-     {:p 31, :q -8, :r -23, :elevation 0, :terrain "", :palette ""}
-     {:p 32, :q -9, :r -23, :elevation 0, :terrain "", :palette ""}
-     {:p 17, :q 0, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 18, :q -1, :r -17, :elevation 0, :terrain "", :palette ""}
-     {:p 19, :q -1, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 20, :q -2, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 21, :q -2, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 22, :q -3, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 23,
-      :q -3,
-      :r -20,
-      :elevation 0,
-      :terrain "water:2",
-      :palette ""}
-     {:p 24,
-      :q -4,
-      :r -20,
-      :elevation 0,
-      :terrain "water:1",
-      :palette ""}
-     {:p 25,
-      :q -4,
+     {:p 4,
+      :q 17,
       :r -21,
       :elevation 0,
-      :terrain "water:1",
+      :terrain "rough:1",
       :palette ""}
-     {:p 26, :q -5, :r -21, :elevation 0, :terrain "", :palette ""}
-     {:p 27, :q -5, :r -22, :elevation 0, :terrain "", :palette ""}
-     {:p 28, :q -6, :r -22, :elevation 0, :terrain "", :palette ""}
-     {:p 29, :q -6, :r -23, :elevation 0, :terrain "", :palette ""}
-     {:p 30, :q -7, :r -23, :elevation 0, :terrain "", :palette ""}
-     {:p 31, :q -7, :r -24, :elevation 0, :terrain "", :palette ""}
-     {:p 32, :q -8, :r -24, :elevation 0, :terrain "", :palette ""}
-     {:p 17, :q 1, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 18, :q 0, :r -18, :elevation 0, :terrain "", :palette ""}
-     {:p 19, :q 0, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 20, :q -1, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 21, :q -1, :r -20, :elevation 0, :terrain "", :palette ""}
-     {:p 22,
-      :q -2,
-      :r -20,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 23, :q -2, :r -21, :elevation 0, :terrain "", :palette ""}
-     {:p 24,
-      :q -3,
+     {:p 5, :q 17, :r -22, :elevation 0, :terrain "", :palette ""}
+     {:p 6, :q 16, :r -22, :elevation 0, :terrain "", :palette ""}
+     {:p 7, :q 16, :r -23, :elevation 0, :terrain "", :palette ""}
+     {:p 8, :q 15, :r -23, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 15, :r -24, :elevation 10, :terrain "", :palette ""}
+     {:p 10, :q 14, :r -24, :elevation 10, :terrain "", :palette ""}
+     {:p 11, :q 14, :r -25, :elevation 10, :terrain "", :palette ""}
+     {:p 12, :q 13, :r -25, :elevation 10, :terrain "", :palette ""}
+     {:p 13, :q 13, :r -26, :elevation 10, :terrain "", :palette ""}
+     {:p 14, :q 12, :r -26, :elevation 10, :terrain "", :palette ""}
+     {:p 15, :q 12, :r -27, :elevation 10, :terrain "", :palette ""}
+     {:p 16, :q 11, :r -27, :elevation 10, :terrain "", :palette ""}
+     {:p 1,
+      :q 20,
       :r -21,
       :elevation 0,
-      :terrain "water:1",
+      :terrain "rough:1",
       :palette ""}
-     {:p 25, :q -3, :r -22, :elevation 0, :terrain "", :palette ""}
-     {:p 26, :q -4, :r -22, :elevation 0, :terrain "", :palette ""}
-     {:p 27, :q -4, :r -23, :elevation 0, :terrain "", :palette ""}
-     {:p 28, :q -5, :r -23, :elevation 0, :terrain "", :palette ""}
-     {:p 29, :q -5, :r -24, :elevation 0, :terrain "", :palette ""}
-     {:p 30, :q -6, :r -24, :elevation 0, :terrain "", :palette ""}
-     {:p 31, :q -6, :r -25, :elevation 0, :terrain "", :palette ""}
-     {:p 32, :q -7, :r -25, :elevation 0, :terrain "", :palette ""}
-     {:p 17, :q 2, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 18, :q 1, :r -19, :elevation 0, :terrain "", :palette ""}
-     {:p 19, :q 1, :r -20, :elevation 0, :terrain "", :palette ""}
-     {:p 20, :q 0, :r -20, :elevation 0, :terrain "", :palette ""}
-     {:p 21, :q 0, :r -21, :elevation 0, :terrain "", :palette ""}
-     {:p 22,
-      :q -1,
+     {:p 2,
+      :q 19,
       :r -21,
       :elevation 0,
-      :terrain "woods:2;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
-     {:p 23,
-      :q -1,
+     {:p 3,
+      :q 19,
       :r -22,
       :elevation 0,
-      :terrain "water:1",
+      :terrain "rough:1",
       :palette ""}
-     {:p 24,
-      :q -2,
-      :r -22,
-      :elevation 0,
-      :terrain "water:2",
-      :palette ""}
-     {:p 25,
-      :q -2,
+     {:p 4, :q 18, :r -22, :elevation 0, :terrain "", :palette ""}
+     {:p 5, :q 18, :r -23, :elevation 0, :terrain "", :palette ""}
+     {:p 6,
+      :q 17,
       :r -23,
       :elevation 0,
-      :terrain "water:1",
+      :terrain "rough:1",
       :palette ""}
-     {:p 26, :q -3, :r -23, :elevation 0, :terrain "", :palette ""}
-     {:p 27, :q -3, :r -24, :elevation 0, :terrain "", :palette ""}
-     {:p 28, :q -4, :r -24, :elevation 0, :terrain "", :palette ""}
-     {:p 29,
-      :q -4,
-      :r -25,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 30,
-      :q -5,
-      :r -25,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 31, :q -5, :r -26, :elevation 0, :terrain "", :palette ""}
-     {:p 32, :q -6, :r -26, :elevation 0, :terrain "", :palette ""}
-     {:p 17, :q 3, :r -20, :elevation 0, :terrain "", :palette ""}
-     {:p 18, :q 2, :r -20, :elevation 0, :terrain "", :palette ""}
-     {:p 19, :q 2, :r -21, :elevation 0, :terrain "", :palette ""}
-     {:p 20, :q 1, :r -21, :elevation 0, :terrain "", :palette ""}
-     {:p 21,
-      :q 1,
-      :r -22,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 22, :q 0, :r -22, :elevation 0, :terrain "", :palette ""}
-     {:p 23,
-      :q 0,
+     {:p 7, :q 17, :r -24, :elevation 0, :terrain "", :palette ""}
+     {:p 8, :q 16, :r -24, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 16, :r -25, :elevation 10, :terrain "", :palette ""}
+     {:p 10, :q 15, :r -25, :elevation 10, :terrain "", :palette ""}
+     {:p 11, :q 15, :r -26, :elevation 10, :terrain "", :palette ""}
+     {:p 12, :q 14, :r -26, :elevation 10, :terrain "", :palette ""}
+     {:p 13, :q 14, :r -27, :elevation 10, :terrain "", :palette ""}
+     {:p 14, :q 13, :r -27, :elevation 10, :terrain "", :palette ""}
+     {:p 15, :q 13, :r -28, :elevation 10, :terrain "", :palette ""}
+     {:p 16, :q 12, :r -28, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 21, :r -22, :elevation 0, :terrain "", :palette ""}
+     {:p 2, :q 20, :r -22, :elevation 0, :terrain "", :palette ""}
+     {:p 3, :q 20, :r -23, :elevation 0, :terrain "", :palette ""}
+     {:p 4,
+      :q 19,
       :r -23,
-      :elevation 0,
-      :terrain "water:1",
-      :palette ""}
-     {:p 24, :q -1, :r -23, :elevation 0, :terrain "", :palette ""}
-     {:p 25, :q -1, :r -24, :elevation 0, :terrain "", :palette ""}
-     {:p 26, :q -2, :r -24, :elevation 0, :terrain "", :palette ""}
-     {:p 27, :q -2, :r -25, :elevation 0, :terrain "", :palette ""}
-     {:p 28, :q -3, :r -25, :elevation 0, :terrain "", :palette ""}
-     {:p 29,
-      :q -3,
-      :r -26,
       :elevation 0,
       :terrain "rough:1",
       :palette ""}
-     {:p 30, :q -4, :r -26, :elevation 0, :terrain "", :palette ""}
-     {:p 31, :q -4, :r -27, :elevation 0, :terrain "", :palette ""}
-     {:p 32, :q -5, :r -27, :elevation 0, :terrain "", :palette ""}
-     {:p 17, :q 4, :r -21, :elevation 0, :terrain "", :palette ""}
-     {:p 18, :q 3, :r -21, :elevation 0, :terrain "", :palette ""}
-     {:p 19, :q 3, :r -22, :elevation 0, :terrain "", :palette ""}
-     {:p 20, :q 2, :r -22, :elevation 0, :terrain "", :palette ""}
-     {:p 21, :q 2, :r -23, :elevation 0, :terrain "", :palette ""}
-     {:p 22, :q 1, :r -23, :elevation 0, :terrain "", :palette ""}
-     {:p 23, :q 1, :r -24, :elevation 0, :terrain "", :palette ""}
-     {:p 24, :q 0, :r -24, :elevation 0, :terrain "", :palette ""}
-     {:p 25, :q 0, :r -25, :elevation 0, :terrain "", :palette ""}
-     {:p 26, :q -1, :r -25, :elevation 0, :terrain "", :palette ""}
-     {:p 27,
-      :q -1,
-      :r -26,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 28,
-      :q -2,
-      :r -26,
-      :elevation 0,
-      :terrain "woods:2;foliage_elev:2",
-      :palette ""}
-     {:p 29, :q -2, :r -27, :elevation 1, :terrain "", :palette ""}
-     {:p 30, :q -3, :r -27, :elevation 0, :terrain "", :palette ""}
-     {:p 31, :q -3, :r -28, :elevation 0, :terrain "", :palette ""}
-     {:p 32, :q -4, :r -28, :elevation 0, :terrain "", :palette ""}
-     {:p 17, :q 5, :r -22, :elevation 0, :terrain "", :palette ""}
-     {:p 18, :q 4, :r -22, :elevation 0, :terrain "", :palette ""}
-     {:p 19, :q 4, :r -23, :elevation 0, :terrain "", :palette ""}
-     {:p 20, :q 3, :r -23, :elevation 0, :terrain "", :palette ""}
-     {:p 21, :q 3, :r -24, :elevation 0, :terrain "", :palette ""}
-     {:p 22, :q 2, :r -24, :elevation 0, :terrain "", :palette ""}
-     {:p 23, :q 2, :r -25, :elevation 0, :terrain "", :palette ""}
-     {:p 24, :q 1, :r -25, :elevation 0, :terrain "", :palette ""}
-     {:p 25, :q 1, :r -26, :elevation 0, :terrain "", :palette ""}
-     {:p 26, :q 0, :r -26, :elevation 0, :terrain "", :palette ""}
-     {:p 27,
-      :q 0,
-      :r -27,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 28, :q -1, :r -27, :elevation 2, :terrain "", :palette ""}
-     {:p 29, :q -1, :r -28, :elevation 2, :terrain "", :palette ""}
-     {:p 30, :q -2, :r -28, :elevation 2, :terrain "", :palette ""}
-     {:p 31, :q -2, :r -29, :elevation 0, :terrain "", :palette ""}
-     {:p 32, :q -3, :r -29, :elevation 0, :terrain "", :palette ""}
-     {:p 17, :q 6, :r -23, :elevation 0, :terrain "", :palette ""}
-     {:p 18, :q 5, :r -23, :elevation 0, :terrain "", :palette ""}
-     {:p 19, :q 5, :r -24, :elevation 0, :terrain "", :palette ""}
-     {:p 20,
-      :q 4,
+     {:p 5,
+      :q 19,
       :r -24,
       :elevation 0,
-      :terrain "woods:2;foliage_elev:2",
+      :terrain "rough:1",
       :palette ""}
-     {:p 21,
-      :q 4,
-      :r -25,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 22, :q 3, :r -25, :elevation 0, :terrain "", :palette ""}
-     {:p 23, :q 3, :r -26, :elevation 0, :terrain "", :palette ""}
-     {:p 24, :q 2, :r -26, :elevation 0, :terrain "", :palette ""}
-     {:p 25, :q 2, :r -27, :elevation 0, :terrain "", :palette ""}
-     {:p 26, :q 1, :r -27, :elevation 0, :terrain "", :palette ""}
-     {:p 27, :q 1, :r -28, :elevation 0, :terrain "", :palette ""}
-     {:p 28,
-      :q 0,
-      :r -28,
-      :elevation 3,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 29,
-      :q 0,
-      :r -29,
-      :elevation 3,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 30, :q -1, :r -29, :elevation 2, :terrain "", :palette ""}
-     {:p 31, :q -1, :r -30, :elevation 0, :terrain "", :palette ""}
-     {:p 32, :q -2, :r -30, :elevation 0, :terrain "", :palette ""}
-     {:p 17, :q 7, :r -24, :elevation 0, :terrain "", :palette ""}
-     {:p 18, :q 6, :r -24, :elevation 0, :terrain "", :palette ""}
-     {:p 19,
-      :q 6,
-      :r -25,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 20, :q 5, :r -25, :elevation 0, :terrain "", :palette ""}
-     {:p 21,
-      :q 5,
-      :r -26,
-      :elevation 0,
-      :terrain "woods:1;foliage_elev:2",
-      :palette ""}
-     {:p 22, :q 4, :r -26, :elevation 0, :terrain "", :palette ""}
-     {:p 23, :q 4, :r -27, :elevation 0, :terrain "", :palette ""}
-     {:p 24, :q 3, :r -27, :elevation 0, :terrain "", :palette ""}
-     {:p 25, :q 3, :r -28, :elevation 0, :terrain "", :palette ""}
-     {:p 26,
-      :q 2,
-      :r -28,
+     {:p 6,
+      :q 18,
+      :r -24,
       :elevation 0,
       :terrain "rough:1",
       :palette ""}
-     {:p 27, :q 2, :r -29, :elevation 1, :terrain "", :palette ""}
-     {:p 28, :q 1, :r -29, :elevation 2, :terrain "", :palette ""}
-     {:p 29,
-      :q 1,
-      :r -30,
-      :elevation 3,
-      :terrain "woods:1;foliage_elev:2",
+     {:p 7, :q 18, :r -25, :elevation 0, :terrain "", :palette ""}
+     {:p 8, :q 17, :r -25, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 17, :r -26, :elevation 10, :terrain "", :palette ""}
+     {:p 10, :q 16, :r -26, :elevation 10, :terrain "", :palette ""}
+     {:p 11, :q 16, :r -27, :elevation 10, :terrain "", :palette ""}
+     {:p 12, :q 15, :r -27, :elevation 10, :terrain "", :palette ""}
+     {:p 13, :q 15, :r -28, :elevation 10, :terrain "", :palette ""}
+     {:p 14, :q 14, :r -28, :elevation 10, :terrain "", :palette ""}
+     {:p 15, :q 14, :r -29, :elevation 10, :terrain "", :palette ""}
+     {:p 16, :q 13, :r -29, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 22, :r -23, :elevation 0, :terrain "", :palette ""}
+     {:p 2, :q 21, :r -23, :elevation 0, :terrain "", :palette ""}
+     {:p 3,
+      :q 21,
+      :r -24,
+      :elevation 0,
+      :terrain "rough:1",
       :palette ""}
-     {:p 30, :q 0, :r -30, :elevation 0, :terrain "", :palette ""}
-     {:p 31, :q 0, :r -31, :elevation 0, :terrain "", :palette ""}
-     {:p 32, :q -1, :r -31, :elevation 0, :terrain "", :palette ""}
-     {:p 17, :q 8, :r -25, :elevation 0, :terrain "", :palette ""}
-     {:p 18, :q 7, :r -25, :elevation 0, :terrain "", :palette ""}
-     {:p 19, :q 7, :r -26, :elevation 0, :terrain "", :palette ""}
-     {:p 20, :q 6, :r -26, :elevation 0, :terrain "", :palette ""}
-     {:p 21, :q 6, :r -27, :elevation 0, :terrain "", :palette ""}
-     {:p 22, :q 5, :r -27, :elevation 0, :terrain "", :palette ""}
-     {:p 23, :q 5, :r -28, :elevation 0, :terrain "", :palette ""}
-     {:p 24, :q 4, :r -28, :elevation 0, :terrain "", :palette ""}
-     {:p 25, :q 4, :r -29, :elevation 0, :terrain "", :palette ""}
-     {:p 26, :q 3, :r -29, :elevation 0, :terrain "", :palette ""}
-     {:p 27, :q 3, :r -30, :elevation 1, :terrain "", :palette ""}
-     {:p 28, :q 2, :r -30, :elevation 0, :terrain "", :palette ""}
-     {:p 29, :q 2, :r -31, :elevation 1, :terrain "", :palette ""}
-     {:p 30, :q 1, :r -31, :elevation 0, :terrain "", :palette ""}
-     {:p 31, :q 1, :r -32, :elevation 0, :terrain "", :palette ""}
-     {:p 32, :q 0, :r -32, :elevation 0, :terrain "", :palette ""}
-     {:p 17, :q 9, :r -26, :elevation 0, :terrain "", :palette ""}
-     {:p 18, :q 8, :r -26, :elevation 0, :terrain "", :palette ""}
-     {:p 19, :q 8, :r -27, :elevation 0, :terrain "", :palette ""}
-     {:p 20, :q 7, :r -27, :elevation 0, :terrain "", :palette ""}
-     {:p 21, :q 7, :r -28, :elevation 0, :terrain "", :palette ""}
-     {:p 22, :q 6, :r -28, :elevation 0, :terrain "", :palette ""}
-     {:p 23, :q 6, :r -29, :elevation 0, :terrain "", :palette ""}
-     {:p 24, :q 5, :r -29, :elevation 0, :terrain "", :palette ""}
-     {:p 25, :q 5, :r -30, :elevation 0, :terrain "", :palette ""}
-     {:p 26, :q 4, :r -30, :elevation 0, :terrain "", :palette ""}
-     {:p 27, :q 4, :r -31, :elevation 0, :terrain "", :palette ""}
-     {:p 28, :q 3, :r -31, :elevation 0, :terrain "", :palette ""}
-     {:p 29, :q 3, :r -32, :elevation 0, :terrain "", :palette ""}
-     {:p 30, :q 2, :r -32, :elevation 0, :terrain "", :palette ""}
-     {:p 31, :q 2, :r -33, :elevation 0, :terrain "", :palette ""}
-     {:p 32, :q 1, :r -33, :elevation 0, :terrain "", :palette ""}]}]},
+     {:p 4,
+      :q 20,
+      :r -24,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 5,
+      :q 20,
+      :r -25,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 6, :q 19, :r -25, :elevation 0, :terrain "", :palette ""}
+     {:p 7, :q 19, :r -26, :elevation 0, :terrain "", :palette ""}
+     {:p 8, :q 18, :r -26, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 18, :r -27, :elevation 10, :terrain "", :palette ""}
+     {:p 10, :q 17, :r -27, :elevation 10, :terrain "", :palette ""}
+     {:p 11, :q 17, :r -28, :elevation 10, :terrain "", :palette ""}
+     {:p 12, :q 16, :r -28, :elevation 10, :terrain "", :palette ""}
+     {:p 13, :q 16, :r -29, :elevation 10, :terrain "", :palette ""}
+     {:p 14, :q 15, :r -29, :elevation 10, :terrain "", :palette ""}
+     {:p 15, :q 15, :r -30, :elevation 10, :terrain "", :palette ""}
+     {:p 16, :q 14, :r -30, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 23, :r -24, :elevation 0, :terrain "", :palette ""}
+     {:p 2, :q 22, :r -24, :elevation 0, :terrain "", :palette ""}
+     {:p 3,
+      :q 22,
+      :r -25,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 4,
+      :q 21,
+      :r -25,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 5,
+      :q 21,
+      :r -26,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 6, :q 20, :r -26, :elevation 0, :terrain "", :palette ""}
+     {:p 7, :q 20, :r -27, :elevation 0, :terrain "", :palette ""}
+     {:p 8, :q 19, :r -27, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 19, :r -28, :elevation 10, :terrain "", :palette ""}
+     {:p 10, :q 18, :r -28, :elevation 10, :terrain "", :palette ""}
+     {:p 11, :q 18, :r -29, :elevation 10, :terrain "", :palette ""}
+     {:p 12, :q 17, :r -29, :elevation 10, :terrain "", :palette ""}
+     {:p 13, :q 17, :r -30, :elevation 10, :terrain "", :palette ""}
+     {:p 14, :q 16, :r -30, :elevation 10, :terrain "", :palette ""}
+     {:p 15, :q 16, :r -31, :elevation 10, :terrain "", :palette ""}
+     {:p 16, :q 15, :r -31, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 24, :r -25, :elevation 0, :terrain "", :palette ""}
+     {:p 2, :q 23, :r -25, :elevation 0, :terrain "", :palette ""}
+     {:p 3,
+      :q 23,
+      :r -26,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 4,
+      :q 22,
+      :r -26,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 5,
+      :q 22,
+      :r -27,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 6, :q 21, :r -27, :elevation 0, :terrain "", :palette ""}
+     {:p 7, :q 21, :r -28, :elevation 0, :terrain "", :palette ""}
+     {:p 8, :q 20, :r -28, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 20, :r -29, :elevation 10, :terrain "", :palette ""}
+     {:p 10, :q 19, :r -29, :elevation 10, :terrain "", :palette ""}
+     {:p 11, :q 19, :r -30, :elevation 10, :terrain "", :palette ""}
+     {:p 12, :q 18, :r -30, :elevation 10, :terrain "", :palette ""}
+     {:p 13, :q 18, :r -31, :elevation 10, :terrain "", :palette ""}
+     {:p 14, :q 17, :r -31, :elevation 10, :terrain "", :palette ""}
+     {:p 15, :q 17, :r -32, :elevation 10, :terrain "", :palette ""}
+     {:p 16, :q 16, :r -32, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 25, :r -26, :elevation 0, :terrain "", :palette ""}
+     {:p 2, :q 24, :r -26, :elevation 0, :terrain "", :palette ""}
+     {:p 3, :q 24, :r -27, :elevation 0, :terrain "", :palette ""}
+     {:p 4, :q 23, :r -27, :elevation 0, :terrain "", :palette ""}
+     {:p 5, :q 23, :r -28, :elevation 0, :terrain "", :palette ""}
+     {:p 6, :q 22, :r -28, :elevation 0, :terrain "", :palette ""}
+     {:p 7, :q 22, :r -29, :elevation 0, :terrain "", :palette ""}
+     {:p 8, :q 21, :r -29, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 21, :r -30, :elevation 10, :terrain "", :palette ""}
+     {:p 10, :q 20, :r -30, :elevation 10, :terrain "", :palette ""}
+     {:p 11, :q 20, :r -31, :elevation 10, :terrain "", :palette ""}
+     {:p 12, :q 19, :r -31, :elevation 10, :terrain "", :palette ""}
+     {:p 13, :q 19, :r -32, :elevation 10, :terrain "", :palette ""}
+     {:p 14, :q 18, :r -32, :elevation 10, :terrain "", :palette ""}
+     {:p 15, :q 18, :r -33, :elevation 10, :terrain "", :palette ""}
+     {:p 16, :q 17, :r -33, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 26, :r -27, :elevation 0, :terrain "", :palette ""}
+     {:p 2, :q 25, :r -27, :elevation 0, :terrain "", :palette ""}
+     {:p 3, :q 25, :r -28, :elevation 0, :terrain "", :palette ""}
+     {:p 4, :q 24, :r -28, :elevation 0, :terrain "", :palette ""}
+     {:p 5, :q 24, :r -29, :elevation 0, :terrain "", :palette ""}
+     {:p 6, :q 23, :r -29, :elevation 0, :terrain "", :palette ""}
+     {:p 7, :q 23, :r -30, :elevation 0, :terrain "", :palette ""}
+     {:p 8, :q 22, :r -30, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 22, :r -31, :elevation 10, :terrain "", :palette ""}
+     {:p 10, :q 21, :r -31, :elevation 10, :terrain "", :palette ""}
+     {:p 11, :q 21, :r -32, :elevation 10, :terrain "", :palette ""}
+     {:p 12, :q 20, :r -32, :elevation 10, :terrain "", :palette ""}
+     {:p 13, :q 20, :r -33, :elevation 10, :terrain "", :palette ""}
+     {:p 14, :q 19, :r -33, :elevation 10, :terrain "", :palette ""}
+     {:p 15, :q 19, :r -34, :elevation 10, :terrain "", :palette ""}
+     {:p 16, :q 18, :r -34, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 27, :r -28, :elevation 0, :terrain "", :palette ""}
+     {:p 2, :q 26, :r -28, :elevation 0, :terrain "", :palette ""}
+     {:p 3, :q 26, :r -29, :elevation 0, :terrain "", :palette ""}
+     {:p 4, :q 25, :r -29, :elevation 0, :terrain "", :palette ""}
+     {:p 5, :q 25, :r -30, :elevation 0, :terrain "", :palette ""}
+     {:p 6, :q 24, :r -30, :elevation 0, :terrain "", :palette ""}
+     {:p 7, :q 24, :r -31, :elevation 0, :terrain "", :palette ""}
+     {:p 8, :q 23, :r -31, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 23, :r -32, :elevation 10, :terrain "", :palette ""}
+     {:p 10, :q 22, :r -32, :elevation 10, :terrain "", :palette ""}
+     {:p 11, :q 22, :r -33, :elevation 10, :terrain "", :palette ""}
+     {:p 12, :q 21, :r -33, :elevation 10, :terrain "", :palette ""}
+     {:p 13, :q 21, :r -34, :elevation 10, :terrain "", :palette ""}
+     {:p 14, :q 20, :r -34, :elevation 10, :terrain "", :palette ""}
+     {:p 15, :q 20, :r -35, :elevation 10, :terrain "", :palette ""}
+     {:p 16, :q 19, :r -35, :elevation 10, :terrain "", :palette ""}
+     {:p 1, :q 28, :r -29, :elevation 0, :terrain "", :palette ""}
+     {:p 2,
+      :q 27,
+      :r -29,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 3, :q 27, :r -30, :elevation 0, :terrain "", :palette ""}
+     {:p 4,
+      :q 26,
+      :r -30,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 5, :q 26, :r -31, :elevation 0, :terrain "", :palette ""}
+     {:p 6,
+      :q 25,
+      :r -31,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 7,
+      :q 25,
+      :r -32,
+      :elevation 0,
+      :terrain "rough:1",
+      :palette ""}
+     {:p 8, :q 24, :r -32, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 24, :r -33, :elevation 10, :terrain "", :palette ""}
+     {:p 10, :q 23, :r -33, :elevation 10, :terrain "", :palette ""}
+     {:p 11, :q 23, :r -34, :elevation 10, :terrain "", :palette ""}
+     {:p 12, :q 22, :r -34, :elevation 10, :terrain "", :palette ""}
+     {:p 13, :q 22, :r -35, :elevation 10, :terrain "", :palette ""}
+     {:p 14, :q 21, :r -35, :elevation 10, :terrain "", :palette ""}
+     {:p 15, :q 21, :r -36, :elevation 10, :terrain "", :palette ""}
+     {:p 16, :q 20, :r -36, :elevation 10, :terrain "", :palette ""}
+     {:p 1,
+      :q 29,
+      :r -30,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 2,
+      :q 28,
+      :r -30,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 3,
+      :q 28,
+      :r -31,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 4,
+      :q 27,
+      :r -31,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 5,
+      :q 27,
+      :r -32,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 6,
+      :q 26,
+      :r -32,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 7,
+      :q 26,
+      :r -33,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 8, :q 25, :r -33, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 25, :r -34, :elevation 10, :terrain "", :palette ""}
+     {:p 10, :q 24, :r -34, :elevation 10, :terrain "", :palette ""}
+     {:p 11, :q 24, :r -35, :elevation 10, :terrain "", :palette ""}
+     {:p 12, :q 23, :r -35, :elevation 10, :terrain "", :palette ""}
+     {:p 13, :q 23, :r -36, :elevation 10, :terrain "", :palette ""}
+     {:p 14, :q 22, :r -36, :elevation 10, :terrain "", :palette ""}
+     {:p 15, :q 22, :r -37, :elevation 10, :terrain "", :palette ""}
+     {:p 16, :q 21, :r -37, :elevation 10, :terrain "", :palette ""}
+     {:p 1,
+      :q 30,
+      :r -31,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 2,
+      :q 29,
+      :r -31,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 3,
+      :q 29,
+      :r -32,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 4,
+      :q 28,
+      :r -32,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 5,
+      :q 28,
+      :r -33,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 6,
+      :q 27,
+      :r -33,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 7,
+      :q 27,
+      :r -34,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 8, :q 26, :r -34, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 26, :r -35, :elevation 10, :terrain "", :palette ""}
+     {:p 10, :q 25, :r -35, :elevation 10, :terrain "", :palette ""}
+     {:p 11, :q 25, :r -36, :elevation 10, :terrain "", :palette ""}
+     {:p 12, :q 24, :r -36, :elevation 10, :terrain "", :palette ""}
+     {:p 13, :q 24, :r -37, :elevation 10, :terrain "", :palette ""}
+     {:p 14, :q 23, :r -37, :elevation 10, :terrain "", :palette ""}
+     {:p 15, :q 23, :r -38, :elevation 10, :terrain "", :palette ""}
+     {:p 16, :q 22, :r -38, :elevation 10, :terrain "", :palette ""}
+     {:p 1,
+      :q 31,
+      :r -32,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 2,
+      :q 30,
+      :r -32,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 3,
+      :q 30,
+      :r -33,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 4,
+      :q 29,
+      :r -33,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 5,
+      :q 29,
+      :r -34,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 6,
+      :q 28,
+      :r -34,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 7,
+      :q 28,
+      :r -35,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 8, :q 27, :r -35, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 27, :r -36, :elevation 10, :terrain "", :palette ""}
+     {:p 10, :q 26, :r -36, :elevation 10, :terrain "", :palette ""}
+     {:p 11, :q 26, :r -37, :elevation 10, :terrain "", :palette ""}
+     {:p 12, :q 25, :r -37, :elevation 10, :terrain "", :palette ""}
+     {:p 13, :q 25, :r -38, :elevation 10, :terrain "", :palette ""}
+     {:p 14, :q 24, :r -38, :elevation 10, :terrain "", :palette ""}
+     {:p 15, :q 24, :r -39, :elevation 10, :terrain "", :palette ""}
+     {:p 16, :q 23, :r -39, :elevation 10, :terrain "", :palette ""}
+     {:p 1,
+      :q 32,
+      :r -33,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 2,
+      :q 31,
+      :r -33,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 3,
+      :q 31,
+      :r -34,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 4,
+      :q 30,
+      :r -34,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 5,
+      :q 30,
+      :r -35,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 6,
+      :q 29,
+      :r -35,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 7,
+      :q 29,
+      :r -36,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 8, :q 28, :r -36, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 28, :r -37, :elevation 10, :terrain "", :palette ""}
+     {:p 10, :q 27, :r -37, :elevation 10, :terrain "", :palette ""}
+     {:p 11, :q 27, :r -38, :elevation 10, :terrain "", :palette ""}
+     {:p 12, :q 26, :r -38, :elevation 10, :terrain "", :palette ""}
+     {:p 13, :q 26, :r -39, :elevation 10, :terrain "", :palette ""}
+     {:p 14, :q 25, :r -39, :elevation 10, :terrain "", :palette ""}
+     {:p 15, :q 25, :r -40, :elevation 10, :terrain "", :palette ""}
+     {:p 16, :q 24, :r -40, :elevation 10, :terrain "", :palette ""}
+     {:p 1,
+      :q 33,
+      :r -34,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 2,
+      :q 32,
+      :r -34,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 3,
+      :q 32,
+      :r -35,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 4,
+      :q 31,
+      :r -35,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 5,
+      :q 31,
+      :r -36,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 6,
+      :q 30,
+      :r -36,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 7,
+      :q 30,
+      :r -37,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 8, :q 29, :r -37, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 29, :r -38, :elevation 10, :terrain "", :palette ""}
+     {:p 10, :q 28, :r -38, :elevation 10, :terrain "", :palette ""}
+     {:p 11, :q 28, :r -39, :elevation 10, :terrain "", :palette ""}
+     {:p 12, :q 27, :r -39, :elevation 10, :terrain "", :palette ""}
+     {:p 13, :q 27, :r -40, :elevation 10, :terrain "", :palette ""}
+     {:p 14, :q 26, :r -40, :elevation 10, :terrain "", :palette ""}
+     {:p 15, :q 26, :r -41, :elevation 10, :terrain "", :palette ""}
+     {:p 16, :q 25, :r -41, :elevation 10, :terrain "", :palette ""}
+     {:p 1,
+      :q 34,
+      :r -35,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 2,
+      :q 33,
+      :r -35,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 3,
+      :q 33,
+      :r -36,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 4,
+      :q 32,
+      :r -36,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 5,
+      :q 32,
+      :r -37,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 6,
+      :q 31,
+      :r -37,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 7,
+      :q 31,
+      :r -38,
+      :elevation 0,
+      :terrain "pavement:1",
+      :palette ""}
+     {:p 8, :q 30, :r -38, :elevation 10, :terrain "", :palette ""}
+     {:p 9, :q 30, :r -39, :elevation 10, :terrain "", :palette ""}
+     {:p 10, :q 29, :r -39, :elevation 10, :terrain "", :palette ""}
+     {:p 11, :q 29, :r -40, :elevation 10, :terrain "", :palette ""}
+     {:p 12, :q 28, :r -40, :elevation 10, :terrain "", :palette ""}
+     {:p 13, :q 28, :r -41, :elevation 10, :terrain "", :palette ""}
+     {:p 14, :q 27, :r -41, :elevation 10, :terrain "", :palette ""}
+     {:p 15, :q 27, :r -42, :elevation 10, :terrain "", :palette ""}
+     {:p 16,
+      :q 26,
+      :r -42,
+      :elevation 10,
+      :terrain "",
+      :palette ""}]}]},
  :units
- {"Wasp WSP-1A"
-  {:role "Scout",
+ {"Axman AXM-2N"
+  {:role "Skirmisher",
    :movement
-   {:options {:jump 6, :walk 6},
-    :tmm 2,
+   {:options {:jump 4, :walk 4},
+    :tmm 1,
     :mv-hits 0,
     :default :walk,
     :selected nil,
-    :location {:p 5, :q 1, :r -6},
+    :location {:p 11, :q 1, :r -12},
     :path [],
     :facing :s},
-   :pilot {:name "Trainee A1", :skill 2},
-   :force :traineea,
-   :mul-id 3520,
+   :pilot {:name "Major Adam Steiner", :skill 2},
+   :force :1stsomersetstrikers,
+   :mul-id 185,
    :type "BM",
-   :abilities {:unknown {:output ""}},
-   :acted true,
+   :abilities
+   {:case {:output "CASE"},
+    :if {:output "IF1", :value 1, :value* false},
+    :lrm
+    {:output "LRM1/1/1",
+     :s 1,
+     :s* false,
+     :m 1,
+     :m* false,
+     :l 1,
+     :l* false},
+    :mel {:output "MEL"}},
+   :acted false,
    :threshold "-1",
-   :size 1,
-   :point-value 14,
+   :size 3,
+   :point-value 33,
    :attacked? false,
    :damage
-   {:armor {:current 2, :maximum 2},
-    :structure {:current 2, :maximum 2},
-    :changes {:armor 2, :structure 2, :crits []},
+   {:armor {:current 6, :maximum 6},
+    :structure {:current 3, :maximum 3},
+    :changes {:armor 6, :structure 3, :crits []},
     :crits []},
-   :chassis "Wasp",
-   :heat {:current 0, :overheat 0},
-   :id "Wasp WSP-1A",
-   :full-name "Wasp WSP-1A",
+   :chassis "Axman",
+   :heat {:current 0, :overheat 1},
+   :id "Axman AXM-2N",
+   :full-name "Axman AXM-2N",
    :attacks
    {:fc-mod 0,
-    :size 1,
+    :size 3,
     :attacks
     {:regular
      {:e* false,
       :l* false,
-      :m 1,
+      :m 3,
       :e 0,
-      :s 1,
-      :l 0,
-      :m* false,
-      :s* false,
-      :self 0},
-     :physical
-     {:e* false,
-      :l* false,
-      :m 0,
-      :e 0,
-      :s 1,
-      :l 0,
-      :m* false,
-      :s* false,
-      :self 0},
-     :charge
-     {:e* false,
-      :l* false,
-      :m 0,
-      :e 0,
-      :s 0,
-      :l 0,
-      :m* false,
-      :s* false,
-      :self 0},
-     :dfa
-     {:e* false,
-      :l* false,
-      :m 0,
-      :e 0,
-      :s 0,
-      :l 0,
-      :m* false,
-      :s* false,
-      :self 0}}},
-   :model "WSP-1A"},
-  "Griffin GRF-1N"
-  {:role "Sniper",
-   :movement
-   {:options {:jump 5, :walk 5},
-    :tmm 2,
-    :mv-hits 0,
-    :default :walk,
-    :selected nil,
-    :location {:p 1, :q 3, :r -4},
-    :path [],
-    :facing :s},
-   :pilot {:name "Trainee A2", :skill 2},
-   :force :traineea,
-   :mul-id 1297,
-   :type "BM",
-   :abilities {:if {:output "IF1", :value 1, :value* false}},
-   :acted true,
-   :threshold "-1",
-   :size 2,
-   :point-value 31,
-   :attacked? false,
-   :damage
-   {:armor {:current 5, :maximum 5},
-    :structure {:current 5, :maximum 5},
-    :changes {:armor 5, :structure 5, :crits []},
-    :crits []},
-   :chassis "Griffin",
-   :heat {:current 0, :overheat 0},
-   :id "Griffin GRF-1N",
-   :full-name "Griffin GRF-1N",
-   :attacks
-   {:fc-mod 0,
-    :size 2,
-    :attacks
-    {:regular
-     {:e* false,
-      :l* false,
-      :m 2,
-      :e 0,
-      :s 1,
+      :s 3,
       :l 2,
       :m* false,
       :s* false,
@@ -1987,7 +2133,7 @@
       :l* false,
       :m 0,
       :e 0,
-      :s 2,
+      :s 4,
       :l 0,
       :m* false,
       :s* false,
@@ -2021,49 +2167,70 @@
       :l 0,
       :m* false,
       :s* false,
-      :self 0}}},
-   :model "GRF-1N"},
-  "Stinger STG-3R"
-  {:role "Scout",
-   :movement
-   {:options {:jump 6, :walk 6},
-    :tmm 2,
-    :mv-hits 0,
-    :default :walk,
-    :selected nil,
-    :location {:p 5, :q 5, :r -10},
-    :path [],
-    :facing :n},
-   :pilot {:name "Trainee B1", :skill 2},
-   :force :traineeb,
-   :mul-id 3061,
-   :type "BM",
-   :abilities {:unknown {:output ""}},
-   :acted true,
-   :threshold "-1",
-   :size 1,
-   :point-value 14,
-   :attacked? false,
-   :damage
-   {:armor {:current 2, :maximum 2},
-    :structure {:current 2, :maximum 2},
-    :changes {:armor 2, :structure 2, :crits []},
-    :crits []},
-   :chassis "Stinger",
-   :heat {:current 0, :overheat 0},
-   :id "Stinger STG-3R",
-   :full-name "Stinger STG-3R",
-   :attacks
-   {:fc-mod 0,
-    :size 1,
-    :attacks
-    {:regular
+      :self 0},
+     :lrm
      {:e* false,
       :l* false,
       :m 1,
       :e 0,
       :s 1,
-      :l 0,
+      :l 1,
+      :m* false,
+      :s* false,
+      :self 0}}},
+   :model "AXM-2N"},
+  "Mauler MAL-1R"
+  {:role "Sniper",
+   :movement
+   {:options {:walk 3},
+    :tmm 1,
+    :mv-hits 0,
+    :default :walk,
+    :selected nil,
+    :location {:p 12, :q -1, :r -11},
+    :path [],
+    :facing :s},
+   :pilot {:name "Captain Zachary Miles Hawkins", :skill 3},
+   :force :1stsomersetstrikers,
+   :mul-id 2101,
+   :type "BM",
+   :abilities
+   {:case {:output "CASE"},
+    :if {:output "IF1", :value 1, :value* false},
+    :lrm
+    {:output "LRM1/1/1",
+     :s 1,
+     :s* false,
+     :m 1,
+     :m* false,
+     :l 1,
+     :l* false},
+    :ovl {:output "OVL"}},
+   :acted false,
+   :threshold "-1",
+   :size 4,
+   :point-value 37,
+   :attacked? false,
+   :damage
+   {:armor {:current 7, :maximum 7},
+    :structure {:current 4, :maximum 4},
+    :changes {:armor 7, :structure 4, :crits []},
+    :crits []},
+   :chassis "Mauler",
+   :heat {:current 0, :overheat 2},
+   :id "Mauler MAL-1R",
+   :full-name "Mauler MAL-1R",
+   :attacks
+   {:fc-mod 0,
+    :size 4,
+    :attacks
+    {:regular
+     {:e* false,
+      :l* false,
+      :m 3,
+      :e 0,
+      :s 2,
+      :l 3,
       :m* false,
       :s* false,
       :self 0},
@@ -2072,7 +2239,7 @@
       :l* false,
       :m 0,
       :e 0,
-      :s 1,
+      :s 4,
       :l 0,
       :m* false,
       :s* false,
@@ -2087,57 +2254,76 @@
       :m* false,
       :s* false,
       :self 0},
-     :dfa
+     :if
      {:e* false,
       :l* false,
       :m 0,
       :e 0,
-      :s 0,
+      :s 1,
       :l 0,
       :m* false,
       :s* false,
+      :self 0},
+     :lrm
+     {:e* false,
+      :l* false,
+      :m 1,
+      :e 0,
+      :s 1,
+      :l 1,
+      :m* false,
+      :s* false,
       :self 0}}},
-   :model "STG-3R"},
-  "Wolverine WVR-6R"
-  {:role "Skirmisher",
+   :model "MAL-1R"},
+  "Wolfhound WLF-2"
+  {:role "Striker",
    :movement
-   {:options {:jump 5, :walk 5},
+   {:options {:walk 6},
     :tmm 2,
     :mv-hits 0,
     :default :walk,
     :selected nil,
-    :location {:p 1, :q 7, :r -8},
+    :location {:p 12, :q 0, :r -12},
     :path [],
-    :facing :n},
-   :pilot {:name "Trainee B2", :skill 2},
-   :force :traineeb,
-   :mul-id 3573,
+    :facing :s},
+   :pilot {:name "Lieutenant Ciro Ramirez", :skill 4},
+   :force :1stsomersetstrikers,
+   :mul-id 3563,
    :type "BM",
-   :abilities {:unknown {:output ""}},
-   :acted true,
+   :abilities
+   {:ene {:output "ENE"},
+    :rear
+    {:output "REAR1/1/-",
+     :s 1,
+     :s* false,
+     :m 1,
+     :m* false,
+     :l 0,
+     :l* false}},
+   :acted false,
    :threshold "-1",
-   :size 2,
-   :point-value 30,
+   :size 1,
+   :point-value 28,
    :attacked? false,
    :damage
-   {:armor {:current 5, :maximum 5},
-    :structure {:current 5, :maximum 5},
-    :changes {:armor 5, :structure 5, :crits []},
+   {:armor {:current 4, :maximum 4},
+    :structure {:current 3, :maximum 3},
+    :changes {:armor 4, :structure 3, :crits []},
     :crits []},
-   :chassis "Wolverine",
+   :chassis "Wolfhound",
    :heat {:current 0, :overheat 0},
-   :id "Wolverine WVR-6R",
-   :full-name "Wolverine WVR-6R",
+   :id "Wolfhound WLF-2",
+   :full-name "Wolfhound WLF-2",
    :attacks
    {:fc-mod 0,
-    :size 2,
+    :size 1,
     :attacks
     {:regular
      {:e* false,
       :l* false,
-      :m 2,
+      :m 3,
       :e 0,
-      :s 2,
+      :s 3,
       :l 1,
       :m* false,
       :s* false,
@@ -2147,6 +2333,167 @@
       :l* false,
       :m 0,
       :e 0,
+      :s 1,
+      :l 0,
+      :m* false,
+      :s* false,
+      :self 0},
+     :charge
+     {:e* false,
+      :l* false,
+      :m 0,
+      :e 0,
+      :s 0,
+      :l 0,
+      :m* false,
+      :s* false,
+      :self 0}}},
+   :model "WLF-2"},
+  "Vulture (Mad Dog) Prime"
+  {:role "Missile Boat",
+   :movement
+   {:options {:walk 5},
+    :tmm 2,
+    :mv-hits 0,
+    :default :walk,
+    :selected nil,
+    :location {:p 7, :q 18, :r -25},
+    :path [],
+    :facing :sw},
+   :pilot {:name "Star Colonel Kristen Redmond", :skill 2},
+   :force :blackvision,
+   :mul-id 3473,
+   :type "BM",
+   :abilities
+   {:case {:output "CASE"},
+    :if {:output "IF2", :value 2, :value* false},
+    :lrm
+    {:output "LRM1/1/2",
+     :s 1,
+     :s* false,
+     :m 1,
+     :m* false,
+     :l 2,
+     :l* false},
+    :omni {:output "OMNI"}},
+   :acted false,
+   :threshold "-1",
+   :size 3,
+   :point-value 42,
+   :attacked? false,
+   :damage
+   {:armor {:current 5, :maximum 5},
+    :structure {:current 3, :maximum 3},
+    :changes {:armor 5, :structure 3, :crits []},
+    :crits []},
+   :chassis "Vulture (Mad Dog)",
+   :heat {:current 0, :overheat 2},
+   :id "Vulture (Mad Dog) Prime",
+   :full-name "Vulture (Mad Dog) Prime",
+   :attacks
+   {:fc-mod 0,
+    :size 3,
+    :attacks
+    {:regular
+     {:e* false,
+      :l* false,
+      :m 4,
+      :e 0,
+      :s 4,
+      :l 4,
+      :m* false,
+      :s* false,
+      :self 0},
+     :physical
+     {:e* false,
+      :l* false,
+      :m 0,
+      :e 0,
+      :s 3,
+      :l 0,
+      :m* false,
+      :s* false,
+      :self 0},
+     :charge
+     {:e* false,
+      :l* false,
+      :m 0,
+      :e 0,
+      :s 0,
+      :l 0,
+      :m* false,
+      :s* false,
+      :self 0},
+     :if
+     {:e* false,
+      :l* false,
+      :m 0,
+      :e 0,
+      :s 2,
+      :l 0,
+      :m* false,
+      :s* false,
+      :self 0},
+     :lrm
+     {:e* false,
+      :l* false,
+      :m 1,
+      :e 0,
+      :s 1,
+      :l 2,
+      :m* false,
+      :s* false,
+      :self 0}}},
+   :model "Prime"},
+  "Hunchback IIC "
+  {:role "Ambusher",
+   :movement
+   {:options {:jump 4, :walk 4},
+    :tmm 1,
+    :mv-hits 0,
+    :default :walk,
+    :selected nil,
+    :location {:p 6, :q 17, :r -23},
+    :path [],
+    :facing :s},
+   :pilot {:name "Mechwarrior Deval", :skill 3},
+   :force :blackvision,
+   :mul-id 1568,
+   :type "BM",
+   :abilities {:case {:output "CASE"}},
+   :acted false,
+   :threshold "-1",
+   :size 2,
+   :point-value 26,
+   :attacked? false,
+   :damage
+   {:armor {:current 3, :maximum 3},
+    :structure {:current 3, :maximum 3},
+    :changes {:armor 3, :structure 3, :crits []},
+    :crits []},
+   :chassis "Hunchback IIC",
+   :heat {:current 0, :overheat 2},
+   :id "Hunchback IIC ",
+   :full-name "Hunchback IIC ",
+   :attacks
+   {:fc-mod 0,
+    :size 2,
+    :attacks
+    {:regular
+     {:e* false,
+      :l* false,
+      :m 4,
+      :e 0,
+      :s 4,
+      :l 0,
+      :m* false,
+      :s* false,
+      :self 0},
+     :physical
+     {:e* false,
+      :l* false,
+      :m 0,
+      :e 0,
       :s 2,
       :l 0,
       :m* false,
@@ -2172,19 +2519,19 @@
       :m* false,
       :s* false,
       :self 0}}},
-   :model "WVR-6R"}},
+   :model ""}},
  :forces
- {:traineea
-  {:name "TraineeA",
-   :deploy nil,
-   :color :gold,
+ {:1stsomersetstrikers
+  {:name "1stSomersetStrikers",
+   :deployment nil,
    :camo
-   "file:/home/jonathanb/src/megastrike/data/images/camo/Aurigan Coalition/Arano Royal Guard.jpg",
-   :initiative 11},
-  :traineeb
-  {:name "TraineeB",
-   :deploy nil,
-   :color :white,
+   "file:/home/jonathanb/src/megastrike/data/images/camo/Federated Commonwealth/Somerset Strikers.jpg",
+   :team 3,
+   :initiative 9},
+  :blackvision
+  {:name "BlackVision",
+   :deployment nil,
    :camo
-   "file:/home/jonathanb/src/megastrike/data/images/camo/Capellan Confederation/Capellan Defense Force/4th Capellan Defense Force.jpg",
-   :initiative 7}}}
+   "file:/home/jonathanb/src/megastrike/data/images/camo/Clans/Jade Falcon/Alpha Galaxy.jpg",
+   :team 3,
+   :initiative 4}}}
