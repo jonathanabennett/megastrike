@@ -27,7 +27,6 @@
      :display :lobby
      :title "Megastrike"
      :force-name "AFFS"
-     :force-color :gold
      :force-zone "N"
      :pilot-name "Bob"
      :pilot-skill "4"

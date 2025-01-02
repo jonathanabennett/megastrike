@@ -3,8 +3,8 @@
    [megastrike.utils :as utils]))
 
 (defn ->force
-  [fname deployment color camo team]
-  {:name fname :deployment deployment :color color :camo camo :team team})
+  [fname deployment camo team]
+  {:name fname :deployment deployment :camo camo :team team})
 
 (defn get-name
   [{:keys [name]}]
@@ -21,14 +21,6 @@
 (defn set-deployment
   [force deployment]
   (assoc force :deployment deployment))
-
-(defn get-color
-  [{:keys [color]}]
-  color)
-
-(defn set-color
-  [force new-color]
-  (assoc force :color new-color))
 
 (defn get-camo
   [{:keys [camo]}]

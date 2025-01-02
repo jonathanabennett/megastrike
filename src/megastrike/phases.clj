@@ -3,6 +3,7 @@
    [clojure.math :as math]
    [com.brunobonacci.mulog :as mu]
    [megastrike.combat-unit :as cu]
+   [megastrike.force :as force]
    [megastrike.utils :as utils]))
 
 (defn roll-initiative
@@ -25,7 +26,7 @@
            forces force-list]
       (if (empty? forces)
         ret
-        (let [f (utils/keyword-maker (:name (first forces)))]
+        (let [f (utils/keyword-maker (force/get-name (first forces)))]
           (recur (assoc ret f (max 1 (math/floor-div (f unit-count) smallest-count)))
                  (rest forces)))))))
 
@@ -41,13 +42,19 @@
            (recur (conj turn-order (map (fn [[key value]] (take value (repeat key))) unit-pairs))
                   (into {} (map (fn [[key value]] [key (- value (get unit-pairs key))]) unit-totals))))))))
   ([forces]
-   (into [] (map #(utils/keyword-maker (:name %)) (sort-by :initiative (vals forces))))))
+   (->> forces
+        (vals)
+        (sort-by :initiative)
+        (map #(utils/keyword-maker (force/get-name %)))
+        (into []))
+  ;; (into [] (map #(utils/keyword-maker (:name %)) (sort-by :initiative (vals forces))))
+   ))
 
 (defn start-initiative-phase
   "Reroll the initiative, increment the turn number, save the new forces (with their initiative), but do not generate a turn order."
   [{:keys [turn-number forces units]}]
   (let [forces (roll-initiative forces)
-        initiative-report (reduce str (map #(str (:name %) " rolled a " (:initiative %) "\n") (vals forces)))
+        initiative-report (reduce str (map #(str (force/get-name %) " rolled a " (:initiative %) "\n") (vals forces)))
         turn-num (inc turn-number)
         turn-string (str "Turn: " turn-num)
         move-list (str "Turn Order: " (reduce str (map #(str % ", ") (generate-turn-order forces (vals units)))))
