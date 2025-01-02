@@ -41,4 +41,3 @@
 (defn same-team?
   [{:keys [team]} other]
   (= team (get-team other)))
-
