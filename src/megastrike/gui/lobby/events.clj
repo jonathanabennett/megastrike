@@ -4,9 +4,9 @@
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
-   [com.brunobonacci.mulog :as mu]
    [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
+   [megastrike.force :as force]
    [megastrike.gui.events :as e]
    [megastrike.gui.subs :as subs]
    [megastrike.mul :as mul]
@@ -18,7 +18,6 @@
    [javafx.scene Node]
    [javafx.stage FileChooser]))
 
-;; Make camo separate from color and, in the event of a camo being supplied, select a color from the camo.
 (defmethod e/event-handler ::select-camo
   [{:keys [^ActionEvent fx/context fx/event]}]
   (let [window (.getWindow (.getScene ^Node (.getTarget event)))
@@ -52,10 +51,6 @@
   [{:keys [fx/context field values]}]
   {:context (fx/swap-context context assoc :mul (mul/filter-units mul/mul field values))})
 
-(defmethod e/event-handler ::color-changed
-  [{:keys [fx/context fx/event]}]
-  {:context (fx/swap-context context assoc :force-color event)})
-
 (defmethod e/event-handler ::launch-game
   [{:keys [fx/context]}]
   (let [width (fx/sub-val context :width)
@@ -83,10 +78,10 @@
   [{:keys [fx/context]}]
   (let [name (fx/sub-val context :force-name)
         deploy (fx/sub-val context :force-zone)
-        color (fx/sub-val context :force-color)
         camo (fx/sub-val context :force-camo)
-        new-forces (merge (subs/forces context) {(utils/keyword-maker name) {:name name :deploy deploy :color color :camo camo}})]
-    {:context (fx/swap-context context assoc :forces new-forces :force-camo nil :force-color :white)}))
+        team (inc (count (subs/forces context)))
+        new-forces (merge (subs/forces context) {(utils/keyword-maker name) (force/->force name deploy camo team)})]
+    {:context (fx/swap-context context assoc :forces new-forces :force-camo nil)}))
 
 (defmethod e/event-handler ::mul-selection-changed
   [{:keys [fx/context fx/event]}]

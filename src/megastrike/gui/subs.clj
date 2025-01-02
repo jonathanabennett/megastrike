@@ -54,11 +54,11 @@
 
 (defn current-forces
   [context]
-  (filter #(= (:force %) (first (turn-order context))) (vals (units context))))
+  (filter #(= (cu/get-force %) (first (turn-order context))) (vals (units context))))
 
 (defn units-by-force
   [context]
-  (group-by :force (vals (units context))))
+  (group-by cu/get-force (vals (units context))))
 
 (defn layout
   [context]

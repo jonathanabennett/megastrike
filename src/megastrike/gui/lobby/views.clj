@@ -7,7 +7,8 @@
    [megastrike.gui.lobby.events :as lobby-events]
    [megastrike.gui.subs :as subs]
    [megastrike.mul :as mul]
-   [megastrike.utils :as utils]))
+   [megastrike.utils :as utils]
+   [megastrike.force :as force]))
 
 (defn filter-button
   [{:keys [field values text]}]
@@ -186,19 +187,16 @@
                :on-selected-item-changed {:event-type ::lobby-events/force-selection-changed}
                :selected-item selected}
        :desc {:fx/type :table-view
-              :row-factory {:fx/cell-type :table-row
-                            :describe (fn [x]
-                                        {:style {:-fx-border-color (or (:color x) :black)}})}
               :columns [{:fx/type :table-column
                          :text "Name"
                          :cell-value-factory identity
                          :cell-factory {:fx/cell-type :table-cell
-                                        :describe (fn [x] {:text (:name x)})}}
+                                        :describe (fn [x] {:text (force/get-name x)})}}
                         {:fx/type :table-column
                          :text "Deployment"
                          :cell-value-factory identity
                          :cell-factory {:fx/cell-type :table-cell
-                                        :describe (fn [x] {:text (:deploy x)})}}
+                                        :describe (fn [x] {:text (force/get-deployment x)})}}
                         {:fx/type :table-column
                          :text "Unit Count"
                          :cell-value-factory identity
@@ -224,12 +222,6 @@
               {:fx/type elements/text-input
                :label "Force Deployment"
                :key :force-zone}
-              {:fx/type :h-box
-               :spacing 5
-               :children [{:fx/type :label :text "Color:"}
-                          {:fx/type :color-picker
-                           :on-value-changed {:event-type ::lobby-events/color-changed :fx/sync true}
-                           :value :gold}]}
               (if (fx/sub-val context :force-camo)
                 {:fx/type :button
                  :background {:images (list (fx/sub-val context :force-camo))}

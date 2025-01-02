@@ -3,6 +3,7 @@
    [cljfx.api :as fx]
    [clojure.string :as str]
    [megastrike.combat-unit :as cu]
+   [megastrike.force :as force]
    [megastrike.gui.events :as events]
    [megastrike.gui.subs :as subs]
    [megastrike.hexagons.hex :as hex]
@@ -36,7 +37,8 @@
 (defn draw-sprite
   "Draws a sprite. Used for both the map and the lobby."
   [{:keys [unit force x y shift direction]}]
-  (let [{:keys [color camo] :or {color "#FFFFFF"}} force
+  (let [camo (force/get-camo force)
+        color "#FFFFFF"
         img (mul/find-sprite unit)]
     {:fx/type :image-view
      :image (str "file:" (.getPath img))
