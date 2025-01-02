@@ -329,7 +329,7 @@
   [origin target line]
   (let [o-height (+ 2 (:elevation (first line)))
         t-height (+ 2 (:elevation (last line)))]
-    (if (= (count line) 2)
+    (if (<= (count line) 2)
       false
       (loop [blocked? false
              current (first line)

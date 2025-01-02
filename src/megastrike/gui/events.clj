@@ -4,7 +4,9 @@
    [clojure.java.io :as io]
    [clojure.pprint :as pprint]
    [com.brunobonacci.mulog :as mu]
+   [megastrike.ai.kevin :as ai]
    [megastrike.combat-unit :as cu]
+   [megastrike.force :as force]
    [megastrike.gui.reports :as reports]
    [megastrike.gui.subs :as subs]
    [megastrike.hexagons.hex :as hex]
@@ -252,6 +254,20 @@
                                      :active-unit active)}))))
 
 ;; Combat Phase
+(defmethod event-handler ::auto-attack
+  [{:keys [fx/context]}]
+  (let [active-unit (subs/active-unit context)
+        forces (subs/forces context)
+        targets (filter #(not (force/same-team? (get forces (cu/get-force active-unit)) (get forces (cu/get-force %)))) (vals (subs/units context)))
+        firing-solutions (ai/targeting-options active-unit targets (subs/board context) (subs/layout context))
+        selected (ai/select-target firing-solutions)]
+    (mu/log ::ai-generated-firing-solutions
+            :active-unit active-unit
+            :targets targets
+            :firing-solutions firing-solutions
+            :selected selected)
+    {:dispatch {:event-type ::make-attack :targeting selected}}))
+
 (defmethod event-handler ::set-attack
   [{:keys [fx/context targeting]}]
   (let [upd (cu/declare-special-attack (subs/active-unit context)

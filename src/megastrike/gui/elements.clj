@@ -410,6 +410,9 @@
     :text "Overheat -1"
     :on-action {:event-type ::events/overheat :value -1 :fx/sync true}}
    {:fx/type :button
+    :text "Auto-attack"
+    :on-action {:event-type ::events/auto-attack :fx/sync true}}
+   {:fx/type :button
     :text "Resolve Charges/DFAs"
     :on-action {:event-type ::events/resolve-attacks :fx/sync true}}
    {:fx/type :button
