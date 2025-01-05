@@ -52,14 +52,17 @@
       (cond
         (and (some #{phase} [:deployment :movement]) (not (nil? unit)) (fx/sub-val context :turn-flag))
         (facing-change unit event (subs/layout context))
+
         (and (= phase :deployment) (not (cu/acted? unit)) (= (cu/get-force unit) next-force))
         (let [updated (cu/set-location unit (select-keys hex [:p :q :r]))
               new-units (assoc units active updated)]
           {:context (fx/swap-context context assoc :units new-units)})
+
         (and (= phase :movement) (not (cu/acted? unit)) (= (cu/get-force unit) next-force))
         (let [updated (cu/set-path unit hex (subs/board context))
               new-units (assoc units active updated)]
           {:context (fx/swap-context context assoc :units new-units)}))
+
       (mu/log ::no-active-unit))))
 
 (defmethod event-handler ::text-input
