@@ -28,6 +28,7 @@
      :title "Megastrike"
      :force-name "AFFS"
      :force-zone "N"
+     :player :player
      :pilot-name "Bob"
      :pilot-skill "4"
      :forces {}

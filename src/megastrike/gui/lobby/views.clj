@@ -193,6 +193,11 @@
                          :cell-factory {:fx/cell-type :table-cell
                                         :describe (fn [x] {:text (force/get-name x)})}}
                         {:fx/type :table-column
+                         :text "Player"
+                         :cell-value-factory identity
+                         :cell-factory {:fx/cell-type :table-cell
+                                        :describe (fn [x] {:text (name (force/get-player x))})}}
+                        {:fx/type :table-column
                          :text "Deployment"
                          :cell-value-factory identity
                          :cell-factory {:fx/cell-type :table-cell
@@ -222,6 +227,13 @@
               {:fx/type elements/text-input
                :label "Force Deployment"
                :key :force-zone}
+              {:fx/type :h-box
+               :spacing 5
+               :children [{:fx/type :text :text "Human or AI?"}
+                          {:fx/type :choice-box
+                           :items [:player :kevin]
+                           :value :player
+                           :on-value-changed {:event-type ::lobby-events/change-player}}]}
               (if (fx/sub-val context :force-camo)
                 {:fx/type :button
                  :background {:images (list (fx/sub-val context :force-camo))}

@@ -3,8 +3,8 @@
    [megastrike.utils :as utils]))
 
 (defn ->force
-  [fname deployment camo team]
-  {:name fname :deployment deployment :camo camo :team team})
+  [fname deployment camo team player]
+  {:name fname :deployment deployment :camo camo :team team :player player})
 
 (defn get-name
   [{:keys [name]}]
@@ -33,6 +33,10 @@
 (defn get-team
   [{:keys [team]}]
   team)
+
+(defn get-player
+  [{:keys [player]}]
+  player)
 
 (defn set-team
   [force new-team]

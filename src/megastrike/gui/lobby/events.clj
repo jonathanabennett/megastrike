@@ -74,13 +74,18 @@
   (let [save-data (edn/read-string (slurp (utils/load-resource :data "save.edn")))]
     {:context (fx/swap-context context merge save-data)}))
 
+(defmethod e/event-handler ::change-player
+  [{:keys [fx/context fx/event]}]
+  {:context (fx/swap-context context assoc :player event)})
+
 (defmethod e/event-handler ::add-force
   [{:keys [fx/context]}]
   (let [name (fx/sub-val context :force-name)
         deploy (fx/sub-val context :force-zone)
         camo (fx/sub-val context :force-camo)
         team (inc (count (subs/forces context)))
-        new-forces (merge (subs/forces context) {(utils/keyword-maker name) (force/->force name deploy camo team)})]
+        player (fx/sub-val context :player)
+        new-forces (merge (subs/forces context) {(utils/keyword-maker name) (force/->force name deploy camo team player)})]
     {:context (fx/swap-context context assoc :forces new-forces :force-camo nil)}))
 
 (defmethod e/event-handler ::mul-selection-changed

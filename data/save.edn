@@ -2525,13 +2525,15 @@
   {:name "1stSomersetStrikers",
    :deployment nil,
    :camo
-   "file:/home/jonathanb/src/megastrike/data/images/camo/Federated Commonwealth/Somerset Strikers.jpg",
+   "file:/Users/jonathanbennett/src/megastrike/data/images/camo/Federated Commonwealth/Somerset Strikers.jpg",
    :team 3,
+   :player :player,
    :initiative 9},
   :blackvision
   {:name "BlackVision",
    :deployment nil,
    :camo
-   "file:/home/jonathanb/src/megastrike/data/images/camo/Clans/Jade Falcon/Alpha Galaxy.jpg",
+   "file:/Users/jonathanbennett/src/megastrike/data/images/camo/Clans/Jade Falcon/Gamma Galaxy - 9th Talon.jpg",
    :team 3,
-   :initiative 4}}}
+   :player :kevin,
+   :initiative 6}}}
