@@ -400,7 +400,7 @@
        :on-action {:event-type ::events/cancel-move :unit unit :fx/sync true}}
       {:fx/type :button
        :text "Confirm Move"
-       :on-action {:event-type ::events/confirm-move :unit unit :fx/sync true}}])))
+       :on-action {:event-type ::events/confirm-move :fx/sync true}}])))
 
 (def combat-phase-buttons
   [{:fx/type :button

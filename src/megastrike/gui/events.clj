@@ -11,7 +11,8 @@
    [megastrike.gui.subs :as subs]
    [megastrike.hexagons.hex :as hex]
    [megastrike.logs :as logs]
-   [megastrike.phases :as initiative]
+   [megastrike.phases :as phases]
+   [megastrike.turn-manager :as turn-manager]
    [megastrike.utils :as utils])
   (:import
    [javafx.application Platform]
@@ -100,32 +101,34 @@
 
 (defmethod event-handler ::close-round-dialog
   [{:keys [fx/context]}]
-  (let [ctx (get context :round-dialog)]
-    (if (get ctx :advance-phase? false)
-      {:context (fx/swap-context context assoc :round-dialog {:showing false :advance-phase? false})
-       :dispatch {:event-type ::next-phase}}
-      {:context (fx/swap-context context assoc :round-dialog {:showing false :advance-phase? false})})))
+  {:context (fx/swap-context context assoc :round-dialog {:showing false :advance-phase? false})
+   :dispatch {:event-type ::ai-player-turn}})
 
 (defmethod event-handler ::next-phase
   [{:keys [fx/context]}]
+  {:context (fx/swap-context context phases/next-phase)
+   :dispatch {:event-type ::open-round-dialog}})
+
+(defmethod event-handler ::ai-player-turn
+  [{:keys [fx/context]}]
   (let [phase (subs/phase context)
-        turn-number (subs/turn-number context)
-        forces (subs/forces context)
-        units (subs/units context)
-        response (initiative/next-phase {:current-phase phase
-                                         :turn-number turn-number
-                                         :forces forces
-                                         :units units
-                                         :round-report (subs/round-report context)})]
-    {:context (fx/swap-context context merge response)
-     :dispatch {:event-type ::open-round-dialog}}))
+        next-force (get (subs/forces context) (first (subs/turn-order context)))]
+    (if (and (= phase :combat) (not= (force/get-player next-force) :player))
+      (let [units (->> (subs/units context)
+                       (vals)
+                       (filter #(= (cu/get-force %) (first (subs/turn-order context))))
+                       (filter #(not (cu/acted? %))))
+            selected (first units)]
+        (mu/log ::AI-turn
+                :selected selected
+                :phase phase))
+      (mu/log ::not-AI-turn
+              :force next-force))))
 
 ;; Unit selection
 (defmethod event-handler ::stats-clicked
   [{:keys [fx/context unit]}]
-  (let [u (get (subs/units context) unit)]
-    (when (and (= (cu/get-force u) (first (subs/turn-order context))) (not (:acted u)))
-      {:context (fx/swap-context context assoc :active-unit unit)})))
+  {:context (fx/swap-context context turn-manager/switch-unit unit)})
 
 (defn charge-unit
   [context unit target board layout]
@@ -154,7 +157,7 @@
     (mu/with-context {:unit-clicked unit :phase phase}
       (cond
         (and (= active-force (cu/get-force unit)) (not (cu/acted? unit)))
-        {:context (fx/swap-context context assoc :active-unit (cu/id unit))}
+        {:context (fx/swap-context context turn-manager/switch-unit (cu/id unit))}
         (and (= phase :movement) (not (= active-force (cu/get-force unit))))
         (charge-unit context active-unit unit board layout)
         (and (= phase :combat) (not (= active-force (cu/get-force unit))))
@@ -164,32 +167,10 @@
                                             :items (cu/attack-confirmation-choices active-unit unit board layout)
                                             :unit unit))})))))
 
-;; Initiative Phase
-(defmethod event-handler ::roll-initiative
-  [{:keys [fx/context]}]
-  (let [forces (initiative/roll-initiative (subs/forces context))
-        turn-order (initiative/generate-turn-order forces (vals (subs/units context)))]
-    {:context (fx/swap-context context merge
-                               {:forces forces
-                                :turn-order turn-order
-                                :current-phase :deployment})}))
-
 ;; Deployment Phase
 (defmethod event-handler ::deploy-unit
   [{:keys [fx/context]}]
-  (let [turn-order (subs/turn-order context)
-        units (subs/units context)
-        active (subs/active-id context)
-        unit (subs/active-unit context)]
-    (when (cu/deployed? unit)
-      (mu/log ::unit-deployed
-              :turn-order turn-order
-              :unit unit
-              :instrumentation :player)
-      {:context (fx/swap-context context assoc
-                                 :turn-order (rest turn-order)
-                                 :units (assoc units active (cu/take-action unit))
-                                 :active-unit nil)})))
+  {:context (fx/swap-context context turn-manager/deploy-unit)})
 
 (defmethod event-handler ::undeploy-unit
   [{:keys [fx/context]}]
@@ -212,61 +193,31 @@
 
 (defmethod event-handler ::set-movement-mode
   [{:keys [fx/context mode unit]}]
-  (let [units (subs/units context)
-        u (cu/set-movement-mode unit mode)
-        upd (assoc units (:id u) u)]
-    {:context (fx/swap-context context assoc :units upd)}))
+  {:context (fx/swap-context context assoc-in [:units (cu/id unit)] (cu/set-movement-mode unit mode))})
 
 (defmethod event-handler ::cancel-move
   [{:keys [fx/context unit]}]
-  (let [active (subs/active-id context)
-        upd (cu/cancel-movement unit)
-        units (assoc (subs/units context) active upd)]
+  (let [units (assoc (subs/units context) (cu/id unit) (cu/cancel-movement unit))]
     {:context (fx/swap-context context assoc :units units)}))
 
 (defmethod event-handler ::confirm-move
-  [{:keys [fx/context unit]}]
-  (let [turn-order (subs/turn-order context)
-        units (subs/units context)
-        active (subs/active-id context)
-        upd (if (and (= (first turn-order) (cu/get-force unit)) (= active (cu/id unit)))
-              (cu/move-unit unit (subs/board context))
-              unit)]
-    (if (cu/acted? upd)
-      (do (mu/log ::move-confirmed
-                  :unit upd
-                  :destination (cu/get-location unit)
-                  :remaining-moves (rest turn-order)
-                  :instrumentation :player)
-          {:context (fx/swap-context context assoc
-                                     :turn-order (rest turn-order)
-                                     :units (assoc units active upd)
-                                     :turn-flag nil
-                                     :active-unit nil)})
-      (do (mu/log ::move-failed
-                  :origin (cu/get-location unit)
-                  :force (cu/get-force unit)
-                  :force-conditional (= (first turn-order) (cu/get-force unit))
-                  :active (cu/id unit)
-                  :active-conditional (= active (cu/id unit))
-                  :path (cu/get-path unit))
-          {:context (fx/swap-context context assoc
-                                     :turn-order turn-order
-                                     :units units
-                                     :turn-flag nil
-                                     :active-unit active)}))))
+  [{:keys [fx/context]}]
+  {:context (fx/swap-context context turn-manager/confirm-move)})
 
 ;; Combat Phase
+(defmethod event-handler ::ai-attack
+  [{:keys [fx/context force-units]}]
+  (loop [force-units force-units]))
+
 (defmethod event-handler ::auto-attack
   [{:keys [fx/context]}]
   (let [active-unit (subs/active-unit context)
-        forces (subs/forces context)
-        targets (filter #(not (force/same-team? (get forces (cu/get-force active-unit)) (get forces (cu/get-force %)))) (vals (subs/units context)))
+        units (vals (subs/units context))
+        targets (filter #(not= (cu/get-force active-unit) (cu/get-force %)) units)
         firing-solutions (ai/targeting-options active-unit targets (subs/board context) (subs/layout context))
         selected (ai/select-target firing-solutions)]
     (mu/log ::ai-generated-firing-solutions
             :active-unit active-unit
-            :targets targets
             :firing-solutions firing-solutions
             :selected selected)
     {:dispatch {:event-type ::make-attack :targeting selected}}))
@@ -284,10 +235,8 @@
 
 (defmethod event-handler ::make-attack
   [{:keys [fx/context targeting]}]
-  (let [attack-result (cu/make-attack targeting)
-        units (merge (subs/units context) (:result attack-result))
-        report (str (subs/round-report context) (reports/parse-attack-data attack-result))]
-    {:context (fx/swap-context context assoc :units units :round-report report)}))
+  {:context (fx/swap-context context turn-manager/make-attack targeting)
+   :dispatch {:event-type ::open-round-dialog}})
 
 (defmethod event-handler ::close-attack-selection
   [{:keys [fx/context selected]}]
@@ -304,17 +253,23 @@
       {:context (fx/swap-context context assoc-in [:internal :attack-dialog] (assoc ctx :showing false :items []))
        :dispatch {:event-type ::make-attack :targeting selected}})))
 
+(defmethod event-handler ::resolve-physicals
+  [{:keys [fx/context]}])
+
 (defmethod event-handler ::resolve-attacks
   [{:keys [fx/context]}]
   (let [layout (subs/layout context)
         board (subs/board context)]
+    (mu/log ::what-physicals-look-like
+            :data (filter #(contains? #{:charge :dfa} (get % :atk-type false)) (subs/current-forces context)))
     (loop [results {:units (subs/units context)
                     :round-report (subs/round-report context)}
            attackers (filter #(contains? #{:charge :dfa} (get % :atk-type false)) (subs/current-forces context))]
       (if (empty? attackers)
         (let [units (:units results)
               round-report (:round-report results)]
-          {:context (fx/swap-context context assoc :units units :round-report round-report)})
+          {:context (fx/swap-context context assoc :units units :round-report round-report)
+           :dispatch {:event-type ::open-round-dialog}})
         (recur (let [attacker (first attackers)
                      tgt-id (:target attacker)
                      target (get (:units results) tgt-id)
@@ -327,4 +282,5 @@
 
 (defmethod event-handler ::finish-attacks
   [{:keys [fx/context]}]
-  {:context (fx/swap-context context assoc :turn-order (rest (subs/turn-order context)))})
+  {:context (fx/swap-context context assoc :turn-order (rest (subs/turn-order context)))
+   :dispatch {:event-type ::ai-player-turn}})

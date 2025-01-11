@@ -13,6 +13,12 @@
         toughness (+ (cu/get-remaining-armor target) (* (cu/get-remaining-structure target) 2))
         damage-num (if (str/ends-with? (get targeting :damage "0") "*") 0.5 (Integer/parseInt (:damage targeting)))
         expected-damage (* damage-num (/ probability 100.0))]
+    (mu/log ::generate-firing-solution
+            :target (cu/id target)
+            :firing-solution targeting
+            :expected-damage expected-damage
+            :toughness toughness
+            :percentage (* (/ expected-damage toughness) 100))
     [(cu/id target)
      {:firing-solution targeting
       :expected-damage expected-damage
@@ -29,4 +35,6 @@
 
 (defn select-target
   [options]
-  (naive-target-selection options))
+  (mu/log ::selecting-target
+          :options options)
+  (:firing-solution (second (naive-target-selection options))))
