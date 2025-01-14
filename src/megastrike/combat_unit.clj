@@ -387,31 +387,33 @@
   (->targeting-mod "Target movement" (movement/tmm-value (:movement unit) (:abilities unit) (high-heat? unit))))
 
 (defn ->targeting
-  [{:keys [attacks] :as attacker} target board layout attack]
-  (let [atk-hex (board/find-hex (get-location attacker true) board)
-        tgt-hex (board/find-hex (get-location target) board)
-        line (board/line atk-hex tgt-hex board)
-        range (hex/distance atk-hex tgt-hex)
-        attack-data (conj []
-                          (->targeting-mod "Pilot skill" (pilot-skill attacker))
-                          (->targeting-mod "Fire-control damage" (* (attacks/fc-hits attacks) 2))
-                          (amm attacker)
-                          (targeting-tmm target)
-                          (when (not (some attack #{:physical :charge :dfa}))
-                            (->targeting-mod "Attacker heat" (get-heat attacker)))
-                          (when (height-checker attacker target line)
-                            (->targeting-mod "Line of sight blocked" ##Inf))
-                          (woods-mod line)
-                          (calculate-range-mod range))
-        damage (attacks/print-damage attacks attack range)
-        targeting {:attacker attacker
-                   :target target
-                   :attack attack
-                   :attack-data attack-data
-                   :range range
-                   :rear-attack? (is-behind? (get-location target) (get-location attacker) (movement/get-rear (:movement target)) layout)
-                   :damage damage}]
-    [attack targeting]))
+  ([{:keys [attacks] :as attacker} target board layout attack]
+   (let [atk-hex (board/find-hex (get-location attacker true) board)
+         tgt-hex (board/find-hex (get-location target) board)
+         line (board/line atk-hex tgt-hex board)
+         range (hex/distance atk-hex tgt-hex)
+         attack-data (conj []
+                           (->targeting-mod "Pilot skill" (pilot-skill attacker))
+                           (->targeting-mod "Fire-control damage" (* (attacks/fc-hits attacks) 2))
+                           (amm attacker)
+                           (targeting-tmm target)
+                           (when (not (some attack #{:physical :charge :dfa}))
+                             (->targeting-mod "Attacker heat" (get-heat attacker)))
+                           (when (height-checker attacker target line)
+                             (->targeting-mod "Line of sight blocked" ##Inf))
+                           (woods-mod line)
+                           (calculate-range-mod range))
+         damage (attacks/print-damage attacks attack range)
+         targeting {:attacker attacker
+                    :target target
+                    :attack attack
+                    :attack-data attack-data
+                    :range range
+                    :rear-attack? (is-behind? (get-location target) (get-location attacker) (movement/get-rear (:movement target)) layout)
+                    :damage damage}]
+     [attack targeting]))
+  ([{:keys [atk-type] :as attacker} target board layout]
+   (->targeting attacker target board layout atk-type)))
 
 (defn calculate-to-hit
   [{:keys [attack-data]}]

@@ -414,7 +414,7 @@
     :on-action {:event-type ::events/auto-attack :fx/sync true}}
    {:fx/type :button
     :text "Resolve Charges/DFAs"
-    :on-action {:event-type ::events/resolve-attacks :fx/sync true}}
+    :on-action {:event-type ::events/resolve-physicals :fx/sync true}}
    {:fx/type :button
     :text "Finish Attacks"
     :on-action {:event-type ::events/finish-attacks :fx/sync true}}])
