@@ -122,8 +122,8 @@
                  :font 16
                  :translate-y (/ (* (layout :y-size) (:scale layout)) 3)}
                 {:fx/type :label
-                 :text (if (cu/get-movement unit true)
-                         (name (cu/get-movement unit true))
+                 :text (if (cu/get-movement unit false)
+                         (name (cu/get-movement unit false))
                          "Did not move")
                  :layout-x (nth hex 4)
                  :layout-y (nth hex 5)

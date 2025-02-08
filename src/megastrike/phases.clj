@@ -59,12 +59,12 @@
         turn-string (str "Turn: " turn-num)
         move-list (str "Turn Order: " (reduce str (map #(str % ", ") (generate-turn-order forces (vals units)))))
         round-report (str turn-string "\n" initiative-report move-list "\n\n----------\n")]
-    (mu/log ::begin-initiative-phase
-            :turn-number turn-num
-            :initiative-rolls initiative-report
-            :turn-order move-list
-            :current-phase "Initiative"
-            :instrumentation :player)
+    ; (mu/log ::begin-initiative-phase
+    ;         :turn-number turn-num
+    ;         :initiative-rolls initiative-report
+    ;         :turn-order move-list
+    ;         :current-phase "Initiative"
+    ;         :instrumentation :player)
     (assoc game-state
            :current-phase :initiative
            :turn-number turn-num
@@ -97,10 +97,10 @@
   (let [turn-order (generate-turn-order forces (vals units))
         round-string (str "Movement Phase \n" "Movement Order: " (reduce str (map #(str % ", ") turn-order)) "\n\n----------\n")
         report (str round-report round-string)]
-    (mu/log ::begin-movement-phase
-            :turn-order turn-order
-            :current-phase "Movement"
-            :instrumentation :player)
+    ; (mu/log ::begin-movement-phase
+    ;         :turn-order turn-order
+    ;         :current-phase "Movement"
+    ;         :instrumentation :player)
     (assoc game-state
            :current-phase :movement
            :turn-order turn-order
@@ -113,10 +113,10 @@
   (let [turn-order (generate-turn-order forces)
         round-string (str "Combat Phase \n" "Attack Order: " (reduce str (map #(str % ", ") turn-order)) "\n\n----------\n")
         report (str round-report round-string)]
-    (mu/log ::begin-combat-phase
-            :turn-order turn-order
-            :current-phase "Combat"
-            :instrumentation :player)
+    ; (mu/log ::begin-combat-phase
+    ;         :turn-order turn-order
+    ;         :current-phase "Combat"
+    ;         :instrumentation :player)
     (assoc game-state
            :current-phase :combat
            :turn-order turn-order
@@ -127,8 +127,8 @@
   "Remove all targeting as part of the end phase process."
   [{:keys [units] :as game-state}]
   (let [units (into {} (for [[_ unit] units] (cu/end-turn unit)))]
-    (mu/log ::begin-end-phase
-            :current-phase "End")
+    ; (mu/log ::begin-end-phase
+    ;         :current-phase "End")
     (assoc game-state
            :current-phase :end
            :turn-order ()

@@ -96,6 +96,17 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MOVEMENT
 
+(defn set-stacking
+  [board units]
+  (let [unit-forces (map (fn [u] [(cu/get-location u) (cu/get-force u)]) units)]
+    (loop [board board
+           unit-forces unit-forces]
+      (if (empty? unit-forces)
+        board
+        (recur (let [u (first unit-forces)]
+                 (assoc-in board [(first u) :stacking] (second u)))
+               (rest unit-forces))))))
+
 (defn change-movement
   [unit new-movement]
   (assoc unit :movement new-movement))
@@ -107,6 +118,12 @@
 (defn tmm
   [{:keys [movement] :as unit}]
   (movement/print-tmm movement (high-heat? unit)))
+
+(defn get-mv
+  [{:keys [movement] :as unit} mv-type]
+  (if mv-type
+    (movement/get-mv movement (get-heat unit) mv-type)
+    (movement/get-mv movement (get-heat unit))))
 
 (defn undeploy
   [{:keys [movement] :as unit}]
@@ -145,8 +162,10 @@
   (movement/get-facing movement))
 
 (defn set-path
-  [{:keys [movement] :as unit} hex board]
-  (change-movement unit (movement/set-path movement hex board)))
+  ([unit hex board units]
+   (change-movement unit (movement/set-path unit hex board units)))
+  ([unit path]
+   (assoc-in unit [:movement :path] path)))
 
 (defn set-movement-mode
   [{:keys [movement] :as unit} mode]
@@ -161,10 +180,10 @@
 (defn move-unit
   [{:keys [movement heat] :as unit} board]
   (let [current (heat/current heat)]
-    (if (movement/can-move? movement current board)
+    (if (movement/can-move? movement current board (get-force unit))
       (-> unit
           (take-action)
-          (change-movement (movement/move-unit movement current board)))
+          (change-movement (movement/move-unit movement current board (get-force unit))))
       unit)))
 
 (defn get-movement-modes
@@ -172,12 +191,12 @@
   (movement/get-modes movement))
 
 (defn get-movement
-  [{:keys [movement]} no-default?]
-  (movement/selected movement no-default?))
+  [{:keys [movement]} default?]
+  (movement/selected movement default?))
 
 (defn get-movement-costs
-  [{:keys [movement]} board]
-  (movement/move-costs movement board))
+  [{:keys [movement]} board units]
+  (movement/move-costs movement board units))
 
 (defn take-mv-hits
   [{:keys [movement] :as unit} hits]
@@ -376,7 +395,7 @@
 
 (defn amm
   [unit]
-  (condp = (get-movement unit false)
+  (condp = (get-movement unit true)
     :immobile (->targeting-mod "Attack immobile" -1)
     :stand-still (->targeting-mod "Attack stood still" -1)
     :jump (->targeting-mod "Attack stood still" 2)

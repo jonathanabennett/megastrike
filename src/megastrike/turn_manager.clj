@@ -46,7 +46,7 @@
         (update-in game-state [:units active-unit] cu/set-location (select-keys hex [:p :q :r]))
 
         (and (= current-phase :movement) (not (cu/acted? unit)))
-        (update-in game-state [:units active-unit] cu/set-path hex game-board)
+        (update-in game-state [:units active-unit] cu/set-path hex game-board units)
         :else game-state)
 
       (do (mu/log ::no-active-unit)
@@ -103,7 +103,7 @@
 (defn charge-unit
   [{:keys [active-unit units game-board layout] :as game-state} target]
   (let [unit (get units active-unit)
-        mv-type (cu/get-movement unit false)
+        mv-type (cu/get-movement unit true)
         can-charge? (cu/can-charge? unit target)
         can-dfa? (and (= mv-type :jump) (cu/can-charge? unit target))
         kind (cond
@@ -141,6 +141,8 @@
         report (str round-report (parse-attack-data attack-result))]
     (assoc game-state :units units :round-report report)))
 
+(declare take-turn)
+
 (defn ai-attacks
   [{:keys [turn-order units game-board layout] :as game-state}]
   (let [target-units (->> units
@@ -159,18 +161,8 @@
                  (make-attack game-state selected))
                (rest ai-units))))))
 
-(defn take-turn
-  [{:keys [forces current-phase units turn-order] :as game-state}]
-  (let [next-force (get forces (first turn-order))]
-    (if (and (= current-phase :combat) (not= (force/get-player next-force) :player))
-      (do (mu/log ::attacking
-                  :units units)
-          (ai-attacks game-state))
-      game-state)))
-
 (defn confirm-move
   [{:keys [active-unit units turn-order game-board] :as game-state}]
-  (mu/log ::confirming-move)
   (let [unit (get units active-unit)
         moved-unit (if (= (first turn-order) (cu/get-force unit))
                      (cu/move-unit unit game-board)
@@ -190,9 +182,41 @@
                   :origin (cu/get-location moved-unit)
                   :force (cu/get-force moved-unit)
                   :force-conditional (= (first turn-order) (cu/get-force unit))
-                  :active (cu/id unit)
+                  :active unit
                   :path (cu/get-path unit))
           (assoc game-state :turn-flag nil)))))
+
+(defn ai-moves
+  [{:keys [turn-order units game-board layout] :as game-state}]
+  (let [unit (->> units
+                  (vals)
+                  (filter #(in-active-force? % turn-order))
+                  (filter #(not (cu/acted? %)))
+                  (rand-nth))
+        opponents (->> units
+                       (vals)
+                       (filter #(not (in-active-force? % turn-order))))
+        move-options (ai/move-options unit opponents game-board layout)
+        upd (-> unit
+                (cu/set-path (:path move-options))
+                (cu/set-movement-mode (cu/get-movement unit true)))]
+    (mu/log ::ai-moves
+            :move-options move-options
+            :upd upd)
+    (-> game-state
+        (assoc-in [:units (cu/id upd)] upd)
+        (assoc :active-unit (cu/id upd))
+        (confirm-move))))
+
+(defn take-turn
+  [{:keys [forces current-phase turn-order] :as game-state}]
+  (let [next-force (get forces (first turn-order))]
+    (cond
+      (and (= current-phase :combat) (= (force/get-player next-force) :kevin))
+      (ai-attacks game-state)
+      (and (= current-phase :movement) (= (force/get-player next-force) :kevin))
+      (ai-moves game-state)
+      :else game-state)))
 
 (defn set-special-attack
   [{:keys [active-unit game-board] :as game-state} targeting]

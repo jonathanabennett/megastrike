@@ -16,9 +16,7 @@
         attacks (fx/sub-val context get-in [:internal :attack-dialog :items])
         phase (subs/phase context)
         active (subs/active-unit context)
-        mv-type (cu/get-movement active false)]
-    (mu/log ::attack-dialog-attacks
-            :attacks attacks)
+        mv-type (cu/get-movement active true)]
     {:fx/type :dialog
      :showing (fx/sub-val context get-in [:internal :attack-dialog :showing] false)
      :on-close-request (fn [^DialogEvent event]
@@ -39,11 +37,10 @@
   (let [round (subs/turn-number context)
         phase (name (subs/phase context))
         round-report (subs/round-report context)]
-    (mu/log ::round-report
-            :round round
-            :round-dialog (fx/sub-val context get-in [:round-dialog :showing])
-            :phase phase
-            :report round-report)
+    ; (mu/log ::round-report
+    ;         :round round
+    ;         :phase phase
+    ;         :report round-report)
     {:fx/type :dialog
      :showing (fx/sub-val context get-in [:round-dialog :showing] false)
      :header-text (str "Turn " round " / " phase " phase")
