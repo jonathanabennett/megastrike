@@ -1,7 +1,6 @@
 (ns megastrike.gui.views
   (:require
    [cljfx.api :as fx]
-   [com.brunobonacci.mulog :as mu]
    [megastrike.combat-unit :as cu]
    [megastrike.gui.elements :as elements]
    [megastrike.gui.events :as events]
@@ -16,7 +15,7 @@
         attacks (fx/sub-val context get-in [:internal :attack-dialog :items])
         phase (subs/phase context)
         active (subs/active-unit context)
-        mv-type (cu/get-movement active true)]
+        mv-type (cu/get-selected-movement active true)]
     {:fx/type :dialog
      :showing (fx/sub-val context get-in [:internal :attack-dialog :showing] false)
      :on-close-request (fn [^DialogEvent event]
@@ -53,7 +52,7 @@
 
 (defn game-board
   [{:keys [fx/context]}]
-  (let [gb (:tiles (subs/board context))
+  (let [gb (subs/tiles context)
         layout (subs/layout context)
         unit-locations (subs/deployed-units context)
         destinations (filter #(pos? (count (cu/get-path %))) (vals (subs/units context)))]

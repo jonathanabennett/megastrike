@@ -7,8 +7,10 @@
   `get-modes` gets all the movement modes for a movement map.
   `has-mode`"
   (:require
+   [clojure.data.priority-map :as priority-map]
    [clojure.math :as math]
    [clojure.string :as str]
+   [com.brunobonacci.mulog :as mu]
    [megastrike.abilities :as abilities]
    [megastrike.board :as board]
    [megastrike.hexagons.hex :as hex]
@@ -180,7 +182,8 @@
   [unit heat]
   (str/join "/" (map #(print-movement-helper unit % heat) (get-modes unit))))
 
-(defn print-tmm
+(defn tmm-value
+  "When a TMM value needs to be calculated, apply mv-hits and high heat."
   [{:keys [tmm mv-hits]} high-heat?]
   (if (pos? mv-hits)
     (loop [tmm tmm
@@ -196,14 +199,16 @@
       (dec tmm)
       tmm)))
 
-(defn tmm-value
-  [{:keys [selected] :as movement} abilities high-heat?]
-  (let [jump-mod (:value (or (abilities/has? abilities :jmpw) (abilities/has? abilities :jmps) {:value 0}))]
-    (condp = selected
+(defn tmm
+  "Returns the TMM for the unit based on its selected movement."
+  [{:keys [selected default] :as movement} abilities high-heat?]
+  (let [jump-mod (:value (or (abilities/has? abilities :jmpw) (abilities/has? abilities :jmps) {:value 0}))
+        s (or selected default)]
+    (condp = s
       :immobile -4
       :stand-still 0
-      :jump (+ jump-mod (print-tmm movement high-heat?) 1)
-      (print-tmm movement high-heat?))))
+      :jump (+ jump-mod (tmm-value movement high-heat?) 1)
+      (tmm-value movement high-heat?))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MV damage methods
@@ -221,6 +226,45 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Path and movement methods
 
+(defn- calc-approx-dist
+  [h dist]
+  (for [[node d] dist]
+    [node (+ d (h node))]))
+
+(defn astar [origin destination board heuristic mv-type unit-force]
+  (let [guess-goal-dist #(heuristic % destination)
+        tiles (board/tiles board)
+        neighbors #(board/neighbors board %)
+        weight #(board/step-cost %1 %2 mv-type unit-force)]
+    (loop [known-dist (merge (into {} (for [x tiles] [x ##Inf]))
+                             {origin 0})
+           guess-unseen-dist (into (priority-map/priority-map)
+                                   (calc-approx-dist guess-goal-dist known-dist))
+           visited? #{}
+           path {origin []}]
+      (let [[best-unseen _] (peek guess-unseen-dist)]
+        (if (or (= (known-dist best-unseen) ##Inf)
+                (visited? destination)
+                (empty? guess-unseen-dist))
+          (if destination (path destination) path)
+          (let [closer-nbrs (for [nbr (neighbors best-unseen)
+                                  :let [new-known-dist (+ (known-dist best-unseen)
+                                                          (weight best-unseen nbr))]
+                                  :when (< new-known-dist (known-dist nbr))]
+                              [nbr new-known-dist])
+                closer-paths (for [[nbr _] closer-nbrs]
+                               [nbr (conj (path best-unseen) nbr)])]
+            ; (mu/log ::neighbors
+            ;         :best-unseen best-unseen
+            ;         :neighbors (neighbors best-unseen)
+            ;         :closer-nbrs closer-nbrs
+            ;         :closer-paths closer-paths)
+            (recur (into known-dist closer-nbrs)
+                   (into (pop guess-unseen-dist)
+                         (calc-approx-dist guess-goal-dist closer-nbrs))
+                   (conj visited? best-unseen)
+                   (into path closer-paths))))))))
+
 (defn get-path
   [{:keys [path]}]
   path)
@@ -229,53 +273,53 @@
   [movement]
   (assoc movement :path []))
 
-(defn move-costs
-  [{:keys [selected default path location]} board u-force]
+(defn move-cost
+  [{:keys [selected default path]} unit-force]
   (let [movement-mode (or selected default)]
-    (loop [sum [(board/step-cost (board/find-hex location board)
-                                 (first path)
-                                 movement-mode u-force)]
-           path path]
-      (if (= (count path) 1)
-        sum
-        (recur (conj sum (board/step-cost (first path)
-                                          (second path)
-                                          movement-mode
-                                          u-force))
-               (rest path))))))
+    (board/path-cost path movement-mode unit-force)))
+
+(defn unblocked-path?
+  [path unit-force]
+  (some #(= ((get % :stacking false)) unit-force) path))
 
 (defn can-move?
-  "Checks whether or not a unit can move from its location to a destination."
-  [{:keys [path selected] :as unit} heat board u-force]
+  "Checks whether or not a unit can take a path."
+  [{:keys [selected location] :as unit} path heat unit-force]
   (cond
-    (pos? (count path))
-    (let [sum (reduce + (move-costs unit board u-force))
-          move (get-mv unit heat)]
-      (<= sum move))
-    (and (contains? #{:did-not-move :stand-still :immobile} selected) (empty? path)) true
+     ;; This path doesn't start at the unit's location
+    (not (hex/same-hex (first path) location)) false
+    ;; The path ends at an occupied hex
+    (get (last path) :stacking false) false
+    ;; The path crosses a hex occupied by an enemy unit
+    (unblocked-path? path unit-force) false
+    ;; Units standing still or immobile should have no path
+    (and (contains? #{:stand-still :immobile} selected) (empty? path)) true
+    (pos? (count path)) (<= (board/path-cost path selected unit-force) (get-mv unit heat))
     :else false))
 
 (defn find-path
-  [{:keys [selected default location] :as unit} destination board units]
-  (board/find-path (board/find-hex location board) destination board hex/distance (or selected default unit units)))
+  "Finds a path to a given destination, regardless of whether or not the unit has the MV to get there.
+  IF the hex is blocked (i.e. the final cost is ##Inf), it will progressively try (butlast path) to try to get as close as possible.
+  NOTE: THIS METHOD ASSUMES THE LOCATIONS OF UNITS HAVE ALREADY BEEN MARKED."
+  [{:keys [selected default location] :as unit} unit-force heat destination board]
+  (loop [path (astar location destination board hex/distance (or selected default) unit-force)]
+    (if (or (empty? path) (can-move? unit path heat unit-force))
+      path
+      (recur (butlast path)))))
 
 (defn set-path
-  [movement destination board units]
-  (assoc movement :path (find-path movement destination board units)))
+  [movement destination unit-force heat board]
+  (assoc movement :path (find-path movement unit-force heat destination board)))
 
 (defn move-unit
   "Moves a unit if it has a destination and can move to that destination."
-  [unit heat board u-force]
-  (let [unit (if (not (:selected unit))
-               (assoc unit :selected (:default unit))
-               unit)]
-    (cond
-      (or (= (:selected unit) :stand-still) (empty? (:path unit)))
-      (merge unit {:selected :stand-still :path []})
-      (seq (:path unit))
-      (if (can-move? unit heat board u-force)
-        (set-hex unit (last (:path unit)))
-        unit))))
+  [unit heat unit-force]
+  (let [u (if (not (:selected unit))
+            (assoc unit :selected (:default unit))
+            unit)]
+    (if (can-move? u (:path unit) heat unit-force)
+      (set-hex u (last (:path unit)))
+      unit)))
 
 (defn clear-mode
   [movement]

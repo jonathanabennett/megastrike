@@ -37,5 +37,9 @@
   (:name pilot))
 
 (defn display
+  "Formats the pilot information in the following format: 'Name(skill)'
+  Examples:
+  Bob Kim(4)
+  Shooty McShootyface (2)"
   [pilot]
   (str (full-name pilot) " (" (skill pilot) ")"))

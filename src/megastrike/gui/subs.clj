@@ -2,6 +2,7 @@
   (:require
    [cljfx.api :as fx]
    [clojure.string :as str]
+   [megastrike.board :as board]
    [megastrike.combat-unit :as cu]))
 
 (defn title-string
@@ -67,3 +68,7 @@
 (defn board
   [context]
   (fx/sub-val context :game-board))
+
+(defn tiles
+  [context]
+  (board/tiles (board context)))

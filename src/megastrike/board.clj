@@ -1,8 +1,8 @@
 (ns megastrike.board
   (:require
-   [clojure.data.priority-map :as priority-map]
    [clojure.java.io :as io]
    [clojure.string :as str]
+   [com.brunobonacci.mulog :as mu]
    [megastrike.hexagons.hex :as hex]
    [megastrike.utils :refer [strip-quotes]]))
 
@@ -71,10 +71,36 @@
 
 ;; Why is a protocol required here, can I get by without one?
 
+(defn tiles
+  [board]
+  (:tiles board))
+
 (defn find-hex
   [h board]
-  (let [found (first (filter #(hex/same-hex h %) (:tiles board)))]
+  (let [found (first (filter #(hex/same-hex h %) (tiles board)))]
     found))
+
+(defn update-hex
+  [new-h board]
+  (assoc board :tiles (for [h (tiles board)]
+                        (if (hex/same-hex h new-h)
+                          new-h
+                          h))))
+
+(defn set-stacking
+  "Mark all units on the board."
+  [board units]
+  (loop [board board
+         units units]
+    (if (empty? units)
+      board
+      (recur (let [u (first units)
+                   loc (first u)
+                   force (second u)
+                   tile (assoc (find-hex loc board) :stacking force)
+                   upd (update-hex tile board)]
+               upd)
+             (rest units)))))
 
 (defn linear-interpolation
   [a b step]
@@ -97,17 +123,37 @@
                (inc step))))))
 
 (defn step-cost
-  [hex neighbor mv-type]
-  (let [terrain (:terrain neighbor)
-        lvl-change (- (:elevation neighbor) (:elevation hex))]
+  [hex neighbor mv-type unit-force]
+  (let [terrain (get neighbor :terrain "")
+        lvl-change (- (get neighbor :elevation 0) (get hex :elevation 0))]
+    (try
+      (str/includes? terrain "woods")
+      (catch Exception e
+        (mu/log ::step-cost-failed
+                :error e
+                :hex hex
+                :neighbor neighbor
+                :mv-type mv-type)))
     (cond
       (= mv-type :jump) 1
+      (and (get neighbor :stacking false) (not= (get neighbor :stacking false) unit-force)) ##Inf
+      (> lvl-change 2) ##Inf
       (str/includes? terrain "woods") (+ (abs lvl-change) 2)
       (str/includes? terrain "rough") (+ (abs lvl-change) 2)
       (str/includes? terrain "rubble") (+ (abs lvl-change) 2)
       (str/includes? terrain "water") (+ (abs lvl-change) 2)
-      (> lvl-change 2) ##Inf
       :else (+ (abs lvl-change) 1))))
+
+(defn path-cost
+  [path mv-type unit-force]
+  (loop [start (first path)
+         path (rest path)
+         sum 0]
+    (if (= (count path) 0)
+      sum
+      (recur (first path)
+             (rest path)
+             (+ sum (step-cost start (first path) mv-type unit-force))))))
 
 (defn neighbors
   [board node]
@@ -127,37 +173,3 @@
    (let [mapsheet (create-mapsheet width height)]
      {:tiles (:tiles mapsheet)
       :mapsheets [[mapsheet]]})))
-
-(defn- calc-approx-dist [h dist]
-  (for [[node d] dist]
-    [node (+ d (h node))]))
-
-(defn astar
-  [start goal graph heuristic mv-type]
-  (let [guess-goal-dist #(heuristic % goal)
-        nodes (:tiles graph)
-        neighbors #(neighbors graph %)
-        weight #(step-cost %1 %2 mv-type)]
-    (loop [known-dist (merge (into {} (for [x nodes] [x ##Inf]))
-                             {start 0})
-           guess-unseen-dist (into (priority-map/priority-map)
-                                   (calc-approx-dist guess-goal-dist known-dist))
-           visited? #{}
-           path {start []}]
-      (let [[best-unseen _] (peek guess-unseen-dist)]
-        (if (or (= (known-dist best-unseen) ##Inf)
-                (visited? goal)
-                (empty? guess-unseen-dist))
-          (if goal (path goal) path)
-          (let [closer-nbrs (for [nbr (neighbors best-unseen)
-                                  :let [new-known-dist (+ (known-dist best-unseen)
-                                                          (weight best-unseen nbr))]
-                                  :when (< new-known-dist (known-dist nbr))]
-                              [nbr new-known-dist])
-                closer-paths (for [[nbr _] closer-nbrs]
-                               [nbr (conj (path best-unseen) nbr)])]
-            (recur (into known-dist closer-nbrs)
-                   (into (pop guess-unseen-dist)
-                         (calc-approx-dist guess-goal-dist closer-nbrs))
-                   (conj visited? best-unseen)
-                   (into path closer-paths))))))))

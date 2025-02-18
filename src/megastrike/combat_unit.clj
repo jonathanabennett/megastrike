@@ -86,62 +86,62 @@
 ;; PILOT
 
 (defn display-pilot
+  "Print out the pilot in the format of name(skill)
+  Examples:
+  Shooty McShootyface(4)
+  Lt. Dan (2)"
   [unit]
   (pilot/display (:pilot unit)))
 
 (defn pilot-skill
+  "Returns the skill of the pilot as a number (for use in targeting)."
   [{:keys [pilot]}]
   (pilot/skill pilot))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MOVEMENT
 
-(defn set-stacking
-  [board units]
-  (let [unit-forces (map (fn [u] [(cu/get-location u) (cu/get-force u)]) units)]
-    (loop [board board
-           unit-forces unit-forces]
-      (if (empty? unit-forces)
-        board
-        (recur (let [u (first unit-forces)]
-                 (assoc-in board [(first u) :stacking] (second u)))
-               (rest unit-forces))))))
-
 (defn change-movement
+  "Convenience access method for changing the movement object of a unit."
   [unit new-movement]
   (assoc unit :movement new-movement))
 
+;;;;;;;;;;;;;;;
+;; Printing and value accessing
+
 (defn print-movement
+  "Print out all the movements a unit has in a pretty-printed format."
   [{:keys [movement heat]}]
   (movement/print-movement movement (heat/current heat)))
 
 (defn tmm
-  [{:keys [movement] :as unit}]
-  (movement/print-tmm movement (high-heat? unit)))
+  "Accessor for the TMM method in the movement object."
+  [{:keys [movement abilities] :as unit}]
+  (movement/tmm movement abilities (high-heat? unit)))
 
 (defn get-mv
+  "Calculates the available mv based on heat and mv-hits."
   [{:keys [movement] :as unit} mv-type]
   (if mv-type
     (movement/get-mv movement (get-heat unit) mv-type)
     (movement/get-mv movement (get-heat unit))))
 
+;;;;;;;;;;;;;;;
+;; Location Methods
+
 (defn undeploy
+  "Undeploy a unit by removing its location."
   [{:keys [movement] :as unit}]
-  (let [new-movement (movement/set-hex movement {})]
-    (change-movement unit new-movement)))
+  (change-movement unit (movement/set-hex movement {})))
 
 (defn deployed?
+  "Checks if a unit has a location."
   [{:keys [movement]}]
   (movement/deployed? movement))
 
 (defn set-location
   [{:keys [movement] :as unit} hex]
   (let [new-movement (movement/set-hex movement hex)]
-    (change-movement unit new-movement)))
-
-(defn set-facing
-  [{:keys [movement] :as unit} facing]
-  (let [new-movement (movement/set-facing movement facing)]
     (change-movement unit new-movement)))
 
 (defn get-location
@@ -153,50 +153,59 @@
        (last path)
        (get-location unit)))))
 
-(defn get-path
-  [{:keys [movement]}]
-  (movement/get-path movement))
+;;;;;;;;;;;;;;;;;;
+;; Facing Methods
+
+(defn set-facing
+  [{:keys [movement] :as unit} facing]
+  (let [new-movement (movement/set-facing movement facing)]
+    (change-movement unit new-movement)))
 
 (defn get-facing
   [{:keys [movement]}]
   (movement/get-facing movement))
 
+;;;;;;;;;;;;;;;;;;
+;; Path Methods
+
+(defn set-stacking
+  "Mark all units on the board."
+  [board units]
+  (board/set-stacking board (for [u units] [(get-location u) (get-force u)])))
+
+(defn get-path
+  [{:keys [movement]}]
+  (movement/get-path movement))
+
 (defn set-path
   ([unit hex board units]
-   (change-movement unit (movement/set-path unit hex board units)))
+   (change-movement unit (movement/set-path (:movement unit) hex (get-force unit) (get-heat unit) (set-stacking board (vals units)))))
   ([unit path]
    (assoc-in unit [:movement :path] path)))
+
+;;;;;;;;;;;;;;;;;;
+;; Movement Mode Methods
 
 (defn set-movement-mode
   [{:keys [movement] :as unit} mode]
   (let [new-movement (movement/set-mode movement mode)]
     (change-movement unit new-movement)))
 
-(defn cancel-movement
-  [{:keys [movement] :as unit}]
-  (let [new-movement (movement/cancel-movement movement)]
-    (change-movement unit new-movement)))
-
-(defn move-unit
-  [{:keys [movement heat] :as unit} board]
-  (let [current (heat/current heat)]
-    (if (movement/can-move? movement current board (get-force unit))
-      (-> unit
-          (take-action)
-          (change-movement (movement/move-unit movement current board (get-force unit))))
-      unit)))
-
 (defn get-movement-modes
   [{:keys [movement]}]
   (movement/get-modes movement))
 
-(defn get-movement
+(defn clear-movement-mode
+  [{:keys [movement] :as unit}]
+  (let [new-movement (movement/clear-mode movement)]
+    (change-movement unit new-movement)))
+
+(defn get-selected-movement
   [{:keys [movement]} default?]
   (movement/selected movement default?))
 
-(defn get-movement-costs
-  [{:keys [movement]} board units]
-  (movement/move-costs movement board units))
+;;;;;;;;;;;;;;;;;;;
+;; Movement and MV Hits
 
 (defn take-mv-hits
   [{:keys [movement] :as unit} hits]
@@ -207,9 +216,22 @@
       (recur (change-movement unit (movement/take-hit movement))
              (inc n)))))
 
-(defn clear-movement-mode
+(defn get-movement-cost
   [{:keys [movement] :as unit}]
-  (let [new-movement (movement/clear-mode movement)]
+  (movement/move-cost movement (get-force unit)))
+
+(defn move-unit
+  [{:keys [movement heat] :as unit}]
+  (let [current (heat/current heat)]
+    (if (movement/can-move? movement (movement/get-path movement) current (get-force unit))
+      (-> unit
+          (take-action)
+          (change-movement (movement/move-unit movement current (get-force unit))))
+      unit)))
+
+(defn cancel-movement
+  [{:keys [movement] :as unit}]
+  (let [new-movement (movement/cancel-movement movement)]
     (change-movement unit new-movement)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -395,7 +417,7 @@
 
 (defn amm
   [unit]
-  (condp = (get-movement unit true)
+  (condp = (get-selected-movement unit true)
     :immobile (->targeting-mod "Attack immobile" -1)
     :stand-still (->targeting-mod "Attack stood still" -1)
     :jump (->targeting-mod "Attack stood still" 2)
@@ -403,7 +425,7 @@
 
 (defn targeting-tmm
   [unit]
-  (->targeting-mod "Target movement" (movement/tmm-value (:movement unit) (:abilities unit) (high-heat? unit))))
+  (->targeting-mod "Target movement" (movement/tmm (:movement unit) (:abilities unit) (high-heat? unit))))
 
 (defn ->targeting
   ([{:keys [attacks] :as attacker} target board layout attack]
@@ -469,17 +491,17 @@
       (assoc :targeting false)))
 
 (defn declare-special-attack
-  [unit targeting board]
+  [unit targeting]
   (-> unit
       (assoc :target (id (:target targeting)))
       (assoc :atk-type (:attack targeting))
-      (move-unit board)))
+      (move-unit)))
 
 (defn dfa-attack
   [{:keys [attacker target rear-attack?] :as targeting} to-hit]
   (let [hit? (<= (calculate-to-hit targeting) to-hit)
         attacker (set-attacked attacker)
-        attacker-tmm (movement/tmm-value (:movement attacker) (:abilities attacker) (high-heat? attacker))
+        attacker-tmm (movement/tmm (:movement attacker) (:abilities attacker) (high-heat? attacker))
         attacker-damage (attacks/roll-damage (:attacks attacker) (if hit? :self-dfa :missed-dfa) attacker-tmm (get-size target) rear-attack?)
         target-damage (attacks/roll-damage (:attacks attacker) :dfa attacker-tmm (get-size target) rear-attack?)
         result {(:id attacker) (take-damage attacker attacker-damage false)
@@ -505,7 +527,7 @@
   [{:keys [attacker target rear-attack?] :as targeting} to-hit]
   (let [hit? (<= (calculate-to-hit targeting) to-hit)
         attacker (set-attacked attacker)
-        attacker-tmm (movement/tmm-value (:movement attacker) (:abilities attacker) (high-heat? attacker))
+        attacker-tmm (movement/tmm (:movement attacker) (:abilities attacker) (high-heat? attacker))
         attacker-damage (attacks/roll-damage (:attacks attacker) :self-charge attacker-tmm (get-size target) rear-attack?)
         target-damage (attacks/roll-damage (:attacks attacker) :charge attacker-tmm (get-size target) rear-attack?)
         result {(:id attacker) (if hit? (take-damage attacker attacker-damage false) attacker)

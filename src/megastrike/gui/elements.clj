@@ -122,8 +122,8 @@
                  :font 16
                  :translate-y (/ (* (layout :y-size) (:scale layout)) 3)}
                 {:fx/type :label
-                 :text (if (cu/get-movement unit false)
-                         (name (cu/get-movement unit false))
+                 :text (if (cu/get-selected-movement unit false)
+                         (name (cu/get-selected-movement unit false))
                          "Did not move")
                  :layout-x (nth hex 4)
                  :layout-y (nth hex 5)
@@ -147,11 +147,9 @@
                  :font 16}]}))
 
 (defn draw-movement-path
-  [{:keys [fx/context unit layout]}]
-  (let [board (subs/board context)
-        origin (cu/get-location unit)
-        costs (cu/get-movement-costs unit board)]
-    (prn)
+  [{:keys [unit layout]}]
+  (let [origin (cu/get-location unit)
+        costs (cu/get-movement-cost unit)]
     {:fx/type :group
      :children (loop [sprites []
                       total 0

@@ -103,7 +103,7 @@
 (defn charge-unit
   [{:keys [active-unit units game-board layout] :as game-state} target]
   (let [unit (get units active-unit)
-        mv-type (cu/get-movement unit true)
+        mv-type (cu/get-selected-movement unit true)
         can-charge? (cu/can-charge? unit target)
         can-dfa? (and (= mv-type :jump) (cu/can-charge? unit target))
         kind (cond
@@ -162,10 +162,10 @@
                (rest ai-units))))))
 
 (defn confirm-move
-  [{:keys [active-unit units turn-order game-board] :as game-state}]
+  [{:keys [active-unit units turn-order] :as game-state}]
   (let [unit (get units active-unit)
         moved-unit (if (= (first turn-order) (cu/get-force unit))
-                     (cu/move-unit unit game-board)
+                     (cu/move-unit unit)
                      unit)]
     (if (cu/acted? moved-unit)
       (do (mu/log ::move-confirmed
@@ -193,16 +193,13 @@
                   (filter #(in-active-force? % turn-order))
                   (filter #(not (cu/acted? %)))
                   (rand-nth))
-        opponents (->> units
-                       (vals)
-                       (filter #(not (in-active-force? % turn-order))))
-        move-options (ai/move-options unit opponents game-board layout)
+        move-options (ai/move-options unit (vals units) game-board layout)
         upd (-> unit
                 (cu/set-path (:path move-options))
-                (cu/set-movement-mode (cu/get-movement unit true)))]
-    (mu/log ::ai-moves
-            :move-options move-options
-            :upd upd)
+                (cu/set-movement-mode (if (seq (:path move-options)) (cu/get-selected-movement unit true) :stand-still)))]
+    ; (mu/log ::ai-moves
+    ;         :move-options move-options
+    ;         :upd upd)
     (-> game-state
         (assoc-in [:units (cu/id upd)] upd)
         (assoc :active-unit (cu/id upd))
@@ -219,8 +216,8 @@
       :else game-state)))
 
 (defn set-special-attack
-  [{:keys [active-unit game-board] :as game-state} targeting]
-  (update-in game-state [:units active-unit] cu/declare-special-attack targeting game-board))
+  [{:keys [active-unit] :as game-state} targeting]
+  (update-in game-state [:units active-unit] cu/declare-special-attack targeting))
 
 (defn make-attacks
   [game-state targeting-list]
