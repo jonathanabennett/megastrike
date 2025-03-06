@@ -20,17 +20,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Schemas and variable definitions
 
-(def MovementSchema
-  [:map
-   [:options :map]
-   [:tmm pos?]
-   [:mv-hits number?]
-   [:default (or nil? keyword?)]
-   [:selected (or nil? keyword?)]
-   [:location (or nil? schemas/Hexagon)]
-   [:path (or nil? vector?)]
-   [:facing (or nil? keyword?)]])
-
 (def directions
   {:n  {:angle 0
         :ordinal 2
@@ -57,6 +46,39 @@
         :points [6 7 8 9]
         :rear :se}})
 
+(defprotocol Moveable
+  (get-modes [this] "Returns a vector of this unit's movement modes.")
+  (has-mode? [this mode] "Returns whether or not this unit has a given movement mode.")
+  (get-default [this] "Gets the default movement value of a unit.")
+  (get-selected [this] [this accept-default?] "Gets the currently selected movement mode. If called with accept-default? It will return either selected movement mode or the default if none is selected.")
+  (set-selected [this new-selected] "Sets the units selected movement mode to new-selected.")
+  (clear-selected [this] "Clears the selected movement mode, leaving it empty.")
+
+  (get-location [this] "Returns the hex address of the unit.")
+  (set-location [this new-location] "Updates the unit's location on the map to a new hex.")
+  (deployed? [this] "Returns true if the unit is deployed.")
+  (get-facing [this] "Returns the facing map (selected from `directions`) that the unit is facing.")
+  (get-rear [this] "Returns the unit's rear based on its facing map.")
+  (set-facing [this new-facing] "Changes the units facing to new-facing.")
+
+  (get-hits [this] "Returns the number of mv hits a unit has taken.")
+  (immobilize [this])
+  (take-hit [this] "Take a movement hit.")
+
+  (get-mv [this heat] [this heat mv-type] "Gets the move value for a unit. When no mv-type is provided, should return either the selected or default.")
+  (get-tmm [this high-heat?] "Returns the TMM of a unit, adjusted for high heat.")
+  (get-tmm-data [this abilities high-heat?] "Returns the tmm-value object used for attacks.")
+
+  (cancel-movement [this] "Cancels the unit's planned movement.")
+  (can-move? [this] [this path heat unit-force] "Returns true if a unit can actually move along the path it has selected.")
+
+  (get-path [this] "Returns the path the unit is planning to follow.")
+  (find-path [this heat unit-force destination board] "Returns the path that gets the unit as close as possible to its destination when accounting for stacking and its move value.
+             NOTE: this assumes that board has had stacking already marked on it.")
+  (set-path [this heat unit-force destination board] "Set the unit's path to the path returned by calling find-path with destination.")
+
+  (move-unit [unit heat unit-force] "Changes the unit's location based on the path and sets the path to `[]`"))
+
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Movement Map Constructor and helper methods
 
@@ -78,96 +100,8 @@
       (merge mv-map {:walk (val (first mv-map))})
       mv-map)))
 
-(defn ->movement
-  [{:keys [tmm mv-hits movement selected location path facing] :or {mv-hits 0 selected nil location nil path [] facing nil}}]
-  (let [options (parse-movement movement)
-        default (if (contains? options :walk)
-                  :walk
-                  (first (keys options)))
-        movement {:options options
-                  :tmm (Integer/parseInt tmm)
-                  :mv-hits mv-hits
-                  :default default
-                  :selected selected
-                  :location location
-                  :path path
-                  :facing facing}]
-    movement))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Location-based methods
-
-(defn deployed?
-  "Checks if a unit has been deployed by checking if it has a location."
-  [{:keys [location]}]
-  (:q location))
-
-(defn get-location
-  [{:keys [location]}]
-  location)
-
-(defn set-hex
-  [movement new-loc]
-  (assoc movement
-         :location (select-keys new-loc [:p :q :r])
-         :path []))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Modes (default and selected) methods
-
-(defn get-modes
-  "Gets all movement modes for a unit."
-  [movement]
-  (:options movement))
-
-(defn has-mode?
-  [movement mode]
-  (contains? (get-modes movement) mode))
-
-(defn set-mode
-  "Sets the movement mode for a unit to mode. Does nothing if mode is not
-  valid for this unit."
-  [movement mode]
-  (if (has-mode? movement mode)
-    (assoc movement :selected mode)
-    movement))
-
-(defn selected
-  ([{:keys [selected default]} default?]
-   (if default?
-     (or selected default)
-     selected)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Facing methods
-
-(defn set-facing
-  [movement facing]
-  (assoc movement :facing facing))
-
-(defn get-facing
-  [{:keys [facing]}]
-  (get directions facing))
-
-(defn get-rear
-  [{:keys [facing]}]
-  (get-in directions [facing :rear]))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MV and TMM methods
-
-(defn get-mv
-  ([{:keys [options mv-hits]} heat move-type]
-   (let [base-move (move-type options)]
-     (loop [mv base-move
-            n 0]
-       (if (= n mv-hits)
-         (max (- mv heat) 0)
-         (recur (let [new-mv (math/round (/ mv 2.0))]
-                  (if (>= (- mv new-mv) 1) new-mv 0))
-                (inc n))))))
-  ([movement heat]
-   (get-mv movement heat (or (:selected movement) (:default movement)))))
 
 (defn print-movement-helper
   "Consumes a vector containing a move type as a keyword and a distance and prints it for human consumption."
@@ -182,47 +116,6 @@
   [unit heat]
   (str/join "/" (map #(print-movement-helper unit % heat) (get-modes unit))))
 
-(defn tmm-value
-  "When a TMM value needs to be calculated, apply mv-hits and high heat."
-  [{:keys [tmm mv-hits]} high-heat?]
-  (if (pos? mv-hits)
-    (loop [tmm tmm
-           n 0]
-      (if (= n mv-hits)
-        (if high-heat?
-          (dec tmm)
-          tmm)
-        (recur (let [new-tmm (math/round (/ tmm 2.0))]
-                 (if (>= (- tmm new-tmm) 1) new-tmm 0))
-               (inc n))))
-    (if high-heat?
-      (dec tmm)
-      tmm)))
-
-(defn tmm
-  "Returns the TMM for the unit based on its selected movement."
-  [{:keys [selected default] :as movement} abilities high-heat?]
-  (let [jump-mod (:value (or (abilities/has? abilities :jmpw) (abilities/has? abilities :jmps) {:value 0}))
-        s (or selected default)]
-    (condp = s
-      :immobile -4
-      :stand-still 0
-      :jump (+ jump-mod (tmm-value movement high-heat?) 1)
-      (tmm-value movement high-heat?))))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; MV damage methods
-
-(defn immobilize
-  [movement]
-  (assoc movement :options {:immobile 0} :selected :immobile :default 0 :tmm -4))
-
-(defn take-hit
-  [movement]
-  (if (< (:mv-hits movement) 3)
-    (assoc movement :mv-hits (inc (:mv-hits movement)))
-    (immobilize movement)))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Path and movement methods
 
@@ -231,7 +124,8 @@
   (for [[node d] dist]
     [node (+ d (h node))]))
 
-(defn astar [origin destination board heuristic mv-type unit-force]
+(defn astar
+  [origin destination board heuristic mv-type unit-force]
   (let [guess-goal-dist #(heuristic % destination)
         tiles (board/tiles board)
         neighbors #(board/neighbors board %)
@@ -241,7 +135,7 @@
            guess-unseen-dist (into (priority-map/priority-map)
                                    (calc-approx-dist guess-goal-dist known-dist))
            visited? #{}
-           path {origin []}]
+           path {origin [origin]}]
       (let [[best-unseen _] (peek guess-unseen-dist)]
         (if (or (= (known-dist best-unseen) ##Inf)
                 (visited? destination)
@@ -254,24 +148,11 @@
                               [nbr new-known-dist])
                 closer-paths (for [[nbr _] closer-nbrs]
                                [nbr (conj (path best-unseen) nbr)])]
-            ; (mu/log ::neighbors
-            ;         :best-unseen best-unseen
-            ;         :neighbors (neighbors best-unseen)
-            ;         :closer-nbrs closer-nbrs
-            ;         :closer-paths closer-paths)
             (recur (into known-dist closer-nbrs)
                    (into (pop guess-unseen-dist)
                          (calc-approx-dist guess-goal-dist closer-nbrs))
                    (conj visited? best-unseen)
                    (into path closer-paths))))))))
-
-(defn get-path
-  [{:keys [path]}]
-  path)
-
-(defn cancel-movement
-  [movement]
-  (assoc movement :path []))
 
 (defn move-cost
   [{:keys [selected default path]} unit-force]
@@ -280,47 +161,106 @@
 
 (defn unblocked-path?
   [path unit-force]
-  (some #(= ((get % :stacking false)) unit-force) path))
+  (some #(not= (get % :stacking false) unit-force) path))
 
-(defn can-move?
-  "Checks whether or not a unit can take a path."
-  [{:keys [selected location] :as unit} path heat unit-force]
-  (cond
+(defrecord MechMovement [modes tmm mv-hits selected defaults location path facing]
+  Moveable
+  (get-modes [this] (:modes this))
+  (has-mode? [this mode] (contains? (get-modes this) mode))
+  (get-default [this] (:default this))
+  (get-selected [this] (:selected this))
+  (get-selected [this accept-default?] (if (and accept-default? (not (:selected this)))
+                                         (get-default this)
+                                         (get-selected this)))
+  (set-selected [this new-mode] (assoc this :selected new-mode))
+  (clear-selected [this] (assoc this :selected false))
+
+  (get-location [this] (:location this))
+  (set-location [this new-location] (assoc this :location (select-keys new-location [:p :q :r])))
+  (deployed? [this] (get (get-location this) :q false))
+  (get-facing [this] (get directions (:facing this)))
+  (get-rear [this] (:rear (get-facing this)))
+  (set-facing [this new-facing] (assoc this :facing new-facing))
+
+  (get-hits [this] (:mv-hits this))
+  (immobilize [this] (assoc this :modes {:immobilized 0} :default :immobilized))
+  (take-hit [this] (if (< (get-hits this) 3)
+                     (assoc this :mv-hits (inc (get-hits this)))
+                     (immobilize this)))
+
+  (get-mv [this heat move-type] (let [base-move (move-type (get-modes this))]
+                                  (loop [mv base-move
+                                         n 0]
+                                    (if (= n mv-hits)
+                                      (max (- mv heat) 0)
+                                      (recur (let [new-mv (math/round (/ mv 2.0))]
+                                               (if (>= (- mv new-mv) 1) new-mv 0))
+                                             (inc n))))))
+  (get-tmm [this high-heat?] (let [tmm (loop [value (:tmm this)
+                                              n 0]
+                                         (if (= n mv-hits)
+                                           value
+                                           (recur (let [new-tmm (math/round (/ tmm 2.0))]
+                                                    (if (>= (- value new-tmm) 1) new-tmm 0))
+                                                  (inc n))))]
+                               (if high-heat?
+                                 (dec tmm)
+                                 tmm)))
+  (get-tmm-data [this abilities high-heat?]
+    (let [jump-mod (:value (or (abilities/has? abilities :jmpw) (abilities/has? abilities :jmps) {:value 0}))
+          s (get-selected this true)]
+      (condp = s
+        :immobile -4
+        :stand-still 0
+        :jump (+ jump-mod (get-tmm this high-heat?) 1)
+        (get-tmm this high-heat?))))
+
+  (cancel-movement [this] (assoc this :path [] :selected false))
+  (can-move? [this heat unit-force]
+    (can-move? this (get-path this) heat unit-force))
+  (can-move? [this path heat unit-force]
+    (cond
      ;; This path doesn't start at the unit's location
-    (not (hex/same-hex (first path) location)) false
+      (not (hex/same-hex (first path) (get-location this))) (do (mu/log ::move-failed
+                                                                        :reason "path doesn't start at the unit's location.") false)
     ;; The path ends at an occupied hex
-    (get (last path) :stacking false) false
+      (get (last path) :stacking false) (do (mu/log ::move-failed
+                                                    :reason "Path ends in an occupied hex.") false)
     ;; The path crosses a hex occupied by an enemy unit
-    (unblocked-path? path unit-force) false
+      (unblocked-path? path unit-force) (do (mu/log ::move-failed
+                                                    :reason "Path crosses a hex occupied by an enemy unit.") false)
     ;; Units standing still or immobile should have no path
-    (and (contains? #{:stand-still :immobile} selected) (empty? path)) true
-    (pos? (count path)) (<= (board/path-cost path selected unit-force) (get-mv unit heat))
-    :else false))
+      (and (contains? #{:stand-still :immobile} (get-selected this false)) (empty? path)) true
+      (pos? (count path)) (<= (reduce + (board/path-cost path (get-selected this false) unit-force)) (get-mv this heat))
+      :else (do (mu/log ::move-failed
+                        :reason "unknown"
+                        :unit this
+                        :path path
+                        :heat heat
+                        :unit-force unit-force)
+                false)))
 
-(defn find-path
-  "Finds a path to a given destination, regardless of whether or not the unit has the MV to get there.
-  IF the hex is blocked (i.e. the final cost is ##Inf), it will progressively try (butlast path) to try to get as close as possible.
-  NOTE: THIS METHOD ASSUMES THE LOCATIONS OF UNITS HAVE ALREADY BEEN MARKED."
-  [{:keys [selected default location] :as unit} unit-force heat destination board]
-  (loop [path (astar location destination board hex/distance (or selected default) unit-force)]
-    (if (or (empty? path) (can-move? unit path heat unit-force))
-      path
-      (recur (butlast path)))))
+  (get-path [this] (:path this))
+  (find-path [this heat unit-force destination board]
+    (loop [path (astar (get-location this) destination board hex/distance (get-selected true) unit-force)]
+      (if (or (empty? path) (can-move? this path heat unit-force))
+        path
+        (recur (butlast path)))))
+  (set-path [this heat unit-force destination board]
+    (assoc this :path (find-path this unit-force heat destination board)))
 
-(defn set-path
-  [movement destination unit-force heat board]
-  (assoc movement :path (find-path movement unit-force heat destination board)))
+  (move-unit [this heat unit-force]
+    (let [u (if (not (get-selected this false))
+              (set-selected this (get-default this))
+              this)]
+      (if (can-move? u (get-path this) heat unit-force)
+        (set-location u (last (get-path this)))
+        this))))
 
-(defn move-unit
-  "Moves a unit if it has a destination and can move to that destination."
-  [unit heat unit-force]
-  (let [u (if (not (:selected unit))
-            (assoc unit :selected (:default unit))
-            unit)]
-    (if (can-move? u (:path unit) heat unit-force)
-      (set-hex u (last (:path unit)))
-      unit)))
-
-(defn clear-mode
-  [movement]
-  (assoc movement :selected nil))
+(defn create-movement
+  [{:keys [tmm mv-hits movement selected location path facing] :or {mv-hits 0 selected nil location nil path [] facing nil}}]
+  (let [options (parse-movement movement)
+        default (if (contains? options :walk)
+                  :walk
+                  (first (keys options)))]
+    (->MechMovement options tmm mv-hits selected default location path facing)))

@@ -148,12 +148,12 @@
   [path mv-type unit-force]
   (loop [start (first path)
          path (rest path)
-         sum 0]
+         result []]
     (if (= (count path) 0)
-      sum
+      result
       (recur (first path)
              (rest path)
-             (+ sum (step-cost start (first path) mv-type unit-force))))))
+             (conj result (step-cost start (first path) mv-type unit-force))))))
 
 (defn neighbors
   [board node]
