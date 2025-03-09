@@ -196,12 +196,12 @@
                          :text "Player"
                          :cell-value-factory identity
                          :cell-factory {:fx/cell-type :table-cell
-                                        :describe (fn [x] {:text (name (force/get-player x))})}}
+                                        :describe (fn [x] {:text (name (or (force/get-player x) :none))})}}
                         {:fx/type :table-column
                          :text "Deployment"
                          :cell-value-factory identity
                          :cell-factory {:fx/cell-type :table-cell
-                                        :describe (fn [x] {:text (force/get-deployment x)})}}
+                                        :describe (fn [x] {:text (or (force/get-deployment x) (name :none))})}}
                         {:fx/type :table-column
                          :text "Unit Count"
                          :cell-value-factory identity

@@ -15,7 +15,7 @@
         attacks (fx/sub-val context get-in [:internal :attack-dialog :items])
         phase (subs/phase context)
         active (subs/active-unit context)
-        mv-type (cu/get-selected-movement active true)]
+        mv-type (if active (cu/get-selected-movement active true) :walk)]
     {:fx/type :dialog
      :showing (fx/sub-val context get-in [:internal :attack-dialog :showing] false)
      :on-close-request (fn [^DialogEvent event]
