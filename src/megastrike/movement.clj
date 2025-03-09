@@ -174,7 +174,6 @@
                                          (get-selected this)))
   (set-selected [this new-mode] (assoc this :selected new-mode))
   (select-default [this]
-    (prn (get-selected this))
     (if (get-selected this)
       this
       (set-selected this (get-default this))))
@@ -225,7 +224,6 @@
   (can-move? [this heat unit-force]
     (can-move? this (get-path this) heat unit-force))
   (can-move? [this path heat unit-force]
-    (prn this)
     (cond
      ;; This path doesn't start at the unit's location
       (not (hex/same-hex (first path) (get-location this))) (do (mu/log ::move-failed
@@ -252,7 +250,6 @@
   (get-path [this] (:path this))
   (find-path [this heat unit-force destination board]
     (loop [path (astar (get-location this) destination board hex/distance (get-selected this true) unit-force)]
-      (prn path)
       (if (or (empty? path) (can-move? this path heat unit-force))
         path
         (recur (butlast path)))))
