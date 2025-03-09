@@ -151,22 +151,22 @@
   (let [origin (cu/get-location unit)
         costs (cu/get-movement-cost unit)]
     {:fx/type :group
-     :children (loop [sprites []
-                      total 0
+     :children (loop [total 0
                       costs costs
                       o origin
+                      sprites []
                       path (cu/get-path unit)]
                  (if (empty? path)
                    sprites
-                   (recur (concat sprites
-                                  [{:fx/type draw-movement-cost
-                                    :origin o
-                                    :destination (first path)
-                                    :layout layout
-                                    :cost (+ total (first costs))}])
-                          (+ total (first costs))
+                   (recur (+ total (or (first costs) 0))
                           (rest costs)
                           (first path)
+                          (into [] (concat sprites
+                                           [{:fx/type draw-movement-cost
+                                             :origin o
+                                             :destination (first path)
+                                             :layout layout
+                                             :cost total}]))
                           (rest path))))}))
 
 ;; Forces Lists
