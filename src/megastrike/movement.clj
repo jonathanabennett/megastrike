@@ -280,4 +280,4 @@
         default (if (contains? options :walk)
                   :walk
                   (first (keys options)))]
-    (->MechMovement options tmm mv-hits selected default location path facing)))
+    (->MechMovement options (Integer/parseInt tmm) mv-hits selected default location path facing)))
