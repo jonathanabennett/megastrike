@@ -116,8 +116,8 @@
 
 (defn tmm
   "Accessor for the TMM method in the movement object."
-  [{:keys [movement abilities] :as unit}]
-  (movement/tmm movement abilities (high-heat? unit)))
+  [{:keys [movement] :as unit}]
+  (movement/get-tmm movement (high-heat? unit)))
 
 (defn get-mv
   "Calculates the available mv based on heat and mv-hits."
@@ -132,7 +132,7 @@
 (defn undeploy
   "Undeploy a unit by removing its location."
   [{:keys [movement] :as unit}]
-  (change-movement unit (movement/set-hex movement {})))
+  (change-movement unit (movement/set-location movement {})))
 
 (defn deployed?
   "Checks if a unit has a location."
@@ -141,7 +141,7 @@
 
 (defn set-location
   [{:keys [movement] :as unit} hex]
-  (let [new-movement (movement/set-hex movement hex)]
+  (let [new-movement (movement/set-location movement hex)]
     (change-movement unit new-movement)))
 
 (defn get-location
@@ -171,38 +171,38 @@
 (defn set-stacking
   "Mark all units on the board."
   [board units]
-  (board/set-stacking board (for [u units] [(get-location u) (get-force u)])))
+  (let [b (board/set-stacking board (for [u units] [(get-location u) (get-force u)]))]
+    (prn (map :stacking b))
+    b))
 
 (defn get-path
   [{:keys [movement]}]
-  (movement/get-path movement))
+  (if movement (movement/get-path movement) false))
 
 (defn set-path
   ([unit hex board units]
-   (change-movement unit (movement/set-path (:movement unit) hex (get-force unit) (get-heat unit) (set-stacking board (vals units)))))
+   (change-movement unit (movement/set-path (:movement unit) (get-heat unit) (get-force unit) hex (set-stacking board (vals units)))))
   ([unit path]
-   (assoc-in unit [:movement :path] path)))
+   (change-movement unit (movement/set-path (:movement unit) path))))
 
 ;;;;;;;;;;;;;;;;;;
 ;; Movement Mode Methods
 
 (defn set-movement-mode
   [{:keys [movement] :as unit} mode]
-  (let [new-movement (movement/set-mode movement mode)]
-    (change-movement unit new-movement)))
+  (change-movement unit (movement/set-selected movement mode)))
 
 (defn get-movement-modes
   [{:keys [movement]}]
-  (movement/get-modes movement))
+  (if movement (movement/get-modes movement) []))
 
 (defn clear-movement-mode
   [{:keys [movement] :as unit}]
-  (let [new-movement (movement/clear-mode movement)]
-    (change-movement unit new-movement)))
+  (change-movement unit (movement/clear-selected movement)))
 
 (defn get-selected-movement
   [{:keys [movement]} default?]
-  (movement/selected movement default?))
+  (movement/get-selected movement default?))
 
 ;;;;;;;;;;;;;;;;;;;
 ;; Movement and MV Hits
@@ -425,7 +425,7 @@
 
 (defn targeting-tmm
   [unit]
-  (->targeting-mod "Target movement" (movement/tmm (:movement unit) (:abilities unit) (high-heat? unit))))
+  (->targeting-mod "Target movement" (movement/get-tmm-data (:movement unit) (:abilities unit) (high-heat? unit))))
 
 (defn ->targeting
   ([{:keys [attacks] :as attacker} target board layout attack]
@@ -501,7 +501,7 @@
   [{:keys [attacker target rear-attack?] :as targeting} to-hit]
   (let [hit? (<= (calculate-to-hit targeting) to-hit)
         attacker (set-attacked attacker)
-        attacker-tmm (movement/tmm (:movement attacker) (:abilities attacker) (high-heat? attacker))
+        attacker-tmm (movement/get-tmm-data (:movement attacker) (:abilities attacker) (high-heat? attacker))
         attacker-damage (attacks/roll-damage (:attacks attacker) (if hit? :self-dfa :missed-dfa) attacker-tmm (get-size target) rear-attack?)
         target-damage (attacks/roll-damage (:attacks attacker) :dfa attacker-tmm (get-size target) rear-attack?)
         result {(:id attacker) (take-damage attacker attacker-damage false)
@@ -527,7 +527,7 @@
   [{:keys [attacker target rear-attack?] :as targeting} to-hit]
   (let [hit? (<= (calculate-to-hit targeting) to-hit)
         attacker (set-attacked attacker)
-        attacker-tmm (movement/tmm (:movement attacker) (:abilities attacker) (high-heat? attacker))
+        attacker-tmm (movement/get-tmm-data (:movement attacker) (:abilities attacker) (high-heat? attacker))
         attacker-damage (attacks/roll-damage (:attacks attacker) :self-charge attacker-tmm (get-size target) rear-attack?)
         target-damage (attacks/roll-damage (:attacks attacker) :charge attacker-tmm (get-size target) rear-attack?)
         result {(:id attacker) (if hit? (take-damage attacker attacker-damage false) attacker)
