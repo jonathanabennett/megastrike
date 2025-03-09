@@ -14,7 +14,6 @@
    [megastrike.abilities :as abilities]
    [megastrike.board :as board]
    [megastrike.hexagons.hex :as hex]
-   [megastrike.schemas :as schemas]
    [megastrike.utils :as utils]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -52,6 +51,7 @@
   (get-default [this] "Gets the default movement value of a unit.")
   (get-selected [this] [this accept-default?] "Gets the currently selected movement mode. If called with accept-default? It will return either selected movement mode or the default if none is selected.")
   (set-selected [this new-selected] "Sets the units selected movement mode to new-selected.")
+  (select-default [this] "Sets the units selected movement mode to its default IF something hasn't already been selected.")
   (clear-selected [this] "Clears the selected movement mode, leaving it empty.")
 
   (get-location [this] "Returns the hex address of the unit.")
@@ -70,12 +70,12 @@
   (get-tmm-data [this abilities high-heat?] "Returns the tmm-value object used for attacks.")
 
   (cancel-movement [this] "Cancels the unit's planned movement.")
-  (can-move? [this] [this path heat unit-force] "Returns true if a unit can actually move along the path it has selected.")
+  (can-move? [this heat unit-force] [this path heat unit-force] "Returns true if a unit can actually move along the path it has selected.")
 
   (get-path [this] "Returns the path the unit is planning to follow.")
   (find-path [this heat unit-force destination board] "Returns the path that gets the unit as close as possible to its destination when accounting for stacking and its move value.
              NOTE: this assumes that board has had stacking already marked on it.")
-  (set-path [this heat unit-force destination board] "Set the unit's path to the path returned by calling find-path with destination.")
+  (set-path [this heat unit-force destination board] [this path] "Set the unit's path to the path returned by calling find-path with destination.")
 
   (move-unit [unit heat unit-force] "Changes the unit's location based on the path and sets the path to `[]`"))
 
@@ -163,7 +163,7 @@
   [path unit-force]
   (some #(not= (get % :stacking false) unit-force) path))
 
-(defrecord MechMovement [modes tmm mv-hits selected defaults location path facing]
+(defrecord MechMovement [modes tmm mv-hits selected default location path facing]
   Moveable
   (get-modes [this] (:modes this))
   (has-mode? [this mode] (contains? (get-modes this) mode))
@@ -173,7 +173,12 @@
                                          (get-default this)
                                          (get-selected this)))
   (set-selected [this new-mode] (assoc this :selected new-mode))
-  (clear-selected [this] (assoc this :selected false))
+  (select-default [this]
+    (prn (get-selected this))
+    (if (get-selected this)
+      this
+      (set-selected this (get-default this))))
+  (clear-selected [this] (assoc this :selected nil))
 
   (get-location [this] (:location this))
   (set-location [this new-location] (assoc this :location (select-keys new-location [:p :q :r])))
@@ -196,6 +201,7 @@
                                       (recur (let [new-mv (math/round (/ mv 2.0))]
                                                (if (>= (- mv new-mv) 1) new-mv 0))
                                              (inc n))))))
+  (get-mv [this heat] (get-mv this heat (get-selected this)))
   (get-tmm [this high-heat?] (let [tmm (loop [value (:tmm this)
                                               n 0]
                                          (if (= n mv-hits)
@@ -219,6 +225,7 @@
   (can-move? [this heat unit-force]
     (can-move? this (get-path this) heat unit-force))
   (can-move? [this path heat unit-force]
+    (prn this)
     (cond
      ;; This path doesn't start at the unit's location
       (not (hex/same-hex (first path) (get-location this))) (do (mu/log ::move-failed
@@ -227,8 +234,10 @@
       (get (last path) :stacking false) (do (mu/log ::move-failed
                                                     :reason "Path ends in an occupied hex.") false)
     ;; The path crosses a hex occupied by an enemy unit
-      (unblocked-path? path unit-force) (do (mu/log ::move-failed
-                                                    :reason "Path crosses a hex occupied by an enemy unit.") false)
+
+      ; (unblocked-path? path unit-force) (do (mu/log ::move-failed
+      ;                                               :reason "Path crosses a hex occupied by an enemy unit.") false)
+
     ;; Units standing still or immobile should have no path
       (and (contains? #{:stand-still :immobile} (get-selected this false)) (empty? path)) true
       (pos? (count path)) (<= (reduce + (board/path-cost path (get-selected this false) unit-force)) (get-mv this heat))
@@ -242,19 +251,27 @@
 
   (get-path [this] (:path this))
   (find-path [this heat unit-force destination board]
-    (loop [path (astar (get-location this) destination board hex/distance (get-selected true) unit-force)]
+    (loop [path (astar (get-location this) destination board hex/distance (get-selected this true) unit-force)]
+      (prn path)
       (if (or (empty? path) (can-move? this path heat unit-force))
         path
         (recur (butlast path)))))
+
   (set-path [this heat unit-force destination board]
-    (assoc this :path (find-path this unit-force heat destination board)))
+    (select-default (assoc this :path (find-path (select-default this) heat unit-force destination board))))
+  (set-path [this path]
+    (-> this
+        (select-default)
+        (assoc :path path)))
 
   (move-unit [this heat unit-force]
     (let [u (if (not (get-selected this false))
               (set-selected this (get-default this))
               this)]
       (if (can-move? u (get-path this) heat unit-force)
-        (set-location u (last (get-path this)))
+        (-> u
+            (set-location (last (get-path this)))
+            (assoc :path []))
         this))))
 
 (defn create-movement
