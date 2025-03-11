@@ -197,9 +197,6 @@
         upd (-> unit
                 (cu/set-path (:path move-options))
                 (cu/set-movement-mode (if (seq (:path move-options)) (cu/get-selected-movement unit true) :stand-still)))]
-    ; (mu/log ::ai-moves
-    ;         :move-options move-options
-    ;         :upd upd)
     (-> game-state
         (assoc-in [:units (cu/id upd)] upd)
         (assoc :active-unit (cu/id upd))

@@ -84,9 +84,6 @@
         paths (into (priority-map/priority-map-by >)
                     (map #(create-movement-option % unit hostiles updated-board layout mv-type)
                          (movement/astar unit-loc false updated-board zero-weight mv-type (cu/get-force unit))))]
-    (mu/log ::verifying-move-options
-            :astar (movement/astar unit-loc false updated-board zero-weight mv-type (cu/get-force unit))
-            :options (take 5 paths))
     (first (rand-nth (take 5 paths)))))
 
 (defn naive-target-selection
