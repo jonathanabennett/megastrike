@@ -3,12 +3,15 @@
    [cljfx.api :as fx]
    [cljfx.ext.table-view :as tables]
    [megastrike.combat-unit :as cu]
+   [megastrike.force :as force]
    [megastrike.gui.elements :as elements]
+   [megastrike.gui.events :as events]
    [megastrike.gui.lobby.events :as lobby-events]
    [megastrike.gui.subs :as subs]
    [megastrike.mul :as mul]
-   [megastrike.utils :as utils]
-   [megastrike.force :as force]))
+   [megastrike.utils :as utils])
+  (:import
+   [javafx.scene.control ButtonBar$ButtonData ButtonType Dialog DialogEvent]))
 
 (defn filter-button
   [{:keys [field values text]}]
@@ -162,17 +165,20 @@
   {:fx/type :v-box
    :spacing 5
    :fill-width true
-   :alignment :top-center
-   :grid-pane/row 0
-   :grid-pane/column 0
-   :grid-pane/hgrow :always
-   :grid-pane/vgrow :always
    :children [{:fx/type :label
                :text "Master Unit List"}
               mul-filter-buttons
               mul-chassis-search
               {:fx/type mul-table}
               new-unit-buttons]})
+
+(defn mul-dialog
+  [{:keys [fx/context]}]
+  {:fx/type elements/confirmation-pane
+   :dialog-id :mul-dialog
+   :on-confirmed {:event-type ::lobby-events/add-unit}
+   :button {:text "Add new unit to selected force"}
+   :dialog-pane {:content mul-pane}})
 
 (defn forces-table
   [{:keys [fx/context]}]
@@ -214,38 +220,53 @@
                                         :describe (fn [x] {:text (prn-str (reduce + (map #(cu/pv %) ((utils/keyword-maker (:name x)) counts))))})}}]
               :items (vals forces)}})))
 
-(defn force-pane
+(defn force-creation-dialog
   [{:keys [fx/context]}]
+  {:fx/type elements/confirmation-pane
+   :dialog-id :force-creation-dialog
+   :on-confirmed {:event-type ::lobby-events/add-force}
+   :button {:text "Add new force"}
+   :dialog-pane {:content {:fx/type :v-box
+                           :spacing 5
+                           :fill-width true
+                           :alignment :top-center
+                           :children [{:fx/type :label :text "Add/Edit Force"}
+                                      {:fx/type elements/text-input
+                                       :label "Force Name"
+                                       :key :force-name}
+                                      {:fx/type elements/text-input
+                                       :label "Force Deployment"
+                                       :key :force-zone}
+                                      {:fx/type :h-box
+                                       :spacing 5
+                                       :children [{:fx/type :text :text "Human or AI?"}
+                                                  {:fx/type :choice-box
+                                                   :items [:player :kevin]
+                                                   :value :player
+                                                   :on-value-changed {:event-type ::lobby-events/change-player}}]}
+                                      (if (fx/sub-val context :force-camo)
+                                        {:fx/type :button
+                                         :background {:images (list (fx/sub-val context :force-camo))}
+                                         :text "Change Camo"
+                                         :on-action {:event-type ::lobby-events/select-camo :fx/sync true}}
+                                        {:fx/type :button
+                                         :text "Select Camo"
+                                         :on-action {:event-type ::lobby-events/select-camo :fx/sync true}})]}}})
+
+(def force-pane
   {:fx/type :v-box
    :spacing 5
    :fill-width true
+   :grid-pane/row 0
+   :grid-pane/column 1
+   :grid-pane/hgrow :always
+   :grid-pane/vgrow :always
    :alignment :top-center
-   :children [{:fx/type :label :text "Forces"}
-              {:fx/type elements/text-input
-               :label "Force Name"
-               :key :force-name}
-              {:fx/type elements/text-input
-               :label "Force Deployment"
-               :key :force-zone}
-              {:fx/type :h-box
-               :spacing 5
-               :children [{:fx/type :text :text "Human or AI?"}
-                          {:fx/type :choice-box
-                           :items [:player :kevin]
-                           :value :player
-                           :on-value-changed {:event-type ::lobby-events/change-player}}]}
-              (if (fx/sub-val context :force-camo)
-                {:fx/type :button
-                 :background {:images (list (fx/sub-val context :force-camo))}
-                 :text "Change Camo"
-                 :on-action {:event-type ::lobby-events/select-camo :fx/sync true}}
-                {:fx/type :button
-                 :text "Select Camo"
-                 :on-action {:event-type ::lobby-events/select-camo :fx/sync true}})
+   :children [{:fx/type force-creation-dialog}
+              {:fx/type forces-table}
               {:fx/type :button
-               :text "Add Force"
-               :on-action {:event-type ::lobby-events/add-force :fx/sync true}}
-              {:fx/type forces-table}]})
+               :text "Add unit to selected force"
+               :on-action {:event-type ::lobby-events/open-mul-dialog :fx/sync true}}]})
 
 (defn units-table [{:keys [fx/context]}]
   (let [units (subs/units context)

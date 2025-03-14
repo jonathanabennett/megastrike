@@ -10,10 +10,29 @@
    [megastrike.utils :as utils])
   (:import
    [javafx.application Platform]
+   [javafx.scene.control ButtonBar$ButtonData ButtonType Dialog DialogEvent]
    [javafx.scene.input MouseEvent]))
 
 ;; Defaults and common operations
 (defmulti event-handler :event-type)
+
+(defmethod event-handler ::show-confirmation
+  [{:keys [fx/context dialog-id]}]
+  {:context (fx/swap-context context assoc-in [:internal dialog-id :showing] true)})
+
+(defmethod event-handler ::on-confirmation-dialog-hidden
+  [{:keys [fx/context ^DialogEvent fx/event dialog-id on-confirmed]}]
+  (condp = (.getButtonData ^ButtonType (.getResult ^Dialog (.getSource event)))
+    ButtonBar$ButtonData/CANCEL_CLOSE
+    {:context (fx/swap-context context assoc-in [:internal dialog-id :showing] false)}
+
+    ButtonBar$ButtonData/OK_DONE
+    {:context (fx/swap-context context assoc-in [:internal dialog-id :showing] false)
+     :dispatch on-confirmed}))
+
+(defmethod event-handler ::close-dialog
+  [{:keys [fx/context dialog]}]
+  {:context (fx/swap-context context assoc-in [:internal dialog :showing] false)})
 
 (defmethod event-handler ::no-op
   [_])

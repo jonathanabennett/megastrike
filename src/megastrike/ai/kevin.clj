@@ -9,14 +9,6 @@
    [megastrike.movement :as movement]
    [megastrike.utils :as utils]))
 
-(defn ->kevin
-  [unit {:keys [aggression home-edge] :or {aggression 0 home-edge :n}}]
-  {:unit (cu/id unit)
-   :damage-bar (+ (cu/get-remaining-armor unit) (* (cu/get-remaining-structure unit) 2))
-   :target nil
-   :aggression aggression
-   :home-edge home-edge})
-
 (defn target-info
   [attacker target board layout attack]
   (let [targeting (second (cu/->targeting attacker target board layout attack))

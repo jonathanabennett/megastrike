@@ -33,6 +33,22 @@
                                  :key key}
                :text (fx/sub-val context key)}]})
 
+(defn confirmation-pane
+  [{:keys [fx/context dialog-id on-confirmed button dialog-pane]}]
+  {:fx/type fx/ext-let-refs
+   :refs {::dialog {:fx/type :dialog
+                    :showing (fx/sub-val context get-in [:internal dialog-id :showing] false)
+                    :on-hidden {:event-type ::events/on-confirmation-dialog-hidden
+                                :dialog-id dialog-id
+                                :on-confirmed on-confirmed}
+                    :dialog-pane (merge {:fx/type :dialog-pane
+                                         :button-types [:cancel :ok]}
+                                        dialog-pane)}}
+   :desc (merge {:fx/type :button
+                 :on-action {:event-type ::events/show-confirmation
+                             :dialog-id dialog-id}}
+                button)})
+
 ;; Sprites
 (defn draw-sprite
   "Draws a sprite. Used for both the map and the lobby."

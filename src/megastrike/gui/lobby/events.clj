@@ -86,7 +86,8 @@
         team (inc (count (subs/forces context)))
         player (fx/sub-val context :player)
         new-forces (merge (subs/forces context) {(utils/keyword-maker name) (force/->force name deploy camo team player)})]
-    {:context (fx/swap-context context assoc :forces new-forces :force-camo nil)}))
+    {:context (fx/swap-context context assoc :forces new-forces :force-camo nil)
+     :dispatch {:event-type ::e/close-dialog :dialog :force-creation-dialog}}))
 
 (defmethod e/event-handler ::mul-selection-changed
   [{:keys [fx/context fx/event]}]
@@ -99,7 +100,8 @@
         pilot {:name (fx/sub-val context :pilot-name)
                :skill (Integer/parseInt (fx/sub-val context :pilot-skill))}
         force (fx/sub-val context :active-force)]
-    {:context (fx/swap-context context assoc :units (cu/->element units mul-unit pilot force))}))
+    {:context (fx/swap-context context assoc :units (cu/->element units mul-unit pilot force))
+     :dispatch {:event-type ::e/close-dialog :dialog :mul-dialog}}))
 
 (defmethod e/event-handler ::filter-mul
   [{:keys [fx/context field]}]

@@ -102,14 +102,11 @@
   {:fx/type :stage
    :showing (fx/sub-val context :lobby)
    :title (subs/title-string context)
+   :width 800
+   :height 600
    :scene {:fx/type :scene
            :root {:fx/type :grid-pane
-                  :children [lobby/mul-pane
-                             {:fx/type lobby/force-pane
-                              :grid-pane/row 0
-                              :grid-pane/column 1
-                              :grid-pane/hgrow :always
-                              :grid-pane/vgrow :always}
+                  :children [lobby/force-pane
                              lobby/unit-pane
                              lobby/map-pane]}}})
 
@@ -118,4 +115,6 @@
    :desc [{:fx/type game-view}
           {:fx/type lobby-view}
           {:fx/type attack-dialog}
+          {:fx/type lobby/mul-dialog}
+          ;{:fx/type lobby/force-creation-dialog}
           {:fx/type round-dialog}]})
