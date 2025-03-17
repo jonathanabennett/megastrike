@@ -2,7 +2,9 @@
   (:require
    [cljfx.api :as fx]
    [cljfx.ext.table-view :as tables]
+   [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
+   [megastrike.force :as force]
    [megastrike.gui.elements :as elements]
    [megastrike.gui.lobby.events :as lobby-events]
    [megastrike.gui.subs :as subs]
@@ -143,35 +145,43 @@
                :text "Search by name"
                :on-action {:event-type ::lobby-events/filter-mul :fx/sync true :field :full-name}}]})
 
-(def new-unit-buttons
-  {:fx/type :h-box
-   :spacing 5
-   :alignment :top-center
-   :children [{:fx/type elements/text-input
-               :label "Pilot Name"
-               :key :pilot-name}
-              {:fx/type elements/text-input
-               :label "Pilot Skill"
-               :key :pilot-skill}
-              {:fx/type :button
-               :text "Add Unit"
-               :on-action {:event-type ::lobby-events/add-unit :fx/sync true}}]})
+(defn new-unit-buttons
+  [{:keys [fx/context]}]
+  (let [selected (fx/sub-val context :active-force)
+        battle-force (if selected (get (subs/forces context) selected) nil)]
+    {:fx/type :v-box
+     :spacing 5
+     :alignment :top-center
+     :children [{:fx/type :label
+                 :text (if battle-force (battle-force/to-str battle-force) "")}
+                {:fx/type :h-box
+                 :spacing 5
+                 :alignment :top-center
+                 :children [{:fx/type elements/text-input
+                             :label "Pilot Name"
+                             :key :pilot-name}
+                            {:fx/type elements/text-input
+                             :label "Pilot Skill"
+                             :key :pilot-skill}]}]}))
 
 (def mul-pane
   {:fx/type :v-box
    :spacing 5
    :fill-width true
-   :alignment :top-center
-   :grid-pane/row 0
-   :grid-pane/column 0
-   :grid-pane/hgrow :always
-   :grid-pane/vgrow :always
    :children [{:fx/type :label
                :text "Master Unit List"}
               mul-filter-buttons
               mul-chassis-search
               {:fx/type mul-table}
-              new-unit-buttons]})
+              {:fx/type new-unit-buttons}]})
+
+(defn mul-dialog
+  [_]
+  {:fx/type elements/confirmation-pane
+   :dialog-id :mul-dialog
+   :on-confirmed {:event-type ::lobby-events/add-unit}
+   :button {:text "Add new unit to selected force"}
+   :dialog-pane {:content mul-pane}})
 
 (defn forces-table
   [{:keys [fx/context]}]
@@ -186,62 +196,79 @@
                :on-selected-item-changed {:event-type ::lobby-events/force-selection-changed}
                :selected-item selected}
        :desc {:fx/type :table-view
-              :row-factory {:fx/cell-type :table-row
-                            :describe (fn [x]
-                                        {:style {:-fx-border-color (or (:color x) :black)}})}
               :columns [{:fx/type :table-column
                          :text "Name"
                          :cell-value-factory identity
                          :cell-factory {:fx/cell-type :table-cell
-                                        :describe (fn [x] {:text (:name x)})}}
+                                        :describe (fn [x] {:text (battle-force/to-str x)})}}
+                        {:fx/type :table-column
+                         :text "Player"
+                         :cell-value-factory identity
+                         :cell-factory {:fx/cell-type :table-cell
+                                        :describe (fn [x] {:text (name (or (battle-force/get-player x) :none))})}}
                         {:fx/type :table-column
                          :text "Deployment"
                          :cell-value-factory identity
                          :cell-factory {:fx/cell-type :table-cell
-                                        :describe (fn [x] {:text (:deploy x)})}}
-                        {:fx/type :table-column
-                         :text "Unit Count"
-                         :cell-value-factory identity
-                         :cell-factory {:fx/cell-type :table-cell
-                                        :describe (fn [x] {:text (prn-str (count ((utils/keyword-maker (:name x)) counts)))})}}
-                        {:fx/type :table-column
-                         :text "Total PV"
-                         :cell-value-factory identity
-                         :cell-factory {:fx/cell-type :table-cell
-                                        :describe (fn [x] {:text (prn-str (reduce + (map #(cu/pv %) ((utils/keyword-maker (:name x)) counts))))})}}]
+                                        :describe (fn [x] {:text (or (battle-force/get-deployment x) (name :none))})}}
+                        ; {:fx/type :table-column
+                        ;  :text "Unit Count"
+                        ;  :cell-value-factory identity
+                        ;  :cell-factory {:fx/cell-type :table-cell
+                        ;                 :describe (fn [x] {:text (prn-str (count ((battle-force/id x) counts)))})}}
+                        ; {:fx/type :table-column
+                        ;  :text "Total PV"
+                        ;  :cell-value-factory identity
+                        ;  :cell-factory {:fx/cell-type :table-cell
+                        ;                 :describe (fn [x] {:text (prn-str (reduce + (map #(cu/pv %) ((battle-force/id x) counts))))})}}
+                        ]
               :items (vals forces)}})))
 
-(defn force-pane
+(defn force-creation-dialog
   [{:keys [fx/context]}]
+  {:fx/type elements/confirmation-pane
+   :dialog-id :force-creation-dialog
+   :on-confirmed {:event-type ::lobby-events/add-force}
+   :button {:text "Add/Edit force"}
+   :dialog-pane {:content {:fx/type :v-box
+                           :spacing 5
+                           :fill-width true
+                           :alignment :top-center
+                           :children [{:fx/type :label :text "Add/Edit Force"}
+                                      {:fx/type elements/text-input
+                                       :label "Force Name"
+                                       :key :force-name}
+                                      {:fx/type elements/text-input
+                                       :label "Force Deployment"
+                                       :key :force-zone}
+                                      {:fx/type :h-box
+                                       :spacing 5
+                                       :children [{:fx/type :text :text "Human or AI?"}
+                                                  {:fx/type :choice-box
+                                                   :items [:player :kevin]
+                                                   :value :player
+                                                   :on-value-changed {:event-type ::lobby-events/change-player}}]}
+                                      (if (fx/sub-val context :force-camo)
+                                        {:fx/type :button
+                                         :background {:images (list (fx/sub-val context :force-camo))}
+                                         :text "Change Camo"
+                                         :on-action {:event-type ::lobby-events/select-camo :fx/sync true}}
+                                        {:fx/type :button
+                                         :text "Select Camo"
+                                         :on-action {:event-type ::lobby-events/select-camo :fx/sync true}})]}}})
+
+(def force-pane
   {:fx/type :v-box
    :spacing 5
    :fill-width true
+   :grid-pane/row 0
+   :grid-pane/column 0
+   :grid-pane/hgrow :always
+   :grid-pane/vgrow :always
    :alignment :top-center
-   :children [{:fx/type :label :text "Forces"}
-              {:fx/type elements/text-input
-               :label "Force Name"
-               :key :force-name}
-              {:fx/type elements/text-input
-               :label "Force Deployment"
-               :key :force-zone}
-              {:fx/type :h-box
-               :spacing 5
-               :children [{:fx/type :label :text "Color:"}
-                          {:fx/type :color-picker
-                           :on-value-changed {:event-type ::lobby-events/color-changed :fx/sync true}
-                           :value :gold}]}
-              (if (fx/sub-val context :force-camo)
-                {:fx/type :button
-                 :background {:images (list (fx/sub-val context :force-camo))}
-                 :text "Change Camo"
-                 :on-action {:event-type ::lobby-events/select-camo :fx/sync true}}
-                {:fx/type :button
-                 :text "Select Camo"
-                 :on-action {:event-type ::lobby-events/select-camo :fx/sync true}})
-              {:fx/type :button
-               :text "Add Force"
-               :on-action {:event-type ::lobby-events/add-force :fx/sync true}}
-              {:fx/type forces-table}]})
+   :children [{:fx/type force-creation-dialog}
+              {:fx/type forces-table}
+              {:fx/type mul-dialog}]})
 
 (defn units-table [{:keys [fx/context]}]
   (let [units (subs/units context)
@@ -266,7 +293,7 @@
                          :cell-factory {:fx/cell-type :table-cell
                                         :describe (fn [x] {:graphic {:fx/type elements/draw-sprite
                                                                      :unit x
-                                                                     :force ((:force x) forces)
+                                                                     :bf ((cu/get-force x) forces)
                                                                      :x 0
                                                                      :y 0
                                                                      :shift 0}})}}
@@ -287,8 +314,9 @@
    :spacing 5
    :fill-width true
    :alignment :top-center
-   :grid-pane/row 1
-   :grid-pane/column 0
+   :grid-pane/row 0
+   :grid-pane/column 1
+   :grid-pane/row-span 2
    :grid-pane/hgrow :always
    :grid-pane/vgrow :always
    :children [{:fx/type :label
@@ -316,7 +344,7 @@
    :fill-width true
    :alignment :top-center
    :grid-pane/row 1
-   :grid-pane/column 1
+   :grid-pane/column 0
    :grid-pane/hgrow :always
    :grid-pane/vgrow :always
    :children [{:fx/type :label

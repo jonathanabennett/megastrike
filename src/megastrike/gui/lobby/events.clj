@@ -4,11 +4,12 @@
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
-   [com.brunobonacci.mulog :as mu]
+   [megastrike.battle-force :as battle-force]
    [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
    [megastrike.gui.events :as e]
    [megastrike.gui.subs :as subs]
+   [megastrike.movement :as movement]
    [megastrike.mul :as mul]
    [megastrike.phases :as phases]
    [megastrike.scenario :as scenario]
@@ -18,7 +19,6 @@
    [javafx.scene Node]
    [javafx.stage FileChooser]))
 
-;; Make camo separate from color and, in the event of a camo being supplied, select a color from the camo.
 (defmethod e/event-handler ::select-camo
   [{:keys [^ActionEvent fx/context fx/event]}]
   (let [window (.getWindow (.getScene ^Node (.getTarget event)))
@@ -52,10 +52,6 @@
   [{:keys [fx/context field values]}]
   {:context (fx/swap-context context assoc :mul (mul/filter-units mul/mul field values))})
 
-(defmethod e/event-handler ::color-changed
-  [{:keys [fx/context fx/event]}]
-  {:context (fx/swap-context context assoc :force-color event)})
-
 (defmethod e/event-handler ::launch-game
   [{:keys [fx/context]}]
   (let [width (fx/sub-val context :width)
@@ -76,17 +72,26 @@
 
 (defmethod e/event-handler ::load-save
   [{:keys [fx/context]}]
-  (let [save-data (edn/read-string (slurp (utils/load-resource :data "save.edn")))]
+  (let [save-data (edn/read-string
+                   {:readers {'megastrike.movement.MechMovement movement/map->MechMovement
+                              'megastrike.battle_force.BattleForce battle-force/map->BattleForce}} (slurp (utils/load-resource :data "save.edn")))]
     {:context (fx/swap-context context merge save-data)}))
+
+(defmethod e/event-handler ::change-player
+  [{:keys [fx/context fx/event]}]
+  {:context (fx/swap-context context assoc :player event)})
 
 (defmethod e/event-handler ::add-force
   [{:keys [fx/context]}]
-  (let [name (fx/sub-val context :force-name)
+  (let [force-name (fx/sub-val context :force-name)
         deploy (fx/sub-val context :force-zone)
-        color (fx/sub-val context :force-color)
         camo (fx/sub-val context :force-camo)
-        new-forces (merge (subs/forces context) {(utils/keyword-maker name) {:name name :deploy deploy :color color :camo camo}})]
-    {:context (fx/swap-context context assoc :forces new-forces :force-camo nil :force-color :white)}))
+        team (inc (count (subs/forces context)))
+        player (fx/sub-val context :player)
+        new-force (battle-force/create-force force-name deploy camo team player)
+        new-forces (merge (subs/forces context) {(battle-force/id new-force) new-force})]
+    {:context (fx/swap-context context assoc :forces new-forces :force-camo nil)
+     :dispatch {:event-type ::e/close-dialog :dialog :force-creation-dialog}}))
 
 (defmethod e/event-handler ::mul-selection-changed
   [{:keys [fx/context fx/event]}]
@@ -98,8 +103,9 @@
         mul-unit (fx/sub-val context :active-mul)
         pilot {:name (fx/sub-val context :pilot-name)
                :skill (Integer/parseInt (fx/sub-val context :pilot-skill))}
-        force (fx/sub-val context :active-force)]
-    {:context (fx/swap-context context assoc :units (cu/->element units mul-unit pilot force))}))
+        battle-force (fx/sub-val context :active-force)]
+    {:context (fx/swap-context context assoc :units (cu/->element units mul-unit pilot battle-force))
+     :dispatch {:event-type ::e/close-dialog :dialog :mul-dialog}}))
 
 (defmethod e/event-handler ::filter-mul
   [{:keys [fx/context field]}]
@@ -109,9 +115,11 @@
 (defmethod e/event-handler ::force-selection-changed
   [{:keys [fx/context fx/event]}]
   {:context (fx/swap-context context assoc
-                             :active-force (utils/keyword-maker (:name event))
-                             :force-name (:name event)
-                             :force-zone (:deployment event))})
+                             :active-force (battle-force/id event)
+                             :active-force-record event
+                             :force-name (battle-force/to-str event)
+                             :force-zone (battle-force/get-deployment event)
+                             :force-camo (battle-force/get-camo event))})
 
 (defmethod e/event-handler ::unit-selection-changed
   [{:keys [fx/context fx/event]}]

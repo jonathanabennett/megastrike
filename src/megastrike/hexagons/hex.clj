@@ -40,13 +40,25 @@
 
 (defn addition
   "Use Cartesian addition to add two hexagons together."
-  [{q1 :q p1 :p r1 :r} {q2 :q p2 :p r2 :r}]
-  (hexagon (+ p1 p2) (+ q1 q2) (+ r1 r2)))
+  [hex1 hex2]
+  (try
+    (hexagon (+ (:p hex1) (:p hex2)) (+ (:q hex1) (:q hex2)) (+ (:r hex1) (:r hex2)))
+    (catch Exception e
+      (mu/log ::hex-addition-failed
+              :hex1 hex1
+              :hex2 hex2
+              :exception e))))
 
 (defn subtraction
   "Use Cartesian subtraction to add two hexagons together."
-  [{q1 :q p1 :p r1 :r} {q2 :q p2 :p r2 :r}]
-  (hexagon (- p1 p2) (- q1 q2) (- r1 r2)))
+  [hex1 hex2]
+  (try
+    (hexagon (- (:p hex1) (:p hex2)) (- (:q hex1) (:q hex2)) (- (:r hex1) (:r hex2)))
+    (catch  Exception e
+      (mu/log ::hex-subtraction-failed
+              :hex1 hex1
+              :hex2 hex2
+              :exception e))))
 
 (defn multiplication
   "Use Cartesian multiplication to multipy a hex by a value x."
@@ -100,11 +112,13 @@
   [{:keys [p q]} {:keys [hex-to-pixel-matrix x-size scale x-origin y-size y-origin]}]
   {:x (+ (* (+ (* (get hex-to-pixel-matrix 0) p)
                (* (get hex-to-pixel-matrix 1) q))
-            (* x-size scale))
+            x-size
+            scale)
          x-origin)
    :y (+ (* (+ (* (get hex-to-pixel-matrix 2) p)
                (* (get hex-to-pixel-matrix 3) q))
-            (* y-size scale))
+            y-size
+            scale)
          y-origin)})
 
 (defn find-hex-corner

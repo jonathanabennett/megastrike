@@ -16,10 +16,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Definitions
 
-(def probabilities
-  "maps to-hit numbers to hit precentages for display."
-  {2  100, 3  98, 4  92, 5  83, 6  72, 7  58, 8  42, 9  28, 10 17, 11 8, 12 3})
-
 (def ExampleElement
   {:id "Stinger STG-3G #2"
    :full-name "Stinger STG-3G"
@@ -37,17 +33,13 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MUL/Core
 
-(defn full-name
+(defn id
   [unit]
-  (:full-name unit))
+  (:id unit))
 
 (defn take-action
   [unit]
   (assoc unit :acted true))
-
-(defn id
-  [unit]
-  (:id unit))
 
 (defn acted?
   [unit]
@@ -78,6 +70,10 @@
   [{:keys [heat]}]
   (heat/current heat))
 
+(defn shutdown?
+  [{:keys [heat]}]
+  (heat/shutdown? heat))
+
 (defn high-heat?
   [unit]
   (>= (get-heat unit) 2))
@@ -90,89 +86,126 @@
 ;; PILOT
 
 (defn display-pilot
+  "Print out the pilot in the format of name(skill)
+  Examples:
+  Shooty McShootyface(4)
+  Lt. Dan (2)"
   [unit]
   (pilot/display (:pilot unit)))
+
+(defn pilot-skill
+  "Returns the skill of the pilot as a number (for use in targeting)."
+  [{:keys [pilot]}]
+  (pilot/skill pilot))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MOVEMENT
 
 (defn change-movement
+  "Convenience access method for changing the movement object of a unit."
   [unit new-movement]
   (assoc unit :movement new-movement))
 
+;;;;;;;;;;;;;;;
+;; Printing and value accessing
+
 (defn print-movement
+  "Print out all the movements a unit has in a pretty-printed format."
   [{:keys [movement heat]}]
   (movement/print-movement movement (heat/current heat)))
 
 (defn tmm
-  [{:keys [movement heat] :as unit}]
-  (movement/print-tmm movement (high-heat? unit)))
+  "Accessor for the TMM method in the movement object."
+  [{:keys [movement] :as unit}]
+  (movement/get-tmm movement (high-heat? unit)))
+
+(defn get-mv
+  "Calculates the available mv based on heat and mv-hits."
+  [{:keys [movement] :as unit} mv-type]
+  (if mv-type
+    (movement/get-mv movement (get-heat unit) mv-type)
+    (movement/get-mv movement (get-heat unit))))
+
+;;;;;;;;;;;;;;;
+;; Location Methods
 
 (defn undeploy
+  "Undeploy a unit by removing its location."
   [{:keys [movement] :as unit}]
-  (let [new-movement (movement/set-hex movement {})]
-    (change-movement unit new-movement)))
+  (change-movement unit (movement/set-location movement {})))
 
 (defn deployed?
+  "Checks if a unit has a location."
   [{:keys [movement]}]
   (movement/deployed? movement))
 
 (defn set-location
   [{:keys [movement] :as unit} hex]
-  (let [new-movement (movement/set-hex movement hex)]
+  (let [new-movement (movement/set-location movement hex)]
     (change-movement unit new-movement)))
+
+(defn get-location
+  ([{:keys [movement]}]
+   (movement/get-location movement))
+  ([{:keys [movement] :as unit} _]
+   (let [path (movement/get-path movement)]
+     (if (< 0 (count path))
+       (last path)
+       (get-location unit)))))
+
+;;;;;;;;;;;;;;;;;;
+;; Facing Methods
 
 (defn set-facing
   [{:keys [movement] :as unit} facing]
   (let [new-movement (movement/set-facing movement facing)]
     (change-movement unit new-movement)))
 
-(defn get-location
+(defn get-facing
   [{:keys [movement]}]
-  (movement/get-location movement))
+  (movement/get-facing movement))
+
+;;;;;;;;;;;;;;;;;;
+;; Path Methods
+
+(defn set-stacking
+  "Mark all units on the board."
+  [board units]
+  (let [b (board/set-stacking board (for [u units] [(get-location u) (get-force u)]))]
+    (prn (map :stacking b))
+    b))
 
 (defn get-path
   [{:keys [movement]}]
-  (movement/get-path movement))
-
-(defn get-direction
-  [{:keys [movement]}]
-  (movement/get-direction movement))
+  (if movement (movement/get-path movement) false))
 
 (defn set-path
-  [{:keys [movement] :as unit} hex board]
-  (change-movement unit (movement/set-path movement hex board)))
+  ([unit hex board units]
+   (change-movement unit (movement/set-path (:movement unit) (get-heat unit) (get-force unit) hex (set-stacking board (vals units)))))
+  ([unit path]
+   (change-movement unit (movement/set-path (:movement unit) path))))
+
+;;;;;;;;;;;;;;;;;;
+;; Movement Mode Methods
 
 (defn set-movement-mode
   [{:keys [movement] :as unit} mode]
-  (let [new-movement (movement/set-mode movement mode)]
-    (change-movement unit new-movement)))
-
-(defn cancel-movement
-  [{:keys [movement] :as unit}]
-  (let [new-movement (movement/cancel-movement movement)]
-    (change-movement unit new-movement)))
-
-(defn move-unit
-  [{:keys [movement heat] :as unit} board]
-  (let [current (heat/current heat)]
-    (if (movement/can-move? movement current board)
-      (-> unit
-          (take-action)
-          (change-movement (movement/move-unit movement current board)))
-      unit)))
+  (change-movement unit (movement/set-selected movement mode)))
 
 (defn get-movement-modes
   [{:keys [movement]}]
-  (movement/get-modes movement))
+  (if movement (movement/get-modes movement) []))
 
-(defn get-movement
-  [{:keys [movement]} no-default?]
-  (movement/selected movement no-default?))
+(defn clear-movement-mode
+  [{:keys [movement] :as unit}]
+  (change-movement unit (movement/clear-selected movement)))
 
-(defn get-movement-costs
-  [{:keys [movement]} board]
-  (movement/move-costs movement board))
+(defn get-selected-movement
+  [{:keys [movement]} default?]
+  (movement/get-selected movement default?))
+
+;;;;;;;;;;;;;;;;;;;
+;; Movement and MV Hits
 
 (defn take-mv-hits
   [{:keys [movement] :as unit} hits]
@@ -183,9 +216,22 @@
       (recur (change-movement unit (movement/take-hit movement))
              (inc n)))))
 
-(defn clear-movement
+(defn get-movement-cost
   [{:keys [movement] :as unit}]
-  (let [new-movement (movement/clear-movement movement)]
+  (movement/move-cost movement (get-force unit)))
+
+(defn move-unit
+  [{:keys [movement heat] :as unit}]
+  (let [current (heat/current heat)]
+    (if (movement/can-move? movement (movement/get-path movement) current (get-force unit))
+      (-> unit
+          (take-action)
+          (change-movement (movement/move-unit movement current (get-force unit))))
+      unit)))
+
+(defn cancel-movement
+  [{:keys [movement] :as unit}]
+  (let [new-movement (movement/cancel-movement movement)]
     (change-movement unit new-movement)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -194,6 +240,31 @@
 (defn get-size
   [{:keys [attacks]}]
   (attacks/get-size attacks))
+
+(defn print-damage
+  [{:keys [attacks]} bracket]
+  (attacks/print-damage-bracket (attacks/get-attack attacks :regular) bracket))
+
+(defn take-weapon-hits
+  [{:keys [attacks] :as unit} hits]
+  (loop [unit unit
+         n 0]
+    (if (= n hits)
+      unit
+      (recur (assoc unit :attacks (attacks/take-weaps-hit attacks))
+             (inc n)))))
+
+(defn take-fc-hits
+  [{:keys [attacks] :as unit} hits]
+  (loop [unit unit
+         n 0]
+    (if (= n hits)
+      unit
+      (recur (assoc unit :attacks (attacks/take-fc-hit attacks))
+             (inc n)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Damage Access
 
 (defn get-remaining-structure
   [{:keys [damage]}]
@@ -219,27 +290,9 @@
   [{:keys [damage]}]
   (damage/get-new-crits damage))
 
-(defn print-damage
-  [{:keys [attacks]} bracket]
-  (attacks/print-damage-bracket (attacks/get-attack attacks :regular) bracket))
-
-(defn take-weapon-hits
-  [{:keys [attacks] :as unit} hits]
-  (loop [unit unit
-         n 0]
-    (if (= n hits)
-      unit
-      (recur (assoc unit :attacks (attacks/take-weaps-hit attacks))
-             (inc n)))))
-
-(defn take-fc-hits
-  [{:keys [attacks] :as unit} hits]
-  (loop [unit unit
-         n 0]
-    (if (= n hits)
-      unit
-      (recur (assoc unit :attacks (attacks/take-fc-hit attacks))
-             (inc n)))))
+(defn take-damage
+  [{:keys [damage abilities] :as unit} damage-num crit?]
+  (assoc unit :damage (damage/take-damage damage abilities damage-num crit?)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ABILITIES
@@ -249,7 +302,7 @@
   (mul/print-abilities unit))
 
 (defn ->element
-  ([units mul-unit pilot facing location force]
+  ([units mul-unit pilot facing location battle-force]
    (let [matching-units (filter (fn [x] (when (and (:id x) (:full-name mul-unit))
                                           (str/includes? (:id x) (:full-name mul-unit)))) (vals units))
          id (if (seq matching-units)
@@ -257,7 +310,7 @@
               (str (:full-name mul-unit)))
          unit (-> mul-unit
                   (assoc :id id)
-                  (assoc :force force)
+                  (assoc :force battle-force)
                   (assoc :attacked? false)
                   (assoc :pilot (pilot/->pilot pilot))
                   (set-facing facing)
@@ -265,7 +318,7 @@
      (mu/log ::element-created
              :element unit)
      (merge units {id unit})))
-  ([units mul-unit pilot force]
+  ([units mul-unit pilot battle-force]
    (let [matching-units (filter (fn [x] (when (and (:id x) (:full-name mul-unit))
                                           (str/includes? (:id x) (:full-name mul-unit)))) (vals units))
          id (if (seq matching-units)
@@ -273,7 +326,7 @@
               (str (:full-name mul-unit)))
          unit (-> mul-unit
                   (assoc :id id)
-                  (assoc :force force)
+                  (assoc :force battle-force)
                   (assoc :pilot (pilot/->pilot pilot)))]
      (mu/log ::element-created
              :element unit)
@@ -290,30 +343,34 @@
   [unit]
   (assoc unit :attacked false))
 
+(defn ->targeting-mod
+  [description value]
+  [{:desc description :value value}])
+
 (defn woods-mod
   [line]
   (let [woods (count (filter #(str/includes? (:terrain %) "woods") (rest line)))]
     (cond
-      (>= woods 3) [{:desc "Line of Sight blocked by woods" :value ##Inf}]
-      (str/includes? (:terrain (last line)) "woods") [{:desc "target in woods" :value 1}]
-      (pos? woods) [{:desc "intervening woods" :value 1}]
-      :else [{:desc "no intervening woods" :value 0}])))
+      (>= woods 3) (->targeting-mod "Line of Sight blocked by woods" ##Inf)
+      (str/includes? (:terrain (last line)) "woods") (->targeting-mod "Target in woods" 1)
+      (pos? woods) (->targeting-mod "Intervening woods" 1)
+      :else (->targeting-mod "No intervening woods" 0))))
 
 (defn calculate-range-mod
   [range]
   (let [range-str (str "target " range " hexes away")]
     (condp >= range
-      3  [{:desc range-str :value 0}]
-      12 [{:desc range-str :value 2}]
-      21 [{:desc range-str :value 4}]
-      30 [{:desc range-str :value 6}]
-      [{:desc "Target out of range" :value ##Inf}])))
+      3  (->targeting-mod range-str 0)
+      12 (->targeting-mod range-str 2)
+      21 (->targeting-mod range-str 4)
+      30 (->targeting-mod range-str 6)
+      (->targeting-mod range-str ##Inf))))
 
 (defn height-checker
   [origin target line]
   (let [o-height (+ 2 (:elevation (first line)))
         t-height (+ 2 (:elevation (last line)))]
-    (if (= (count line) 2)
+    (if (<= (count line) 2)
       false
       (loop [blocked? false
              current (first line)
@@ -358,32 +415,46 @@
         other-hex (hex/hex->pixel other-hex layout)]
     (line-between-points? p1 p2 [(:x this-pixel) (:y this-pixel)] [(:x other-hex) (:y other-hex)])))
 
+(defn amm
+  [unit]
+  (condp = (get-selected-movement unit true)
+    :immobile (->targeting-mod "Attack immobile" -1)
+    :stand-still (->targeting-mod "Attack stood still" -1)
+    :jump (->targeting-mod "Attack stood still" 2)
+    (->targeting-mod "Attack stood still" 0)))
+
+(defn targeting-tmm
+  [unit]
+  (->targeting-mod "Target movement" (movement/get-tmm-data (:movement unit) (:abilities unit) (high-heat? unit))))
+
 (defn ->targeting
-  [{:keys [movement pilot attacks heat] :as attacker} target board layout attack]
-  (let [atk-hex (movement/get-atk-loc movement board)
-        tgt-hex (movement/get-hex (:movement target) board)
-        line (board/line atk-hex tgt-hex board)
-        range (hex/distance atk-hex tgt-hex)
-        attack-data (conj []
-                          (pilot/skill-mod pilot)
-                          (attacks/calculate-fc-hits attacks)
-                          (movement/amm movement)
-                          (movement/tmm (:movement target) (:abilities target) (high-heat? target))
-                          (when (not (some attack #{:physical :charge :dfa}))
-                            (heat/heat-effects heat))
-                          (when (height-checker attacker target line)
-                            [{:desc "Line of sight blocked" :value ##Inf}])
-                          (woods-mod line)
-                          (calculate-range-mod range))
-        damage (attacks/print-damage attacks attack range)
-        targeting {:attacker attacker
-                   :target target
-                   :attack attack
-                   :attack-data attack-data
-                   :range range
-                   :rear-attack? (is-behind? (get-location target) (get-location attacker) (movement/get-rear (:movement target)) layout)
-                   :damage damage}]
-    [attack targeting]))
+  ([{:keys [attacks] :as attacker} target board layout attack]
+   (let [atk-hex (board/find-hex (get-location attacker true) board)
+         tgt-hex (board/find-hex (get-location target) board)
+         line (board/line atk-hex tgt-hex board)
+         range (hex/distance atk-hex tgt-hex)
+         attack-data (conj []
+                           (->targeting-mod "Pilot skill" (pilot-skill attacker))
+                           (->targeting-mod "Fire-control damage" (* (attacks/fc-hits attacks) 2))
+                           (amm attacker)
+                           (targeting-tmm target)
+                           (when (not (some attack #{:physical :charge :dfa}))
+                             (->targeting-mod "Attacker heat" (get-heat attacker)))
+                           (when (height-checker attacker target line)
+                             (->targeting-mod "Line of sight blocked" ##Inf))
+                           (woods-mod line)
+                           (calculate-range-mod range))
+         damage (attacks/print-damage attacks attack range)
+         targeting {:attacker attacker
+                    :target target
+                    :attack attack
+                    :attack-data attack-data
+                    :range range
+                    :rear-attack? (is-behind? (get-location target) (get-location attacker) (movement/get-rear (:movement target)) layout)
+                    :damage damage}]
+     [attack targeting]))
+  ([{:keys [atk-type] :as attacker} target board layout]
+   (->targeting attacker target board layout atk-type)))
 
 (defn calculate-to-hit
   [{:keys [attack-data]}]
@@ -403,7 +474,7 @@
    (if-let [failed (some #(= ##Inf (:value (first %))) attack-data)]
      (:desc failed)
      (let [to-hit (calculate-to-hit attack-roll)
-           to-hit-str (str "To Hit: " to-hit " (" (get probabilities to-hit) "%)")]
+           to-hit-str (str "To Hit: " to-hit " (" (get utils/probabilities to-hit) "%)")]
        (if detailed?
          (str/trim (str to-hit-str ": " (reduce str (map attack-roll-parser attack-data))))
          (str/trim to-hit-str))))))
@@ -420,21 +491,17 @@
       (assoc :targeting false)))
 
 (defn declare-special-attack
-  [unit targeting board]
+  [unit targeting]
   (-> unit
       (assoc :target (id (:target targeting)))
       (assoc :atk-type (:attack targeting))
-      (move-unit board)))
-
-(defn take-damage
-  [{:keys [damage abilities] :as unit} damage-num crit?]
-  (assoc unit :damage (damage/take-damage damage abilities damage-num crit?)))
+      (move-unit)))
 
 (defn dfa-attack
   [{:keys [attacker target rear-attack?] :as targeting} to-hit]
   (let [hit? (<= (calculate-to-hit targeting) to-hit)
         attacker (set-attacked attacker)
-        attacker-tmm (:value (first (movement/tmm (:movement attacker) (:abilities attacker) (high-heat? attacker))))
+        attacker-tmm (movement/get-tmm-data (:movement attacker) (:abilities attacker) (high-heat? attacker))
         attacker-damage (attacks/roll-damage (:attacks attacker) (if hit? :self-dfa :missed-dfa) attacker-tmm (get-size target) rear-attack?)
         target-damage (attacks/roll-damage (:attacks attacker) :dfa attacker-tmm (get-size target) rear-attack?)
         result {(:id attacker) (take-damage attacker attacker-damage false)
@@ -460,7 +527,7 @@
   [{:keys [attacker target rear-attack?] :as targeting} to-hit]
   (let [hit? (<= (calculate-to-hit targeting) to-hit)
         attacker (set-attacked attacker)
-        attacker-tmm (:value (first (movement/tmm (:movement attacker) (:abilities attacker) (high-heat? attacker))))
+        attacker-tmm (movement/get-tmm-data (:movement attacker) (:abilities attacker) (high-heat? attacker))
         attacker-damage (attacks/roll-damage (:attacks attacker) :self-charge attacker-tmm (get-size target) rear-attack?)
         target-damage (attacks/roll-damage (:attacks attacker) :charge attacker-tmm (get-size target) rear-attack?)
         result {(:id attacker) (if hit? (take-damage attacker attacker-damage false) attacker)
@@ -523,6 +590,9 @@
   [{:keys [movement]} target]
   (and (acted? target) (pos? (count (movement/get-path movement))) (= (hex/distance (last (movement/get-path movement)) (get-location target)) 1)))
 
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; End of Phase and end of turn functions
+
 (defn apply-damage
   [{:keys [damage] :as unit}]
   (assoc unit :damage (damage/apply-damage damage)))
@@ -546,7 +616,7 @@
         engine-crits (count (filter #(= :engine %) new-crits))
         external-heat (+ engine-crits (damage/get-heat damage))
         new-unit (-> unit
-                     (clear-movement)
+                     (clear-movement-mode)
                      (apply-damage)
                      (take-weapon-hits weapon-count)
                      (take-fc-hits fc-count)

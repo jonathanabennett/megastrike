@@ -6,16 +6,19 @@
    [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
    [megastrike.hexagons.hex :as hex]
+   [megastrike.battle-force :as battle-force]
    [megastrike.mul :as mul]
    [megastrike.utils :as utils]))
 
 (defn initialize-forces
   [forces]
   (loop [force-map {}
+         i 1
          names (str/split forces #",")]
     (if (empty? names)
       force-map
-      (recur (merge force-map {(utils/keyword-maker (first names)) {:name (first names)}})
+      (recur (merge force-map {(utils/keyword-maker (first names)) (battle-force/create-force (first names) nil nil i :player)})
+             (inc i)
              (rest names)))))
 
 (defn extract-name [input]
@@ -23,23 +26,22 @@
     (utils/keyword-maker (str (second (re-find pattern input))))))
 
 (defn update-force
-  [state line key value]
+  [state line fn v]
   (let [force-name (extract-name line)
-        force (merge (get (:forces state) force-name) {key value})
-        new-forces (assoc (:forces state) force-name force)]
-    (assoc state :forces new-forces)))
+        bf (fn (get (:forces state) force-name) v)]
+    (assoc-in state [:forces force-name] bf)))
 
 (defn set-location
   [state line value]
-  (update-force state line :location value))
+  (update-force state line battle-force/set-deployment value))
 
 (defn set-team
   [state line value]
-  (update-force state line :team (Integer/parseInt value)))
+  (update-force state line battle-force/set-team (Integer/parseInt value)))
 
 (defn set-camo
   [state line value]
-  (update-force state line :camo value))
+  (update-force state line battle-force/set-camo value))
 
 (defn parse-unit-string [s]
   (let [[_ faction number data] (re-matches #"Unit_(\w+)_(\d+)[=_](.+)" s)]
