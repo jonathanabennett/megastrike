@@ -2,16 +2,17 @@
   (:require
    [cljfx.api :as fx]
    [clojure.string :as str]
+   [megastrike.battle-force :as battle-force]
    [megastrike.board :as board]
    [megastrike.combat-unit :as cu]))
 
 (defn title-string
   [context]
-  (let [force (first (fx/sub-val context :turn-order))
+  (let [bf (first (fx/sub-val context :turn-order))
         phase (fx/sub-val context :current-phase)
         turn (fx/sub-val context :turn-number)]
-    (if (and force phase turn)
-      (str "Megastrike | " (str/capitalize (name force)) " | " (str/capitalize (name phase)) " Phase | Turn #" turn)
+    (if (and bf phase turn)
+      (str "Megastrike | " (battle-force/to-str bf) " | " (str/capitalize (name phase)) " Phase | Turn #" turn)
       "Megastrike")))
 
 (defn units
