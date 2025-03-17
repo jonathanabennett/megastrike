@@ -2,8 +2,8 @@
   (:require
    [cljfx.api :as fx]
    [clojure.string :as str]
+   [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
-   [megastrike.force :as force]
    [megastrike.gui.events :as events]
    [megastrike.gui.subs :as subs]
    [megastrike.hexagons.hex :as hex]
@@ -33,11 +33,27 @@
                                  :key key}
                :text (fx/sub-val context key)}]})
 
+(defn confirmation-pane
+  [{:keys [fx/context dialog-id on-confirmed button dialog-pane]}]
+  {:fx/type fx/ext-let-refs
+   :refs {::dialog {:fx/type :dialog
+                    :showing (fx/sub-val context get-in [:internal dialog-id :showing] false)
+                    :on-hidden {:event-type ::events/on-confirmation-dialog-hidden
+                                :dialog-id dialog-id
+                                :on-confirmed on-confirmed}
+                    :dialog-pane (merge {:fx/type :dialog-pane
+                                         :button-types [:cancel :ok]}
+                                        dialog-pane)}}
+   :desc (merge {:fx/type :button
+                 :on-action {:event-type ::events/show-confirmation
+                             :dialog-id dialog-id}}
+                button)})
+
 ;; Sprites
 (defn draw-sprite
   "Draws a sprite. Used for both the map and the lobby."
-  [{:keys [unit force x y shift direction]}]
-  (let [camo (force/get-camo force)
+  [{:keys [unit bf x y shift direction]}]
+  (let [camo (battle-force/get-camo bf)
         color "#FFFFFF"
         img (mul/find-sprite unit)]
     {:fx/type :image-view
@@ -105,12 +121,12 @@
   [{:keys [fx/context unit layout]}]
   (let [hex (hex/points (cu/get-location unit) layout)
         forces (subs/forces context)
-        force (forces (unit :force))]
+        bf (get forces (cu/get-force unit))]
     {:fx/type :group
      :on-mouse-clicked {:event-type ::events/unit-clicked :unit unit :fx/sync true}
      :children [{:fx/type draw-sprite
                  :unit unit
-                 :force force
+                 :bf bf
                  :x (nth hex 8)
                  :y (nth hex 9)
                  :direction (cu/get-facing unit)
@@ -122,8 +138,8 @@
                  :font 16
                  :translate-y (/ (* (layout :y-size) (:scale layout)) 3)}
                 {:fx/type :label
-                 :text (if (cu/get-movement unit true)
-                         (name (cu/get-movement unit true))
+                 :text (if (cu/get-selected-movement unit false)
+                         (name (cu/get-selected-movement unit false))
                          "Did not move")
                  :layout-x (nth hex 4)
                  :layout-y (nth hex 5)
@@ -147,28 +163,26 @@
                  :font 16}]}))
 
 (defn draw-movement-path
-  [{:keys [fx/context unit layout]}]
-  (let [board (subs/board context)
-        origin (cu/get-location unit)
-        costs (cu/get-movement-costs unit board)]
-    (prn)
+  [{:keys [unit layout]}]
+  (let [origin (cu/get-location unit)
+        costs (cu/get-movement-cost unit)]
     {:fx/type :group
-     :children (loop [sprites []
-                      total 0
+     :children (loop [total 0
                       costs costs
                       o origin
+                      sprites []
                       path (cu/get-path unit)]
                  (if (empty? path)
                    sprites
-                   (recur (concat sprites
-                                  [{:fx/type draw-movement-cost
-                                    :origin o
-                                    :destination (first path)
-                                    :layout layout
-                                    :cost (+ total (first costs))}])
-                          (+ total (first costs))
+                   (recur (+ total (or (first costs) 0))
                           (rest costs)
                           (first path)
+                          (into [] (concat sprites
+                                           [{:fx/type draw-movement-cost
+                                             :origin o
+                                             :destination (first path)
+                                             :layout layout
+                                             :cost total}]))
                           (rest path))))}))
 
 ;; Forces Lists
@@ -233,7 +247,8 @@
 
 (defn unit-stat-block
   [{:keys [fx/context unit]}]
-  (let [active (subs/active-id context)]
+  (let [active (subs/active-id context)
+        bf (get (subs/forces context) (cu/get-force unit))]
     {:fx/type :titled-pane
      :on-mouse-clicked {:event-type ::events/stats-clicked :fx/sync true :unit (:id unit)}
      :text (if (:acted unit) (str (:id unit) " (done)") (:id unit))
@@ -252,7 +267,7 @@
                                        :value (:id unit)}
                                       {:fx/type prop-label
                                        :label "Force: "
-                                       :value (-> unit :force name str/capitalize)}
+                                       :value (battle-force/to-str bf)}
                                       {:fx/type prop-label
                                        :label "Type: "
                                        :value (:type unit)}
@@ -318,12 +333,12 @@
 (defn force-block
   [{:keys [fx/context units]}]
   (let [forces (subs/forces context)
-        force ((:force (first units)) forces)]
+        bf ((:force (first units)) forces)]
     {:fx/type :v-box
      :spacing 5
-     :border {:strokes [{:stroke (:color force) :style :solid :width 5}]}
+     :border {:strokes [{:image (battle-force/get-camo bf) :width 5}]}
      :children [{:fx/type :label
-                 :text (force :name)}
+                 :text (battle-force/to-str bf)}
                 {:fx/type :accordion
                  :panes (for [u units]
                           {:fx/type unit-stat-block :unit u})}]}))
@@ -335,8 +350,8 @@
      :min-width :use-pref-size
      :content {:fx/type :v-box
                :spacing 30
-               :children (for [force units]
-                           {:fx/type force-block :units (val force)})}}))
+               :children (for [bf units]
+                           {:fx/type force-block :units (val bf)})}}))
 
 ;; Button Widgets
 (defn attack-buttons
@@ -400,7 +415,7 @@
        :on-action {:event-type ::events/cancel-move :unit unit :fx/sync true}}
       {:fx/type :button
        :text "Confirm Move"
-       :on-action {:event-type ::events/confirm-move :unit unit :fx/sync true}}])))
+       :on-action {:event-type ::events/confirm-move :fx/sync true}}])))
 
 (def combat-phase-buttons
   [{:fx/type :button
@@ -410,8 +425,11 @@
     :text "Overheat -1"
     :on-action {:event-type ::events/overheat :value -1 :fx/sync true}}
    {:fx/type :button
+    :text "Auto-attack"
+    :on-action {:event-type ::events/auto-attack :fx/sync true}}
+   {:fx/type :button
     :text "Resolve Charges/DFAs"
-    :on-action {:event-type ::events/resolve-attacks :fx/sync true}}
+    :on-action {:event-type ::events/resolve-physicals :fx/sync true}}
    {:fx/type :button
     :text "Finish Attacks"
     :on-action {:event-type ::events/finish-attacks :fx/sync true}}])

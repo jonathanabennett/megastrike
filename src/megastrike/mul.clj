@@ -30,13 +30,13 @@
    (parse-row header-row row))
   ([hr row]
    (let [mul-row (zipmap hr row)
-         movement (movement/->movement mul-row)
+         movement (movement/create-movement mul-row)
          abilities (abilities/parse-abilities (:abilities mul-row))]
      (assoc (select-keys mul-row [:chassis :model :role :type :threshold])
             :full-name (str (:chassis mul-row) " " (:model mul-row))
             :mul-id (Integer/parseInt (:mul-id mul-row))
             :size (Integer/parseInt (:size mul-row))
-            :movement (movement/->movement mul-row)
+            :movement movement
             :attacks (attacks/->attacks mul-row movement abilities)
             :damage (damage/->damage mul-row)
             :heat (heat/->heat {:current 0 :overheat (Integer/parseInt (:overheat mul-row))})
