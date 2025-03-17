@@ -15,7 +15,7 @@ jobs:
         with:
           name: megastrike_linux
       - run: ls -R
-      - uses: actions/upload-release-asset@v1
+      - uses: actions/upload-release-asset@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -34,7 +34,7 @@ jobs:
         uses: actions/download-artifact@v3 
         with: 
           name: megastrike_macos
-      - uses: actions/upload-release-asset@v1
+      - uses: actions/upload-release-asset@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
@@ -53,7 +53,7 @@ jobs:
         uses: actions/download-artifact@v3
         with:
           name: megastrike_win
-      - uses: actions/upload-release-asset@v1
+      - uses: actions/upload-release-asset@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
