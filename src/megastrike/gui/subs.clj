@@ -8,7 +8,8 @@
 
 (defn title-string
   [context]
-  (let [bf (first (fx/sub-val context :turn-order))
+  (let [forces (fx/sub-val context :forces)
+        bf (get forces (first (fx/sub-val context :turn-order)))
         phase (fx/sub-val context :current-phase)
         turn (fx/sub-val context :turn-number)]
     (if (and bf phase turn)
