@@ -70,7 +70,7 @@
               :units (subs/units context)
               :forces (subs/forces context)}]
     (mu/log ::auto-save-event)
-    (pprint/pprint save (io/writer (utils/load-resource :data "save.edn")))))
+    (spit (utils/load-resource :data "save.edn") (prn-str save))))
 
 (defmethod event-handler ::quit-game
   [_]

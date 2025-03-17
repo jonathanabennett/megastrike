@@ -2,8 +2,8 @@
   (:require
    [clojure.math :as math]
    [com.brunobonacci.mulog :as mu]
+   [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
-   [megastrike.force :as force]
    [megastrike.utils :as utils]))
 
 (defn roll-initiative
@@ -13,8 +13,8 @@
     (if-not (apply distinct? (vals rolls))
       (recur forces)
       (->> forces
-           (map (fn [[f force]]
-                  [f (assoc force :initiative (f rolls))]))
+           (map (fn [[f bf]]
+                  [f (assoc bf :initiative (f rolls))]))
            (into {})))))
 
 (defn move-generator
@@ -26,7 +26,7 @@
            forces force-list]
       (if (empty? forces)
         ret
-        (let [f (utils/keyword-maker (force/get-name (first forces)))]
+        (let [f (battle-force/id (first forces))]
           (recur (assoc ret f (max 1 (math/floor-div (f unit-count) smallest-count)))
                  (rest forces)))))))
 
@@ -45,26 +45,18 @@
    (->> forces
         (vals)
         (sort-by :initiative)
-        (map #(utils/keyword-maker (force/get-name %)))
-        (into []))
-  ;; (into [] (map #(utils/keyword-maker (:name %)) (sort-by :initiative (vals forces))))
-   ))
+        (map #(battle-force/id %))
+        (into []))))
 
 (defn start-initiative-phase
   "Reroll the initiative, increment the turn number, save the new forces (with their initiative), but do not generate a turn order."
   [{:keys [turn-number forces units] :as game-state}]
   (let [forces (roll-initiative forces)
-        initiative-report (reduce str (map #(str (force/get-name %) " rolled a " (:initiative %) "\n") (vals forces)))
+        initiative-report (reduce str (map #(str (battle-force/to-str %) " rolled a " (:initiative %) "\n") (vals forces)))
         turn-num (inc turn-number)
         turn-string (str "Turn: " turn-num)
         move-list (str "Turn Order: " (reduce str (map #(str % ", ") (generate-turn-order forces (vals units)))))
         round-report (str turn-string "\n" initiative-report move-list "\n\n----------\n")]
-    ; (mu/log ::begin-initiative-phase
-    ;         :turn-number turn-num
-    ;         :initiative-rolls initiative-report
-    ;         :turn-order move-list
-    ;         :current-phase "Initiative"
-    ;         :instrumentation :player)
     (assoc game-state
            :current-phase :initiative
            :turn-number turn-num
@@ -97,10 +89,6 @@
   (let [turn-order (generate-turn-order forces (vals units))
         round-string (str "Movement Phase \n" "Movement Order: " (reduce str (map #(str % ", ") turn-order)) "\n\n----------\n")
         report (str round-report round-string)]
-    ; (mu/log ::begin-movement-phase
-    ;         :turn-order turn-order
-    ;         :current-phase "Movement"
-    ;         :instrumentation :player)
     (assoc game-state
            :current-phase :movement
            :turn-order turn-order
@@ -113,10 +101,6 @@
   (let [turn-order (generate-turn-order forces)
         round-string (str "Combat Phase \n" "Attack Order: " (reduce str (map #(str % ", ") turn-order)) "\n\n----------\n")
         report (str round-report round-string)]
-    ; (mu/log ::begin-combat-phase
-    ;         :turn-order turn-order
-    ;         :current-phase "Combat"
-    ;         :instrumentation :player)
     (assoc game-state
            :current-phase :combat
            :turn-order turn-order
@@ -127,8 +111,6 @@
   "Remove all targeting as part of the end phase process."
   [{:keys [units] :as game-state}]
   (let [units (into {} (for [[_ unit] units] (cu/end-turn unit)))]
-    ; (mu/log ::begin-end-phase
-    ;         :current-phase "End")
     (assoc game-state
            :current-phase :end
            :turn-order ()
@@ -146,4 +128,3 @@
         (= current-phase :combat)     (start-end-phase game-state)
         (= current-phase :end)        (start-initiative-phase game-state)
         :else (start-initiative-phase game-state)))))
-

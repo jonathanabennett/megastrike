@@ -115,6 +115,4 @@
    :desc [{:fx/type game-view}
           {:fx/type lobby-view}
           {:fx/type attack-dialog}
-          {:fx/type lobby/mul-dialog}
-          ;{:fx/type lobby/force-creation-dialog}
           {:fx/type round-dialog}]})

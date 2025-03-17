@@ -302,7 +302,7 @@
   (mul/print-abilities unit))
 
 (defn ->element
-  ([units mul-unit pilot facing location force]
+  ([units mul-unit pilot facing location battle-force]
    (let [matching-units (filter (fn [x] (when (and (:id x) (:full-name mul-unit))
                                           (str/includes? (:id x) (:full-name mul-unit)))) (vals units))
          id (if (seq matching-units)
@@ -310,7 +310,7 @@
               (str (:full-name mul-unit)))
          unit (-> mul-unit
                   (assoc :id id)
-                  (assoc :force force)
+                  (assoc :force battle-force)
                   (assoc :attacked? false)
                   (assoc :pilot (pilot/->pilot pilot))
                   (set-facing facing)
@@ -318,7 +318,7 @@
      (mu/log ::element-created
              :element unit)
      (merge units {id unit})))
-  ([units mul-unit pilot force]
+  ([units mul-unit pilot battle-force]
    (let [matching-units (filter (fn [x] (when (and (:id x) (:full-name mul-unit))
                                           (str/includes? (:id x) (:full-name mul-unit)))) (vals units))
          id (if (seq matching-units)
@@ -326,7 +326,7 @@
               (str (:full-name mul-unit)))
          unit (-> mul-unit
                   (assoc :id id)
-                  (assoc :force force)
+                  (assoc :force battle-force)
                   (assoc :pilot (pilot/->pilot pilot)))]
      (mu/log ::element-created
              :element unit)

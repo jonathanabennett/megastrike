@@ -2,8 +2,8 @@
   (:require
    [com.brunobonacci.mulog :as mu]
    [megastrike.ai.kevin :as ai]
+   [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
-   [megastrike.force :as force]
    [megastrike.hexagons.hex :as hex]
    [megastrike.phases :as phases]))
 
@@ -87,15 +87,10 @@
 
 (defn switch-unit
   [{:keys [active-unit units turn-order] :as game-state} new-active-id]
-  (let [old-active-unit (get units active-unit {})
-        new-active-unit (get units new-active-id)
+  (let [new-active-unit (get units new-active-id)
         active-id (if (and (in-active-force? new-active-unit turn-order) (not (cu/acted? new-active-unit)))
                     new-active-id
                     active-unit)]
-    (mu/log ::switching-unit
-            :old-active old-active-unit
-            :new-active new-active-id
-            :active-id active-id)
     (assoc game-state
            :active-unit active-id
            :turn-flag false)))
@@ -206,9 +201,10 @@
   [{:keys [forces current-phase turn-order] :as game-state}]
   (let [next-force (get forces (first turn-order))]
     (cond
-      (and (= current-phase :combat) (= (force/get-player next-force) :kevin))
+      (= next-force nil) game-state
+      (and (= current-phase :combat) (= (battle-force/get-player next-force) :kevin))
       (ai-attacks game-state)
-      (and (= current-phase :movement) (= (force/get-player next-force) :kevin))
+      (and (= current-phase :movement) (= (battle-force/get-player next-force) :kevin))
       (ai-moves game-state)
       :else game-state)))
 
