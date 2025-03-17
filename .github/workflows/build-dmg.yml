@@ -22,7 +22,7 @@ jobs:
         with: 
           format: "tar.gz"
           name: megastrike_macos
-      - uses: actions/upload-artifact@v3
+      - uses: actions/upload-artifact@v4
         with:
           name: megastrike_macos
           path: megastrike_macos.tar.gz
