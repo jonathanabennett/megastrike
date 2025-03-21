@@ -25,14 +25,21 @@
   [n]
   (<= 0 n 8))
 
+(defn clean-pilot-skill
+  [n]
+  (cond
+    (< n 0) 0
+    (> n 8) 8
+    :else n))
+
 (defrecord Pilot [full-name skill kills]
   Crew
-  (full-name [this] (:full-name this))
-  (skill [this] (:skill this))
-  (display [this] (str (full-name this) "( " (skill this) ")"))
+  (full-name [_] full-name)
+  (skill [_] skill)
+  (display [_] (str full-name "( " skill ")"))
   (set-full-name [this new-name] (assoc this :full-name new-name))
   (set-skill [this new-skill] (when (valid-pilot-skill? new-skill) (assoc this :skill new-skill)))
-  (kills [this] (:kills this))
+  (kills [_] kills)
   (set-kills [this new-kills] (assoc this :kills new-kills))
   (add-kill [this] (assoc this :kills (inc (kills this)))))
 
@@ -42,7 +49,7 @@
          skill (if (= (type skill) java.lang.String)
                  (Integer/parseInt skill)
                  skill)]
-     (->Pilot pname skill kills)))
+     (->Pilot pname (clean-pilot-skill skill) kills)))
   ([pname skill]
    (create-pilot pname skill 0)))
 
