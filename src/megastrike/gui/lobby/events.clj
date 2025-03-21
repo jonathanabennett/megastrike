@@ -12,6 +12,7 @@
    [megastrike.movement :as movement]
    [megastrike.mul :as mul]
    [megastrike.phases :as phases]
+   [megastrike.pilot :as pilot]
    [megastrike.scenario :as scenario]
    [megastrike.utils :as utils])
   (:import
@@ -101,8 +102,7 @@
   [{:keys [fx/context]}]
   (let [units (subs/units context)
         mul-unit (fx/sub-val context :active-mul)
-        pilot {:name (fx/sub-val context :pilot-name)
-               :skill (Integer/parseInt (fx/sub-val context :pilot-skill))}
+        pilot (pilot/create-pilot (fx/sub-val context :pilot-name) (fx/sub-val context :pilot-skill))
         battle-force (fx/sub-val context :active-force)]
     {:context (fx/swap-context context assoc :units (cu/->element units mul-unit pilot battle-force))
      :dispatch {:event-type ::e/close-dialog :dialog :mul-dialog}}))

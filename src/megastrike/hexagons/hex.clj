@@ -167,21 +167,3 @@
       (and (> -30 angle) (>= angle -90)) :sw
       (and (> -90 angle) (>= angle -150)) :nw
       :else :n)))
-
-;; Commented out in case I need it later. I believe that cljfx
-;; has given me this feature for "free" when I added a click event
-;; to the hexagons.
-;; (defn pixel->hex
-;;   [pt layout]
-;;   (let [pth (:pixel-to-hex-matrix layout)
-;;         modified-point {:x (/ (- (:x pt)
-;;                                  (:x-origin layout))
-;;                               (:x-size layout))
-;;                         :y (/ (- (:y pt)
-;;                                  (:y-origin layout))
-;;                               (:y-size layout))}
-;;         p (+ (* (:x modified-point) (get pth 0))
-;;              (* (:y modified-point) (get pth 1)))
-;;         q (+ (* (:x modified-point) (get pth 2))
-;;              (* (:y modified-point) (get pth 3)))]
-;;     (round p q (* (+ p q) -1))))

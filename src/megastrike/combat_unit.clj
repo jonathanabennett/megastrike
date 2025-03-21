@@ -312,7 +312,7 @@
                   (assoc :id id)
                   (assoc :force battle-force)
                   (assoc :attacked? false)
-                  (assoc :pilot (pilot/->pilot pilot))
+                  (assoc :pilot pilot)
                   (set-facing facing)
                   (set-location location))]
      (mu/log ::element-created
@@ -327,7 +327,7 @@
          unit (-> mul-unit
                   (assoc :id id)
                   (assoc :force battle-force)
-                  (assoc :pilot (pilot/->pilot pilot)))]
+                  (assoc :pilot pilot))]
      (mu/log ::element-created
              :element unit)
      (merge units {id unit}))))

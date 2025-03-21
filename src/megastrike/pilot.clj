@@ -10,36 +10,39 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Schema and constructor
+
+(defprotocol Crew
+  (full-name [this])
+  (skill [this])
+  (display [this] "Crew are displayed as a string like so: name (skill). Like 'Bob Kim (4)'")
+  (set-full-name [this new-name])
+  (set-skill [this new-skill] "Sets the skill of a pilot IF it is a valid skill (between 0 and 8)")
+  (kills [this])
+  (set-kills [this new-kills])
+  (add-kill [this]))
+
 (defn valid-pilot-skill?
   [n]
   (<= 0 n 8))
 
-(defn ->pilot
-  ([pname skill]
+(defrecord Pilot [full-name skill kills]
+  Crew
+  (full-name [this] (:full-name this))
+  (skill [this] (:skill this))
+  (display [this] (str (full-name this) "( " (skill this) ")"))
+  (set-full-name [this new-name] (assoc this :full-name new-name))
+  (set-skill [this new-skill] (when (valid-pilot-skill? new-skill) (assoc this :skill new-skill)))
+  (kills [this] (:kills this))
+  (set-kills [this new-kills] (assoc this :kills new-kills))
+  (add-kill [this] (assoc this :kills (inc (kills this)))))
+
+(defn create-pilot
+  ([pname skill kills]
    (let [pname (string/trim pname)
          skill (if (= (type skill) java.lang.String)
                  (Integer/parseInt skill)
-                 skill)
-         pilot {:name pname :skill skill}]
-     pilot))
-  ([pilot]
-   (->pilot (:name pilot) (:skill pilot))))
+                 skill)]
+     (->Pilot pname skill kills)))
+  ([pname skill]
+   (create-pilot pname skill 0)))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Querying pilot data
-
-(defn skill
-  [pilot]
-  (:skill pilot))
-
-(defn full-name
-  [pilot]
-  (:name pilot))
-
-(defn display
-  "Formats the pilot information in the following format: 'Name(skill)'
-  Examples:
-  Bob Kim(4)
-  Shooty McShootyface (2)"
-  [pilot]
-  (str (full-name pilot) " (" (skill pilot) ")"))

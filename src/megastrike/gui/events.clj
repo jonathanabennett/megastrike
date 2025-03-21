@@ -1,8 +1,6 @@
 (ns megastrike.gui.events
   (:require
    [cljfx.api :as fx]
-   [clojure.java.io :as io]
-   [clojure.pprint :as pprint]
    [com.brunobonacci.mulog :as mu]
    [megastrike.gui.subs :as subs]
    [megastrike.logs :as logs]

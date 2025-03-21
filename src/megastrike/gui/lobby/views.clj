@@ -4,12 +4,10 @@
    [cljfx.ext.table-view :as tables]
    [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
-   [megastrike.force :as force]
    [megastrike.gui.elements :as elements]
    [megastrike.gui.lobby.events :as lobby-events]
    [megastrike.gui.subs :as subs]
-   [megastrike.mul :as mul]
-   [megastrike.utils :as utils]))
+   [megastrike.mul :as mul]))
 
 (defn filter-button
   [{:keys [field values text]}]
