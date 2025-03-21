@@ -30,6 +30,14 @@
   [unit units board layout]
   (map #(target-info unit % board layout :regular) units))
 
+(defn naive-target-selection
+  [options]
+  (rand-nth options))
+
+(defn select-target
+  [options]
+  (:firing-solution (second (naive-target-selection options))))
+
 (defn calculate-defensive-value
   [unit units board layout]
   (let [counter-attacks (map #(target-info % unit board layout :regular) units)
@@ -42,11 +50,8 @@
 (defn calculate-offensive-value
   [unit units board layout]
   (let [attacks (map #(target-info unit % board layout :regular) units)
-        expected-damage (map #(get (second %) :expected-damage 0) attacks)
-        total (/ (reduce + expected-damage) (count expected-damage))]
-    (mu/log ::offensive-value
-            :total total)
-    total))
+        expected-damage (:expected-damage (select-target attacks))]
+    expected-damage))
 
 (defn create-movement-option
   [path unit units board layout mv-type]
@@ -78,10 +83,3 @@
                          (movement/astar unit-loc false updated-board zero-weight mv-type (cu/get-force unit))))]
     (first (rand-nth (take 5 paths)))))
 
-(defn naive-target-selection
-  [options]
-  (rand-nth options))
-
-(defn select-target
-  [options]
-  (:firing-solution (second (naive-target-selection options))))
