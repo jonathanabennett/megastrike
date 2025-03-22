@@ -61,23 +61,23 @@
   (get-rear [this] "Returns the unit's rear based on its facing map.")
   (set-facing [this new-facing] "Changes the units facing to new-facing.")
 
-  (get-hits [this] "Returns the number of mv hits a unit has taken.")
+  (mv-hits [this] "Returns the number of mv hits a unit has taken.")
   (immobilize [this])
-  (take-hit [this] "Take a movement hit.")
+  (take-mv-hit [this] "Take a movement hit.")
 
-  (get-mv [this heat] [this heat mv-type] "Gets the move value for a unit. When no mv-type is provided, should return either the selected or default.")
-  (get-tmm [this high-heat?] "Returns the TMM of a unit, adjusted for high heat.")
-  (get-tmm-data [this abilities high-heat?] "Returns the tmm-value object used for attacks.")
+  (get-mv [this] [this mv-type] "Gets the move value for a unit. When no mv-type is provided, should return either the selected or default.")
+  (get-tmm [this] "Returns the TMM of a unit, adjusted for high heat.")
+  (get-tmm-data [this] "Returns the tmm-value object used for attacks.")
 
   (cancel-movement [this] "Cancels the unit's planned movement.")
-  (can-move? [this heat unit-force] [this path heat unit-force] "Returns true if a unit can actually move along the path it has selected.")
+  (can-move? [this] [this path] "Returns true if a unit can actually move along the path it has selected.")
 
   (get-path [this] "Returns the path the unit is planning to follow.")
-  (find-path [this heat unit-force destination board] "Returns the path that gets the unit as close as possible to its destination when accounting for stacking and its move value.
+  (find-path [this destination board] "Returns the path that gets the unit as close as possible to its destination when accounting for stacking and its move value.
              NOTE: this assumes that board has had stacking already marked on it.")
-  (set-path [this heat unit-force destination board] [this path] "Set the unit's path to the path returned by calling find-path with destination.")
+  (set-path [this destination board] [this path] "Set the unit's path to the path returned by calling find-path with destination.")
 
-  (move-unit [unit heat unit-force] "Changes the unit's location based on the path and sets the path to `[]`"))
+  (move-unit [unit] "Changes the unit's location based on the path and sets the path to `[]`"))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Movement Map Constructor and helper methods
