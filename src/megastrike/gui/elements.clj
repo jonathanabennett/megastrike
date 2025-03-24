@@ -7,7 +7,8 @@
    [megastrike.gui.events :as events]
    [megastrike.gui.subs :as subs]
    [megastrike.hexagons.hex :as hex]
-   [megastrike.movement :as movement]))
+   [megastrike.movement :as movement]
+   [megastrike.pilot :as pilot]))
 
 ;; Common GUI Widgets
 (defn prop-label
@@ -287,7 +288,7 @@
                                        :value (str (movement/base-tmm unit))}]}
                           {:fx/type prop-label
                            :label "Pilot (skill): "
-                           :value (cu/display-pilot unit)}
+                           :value (pilot/display (:unit/pilot unit))}
                           {:fx/type attack-table
                            :unit unit}
                           {:fx/type draw-pips

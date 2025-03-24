@@ -16,23 +16,6 @@
    [megastrike.utils :as utils]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Definitions
-
-(def ExampleElement
-  {:id "Stinger STG-3G #2"
-   :full-name "Stinger STG-3G"
-   :chassis "Stinger"
-   :model "STG-3G"
-   :heat :a-heat-map
-   :movement :a-movement-map
-   :attacks :an-attacks-map
-   :damage :a-damage-map
-   :pilot :a-pilot-map
-   :force :a-force-keyword
-   :mul-id 823
-   :point-value 18})
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MUL/Core
 
 (defn pv-mod
@@ -51,19 +34,6 @@
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; PILOT
-
-(defn display-pilot
-  "Print out the pilot in the format of name(skill)
-  Examples:
-  Shooty McShootyface(4)
-  Lt. Dan (2)"
-  [unit]
-  (pilot/display (:pilot unit)))
-
-(defn pilot-skill
-  "Returns the skill of the pilot as a number (for use in targeting)."
-  [{:keys [pilot]}]
-  (pilot/skill pilot))
 
 (defn set-stacking
   "Mark all units on the board."
@@ -86,10 +56,6 @@
         (movement/move-unit))
     unit))
 
-(defn cancel-movement
-  [unit]
-  (movement/cancel-move unit))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ATTACK ACCESS
 
@@ -104,15 +70,6 @@
     (if (= n hits)
       unit
       (recur (assoc unit :attacks (attacks/take-weaps-hit attacks))
-             (inc n)))))
-
-(defn take-fc-hits
-  [{:keys [attacks] :as unit} hits]
-  (loop [unit unit
-         n 0]
-    (if (= n hits)
-      unit
-      (recur (assoc unit :attacks (attacks/take-fc-hit attacks))
              (inc n)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -236,7 +193,7 @@
 
 (defn find-sprite
   "Searches a the mechset to determine which images to use and returns the path to that image."
-  [{:keys [unit/chassis unit/full-name] :as unit}]
+  [{:keys [unit/chassis unit/full-name]}]
   (let [chassis-match (filter (fn [row] (= (second row) chassis)) mechset)
         exact-match (filter (fn [row] (string/includes? (second row) full-name)) mechset)
         match-row (or (first exact-match) (first chassis-match))]
@@ -388,7 +345,7 @@
          line (board/line atk-hex tgt-hex board)
          range (hex/distance atk-hex tgt-hex)
          attack-data (conj []
-                           (->targeting-mod "Pilot skill" (pilot-skill attacker))
+                           (->targeting-mod "Pilot skill" (pilot/skill (:unit/pilot attacker)))
                            (->targeting-mod "Fire-control damage" (* (attacks/fc-hits attacks) 2))
                            (amm attacker)
                            (targeting-tmm target)

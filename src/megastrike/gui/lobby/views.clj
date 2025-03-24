@@ -8,6 +8,7 @@
    [megastrike.gui.lobby.events :as lobby-events]
    [megastrike.gui.subs :as subs]
    [megastrike.movement :as movement]
+   [megastrike.pilot :as pilot]
    [megastrike.schemas :as schemas]))
 
 (defn filter-button
@@ -300,7 +301,7 @@
                          :text "Pilot"
                          :cell-value-factory identity
                          :cell-factory {:fx/cell-type :table-cell
-                                        :describe (fn [x] {:text (cu/display-pilot x)})}}
+                                        :describe (fn [x] {:text (pilot/display (:unit/pilot x))})}}
                         {:fx/type :table-column
                          :text "PV"
                          :cell-value-factory identity
