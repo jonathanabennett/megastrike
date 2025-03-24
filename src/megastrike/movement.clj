@@ -9,7 +9,9 @@
   (:require
    [clojure.data.priority-map :as priority-map]
    [clojure.math :as math]
+   [clojure.spec.alpha :as s]
    [clojure.string :as str]
+   [clojure.string :as string]
    [com.brunobonacci.mulog :as mu]
    [megastrike.abilities :as abilities]
    [megastrike.board :as board]
@@ -87,9 +89,14 @@
   [mv-type]
   (let [mv-key (utils/keyword-maker mv-type)]
     (cond
-      (= mv-key (utils/keyword-maker "")) :walk
-      (= mv-key (utils/keyword-maker "j")) :jump
-      :else (utils/keyword-maker mv-type))))
+      (= mv-key (utils/keyword-maker "")) :move/walk
+      (= mv-key (utils/keyword-maker "j")) :move/jump
+      :else (keyword "move" (-> mv-type
+                                (string/trim)
+                                (string/lower-case)
+                                (utils/remove-parens)
+                                (utils/correct-range-brackets)
+                                (utils/replace-spaces))))))
 
 (defn- parse-movement
   "Parses a string like 8\"/5\"j into a map of all the possible movement modes the unit has and their distance in hexes."
@@ -162,6 +169,114 @@
 (defn unblocked-path?
   [path unit-force]
   (some #(not= (get % :stacking false) unit-force) path))
+
+(defn selected-or-default [unit]
+  (or (:move/selected unit) (:move/default unit)))
+
+(defn set-location [u hex]
+  (assoc u :unit/location (select-keys hex [:p :q :r])))
+
+(defn deployed? [u]
+  (get-in u [u :unit/location :q] false))
+
+(defn facing [u]
+  (get directions (:unit/facing u)))
+
+(defn rear [u]
+  (:rear (facing u)))
+
+(defn change-facing [u new-facing]
+  (when (s/assert :unit/facing new-facing)
+    (assoc u :facing new-facing)))
+
+(defn immobilize [u]
+  (assoc u :unit/move-modes {:move/immobilized 0} :default :immobilized))
+
+(defn available-mv
+  ([u mv-type]
+   (let [base-move (mv-type (:unit/move-modes u))
+         mv-hits (count (filter #(= :crits/mv (:crits/taken (:unit/criticals %))) u))]
+     (loop [mv base-move
+            n 0]
+       (if (= n mv-hits)
+         (max (- mv (:unit/current-heat u)) 0)
+         (recur (let [new-mv (math/round (/ mv 2.0))]
+                  (if (>= (- mv new-mv) 1) new-mv 0))
+                (inc n))))))
+  ([u]
+   (available-mv u (selected-or-default u))))
+
+(defn base-tmm
+  [u]
+  (let  [ret (loop [value (:unit/tmm u)
+                    n 0]
+               (if (= n (count (filter #(= :crits/mv (:crits/taken (:unit/criticals %))) u)))
+                 value
+                 (recur (let [new-tmm (math/round (/ value 2.0))]
+                          (if (>= (- value new-tmm) 1) new-tmm 0))
+                        (inc n))))]
+    (if (<= 2 (:unit/current-heat u))
+      (dec ret)
+      ret)))
+
+(defn modified-tmm
+  [u]
+  (let [jump-mod (:value (or (abilities/has? (:unit/abilities u) :jmpw) (abilities/has? (:unit/abilities u) :jmps)) {:value 0})
+        move-mode (selected-or-default u)]
+    (condp = move-mode
+      :move/immobilized -4
+      :move/stand-still 0
+      :move/jump (+ jump-mod (base-tmm u))
+      (base-tmm u))))
+
+(defn cancel-move
+  [u]
+  (assoc u :unit/path [] :unit/selected false))
+
+(defn can-move?
+  ([u path]
+   (cond
+     (not (hex/same-hex (first path) (:location u)))
+     (do (mu/log ::move-failed
+                 :reason "Path doesn't start at unit's location.")
+         false)
+     (get (last path) :stacking false)
+     (do (mu/log ::move-failed
+                 :reason "Path ends in an occupied hex.")
+         false)
+
+     (and (contains? {:move/stand-still :move/immobilized} (selected-or-default u)) (empty? path)) true
+     (pos? (count path)) (<= (reduce + (board/path-cost path (selected-or-default u) (:unit/battle-force u)))
+                             (available-mv u))
+     :else (do (mu/log ::move-failed
+                       :reason "Unknown"
+                       :unit u
+                       :path path)
+               false)))
+  ([u]
+   (can-move? u (:path u))))
+
+(defn find-path
+  [u destination board]
+  (loop [path (astar (:unit/location u) destination board hex/distance (selected-or-default u) (:unit/battle-force u))]
+    (if (or (empty? path) (can-move? u path))
+      path
+      (recur (butlast path)))))
+
+(defn set-path
+  [u destination board]
+  (let [moving-unit (if (:unit/selected u) u (assoc u :unit/selected (:unit/default u)))
+        path (find-path u destination board)]
+    (if (seq? path)
+      (assoc moving-unit :unit/path path)
+      u)))
+
+(defn move-unit
+  [u]
+  (let [moving-unit (if (:unit/selected u) u (assoc u :unit/selected (:unit/default u)))]
+    (if (can-move? moving-unit)
+      (assoc moving-unit :unit/location (last (:unit/path moving-unit)) :unit/path [] :unit/acted? true)
+      u)))
 
 (defrecord MechMovement [modes tmm mv-hits selected default location path facing]
   Moveable

@@ -7,6 +7,28 @@
    [megastrike.movement :as movement]
    [megastrike.utils :as utils]))
 
+; <<<<<<< Updated upstream
+; =======
+; ; (defprotocol MakesAttacks
+; ;   (size [this])
+; ;   (attacks [this])
+; ;   (add-attack [this new-attack])
+; ;   (get-attack [this atk])
+; ;   (fc-damage [this])
+; ;   (take-fc-damage [this])
+; ;   (take-weaps-hit [this])
+; ;   (generate-firing-solution [this target board layout] [this target board layout attack])
+; ;   (declare-special-attack [this firing-solution])
+; ;   (make-dfa-attack [this to-hit])
+; ;   (make-charge-attack [this to-hit])
+; ;   (make-basic-attack [this firing-solution to-hit])
+; ;   (make-heat-attack [this firing-solution to-hit]))
+;
+; (defn ->targeting-mod
+;   [description value]
+;   [{:desc description :value value}])
+;
+; >>>>>>> Stashed changes
 (defn ->attack
   [{:keys [kind s s* m m* l l* e e* value self] :or {kind :regular s 0 s* false m 0 m* false l 0 l* false e 0 e* false value 0 self 0}}]
   (let [s (if (= (type s) java.lang.String) (Integer/parseInt s) s)

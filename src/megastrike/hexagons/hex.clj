@@ -1,9 +1,7 @@
 (ns megastrike.hexagons.hex
   (:require
    [clojure.math :as math]
-   [com.brunobonacci.mulog :as mu]
-   [malli.core :as m]
-   [megastrike.schemas :as schemas]))
+   [com.brunobonacci.mulog :as mu]))
 
 (defn hexagon
   "Creates a Hexagon using a 3d addressing system."
@@ -11,8 +9,7 @@
    (hexagon p q (* (+ p q) -1)))
   ([p q r]
    (let [hex {:p p :q q :r r}]
-     (when (m/validate schemas/Hexagon hex)
-       hex))))
+     hex)))
 
 (defn offset->hex
   "Calculates a hex based on an 'offset' hex address. The input in in the format of [x y]."
