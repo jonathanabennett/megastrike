@@ -25,7 +25,8 @@
                     :role/attack-fighter :role/dogfighter :role/fast-dogfighter :role/fire-support :role/interceptor
                     :role/transport ; Aero roles
                     :role/none :role/undetermined}) ;unknown roles
-(s/def :unit/type all-types)
+(s/def :unit/type #{:type/bm :type/im :type/pm :type/sv :type/cv :type/ba :type/ci
+                    :type/sc :type/ss :type/ws :type/js :type/ds :type/da :type/cf :type/af})
 (s/def :unit/size (s/int-in 1 5))
 
 ;; Movement definitions

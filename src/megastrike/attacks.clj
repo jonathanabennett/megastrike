@@ -46,9 +46,9 @@
   (merge attacks (->attack attack)))
 
 (defn add-special-attacks
-  [attacks abilities]
+  [attacks unit]
   (loop [attacks attacks
-         atk-abilities (filter #(some #{:ht :ac :lrm :srm :if} %) abilities)]
+         atk-abilities (filter #(some #{:ht :ac :lrm :srm :if} %) unit)]
     (if (empty? atk-abilities)
       attacks
       (recur (let [atk (first atk-abilities)]
@@ -56,15 +56,14 @@
              (rest atk-abilities)))))
 
 (defn add-dfa
-  [attacks movement]
-  (if (movement/has-mode? movement :jump)
+  [attacks unit]
+  (if (movement/has-mode? unit :jump)
     (add-attack attacks {:kind :dfa})
     attacks))
 
 (defn ->attacks
-  [{:keys [size s s* m m* l l* e e*]} movement abilities]
-  {:fc-mod 0
-   :size (Integer/parseInt size)
+  [{:keys [size s s* m m* l l* e e*] :as unit}]
+  {:size (Integer/parseInt size)
    :attacks (-> {}
                 (add-attack {:kind :regular
                              :s s :s* s*
@@ -72,12 +71,12 @@
                              :l l :l* l*
                              :e e :e* e*})
                 (add-attack {:kind :physical
-                             :s (if (abilities/has? abilities :mel)
+                             :s (if (abilities/has? (:unit/abilities unit) :mel)
                                   (inc (Integer/parseInt size))
                                   (Integer/parseInt size))})
                 (add-attack {:kind :charge})
-                (add-dfa movement)
-                (add-special-attacks abilities))})
+                (add-dfa unit)
+                (add-special-attacks unit))})
 
 (defn get-size
   [attacks]

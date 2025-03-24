@@ -4,12 +4,11 @@
    [cljfx.ext.table-view :as tables]
    [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
-   [megastrike.force :as force]
    [megastrike.gui.elements :as elements]
    [megastrike.gui.lobby.events :as lobby-events]
    [megastrike.gui.subs :as subs]
-   [megastrike.mul :as mul]
-   [megastrike.utils :as utils]))
+   [megastrike.movement :as movement]
+   [megastrike.schemas :as schemas]))
 
 (defn filter-button
   [{:keys [field values text]}]
@@ -26,27 +25,27 @@
    :alignment :top-center
    :children [{:fx/type filter-button
                :field :type
-               :values mul/ground-units
+               :values schemas/ground-units
                :text "All Ground Units"}
               {:fx/type filter-button
                :field :type
-               :values mul/bm-units
+               :values schemas/bm-units
                :text "Battlemechs"}
               {:fx/type filter-button
                :field :type
-               :values mul/mech-units
+               :values schemas/mech-units
                :text "All Mechs"}
               {:fx/type filter-button
                :field :type
-               :values mul/conventional-units
+               :values schemas/conventional-units
                :text "All Conventional Units"}
               {:fx/type filter-button
                :field :type
-               :values mul/vehicle-units
+               :values schemas/vehicle-units
                :text "All vehicles"}
               {:fx/type filter-button
                :field :type
-               :values mul/infantry-units
+               :values schemas/infantry-units
                :text "All Infantry"}]})
 
 (defn mul-table [{:keys [fx/context]}]
@@ -76,17 +75,17 @@
                        :text "Size"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (pr-str (cu/get-size x))})}}
+                                      :describe (fn [x] {:text (pr-str (:unit/size x))})}}
                       {:fx/type :table-column
                        :text "Movement"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (cu/print-movement x)})}}
+                                      :describe (fn [x] {:text (movement/print-movement x)})}}
                       {:fx/type :table-column
                        :text "TMM"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (str (cu/tmm x))})}}
+                                      :describe (fn [x] {:text (str (movement/base-tmm x))})}}
                       {:fx/type :table-column
                        :text "Armor"
                        :cell-value-factory identity
@@ -126,12 +125,12 @@
                        :text "OV"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (pr-str (cu/overheat x))})}}
+                                      :describe (fn [x] {:text (pr-str (:unit/overheat x))})}}
                       {:fx/type :table-column
                        :text "Abilities"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (cu/print-abilities x)})}}]
+                                      :describe (fn [x] {:text (:abilities x)})}}]
             :items mul}}))
 
 (def mul-chassis-search
@@ -293,7 +292,7 @@
                          :cell-factory {:fx/cell-type :table-cell
                                         :describe (fn [x] {:graphic {:fx/type elements/draw-sprite
                                                                      :unit x
-                                                                     :bf ((cu/get-force x) forces)
+                                                                     :bf ((:unit/battle-force x) forces)
                                                                      :x 0
                                                                      :y 0
                                                                      :shift 0}})}}

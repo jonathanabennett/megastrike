@@ -7,7 +7,7 @@
    [megastrike.gui.events :as events]
    [megastrike.gui.subs :as subs]
    [megastrike.hexagons.hex :as hex]
-   [megastrike.mul :as mul]))
+   [megastrike.movement :as movement]))
 
 ;; Common GUI Widgets
 (defn prop-label
@@ -55,7 +55,7 @@
   [{:keys [unit bf x y shift direction]}]
   (let [camo (battle-force/get-camo bf)
         color "#FFFFFF"
-        img (mul/find-sprite unit)]
+        img (cu/find-sprite unit)]
     {:fx/type :image-view
      :image (str "file:" (.getPath img))
      :effect {:fx/type :blend
@@ -66,7 +66,7 @@
                             :paint color
                             :x 0 :y 0 :width 100 :height 100})
               :bottom-input {:fx/type :image-input
-                             :source (str (.toURI (mul/find-sprite unit)))}
+                             :source (str (.toURI (cu/find-sprite unit)))}
               :mode :src-atop
               :opacity 0.5}
      :rotate (if direction
@@ -119,9 +119,9 @@
 
 (defn draw-unit
   [{:keys [fx/context unit layout]}]
-  (let [hex (hex/points (cu/get-location unit) layout)
+  (let [hex (hex/points (:unit/location unit) layout)
         forces (subs/forces context)
-        bf (get forces (cu/get-force unit))]
+        bf (get forces (:unit/battle-force unit))]
     {:fx/type :group
      :on-mouse-clicked {:event-type ::events/unit-clicked :unit unit :fx/sync true}
      :children [{:fx/type draw-sprite
@@ -129,7 +129,7 @@
                  :bf bf
                  :x (nth hex 8)
                  :y (nth hex 9)
-                 :direction (cu/get-facing unit)
+                 :direction (:unit/facing unit)
                  :shift (/ (* (layout :y-size) (:scale layout)) 3)}
                 {:fx/type :label
                  :text (unit :full-name)
@@ -138,8 +138,8 @@
                  :font 16
                  :translate-y (/ (* (layout :y-size) (:scale layout)) 3)}
                 {:fx/type :label
-                 :text (if (cu/get-selected-movement unit false)
-                         (name (cu/get-selected-movement unit false))
+                 :text (if (:unit/selected unit)
+                         (name (:unit/selected unit))
                          "Did not move")
                  :layout-x (nth hex 4)
                  :layout-y (nth hex 5)
@@ -164,14 +164,14 @@
 
 (defn draw-movement-path
   [{:keys [unit layout]}]
-  (let [origin (cu/get-location unit)
-        costs (cu/get-movement-cost unit)]
+  (let [origin (:unit/location unit)
+        costs (movement/move-cost unit)]
     {:fx/type :group
      :children (loop [total 0
                       costs costs
                       o origin
                       sprites []
-                      path (cu/get-path unit)]
+                      path (:unit/path unit)]
                  (if (empty? path)
                    sprites
                    (recur (+ total (or (first costs) 0))
@@ -248,7 +248,7 @@
 (defn unit-stat-block
   [{:keys [fx/context unit]}]
   (let [active (subs/active-id context)
-        bf (get (subs/forces context) (cu/get-force unit))]
+        bf (get (subs/forces context) (:unit/battle-force unit))]
     {:fx/type :titled-pane
      :on-mouse-clicked {:event-type ::events/stats-clicked :fx/sync true :unit (:id unit)}
      :text (if (:acted unit) (str (:id unit) " (done)") (:id unit))
@@ -273,7 +273,7 @@
                                        :value (:type unit)}
                                       {:fx/type prop-label
                                        :label "Mv: "
-                                       :value (cu/print-movement unit)}]}
+                                       :value (movement/print-movement unit)}]}
                           {:fx/type :h-box
                            :spacing 5
                            :children [{:fx/type prop-label
@@ -281,10 +281,10 @@
                                        :value (:role unit)}
                                       {:fx/type prop-label
                                        :label "Size: "
-                                       :value (str (cu/get-size unit))}
+                                       :value (str (:unit/size unit))}
                                       {:fx/type prop-label
                                        :label "TMM: "
-                                       :value (str (cu/tmm unit))}]}
+                                       :value (str (movement/base-tmm unit))}]}
                           {:fx/type prop-label
                            :label "Pilot (skill): "
                            :value (cu/display-pilot unit)}
@@ -303,14 +303,14 @@
                            :fill-one :green
                            :fill-two :transparent}
                           {:fx/type draw-pips
-                           :text (str "Heat: " (cu/get-heat unit) "/" 4)
-                           :filled (cu/get-heat unit)
+                           :text (str "Heat: " (:unit/current-heat unit) "/" 4)
+                           :filled (:unit/current-heat unit)
                            :max 4
                            :fill-one :red
                            :fill-two :aliceblue}
                           {:fx/type prop-label
                            :label "Abilities: "
-                           :value (cu/print-abilities unit)}
+                           :value (:abilities unit)}
                           {:fx/type prop-label
                            :label "Criticals: "
                            :value (cu/get-crits unit)}
@@ -333,7 +333,7 @@
 (defn force-block
   [{:keys [fx/context units]}]
   (let [forces (subs/forces context)
-        bf ((:force (first units)) forces)]
+        bf ((:unit/battle-force (first units)) forces)]
     {:fx/type :v-box
      :spacing 5
      :border {:strokes [{:image (battle-force/get-camo bf) :width 5}]}
@@ -391,7 +391,7 @@
 
 (defn move-buttons
   [unit]
-  (let [movement (cu/get-movement-modes unit)
+  (let [movement (:unit/move-modes unit)
         buttons (if (contains? movement :jump)
                   [{:fx/type :button
                     :text "Walk"

@@ -7,7 +7,6 @@
    [megastrike.combat-unit :as cu]
    [megastrike.hexagons.hex :as hex]
    [megastrike.battle-force :as battle-force]
-   [megastrike.mul :as mul]
    [megastrike.utils :as utils]))
 
 (defn initialize-forces
@@ -55,8 +54,8 @@
           [unit pilot pskill gskill direction x y] (str/split data #",")
           loc (if (and x y) (hex/offset->hex (Integer/parseInt (str/trim x)) (Integer/parseInt (str/trim y))) {})
           skill (int (math/floor (/ (+ (Integer/parseInt pskill) (Integer/parseInt gskill)) 2)))
-          mul (mul/get-unit unit)]
-      (cu/->element units mul {:name pilot :skill skill} (if direction (utils/keyword-maker direction) :n) loc (utils/keyword-maker faction)))
+          mul (cu/get-unit unit)]
+      (cu/->combat-unit units mul {:name pilot :skill skill} (if direction (utils/keyword-maker direction) :n) loc (utils/keyword-maker faction)))
     (:units state)))
 
 (defn set-map-dirs

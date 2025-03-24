@@ -8,10 +8,11 @@
    [clojure.core.cache :as cache]
    [com.brunobonacci.mulog :as mu]
    [megastrike.board :as board]
-   [megastrike.mul :as mul]
+   [megastrike.combat-unit :as cu]
    [megastrike.gui.events :as events]
    [megastrike.gui.views :as views]
-   [megastrike.hexagons.hex :as hex])
+   [megastrike.hexagons.hex :as hex]
+   [megastrike.schemas :as schemas])
   (:import
    (javafx.application Platform)))
 
@@ -22,7 +23,7 @@
 (def *state
   (atom
    (fx/create-context
-    {:mul (mul/filter-units mul/mul :type mul/ground-units)
+    {:mul (cu/filter-units cu/mul :type schemas/ground-units)
      :mul-search-term ""
      :display :lobby
      :title "Megastrike"

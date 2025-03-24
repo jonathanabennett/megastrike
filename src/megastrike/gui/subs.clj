@@ -4,7 +4,7 @@
    [clojure.string :as str]
    [megastrike.battle-force :as battle-force]
    [megastrike.board :as board]
-   [megastrike.combat-unit :as cu]))
+   [megastrike.movement :as movement]))
 
 (defn title-string
   [context]
@@ -33,7 +33,7 @@
 
 (defn deployed-units
   [context]
-  (filter cu/deployed? (vals (units context))))
+  (filter movement/deployed? (vals (units context))))
 
 (defn forces
   [context]
@@ -57,11 +57,11 @@
 
 (defn current-forces
   [context]
-  (filter #(= (cu/get-force %) (first (turn-order context))) (vals (units context))))
+  (filter #(= (:unit/battle-force %) (first (turn-order context))) (vals (units context))))
 
 (defn units-by-force
   [context]
-  (group-by cu/get-force (vals (units context))))
+  (group-by :unit/battle-force (vals (units context))))
 
 (defn layout
   [context]

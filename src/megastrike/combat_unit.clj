@@ -1,15 +1,17 @@
 (ns megastrike.combat-unit
   (:require
+   [clojure-csv.core :as csv]
    [clojure.math :as math]
-   [clojure.string :as str]
+   [clojure.spec.alpha :as s]
+   [clojure.string :as string]
    [com.brunobonacci.mulog :as mu]
+   [megastrike.abilities :as abilities]
    [megastrike.attacks :as attacks]
    [megastrike.board :as board]
    [megastrike.damage :as damage]
    [megastrike.heat :as heat]
    [megastrike.hexagons.hex :as hex]
    [megastrike.movement :as movement]
-   [megastrike.mul :as mul]
    [megastrike.pilot :as pilot]
    [megastrike.utils :as utils]))
 
@@ -33,54 +35,19 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MUL/Core
 
-(defn id
-  [unit]
-  (:id unit))
-
-(defn take-action
-  [unit]
-  (assoc unit :acted true))
-
-(defn acted?
-  [unit]
-  (get unit :acted false))
-
-(defn get-force
-  [unit]
-  (get unit :force))
-
 (defn pv-mod
   "Calculates the skill-based mod for PV based on the algorithm provided in the book."
-  [{:keys [pilot point-value]}]
+  [{:keys [unit/pilot unit/base-pv]}]
   (let [skill-diff (- 4 (pilot/skill pilot))]
     (cond
-      (> 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- point-value 5) 10)))
-      (< 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- point-value 3) 5)))
+      (> 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- base-pv 5) 10)))
+      (< 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- base-pv 3) 5)))
       :else 0)))
 
 (defn pv
   "Returns the modified PV."
-  [{:keys [point-value] :as unit}]
-  (+ point-value (pv-mod unit)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; HEAT
-
-(defn get-heat
-  [{:keys [heat]}]
-  (heat/current heat))
-
-(defn shutdown?
-  [{:keys [heat]}]
-  (heat/shutdown? heat))
-
-(defn high-heat?
-  [unit]
-  (>= (get-heat unit) 2))
-
-(defn overheat
-  [{:keys [heat]}]
-  (heat/overheat heat))
+  [{:keys [unit/base-pv] :as unit}]
+  (+ base-pv (pv-mod unit)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; PILOT
@@ -98,148 +65,33 @@
   [{:keys [pilot]}]
   (pilot/skill pilot))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; MOVEMENT
-
-(defn change-movement
-  "Convenience access method for changing the movement object of a unit."
-  [unit new-movement]
-  (assoc unit :movement new-movement))
-
-;;;;;;;;;;;;;;;
-;; Printing and value accessing
-
-(defn print-movement
-  "Print out all the movements a unit has in a pretty-printed format."
-  [{:keys [movement heat]}]
-  (movement/print-movement movement (heat/current heat)))
-
-(defn tmm
-  "Accessor for the TMM method in the movement object."
-  [{:keys [movement] :as unit}]
-  (movement/get-tmm movement (high-heat? unit)))
-
-(defn get-mv
-  "Calculates the available mv based on heat and mv-hits."
-  [{:keys [movement] :as unit} mv-type]
-  (if mv-type
-    (movement/get-mv movement (get-heat unit) mv-type)
-    (movement/get-mv movement (get-heat unit))))
-
-;;;;;;;;;;;;;;;
-;; Location Methods
-
-(defn undeploy
-  "Undeploy a unit by removing its location."
-  [{:keys [movement] :as unit}]
-  (change-movement unit (movement/set-location movement {})))
-
-(defn deployed?
-  "Checks if a unit has a location."
-  [{:keys [movement]}]
-  (movement/deployed? movement))
-
-(defn set-location
-  [{:keys [movement] :as unit} hex]
-  (let [new-movement (movement/set-location movement hex)]
-    (change-movement unit new-movement)))
-
-(defn get-location
-  ([{:keys [movement]}]
-   (movement/get-location movement))
-  ([{:keys [movement] :as unit} _]
-   (let [path (movement/get-path movement)]
-     (if (< 0 (count path))
-       (last path)
-       (get-location unit)))))
-
-;;;;;;;;;;;;;;;;;;
-;; Facing Methods
-
-(defn set-facing
-  [{:keys [movement] :as unit} facing]
-  (let [new-movement (movement/set-facing movement facing)]
-    (change-movement unit new-movement)))
-
-(defn get-facing
-  [{:keys [movement]}]
-  (movement/get-facing movement))
-
-;;;;;;;;;;;;;;;;;;
-;; Path Methods
-
 (defn set-stacking
   "Mark all units on the board."
   [board units]
-  (let [b (board/set-stacking board (for [u units] [(get-location u) (get-force u)]))]
+  (let [b (board/set-stacking board (for [u units] [(:unit/location u) (:unit/battle-force u)]))]
     (prn (map :stacking b))
     b))
 
-(defn get-path
-  [{:keys [movement]}]
-  (if movement (movement/get-path movement) false))
-
 (defn set-path
   ([unit hex board units]
-   (change-movement unit (movement/set-path (:movement unit) (get-heat unit) (get-force unit) hex (set-stacking board (vals units)))))
+   (movement/set-path unit hex (set-stacking board (vals units))))
   ([unit path]
-   (change-movement unit (movement/set-path (:movement unit) path))))
-
-;;;;;;;;;;;;;;;;;;
-;; Movement Mode Methods
-
-(defn set-movement-mode
-  [{:keys [movement] :as unit} mode]
-  (change-movement unit (movement/set-selected movement mode)))
-
-(defn get-movement-modes
-  [{:keys [movement]}]
-  (if movement (movement/get-modes movement) []))
-
-(defn clear-movement-mode
-  [{:keys [movement] :as unit}]
-  (change-movement unit (movement/clear-selected movement)))
-
-(defn get-selected-movement
-  [{:keys [movement]} default?]
-  (movement/get-selected movement default?))
-
-;;;;;;;;;;;;;;;;;;;
-;; Movement and MV Hits
-
-(defn take-mv-hits
-  [{:keys [movement] :as unit} hits]
-  (loop [unit unit
-         n 0]
-    (if (= n hits)
-      unit
-      (recur (change-movement unit (movement/take-hit movement))
-             (inc n)))))
-
-(defn get-movement-cost
-  [{:keys [movement] :as unit}]
-  (movement/move-cost movement (get-force unit)))
+   (assoc unit :unit/path path)))
 
 (defn move-unit
-  [{:keys [movement heat] :as unit}]
-  (let [current (heat/current heat)]
-    (if (movement/can-move? movement (movement/get-path movement) current (get-force unit))
-      (-> unit
-          (take-action)
-          (change-movement (movement/move-unit movement current (get-force unit))))
-      unit)))
+  [unit]
+  (if (movement/can-move? unit (:unit/path unit))
+    (-> unit
+        (assoc :unit/acted? true)
+        (movement/move-unit))
+    unit))
 
 (defn cancel-movement
-  [{:keys [movement] :as unit}]
-  (let [new-movement (movement/cancel-movement movement)]
-    (change-movement unit new-movement)))
+  [unit]
+  (movement/cancel-move unit))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ATTACK ACCESS
-
-(defn get-size
-  [{:keys [attacks]}]
-  (attacks/get-size attacks))
 
 (defn print-damage
   [{:keys [attacks]} bracket]
@@ -297,40 +149,142 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; ABILITIES
 
-(defn print-abilities
-  [unit]
-  (mul/print-abilities unit))
+(defn- move-keyword
+  "Creates a move keyword from a stat line imported from the mul export."
+  [mv-type]
+  (let [mv-key (utils/keyword-maker mv-type)]
+    (cond
+      (= mv-key (utils/keyword-maker "")) :move/walk
+      (= mv-key (utils/keyword-maker "j")) :move/jump
+      :else (keyword "move" (-> mv-type
+                                (string/trim)
+                                (string/lower-case)
+                                (utils/remove-parens)
+                                (utils/correct-range-brackets)
+                                (utils/replace-spaces))))))
 
-(defn ->element
-  ([units mul-unit pilot facing location battle-force]
-   (let [matching-units (filter (fn [x] (when (and (:id x) (:full-name mul-unit))
-                                          (str/includes? (:id x) (:full-name mul-unit)))) (vals units))
-         id (if (seq matching-units)
-              (str (:full-name mul-unit) " #" (inc (count matching-units)))
-              (str (:full-name mul-unit)))
-         unit (-> mul-unit
-                  (assoc :id id)
-                  (assoc :force battle-force)
-                  (assoc :attacked? false)
-                  (assoc :pilot (pilot/->pilot pilot))
-                  (set-facing facing)
-                  (set-location location))]
-     (mu/log ::element-created
-             :element unit)
-     (merge units {id unit})))
-  ([units mul-unit pilot battle-force]
-   (let [matching-units (filter (fn [x] (when (and (:id x) (:full-name mul-unit))
-                                          (str/includes? (:id x) (:full-name mul-unit)))) (vals units))
-         id (if (seq matching-units)
-              (str (:full-name mul-unit) " #" (inc (count matching-units)))
-              (str (:full-name mul-unit)))
-         unit (-> mul-unit
-                  (assoc :id id)
-                  (assoc :force battle-force)
-                  (assoc :pilot (pilot/->pilot pilot)))]
-     (mu/log ::element-created
-             :element unit)
-     (merge units {id unit}))))
+(defn parse-movement
+  "Parses a string like 8\"/5\"j into a map of all the possible movement modes the unit has and their distance in hexes."
+  [mv-string]
+  (let [strings (re-seq #"(\d+)\\+\"([a-zA-Z]?)" mv-string)
+        mv-map (into {} (map #(vector (move-keyword (nth % 2)) (/ (Integer/parseInt (second %)) 2)) strings))]
+    (if (and (= (count mv-map) 1) (= (key (first mv-map)) :move/jump))
+      (merge mv-map {:move/walk (val (first mv-map))})
+      mv-map)))
+
+(def header-row
+  "Defines the header row which will serve as the keys for the creation of combat units."
+  (map #(keyword (utils/keyword-maker %))
+       (first (csv/parse-csv (slurp (utils/load-resource :resources "mul.csv")) :delimiter \tab))))
+
+(defn parse-row
+  "Parses a single row of the MUL file."
+  ([row]
+   (parse-row header-row row))
+  ([hr row]
+   (let [mul-row (zipmap hr row)
+         modes (parse-movement (:movement mul-row))
+         abilities (abilities/parse-abilities (:abilities mul-row))]
+     (s/assert :unit/mul
+               {:unit/chassis (:chassis mul-row)
+                :unit/model (:model mul-row)
+                :unit/role (keyword "role" (utils/keyword-maker (:role mul-row)))
+                :unit/type (keyword "type" (utils/keyword-maker (:type mul-row)))
+                :unit/threshold (Integer/parseInt (:threshold mul-row))
+                :unit/full-name (str (:chassis mul-row) " " (:model mul-row))
+                :unit/mul-id (Integer/parseInt (:mul-id mul-row))
+                :unit/size (Integer/parseInt (:size mul-row))
+                :unit/move-modes modes
+                :unit/structure {:toughness/current (Integer/parseInt (:armor mul-row))
+                                 :toughness/maximum (Integer/parseInt (:armor mul-row))
+                                 :toughness/unapplied 0}
+                :unit/armor {:toughness/current (Integer/parseInt (:armor mul-row))
+                             :toughness/maximum (Integer/parseInt (:armor mul-row))
+                             :toughness/unapplied 0}
+                :unit/tmm (Integer/parseInt (:tmm mul-row))
+                :unit/attacks (attacks/->attacks mul-row)
+                :unit/damage (damage/->damage mul-row)
+                :unit/overheat (Integer/parseInt (:overheat mul-row))
+                :unit/abilities abilities
+                :unit/base-pv (Integer/parseInt (:point-value mul-row))}))))
+
+(def mul
+  (map parse-row (rest (csv/parse-csv (slurp (utils/load-resource :resources "mul.csv")) :delimiter \tab))))
+
+(defn parse-mechset-line
+  "Parses a single line from a mechset file. Mechset files define which images match which units."
+  [line]
+  (when-not (or (= (string/index-of line "#") 0)
+                (= line "")
+                (= (string/index-of line "include") 0))
+    (let [first-break (string/index-of line " ")
+          second-break (string/index-of line "\" " (inc first-break))
+          mechset-type (string/trim (subs line 0 first-break))
+          search-term (string/trim (utils/strip-quotes (subs line first-break second-break)))
+          file-path (string/trim (utils/strip-quotes (subs line second-break)))]
+      (vector mechset-type search-term file-path))))
+
+(defn parse-mechset
+  "Parses a full Mechset file."
+  []
+  (into [] (remove
+            nil?
+            (map #(parse-mechset-line %)
+                 (string/split-lines (slurp (utils/load-resource :data "images/units/mechset.txt")))))))
+
+(def mechset (parse-mechset))
+
+(defn find-sprite
+  "Searches a the mechset to determine which images to use and returns the path to that image."
+  [{:keys [unit/chassis unit/full-name] :as unit}]
+  (let [chassis-match (filter (fn [row] (= (second row) chassis)) mechset)
+        exact-match (filter (fn [row] (string/includes? (second row) full-name)) mechset)
+        match-row (or (first exact-match) (first chassis-match))]
+    (utils/load-resource :data (str "images/units/" (nth match-row 2)))))
+
+(defn ->combat-unit
+  ([mul-unit pilot facing location battle-force number]
+   (s/assert :unit/combat-unit
+             (merge mul-unit
+                    {:unit/id (if (pos? number)
+                                (str (:unit/full-name mul-unit) " #" (inc number))
+                                (:full-name mul-unit))
+                     :unit/battle-force battle-force
+                     :unit/pilot pilot
+                     :unit/facing facing
+                     :unit/location location
+                     :unit/criticals {:crits/taken [] :crits/unapplied []}
+                     :unit/selected nil
+                     :unit/default (if (contains? (:unit/move-modes mul-unit) :move/walk) :move/walk (first (keys (:unit/move-modes mul-unit))))
+                     :unit/sprite (find-sprite mul-unit)})))
+  ([{:keys [units mul-unit pilot battle-force facing location] :or {facing :direction/none location {}}}]
+   (->combat-unit mul-unit pilot battle-force facing location (count (filter #(= (:unit/full-name %) (:unit/full-name mul-unit)) units)))))
+
+(defn filter-membership-helper
+  "Returns true if a unit matches one of the types."
+  ([unit]
+   unit)
+  ([unit field values]
+   (some #(= (field unit) %) values)))
+
+(defn filter-units
+  "Filters units based on either a string or a seq of unit type."
+  ([units]
+   units)
+  ([units field value comparison]
+   (filter #(when (comparison (field %) value) %) units))
+  ([units field values]
+   (filter #(filter-membership-helper % field values) units)))
+
+(defn get-unit
+  ([s]
+   (let [non-standard (string/replace s #"\(Standard\)" "")
+         matching-muls (filter-units mul :unit/full-name s =)
+
+         non-standard-mul (filter-units mul :unit/full-name non-standard =)]
+     (if (first matching-muls)
+       (first matching-muls)
+       (first non-standard-mul)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MAKE ATTACKS
@@ -349,10 +303,10 @@
 
 (defn woods-mod
   [line]
-  (let [woods (count (filter #(str/includes? (:terrain %) "woods") (rest line)))]
+  (let [woods (count (filter #(string/includes? (:terrain %) "woods") (rest line)))]
     (cond
       (>= woods 3) (->targeting-mod "Line of Sight blocked by woods" ##Inf)
-      (str/includes? (:terrain (last line)) "woods") (->targeting-mod "Target in woods" 1)
+      (string/includes? (:terrain (last line)) "woods") (->targeting-mod "Target in woods" 1)
       (pos? woods) (->targeting-mod "Intervening woods" 1)
       :else (->targeting-mod "No intervening woods" 0))))
 
@@ -417,20 +371,20 @@
 
 (defn amm
   [unit]
-  (condp = (get-selected-movement unit true)
-    :immobile (->targeting-mod "Attack immobile" -1)
-    :stand-still (->targeting-mod "Attack stood still" -1)
-    :jump (->targeting-mod "Attack stood still" 2)
-    (->targeting-mod "Attack stood still" 0)))
+  (condp = (movement/selected-or-default unit)
+    :immobile (->targeting-mod "Attacker immobile" -1)
+    :stand-still (->targeting-mod "Attacker stood still" -1)
+    :jump (->targeting-mod "Attacker stood still" 2)
+    (->targeting-mod "Attacker moved" 0)))
 
 (defn targeting-tmm
   [unit]
-  (->targeting-mod "Target movement" (movement/get-tmm-data (:movement unit) (:abilities unit) (high-heat? unit))))
+  (->targeting-mod "Target movement" (movement/modified-tmm unit)))
 
 (defn ->targeting
   ([{:keys [attacks] :as attacker} target board layout attack]
-   (let [atk-hex (board/find-hex (get-location attacker true) board)
-         tgt-hex (board/find-hex (get-location target) board)
+   (let [atk-hex (board/find-hex (or (last (:unit/path attacker)) (:unit/location attacker)) board)
+         tgt-hex (board/find-hex (:unit/location target) board)
          line (board/line atk-hex tgt-hex board)
          range (hex/distance atk-hex tgt-hex)
          attack-data (conj []
@@ -439,7 +393,7 @@
                            (amm attacker)
                            (targeting-tmm target)
                            (when (not (some attack #{:physical :charge :dfa}))
-                             (->targeting-mod "Attacker heat" (get-heat attacker)))
+                             (->targeting-mod "Attacker heat" (:unit/current-heat attacker)))
                            (when (height-checker attacker target line)
                              (->targeting-mod "Line of sight blocked" ##Inf))
                            (woods-mod line)
@@ -450,7 +404,7 @@
                     :attack attack
                     :attack-data attack-data
                     :range range
-                    :rear-attack? (is-behind? (get-location target) (get-location attacker) (movement/get-rear (:movement target)) layout)
+                    :rear-attack? (is-behind? (:unit/location target) (or (last (:unit/path attacker)) (:unit/location attacker)) (movement/rear target) layout)
                     :damage damage}]
      [attack targeting]))
   ([{:keys [atk-type] :as attacker} target board layout]
@@ -476,8 +430,8 @@
      (let [to-hit (calculate-to-hit attack-roll)
            to-hit-str (str "To Hit: " to-hit " (" (get utils/probabilities to-hit) "%)")]
        (if detailed?
-         (str/trim (str to-hit-str ": " (reduce str (map attack-roll-parser attack-data))))
-         (str/trim to-hit-str))))))
+         (string/trim (str to-hit-str ": " (reduce str (map attack-roll-parser attack-data))))
+         (string/trim to-hit-str))))))
 
 (defn attack-confirmation-choices
   [{:keys [attacks] :as attacker} target board layout]
@@ -486,14 +440,13 @@
 (defn set-attacked
   [unit]
   (-> unit
-      (take-action)
-      (assoc :attacked? true)
+      (assoc :unit/acted? true)
       (assoc :targeting false)))
 
 (defn declare-special-attack
   [unit targeting]
   (-> unit
-      (assoc :target (id (:target targeting)))
+      (assoc :target (:unit/id (:target targeting)))
       (assoc :atk-type (:attack targeting))
       (move-unit)))
 
@@ -501,19 +454,19 @@
   [{:keys [attacker target rear-attack?] :as targeting} to-hit]
   (let [hit? (<= (calculate-to-hit targeting) to-hit)
         attacker (set-attacked attacker)
-        attacker-tmm (movement/get-tmm-data (:movement attacker) (:abilities attacker) (high-heat? attacker))
-        attacker-damage (attacks/roll-damage (:attacks attacker) (if hit? :self-dfa :missed-dfa) attacker-tmm (get-size target) rear-attack?)
-        target-damage (attacks/roll-damage (:attacks attacker) :dfa attacker-tmm (get-size target) rear-attack?)
+        attacker-tmm (movement/modified-tmm attacker)
+        attacker-damage (attacks/roll-damage (:attacks attacker) (if hit? :self-dfa :missed-dfa) attacker-tmm (:unit/size attacker) rear-attack?)
+        target-damage (attacks/roll-damage (:attacks attacker) :dfa attacker-tmm (:unit/size target) rear-attack?)
         result {(:id attacker) (take-damage attacker attacker-damage false)
                 (:id target) (if hit? (take-damage target target-damage (= to-hit 12)) target)}]
     (mu/log ::dfa-attack
             :hit? hit?
             :targeting-data targeting
             :to-hit to-hit
-            :attacker (:id attacker)
+            :attacker (:unit/id attacker)
             :attacker-damage attacker-damage
             :target-damage target-damage
-            :target (:id target)
+            :target (:unit/id target)
             :result result)
     {:targeting-data targeting
      :to-hit to-hit
@@ -527,19 +480,19 @@
   [{:keys [attacker target rear-attack?] :as targeting} to-hit]
   (let [hit? (<= (calculate-to-hit targeting) to-hit)
         attacker (set-attacked attacker)
-        attacker-tmm (movement/get-tmm-data (:movement attacker) (:abilities attacker) (high-heat? attacker))
-        attacker-damage (attacks/roll-damage (:attacks attacker) :self-charge attacker-tmm (get-size target) rear-attack?)
-        target-damage (attacks/roll-damage (:attacks attacker) :charge attacker-tmm (get-size target) rear-attack?)
+        attacker-tmm (movement/modified-tmm attacker)
+        attacker-damage (attacks/roll-damage (:attacks attacker) :self-charge attacker-tmm (:unit/size target) rear-attack?)
+        target-damage (attacks/roll-damage (:attacks attacker) :charge attacker-tmm (:unit/size target) rear-attack?)
         result {(:id attacker) (if hit? (take-damage attacker attacker-damage false) attacker)
                 (:id target) (if hit? (take-damage target target-damage (= to-hit 12)) target)}]
     (mu/log ::charge-attack
             :hit? hit?
             :targeting-data targeting
             :to-hit to-hit
-            :attacker (:id attacker)
+            :attacker (:unit/id attacker)
             :attacker-damage attacker-damage
             :target-damage target-damage
-            :target (:id target)
+            :target (:unit/id target)
             :result result)
     {:targeting-data targeting
      :to-hit to-hit
@@ -550,24 +503,24 @@
      :result result}))
 
 (defn basic-attack
-  [{:keys [attacker target attack range rear-attack?] :as atk-data} to-hit]
-  (let [damage (attacks/roll-damage (:attacks attacker) attack range rear-attack?)
-        result {(:id attacker) (set-attacked attacker)
-                (:id target) (if (<= (calculate-to-hit atk-data) to-hit)
-                               (take-damage target damage (= to-hit 12))
-                               target)}]
+  [{:keys [attacker target attack distance rear-attack?] :as atk-data} to-hit]
+  (let [damage (attacks/roll-damage (:attacks attacker) attack distance rear-attack?)
+        result {(:unit/id attacker) (set-attacked attacker)
+                (:unit/id target) (if (<= (calculate-to-hit atk-data) to-hit)
+                                    (take-damage target damage (= to-hit 12))
+                                    target)}]
     {:targeting-data atk-data
      :to-hit to-hit
      :target-damage damage
      :result result}))
 
 (defn heat-attack
-  [{:keys [attacker target attack range rear-attack?] :as atk-data} to-hit]
-  (let [damage (attacks/roll-damage (:attacks attacker) attack range rear-attack?)
-        result {(:id attacker) (set-attacked attacker)
-                (:id target) (if (<= (calculate-to-hit atk-data) to-hit)
-                               (assoc target :damage (damage/heat-damage target damage))
-                               target)}]
+  [{:keys [attacker target attack distance rear-attack?] :as atk-data} to-hit]
+  (let [damage (attacks/roll-damage (:attacks attacker) attack distance rear-attack?)
+        result {(:unit/id attacker) (set-attacked attacker)
+                (:unit/id target) (if (<= (calculate-to-hit atk-data) to-hit)
+                                    (assoc target :damage (damage/heat-damage target damage))
+                                    target)}]
     {:targeting-data atk-data
      :to-hit to-hit
      :target-damage damage
@@ -587,8 +540,8 @@
 
 (defn can-charge?
   "You can charge a unit if they have acted, you have moved, and they are adjacent to you."
-  [{:keys [movement]} target]
-  (and (acted? target) (pos? (count (movement/get-path movement))) (= (hex/distance (last (movement/get-path movement)) (get-location target)) 1)))
+  [attacker target]
+  (and (:unit/acted? target) (pos? (count (:unit/path attacker))) (= (hex/distance (last (:unit/path attacker)) (:unit/location target)) 1)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; End of Phase and end of turn functions
@@ -604,24 +557,20 @@
 (defn end-phase-heat
   [unit heat overheat-used water? acted? external-heat]
   (assoc unit :heat (heat/end-phase-heat heat overheat-used water? acted? external-heat)))
-
+;; (count (filter #(= :fire-control %) new-crits))
 (defn end-turn
   "Updates damage, applies weapons crits, resets acted, and then returns the unit IF they
   are not destroyed."
   [{:keys [damage heat] :as unit}]
   (let [new-crits (damage/get-new-crits damage)
         weapon-count (count (filter #(= :weapon %) new-crits))
-        fc-count (count (filter #(= :fire-control %) new-crits))
-        mv-count (count (filter #(= :mv %) new-crits))
         engine-crits (count (filter #(= :engine %) new-crits))
         external-heat (+ engine-crits (damage/get-heat damage))
         new-unit (-> unit
-                     (clear-movement-mode)
+                     (assoc :unit/selected nil)
                      (apply-damage)
                      (take-weapon-hits weapon-count)
-                     (take-fc-hits fc-count)
-                     (take-mv-hits mv-count)
                      (end-phase-heat heat 0 false (attacked? unit) external-heat)
                      (clear-attacked))]
     (when-not (damage/destroyed? (:damage new-unit))
-      {(:id new-unit) new-unit})))
+      {(:unit/id new-unit) new-unit})))

@@ -4,6 +4,7 @@
    [com.brunobonacci.mulog :as mu]
    [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
+   [megastrike.movement :as movement]
    [megastrike.utils :as utils]))
 
 (defn roll-initiative
@@ -35,7 +36,7 @@
   ([forces units]
    (let [forces (sort-by :initiative (vals forces))]
      (loop [turn-order []
-            unit-totals (frequencies (map cu/get-force units))]
+            unit-totals (frequencies (map :unit/battle-force units))]
        (if (= (reduce + (vals unit-totals)) 0)
          (flatten turn-order)
          (let [unit-pairs (move-generator unit-totals forces)]
@@ -68,7 +69,7 @@
 (defn start-deployment-phase
   "Generates the turn order based on the number of units who haven't been deployed yet."
   [{:keys [forces units round-report] :as game-state}]
-  (let [deployable-units (remove (fn [unit] (cu/deployed? unit)) (vals units))
+  (let [deployable-units (remove (fn [unit] (movement/deployed? unit)) (vals units))
         turn-order (generate-turn-order forces deployable-units)
         round-string (str "Deployment Phase\n" "Deployment order: " (reduce str (map #(str % ", ") turn-order)) "\n\n----------\n")
         report (str round-report round-string)]

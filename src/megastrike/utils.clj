@@ -39,13 +39,13 @@
   (string/replace str #"[\(\)]" ""))
 
 (defn keyword-maker
-  "Take a string with spaces, strips them out, and turns it into a keyword"
-  [str]
-  (let [ret (keyword (string/lower-case
-                      (remove-parens
-                       (correct-range-brackets
-                        (replace-spaces (string/trim str))))))]
-    (if (= ret (keyword ""))
+  "Take a string with spaces, strips them out, and turns it into a string suitable for keywording"
+  [s]
+  (let [ret (string/lower-case
+             (remove-parens
+              (correct-range-brackets
+               (replace-spaces (string/trim s)))))]
+    (if (= ret "")
       nil
       ret)))
 

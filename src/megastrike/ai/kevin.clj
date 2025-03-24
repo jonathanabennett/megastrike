@@ -20,7 +20,7 @@
         expected-damage (/ (* probability damage-num) 100.0)]
     (mu/log ::targeting-info
             :targeting targeting)
-    [(cu/id target)
+    [(:unit/acted? target)
      {:firing-solution targeting
       :toughness toughness
       :expected-damage expected-damage
@@ -52,13 +52,13 @@
   [path unit units board layout mv-type]
   (let [temp-unit (-> unit
                       (cu/set-path (second path))
-                      (cu/set-movement-mode mv-type)
+                      (assoc :unit/selected mv-type)
                       (cu/move-unit))
         cost (reduce + (board/path-cost (second path) mv-type units))
         move-option {:destination (first path)
                      :path (second path)
                      :cost (reduce + (board/path-cost (second path) mv-type units))}]
-    (if (<= cost (cu/get-mv unit mv-type))
+    (if (<= cost (movement/available-mv unit mv-type))
       [move-option (- (calculate-offensive-value temp-unit units board layout) (calculate-defensive-value temp-unit units board layout))]
       [move-option ##-Inf])))
 
@@ -69,13 +69,13 @@
 
 (defn move-options
   [unit units board layout]
-  (let [mv-type (cu/get-selected-movement unit true)
-        unit-loc (board/find-hex (cu/get-location unit) board)
+  (let [mv-type (movement/selected-or-default unit)
+        unit-loc (board/find-hex (:unit/location unit) board)
         updated-board (cu/set-stacking board units)
-        hostiles (filter #(not= (cu/get-force %) (cu/get-force unit)) units)
+        hostiles (filter #(not= (:unit/battle-force %) (:unit/battle-force unit)) units)
         paths (into (priority-map/priority-map-by >)
                     (map #(create-movement-option % unit hostiles updated-board layout mv-type)
-                         (movement/astar unit-loc false updated-board zero-weight mv-type (cu/get-force unit))))]
+                         (movement/astar unit-loc false updated-board zero-weight mv-type (:unit/battle-force unit))))]
     (first (rand-nth (take 5 paths)))))
 
 (defn naive-target-selection

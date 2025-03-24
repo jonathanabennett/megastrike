@@ -10,7 +10,6 @@
    [megastrike.gui.events :as e]
    [megastrike.gui.subs :as subs]
    [megastrike.movement :as movement]
-   [megastrike.mul :as mul]
    [megastrike.phases :as phases]
    [megastrike.scenario :as scenario]
    [megastrike.utils :as utils])
@@ -50,7 +49,7 @@
 
 (defmethod e/event-handler ::filter-changed
   [{:keys [fx/context field values]}]
-  {:context (fx/swap-context context assoc :mul (mul/filter-units mul/mul field values))})
+  {:context (fx/swap-context context assoc :mul (cu/filter-units cu/mul field values))})
 
 (defmethod e/event-handler ::launch-game
   [{:keys [fx/context]}]
@@ -70,12 +69,12 @@
                                response)
      :dispatch {:event-type ::e/open-round-dialog}}))
 
-(defmethod e/event-handler ::load-save
-  [{:keys [fx/context]}]
-  (let [save-data (edn/read-string
-                   {:readers {'megastrike.movement.MechMovement movement/map->MechMovement
-                              'megastrike.battle_force.BattleForce battle-force/map->BattleForce}} (slurp (utils/load-resource :data "save.edn")))]
-    {:context (fx/swap-context context merge save-data)}))
+; (defmethod e/event-handler ::load-save
+;   [{:keys [fx/context]}]
+;   (let [save-data (edn/read-string
+;                    {:readers {'megastrike.movement.MechMovement movement/map->MechMovement
+;                               'megastrike.battle_force.BattleForce battle-force/map->BattleForce}} (slurp (utils/load-resource :data "save.edn")))]
+;     {:context (fx/swap-context context merge save-data)}))
 
 (defmethod e/event-handler ::change-player
   [{:keys [fx/context fx/event]}]
@@ -104,13 +103,13 @@
         pilot {:name (fx/sub-val context :pilot-name)
                :skill (Integer/parseInt (fx/sub-val context :pilot-skill))}
         battle-force (fx/sub-val context :active-force)]
-    {:context (fx/swap-context context assoc :units (cu/->element units mul-unit pilot battle-force))
+    {:context (fx/swap-context context assoc :units (cu/->combat-unit {:units units :mul-unit mul-unit :pilot pilot :battle-force battle-force}))
      :dispatch {:event-type ::e/close-dialog :dialog :mul-dialog}}))
 
 (defmethod e/event-handler ::filter-mul
   [{:keys [fx/context field]}]
   (let [term (fx/sub-val context :mul-search-term)]
-    {:context (fx/swap-context context assoc :mul (mul/filter-units mul/mul field term str/includes?))}))
+    {:context (fx/swap-context context assoc :mul (cu/filter-units cu/mul field term str/includes?))}))
 
 (defmethod e/event-handler ::force-selection-changed
   [{:keys [fx/context fx/event]}]

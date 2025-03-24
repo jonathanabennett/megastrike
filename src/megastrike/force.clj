@@ -1,6 +1,4 @@
-(ns megastrike.force
-  (:require
-   [megastrike.utils :as utils]))
+(ns megastrike.force)
 
 (defn ->force
   [fname deployment camo team player]
