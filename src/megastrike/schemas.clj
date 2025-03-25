@@ -40,32 +40,64 @@
 (s/def :move/default (s/nilable keyword?))
 (s/def :unit/location (s/nilable keyword?))
 (s/def :unit/path (s/nilable vector?))
-(s/def :unit/facing #{:direction/n :direction/ne :direction/se :direction/s :direction/sw :direction/nw :direction/none})
+(s/def :unit/facing
+  #{:direction/n :direction/ne :direction/se :direction/s :direction/sw :direction/nw :direction/none})
 
-;; Attack/damage definitions
+;; Abiltiies defintions
+(s/def :ability/output string?)
+(s/def :ability/record (s/keys :req [:ability/output]))
+(s/def :unit/abilities (s/map-of keyword? :ability/record))
+
+;; Abilities Definitions
+
+;Attack/damage definitions
+(s/def :attack/s nat-int?)
+(s/def :attack/s* boolean?)
+(s/def :attack/m nat-int?)
+(s/def :attack/m* boolean?)
+(s/def :attack/l nat-int?)
+(s/def :attack/l* boolean?)
+(s/def :attack/e nat-int?)
+(s/def :attack/e* boolean?)
+(s/def :attack/damage nat-int?)
+(s/def :attack/self boolean?)
+(s/def :attack/type
+  #{:attack/regular :attack/physical :attack/charge :attack/dfa :attack/ht :attack/rear :attack/lrm :attack/srm :attack/ac})
+(s/def :attack/record
+  (s/or :attack/ranged
+        (s/keys :req [:attack/s :attack/s*
+                      :attack/m :attack/m*
+                      :attack/l :attack/l*
+                      :attack/e :attack/e*])
+        :attack/physical
+        (s/keys :req [:attack/damage
+                      :attack/self
+                      :attack/type])))
+(s/def :unit/attacks (s/map-of :attack/type :attack/record))
 (s/def :unit/attacks map?)
-(s/def :toughness/current int?)
-(s/def :toughness/maximum int?)
-(s/def :toughness/unapplied int?)
-(s/def :unit/armor (s/keys :req [:toughness/current
-                                 :toughness/maximum
-                                 :toughness/unapplied]))
-(s/def :unit/structure (s/keys :req [:toughness/current
-                                     :toughness/maximum
-                                     :toughness/unapplied]))
-(s/def :crits/types #{:crits/ammo :crits/engine :crits/fire-control :crits/weapon :crits/mv :crits/destroyed})
-(s/def :crits/taken (s/nilable (s/coll-of :crits/types)))
-(s/def :crits/unapplied (s/nilable (s/coll-of :crits/types)))
-(s/def :unit/criticals (s/keys :req [:crits/taken
-                                     :crits/unapplied]))
+(s/def :toughness/current nat-int?)
+(s/def :toughness/maximum nat-int?)
+(s/def :toughness/unapplied nat-int?)
+(s/def :unit/armor
+  (s/keys :req [:toughness/current
+                :toughness/maximum
+                :toughness/unapplied]))
+(s/def :unit/structure
+  (s/keys :req [:toughness/current
+                :toughness/maximum
+                :toughness/unapplied]))
+(s/def :crits/type
+  #{:crits/ammo :crits/engine :crits/fire-control :crits/weapon :crits/mv :crits/destroyed})
+(s/def :crits/taken (s/nilable (s/coll-of :crits/type)))
+(s/def :crits/unapplied (s/nilable (s/coll-of :crits/type)))
+(s/def :unit/criticals
+  (s/keys :req [:crits/taken
+                :crits/unapplied]))
 
 ;; Heat definitions
 (s/def :unit/current-heat (s/int-in 0 5))
 (s/def :unit/overheat int?)
 (s/def :unit/overheat-used (s/int-in 0 5))
-
-;; Abiltiies defintions
-(s/def :unit/abilities map?)
 
 ;; Combat Unit definitions
 (s/def :unit/battle-force keyword?)

@@ -2,35 +2,14 @@
   "Handles all attack data. Calculates damage numbers, prints damage brackets, calculates to-hit rolls, and produces
   attack options for the GUI to consume."
   (:require
+   [clojure.spec.alpha :as s]
    [clojure.string :as str]
    [megastrike.abilities :as abilities]
    [megastrike.movement :as movement]
    [megastrike.utils :as utils]))
 
-; <<<<<<< Updated upstream
-; =======
-; ; (defprotocol MakesAttacks
-; ;   (size [this])
-; ;   (attacks [this])
-; ;   (add-attack [this new-attack])
-; ;   (get-attack [this atk])
-; ;   (fc-damage [this])
-; ;   (take-fc-damage [this])
-; ;   (take-weaps-hit [this])
-; ;   (generate-firing-solution [this target board layout] [this target board layout attack])
-; ;   (declare-special-attack [this firing-solution])
-; ;   (make-dfa-attack [this to-hit])
-; ;   (make-charge-attack [this to-hit])
-; ;   (make-basic-attack [this firing-solution to-hit])
-; ;   (make-heat-attack [this firing-solution to-hit]))
-;
-; (defn ->targeting-mod
-;   [description value]
-;   [{:desc description :value value}])
-;
-; >>>>>>> Stashed changes
-(defn ->attack
-  [{:keys [kind s s* m m* l l* e e* value self] :or {kind :regular s 0 s* false m 0 m* false l 0 l* false e 0 e* false value 0 self 0}}]
+(defn ->ranged-attack
+  [{:keys [atk-type s s* m m* l l* e e*] :or {atk-type :regular s 0 s* false m 0 m* false l 0 l* false e 0 e* false}}]
   (let [s (if (= (type s) java.lang.String) (Integer/parseInt s) s)
         s* (if (= (type s*) java.lang.String) (= "True" s*) s*)
         m (if (= (type m) java.lang.String) (Integer/parseInt m) m)
@@ -39,44 +18,57 @@
         l* (if (= (type l*) java.lang.String) (= "True" l*) l*)
         e (if (= (type e) java.lang.String) (Integer/parseInt e) e)
         e* (if (= (type e*) java.lang.String) (= "True" e*) e*)]
-    {kind {:s (if (not= value 0) value s) :s* s* :m m :m* m* :l l :l* l* :e e :e* e* :self self}}))
+    {atk-type {:attack/s s :attack/s* s* :attack/m m :attack/m* m* :attack/l l :attack/l* l*
+               :attack/e e :attack/e* e*}}))
 
-(defn add-attack
-  [attacks attack]
-  (merge attacks (->attack attack)))
+(defn ->physical-attack
+  [{:keys [atk-type damage self]}]
+  {atk-type {:attack/damage damage :attack/self self}})
 
 (defn add-special-attacks
-  [attacks unit]
-  (loop [attacks attacks
-         atk-abilities (filter #(some #{:ht :ac :lrm :srm :if} %) unit)]
+  [abilities]
+  (loop [attacks {}
+         atk-abilities (filter #(s/valid? :attack/type (first %)) abilities)]
     (if (empty? atk-abilities)
       attacks
       (recur (let [atk (first atk-abilities)]
-               (add-attack attacks (merge (second atk) {:kind (first atk)})))
+               (merge attacks (->ranged-attack (merge (second atk) {:atk-type (first atk)}))))
              (rest atk-abilities)))))
 
-(defn add-dfa
-  [attacks unit]
-  (if (movement/has-mode? unit :jump)
-    (add-attack attacks {:kind :dfa})
-    attacks))
+(defn calc-self-charge
+  [unit target-size]
+  (int (+ (Math/floor (movement/modified-tmm unit)) (if (>= target-size 3) 1 0))))
+
+(defn calc-self-dfa
+  [u success?]
+  (if success?
+    (:unit/size u)
+    (inc (:unit/size u))))
 
 (defn ->attacks
-  [{:keys [size s s* m m* l l* e e*] :as unit}]
-  {:size (Integer/parseInt size)
-   :attacks (-> {}
-                (add-attack {:kind :regular
-                             :s s :s* s*
-                             :m m :m* m*
-                             :l l :l* l*
-                             :e e :e* e*})
-                (add-attack {:kind :physical
-                             :s (if (abilities/has? (:unit/abilities unit) :mel)
-                                  (inc (Integer/parseInt size))
-                                  (Integer/parseInt size))})
-                (add-attack {:kind :charge})
-                (add-dfa unit)
-                (add-special-attacks unit))})
+  [{:keys [size s s* m m* l l* e e*]} mv-modes abilities]
+  (let [size (Integer/parseInt size)]
+    (cond-> {}
+      true (merge (->ranged-attack {:atk-type :attack/regular
+                                    :s s :s* s*
+                                    :m m :m* m*
+                                    :l l :l* l*
+                                    :e e :e* e*}))
+      true (merge (->physical-attack
+                   {:atk-type :attack/physical
+                    :damage (if (abilities/has? abilities :mel)
+                              (inc size)
+                              size)
+                    :self false}))
+      true (merge (->physical-attack
+                   {:atk-type :attack/charge
+                    :damage 0
+                    :self true}))
+      true (merge (add-special-attacks abilities))
+      (movement/has-mode? mv-modes :jump) (merge (->physical-attack
+                                                  {:atk-type :attack/dfa
+                                                   :damage 0
+                                                   :self true})))))
 
 (defn get-size
   [attacks]
@@ -141,16 +133,6 @@
 (defn calc-dfa-damage
   [attacks tmm]
   (inc (calc-charge-damage attacks tmm)))
-
-(defn calc-self-charge
-  [tmm target-size]
-  (int (+ (Math/floor (/ tmm 2)) (if (>= target-size 3) 1 0))))
-
-(defn calc-self-dfa
-  [attacks atk-type]
-  (condp = atk-type
-    :self-dfa (get-size attacks)
-    :missed-dfa (inc (get-size attacks))))
 
 (defn roll-damage
   ([attacks attack range rear-attack?]

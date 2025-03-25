@@ -2,6 +2,7 @@
   (:require
    [cljfx.api :as fx]
    [clojure.string :as str]
+   [megastrike.abilities :as abilities]
    [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
    [megastrike.gui.events :as events]
@@ -311,7 +312,7 @@
                            :fill-two :aliceblue}
                           {:fx/type prop-label
                            :label "Abilities: "
-                           :value (:abilities unit)}
+                           :value (abilities/print-abilities (:abilities unit))}
                           {:fx/type prop-label
                            :label "Criticals: "
                            :value (cu/get-crits unit)}
