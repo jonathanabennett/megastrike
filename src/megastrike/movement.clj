@@ -14,6 +14,7 @@
    [com.brunobonacci.mulog :as mu]
    [megastrike.abilities :as abilities]
    [megastrike.board :as board]
+   [megastrike.damage :as damage]
    [megastrike.hexagons.hex :as hex]))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
@@ -58,7 +59,7 @@
 (defn available-mv
   ([u mv-type]
    (let [base-move (mv-type (:unit/move-modes u))
-         mv-hits (count (filter #(= :crits/mv (:crits/taken (:unit/criticals %))) u))]
+         mv-hits (damage/crit-count u :crit/mv)]
      (loop [mv base-move
             n 0]
        (if (= n mv-hits)
@@ -152,7 +153,7 @@
   [u]
   (let  [ret (loop [value (:unit/tmm u)
                     n 0]
-               (if (= n (count (filter #(= :crits/mv (:crits/taken (:unit/criticals %))) u)))
+               (if (= n (damage/crit-count u :crit/mv))
                  value
                  (recur (let [new-tmm (math/round (/ value 2.0))]
                           (if (>= (- value new-tmm) 1) new-tmm 0))

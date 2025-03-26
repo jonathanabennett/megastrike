@@ -6,7 +6,8 @@
    [clojure.string :as str]
    [megastrike.abilities :as abilities]
    [megastrike.movement :as movement]
-   [megastrike.utils :as utils]))
+   [megastrike.utils :as utils]
+   [megastrike.damage :as damage]))
 
 (defn ->ranged-attack
   [{:keys [atk-type s s* m m* l l* e e*] :or {atk-type :regular s 0 s* false m 0 m* false l 0 l* false e 0 e* false}}]
@@ -70,42 +71,26 @@
                                                    :damage 0
                                                    :self true})))))
 
-(defn get-size
-  [attacks]
-  (:size attacks))
-
 (defn get-attack
-  [attacks attack]
-  (get-in attacks [:attacks attack]))
-
-(defn get-attacks
-  [attacks]
-  (:attacks attacks))
-
-(defn take-fc-hit
-  [attacks]
-  (assoc attacks :fc-mod (+ (:fc-mod attacks) 2)))
-
-(defn fc-hits
-  [{:keys [fc-mod]}]
-  fc-mod)
+  [unit attack]
+  (get-in unit [:unit/attacks attack]))
 
 (defn print-damage-bracket
-  [attack bracket]
+  [unit attack bracket]
   (let [bracket* (keyword (str (name bracket) "*"))]
     (if (get attack bracket*)
       "0*"
-      (str (get attack bracket)))))
+      (str (- (get attack bracket) (damage/crit-count unit :crits/weapon))))))
 
 (defn print-damage
-  [attacks attack range]
+  [unit attacks attack range]
   (let [atk (get-attack attacks attack)]
     (cond
-      (and (= range 1) (or (= attack :physical) (= attack :charge) (= attack :dfa))) (print-damage-bracket atk :s)
-      (<= range 3) (print-damage-bracket atk :s)
-      (<= range 12) (print-damage-bracket atk :m)
-      (<= range 21) (print-damage-bracket atk :l)
-      (<= range 30) (print-damage-bracket atk :e)
+      (and (= range 1) (or (= attack :attacks/physical) (= attack :attacks/charge) (= attack :attacks/dfa))) (print-damage-bracket unit atk :attacks/s)
+      (<= range 3) (print-damage-bracket unit atk :attacks/s)
+      (<= range 12) (print-damage-bracket unit atk :attacks/m)
+      (<= range 21) (print-damage-bracket unit atk :attacks/l)
+      (<= range 30) (print-damage-bracket unit atk :attacks/e)
       :else 0)))
 
 (defn weaps-hit-helper
@@ -127,12 +112,12 @@
   (into {} (for [[k v] attacks] (weaps-hit-helper k v))))
 
 (defn calc-charge-damage
-  [{:keys [size]} tmm]
+  [{:keys [unit/size]} tmm]
   (int (Math/floor (+ size (double (/ tmm 2))))))
 
 (defn calc-dfa-damage
-  [attacks tmm]
-  (inc (calc-charge-damage attacks tmm)))
+  [unit tmm]
+  (inc (calc-charge-damage unit tmm)))
 
 (defn roll-damage
   ([attacks attack range rear-attack?]

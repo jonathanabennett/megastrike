@@ -63,15 +63,6 @@
   [{:keys [attacks]} bracket]
   (attacks/print-damage-bracket (attacks/get-attack attacks :regular) bracket))
 
-(defn take-weapon-hits
-  [{:keys [attacks] :as unit} hits]
-  (loop [unit unit
-         n 0]
-    (if (= n hits)
-      unit
-      (recur (assoc unit :attacks (attacks/take-weaps-hit attacks))
-             (inc n)))))
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Damage Access
 
@@ -346,7 +337,7 @@
          range (hex/distance atk-hex tgt-hex)
          attack-data (conj []
                            (->targeting-mod "Pilot skill" (pilot/skill (:unit/pilot attacker)))
-                           (->targeting-mod "Fire-control damage" (* (attacks/fc-hits attacks) 2))
+                           (->targeting-mod "Fire-control damage" (* (damage/crit-count attacker :crits/fire-control) 2))
                            (amm attacker)
                            (targeting-tmm target)
                            (when (not (some attack #{:physical :charge :dfa}))
