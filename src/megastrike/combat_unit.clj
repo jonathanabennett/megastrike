@@ -196,14 +196,18 @@
              (merge mul-unit
                     {:unit/id (if (pos? number)
                                 (str (:unit/full-name mul-unit) " #" (inc number))
-                                (:full-name mul-unit))
+                                (:unit/full-name mul-unit))
                      :unit/battle-force battle-force
                      :unit/pilot pilot
+                     :unit/acted? false
                      :unit/facing facing
                      :unit/location location
+                     :unit/path []
                      :unit/criticals {:crits/taken [] :crits/unapplied []}
-                     :unit/selected nil
-                     :unit/default (if (contains? (:unit/move-modes mul-unit) :move/walk) :move/walk (first (keys (:unit/move-modes mul-unit))))
+                     :move/selected nil
+                     :move/default (if (contains? (:unit/move-modes mul-unit) :move/walk) :move/walk (first (keys (:unit/move-modes mul-unit))))
+                     :unit/overheat-used 0
+                     :unit/current-heat 0
                      :unit/sprite (find-sprite mul-unit)})))
   ([{:keys [units mul-unit pilot battle-force facing location] :or {facing :direction/none location {}}}]
    (->combat-unit mul-unit pilot battle-force facing location (count (filter #(= (:unit/full-name %) (:unit/full-name mul-unit)) units)))))

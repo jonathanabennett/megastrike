@@ -11,6 +11,11 @@
 (def aero-units #{:ss :ws :js :ds :da :sc :cf :af})
 (def all-types (into #{} (concat ground-units aero-units)))
 
+(s/def :hex/p int?)
+(s/def :hex/q int?)
+(s/def :hex/r int?)
+(s/def :hex/location (s/keys :req [:hex/p :hex/q :hex/r]))
+
 ;; "General" definitions
 (s/check-asserts true)
 (s/def :unit/id string?)
@@ -36,9 +41,9 @@
 
 (s/def :unit/move-modes map?)
 (s/def :unit/tmm int?)
-(s/def :move/selected keyword?)
+(s/def :move/selected (s/nilable keyword?))
 (s/def :move/default (s/nilable keyword?))
-(s/def :unit/location (s/nilable keyword?))
+(s/def :unit/location (s/nilable :hex/location))
 (s/def :unit/path (s/nilable vector?))
 (s/def :unit/facing
   #{:direction/n :direction/ne :direction/se :direction/s :direction/sw :direction/nw :direction/none})

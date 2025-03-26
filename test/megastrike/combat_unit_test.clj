@@ -59,11 +59,12 @@
     (t/is (= (sut/parse-mechset-line "exact \"Archer ARC-2K\" \"mechs/Archer_2K.png\"")
              ["exact" "Archer ARC-2K" "mechs/Archer_2K.png"]))))
 
-; (t/deftest test-create-element
-;   (t/testing "Verify new keys merged."
-;     (t/is (contains? (sut/->combat-unit (first (sut/filter-units sut/mul :full-name "Archer ARC-2K" =))
-;                                         {:pilot {:name "Bobby McSkillface" :skill 4}} :direction/n {:p 2 :q 0 :r -2} :davion 0) :pilot))))
-;
+(t/deftest test-create-element
+  (t/testing "Verify new keys merged."
+    (t/is (= (:unit/pilot (sut/->combat-unit (first (sut/filter-units sut/mul :unit/full-name "Archer ARC-2K" =))
+                                             {:pilot/full-name "Bobby McSkillface" :pilot/skill 4 :pilot/kills 0} :direction/n
+                                             {:hex/p 2 :hex/q 0 :hex/r -2} :davion 0)) {:pilot/full-name "Bobby McSkillface" :pilot/skill 4 :pilot/kills 0}))))
+
 (t/deftest test-pv-mod-calculation
   (t/testing "Check PV Mod calculation."
     (t/is (= (sut/pv {:unit/base-pv 10 :unit/pilot {:pilot/skill 4}}) 10))
