@@ -15,6 +15,10 @@
    11 :engine
    12 :destroyed})
 
+(defn crit-count
+  [unit crit-type]
+  (count (filter #(= crit-type %) (get-in unit [:unit/criticals :crits/taken]))))
+
 (defn ->damage
   [{:keys [armor structure damage crits] :or {crits []}}]
   (let [arm (if (= (type armor) java.lang.String)

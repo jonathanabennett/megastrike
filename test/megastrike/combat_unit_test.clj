@@ -66,9 +66,9 @@
 ;
 (t/deftest test-pv-mod-calculation
   (t/testing "Check PV Mod calculation."
-    (t/is (= (sut/pv {:unit/base-pv 10 :unit/pilot {:skill 4}}) 10))
-    (t/is (= (sut/pv {:unit/base-pv 10 :unit/pilot {:skill 3}}) 12))
-    (t/is (= (sut/pv {:unit/base-pv 10 :unit/pilot {:skill 5}}) 9))))
+    (t/is (= (sut/pv {:unit/base-pv 10 :unit/pilot {:pilot/skill 4}}) 10))
+    (t/is (= (sut/pv {:unit/base-pv 10 :unit/pilot {:pilot/skill 3}}) 12))
+    (t/is (= (sut/pv {:unit/base-pv 10 :unit/pilot {:pilot/skill 5}}) 9))))
 
 ;TODO Find a platform-independent way of testing if two files are the same.
 ; (t/deftest test-find-sprite

@@ -21,7 +21,7 @@
 (defn pv-mod
   "Calculates the skill-based mod for PV based on the algorithm provided in the book."
   [{:keys [unit/pilot unit/base-pv]}]
-  (let [skill-diff (- 4 (pilot/skill pilot))]
+  (let [skill-diff (- 4 (:pilot/skill pilot))]
     (cond
       (> 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- base-pv 5) 10)))
       (< 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- base-pv 3) 5)))
@@ -336,7 +336,7 @@
          line (board/line atk-hex tgt-hex board)
          range (hex/distance atk-hex tgt-hex)
          attack-data (conj []
-                           (->targeting-mod "Pilot skill" (pilot/skill (:unit/pilot attacker)))
+                           (->targeting-mod "Pilot skill" (get-in attacker [:unit/pilot :pilot/skill]))
                            (->targeting-mod "Fire-control damage" (* (damage/crit-count attacker :crits/fire-control) 2))
                            (amm attacker)
                            (targeting-tmm target)
@@ -382,8 +382,8 @@
          (string/trim to-hit-str))))))
 
 (defn attack-confirmation-choices
-  [{:keys [attacks] :as attacker} target board layout]
-  (map #(->targeting attacker target board layout %) (keys (attacks/get-attacks attacks))))
+  [attacker target board layout]
+  (map #(->targeting attacker target board layout %) (keys (:unit/attacks attacker))))
 
 (defn set-attacked
   [unit]
@@ -517,7 +517,6 @@
         new-unit (-> unit
                      (assoc :unit/selected nil)
                      (apply-damage)
-                     (take-weapon-hits weapon-count)
                      (end-phase-heat heat 0 false (attacked? unit) external-heat)
                      (clear-attacked))]
     (when-not (damage/destroyed? (:damage new-unit))

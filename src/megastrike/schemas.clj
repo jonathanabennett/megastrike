@@ -48,8 +48,6 @@
 (s/def :ability/record (s/keys :req [:ability/output]))
 (s/def :unit/abilities (s/map-of keyword? :ability/record))
 
-;; Abilities Definitions
-
 ;Attack/damage definitions
 (s/def :attack/s nat-int?)
 (s/def :attack/s* boolean?)
@@ -99,9 +97,13 @@
 (s/def :unit/overheat int?)
 (s/def :unit/overheat-used (s/int-in 0 5))
 
+;; Pilot Definitions
+(s/def :pilot/full-name string?)
+(s/def :pilot/skill (s/int-in 0 9))
+(s/def :pilot/kills nat-int?)
 ;; Combat Unit definitions
 (s/def :unit/battle-force keyword?)
-(s/def :unit/pilot map?)
+(s/def :unit/pilot (s/keys :req [:pilot/full-name :pilot/skill :pilot/kills]))
 (s/def :unit/acted? boolean?)
 (s/def :unit/mul (s/keys :req [:unit/full-name :unit/chassis :unit/model :unit/mul-id :unit/threshold
                                :unit/base-pv :unit/role :unit/type :unit/abilities :unit/move-modes :unit/tmm
