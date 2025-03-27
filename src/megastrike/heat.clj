@@ -22,14 +22,6 @@
   [n]
   (<= 0 n 4))
 
-(def HeatSchema
-  [:map [:current {:min 0 :max 4} number?] [:overheat {:min 0 :max 4} number?]])
-
-(defn ->heat
-  [{:keys [current overheat] :or {current 0 overheat 0}}]
-  {:current (min current 4)
-   :overheat overheat})
-
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Manipulating heat
 
@@ -57,16 +49,6 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; Querying heat and its effects
 
-(defn current
-  "Returns the current heat (or zero if there is no current heat)."
-  [heat]
-  (get heat :current 0))
-
-(defn overheat
-  "Returns the amount of overheat a unit can add to its attack."
-  [heat]
-  (get heat :overheat 0))
-
 (defn shutdown?
   "If current heat is 4 or greater, shutdown the mech."
   [heat]
@@ -80,7 +62,7 @@
   [heat overheat-used water? no-attack? external-heat]
   (if (or no-attack? (shutdown? heat))
     (reset-heat heat)
-    (set-heat heat (cond-> (current heat)
+    (set-heat heat (cond-> (:heat/current heat)
                      (pos? overheat-used) (+ overheat-used)
                      water? (dec)
                      (pos? external-heat) (+ external-heat)))))
