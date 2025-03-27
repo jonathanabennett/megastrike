@@ -74,8 +74,7 @@
                       :attack/e :attack/e*])
         :attack/physical
         (s/keys :req [:attack/damage
-                      :attack/self
-                      :attack/type])))
+                      :attack/self])))
 (s/def :unit/attacks (s/map-of :attack/type :attack/record))
 (s/def :toughness/current nat-int?)
 (s/def :toughness/maximum nat-int?)

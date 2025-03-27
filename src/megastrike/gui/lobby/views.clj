@@ -4,6 +4,7 @@
    [cljfx.ext.table-view :as tables]
    [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
+   [megastrike.damage :as damage]
    [megastrike.gui.elements :as elements]
    [megastrike.gui.lobby.events :as lobby-events]
    [megastrike.gui.subs :as subs]
@@ -91,12 +92,12 @@
                        :text "Armor"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (pr-str (cu/get-current x :armor))})}}
+                                      :describe (fn [x] {:text (pr-str (damage/get-current x :armor))})}}
                       {:fx/type :table-column
                        :text "Structure"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (pr-str (cu/get-current x :structure))})}}
+                                      :describe (fn [x] {:text (pr-str (damage/get-current x :structure))})}}
                 ;; {:fx/type :table-column
                 ;;  :text "Threshold"
                 ;;  :cell-value-factory identity

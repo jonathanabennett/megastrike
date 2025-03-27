@@ -5,6 +5,7 @@
    [megastrike.abilities :as abilities]
    [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
+   [megastrike.damage :as damage]
    [megastrike.gui.events :as events]
    [megastrike.gui.subs :as subs]
    [megastrike.hexagons.hex :as hex]
@@ -293,15 +294,15 @@
                           {:fx/type attack-table
                            :unit unit}
                           {:fx/type draw-pips
-                           :text (str "Armor: " (cu/get-current unit :armor) "/" (cu/get-max unit :armor))
-                           :filled (cu/get-current unit :armor)
-                           :max (cu/get-max unit :armor)
+                           :text (str "Armor: " (damage/get-current unit :armor) "/" (damage/get-max unit :armor))
+                           :filled (damage/get-current unit :armor)
+                           :max (damage/get-max unit :armor)
                            :fill-one :green
                            :fill-two :transparent}
                           {:fx/type draw-pips
-                           :text (str "Structure: " (cu/get-current unit :structure) "/" (cu/get-max unit :structure))
-                           :filled (cu/get-current unit :structure)
-                           :max (cu/get-max unit :structure)
+                           :text (str "Structure: " (damage/get-current unit :structure) "/" (damage/get-max unit :structure))
+                           :filled (damage/get-current unit :structure)
+                           :max (damage/get-max unit :structure)
                            :fill-one :green
                            :fill-two :transparent}
                           {:fx/type draw-pips
@@ -315,22 +316,22 @@
                            :value (abilities/print-abilities (:abilities unit))}
                           {:fx/type prop-label
                            :label "Criticals: "
-                           :value (cu/get-crits unit)}
+                           :value (damage/get-crits unit)}
                           {:fx/type draw-pips
-                           :text (str "Remaining Armor: " (cu/get-remaining-armor unit) "/" (cu/get-max unit :armor))
-                           :filled (cu/get-remaining-armor unit)
-                           :max (cu/get-max unit :armor)
+                           :text (str "Remaining Armor: " (damage/get-remaining-armor unit) "/" (damage/get-max unit :armor))
+                           :filled (damage/get-remaining-armor unit)
+                           :max (damage/get-max unit :armor)
                            :fill-one :green
                            :fill-two :transparent}
                           {:fx/type draw-pips
-                           :text (str "Remaining structure " (cu/get-remaining-structure unit) "/" (cu/get-max unit :structure))
-                           :filled (cu/get-remaining-structure unit)
-                           :max (cu/get-max unit :structure)
+                           :text (str "Remaining structure " (damage/get-remaining-structure unit) "/" (damage/get-max unit :structure))
+                           :filled (damage/get-remaining-structure unit)
+                           :max (damage/get-max unit :structure)
                            :fill-one :green
                            :fill-two :transparent}
                           {:fx/type prop-label
                            :label "Unapplied Criticals: "
-                           :value (str (cu/get-new-crits unit))}]}}))
+                           :value (str (damage/get-new-crits unit))}]}}))
 
 (defn force-block
   [{:keys [fx/context units]}]

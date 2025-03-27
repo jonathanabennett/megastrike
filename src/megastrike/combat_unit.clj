@@ -12,91 +12,9 @@
    [megastrike.heat :as heat]
    [megastrike.hexagons.hex :as hex]
    [megastrike.movement :as movement]
-   [megastrike.pilot :as pilot]
    [megastrike.utils :as utils]))
 
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; MUL/Core
-
-(defn pv-mod
-  "Calculates the skill-based mod for PV based on the algorithm provided in the book."
-  [{:keys [unit/pilot unit/base-pv]}]
-  (let [skill-diff (- 4 (:pilot/skill pilot))]
-    (cond
-      (> 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- base-pv 5) 10)))
-      (< 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- base-pv 3) 5)))
-      :else 0)))
-
-(defn pv
-  "Returns the modified PV."
-  [{:keys [unit/base-pv] :as unit}]
-  (+ base-pv (pv-mod unit)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; PILOT
-
-(defn set-stacking
-  "Mark all units on the board."
-  [board units]
-  (let [b (board/set-stacking board (for [u units] [(:unit/location u) (:unit/battle-force u)]))]
-    (prn (map :stacking b))
-    b))
-
-(defn set-path
-  ([unit hex board units]
-   (movement/set-path unit hex (set-stacking board (vals units))))
-  ([unit path]
-   (assoc unit :unit/path path)))
-
-(defn move-unit
-  [unit]
-  (if (movement/can-move? unit (:unit/path unit))
-    (-> unit
-        (assoc :unit/acted? true)
-        (movement/move-unit))
-    unit))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ATTACK ACCESS
-
-(defn print-damage
-  [{:keys [attacks]} bracket]
-  (attacks/print-damage-bracket (attacks/get-attack attacks :regular) bracket))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Damage Access
-
-(defn get-remaining-structure
-  [{:keys [damage]}]
-  (damage/get-remaining-structure damage))
-
-(defn get-remaining-armor
-  [{:keys [damage]}]
-  (damage/get-remaining-armor damage))
-
-(defn get-current
-  [{:keys [damage]} kind]
-  (damage/get-current damage kind))
-
-(defn get-max
-  [{:keys [damage]} kind]
-  (damage/get-max damage kind))
-
-(defn get-crits
-  [{:keys [damage]}]
-  (apply str (damage/get-crits damage)))
-
-(defn get-new-crits
-  [{:keys [damage]}]
-  (damage/get-new-crits damage))
-
-(defn take-damage
-  [{:keys [damage abilities] :as unit} damage-num crit?]
-  (assoc unit :damage (damage/take-damage damage abilities damage-num crit?)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ABILITIES
-
+;; MUL Units
 (defn- move-keyword
   "Creates a move keyword from a stat line imported from the mul export."
   [mv-type]
@@ -172,6 +90,7 @@
           file-path (string/trim (utils/strip-quotes (subs line second-break)))]
       (vector mechset-type search-term file-path))))
 
+;; SPRITE Access
 (defn parse-mechset
   "Parses a full Mechset file."
   []
@@ -190,6 +109,7 @@
         match-row (or (first exact-match) (first chassis-match))]
     (utils/load-resource :data (str "images/units/" (nth match-row 2)))))
 
+;; COMBAT Units
 (defn ->combat-unit
   ([mul-unit pilot facing location battle-force number]
    (s/assert :unit/combat-unit
@@ -237,6 +157,58 @@
      (if (first matching-muls)
        (first matching-muls)
        (first non-standard-mul)))))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; MUL/Core
+
+(defn pv-mod
+  "Calculates the skill-based mod for PV based on the algorithm provided in the book."
+  [{:keys [unit/pilot unit/base-pv]}]
+  (let [skill-diff (- 4 (:pilot/skill pilot))]
+    (cond
+      (> 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- base-pv 5) 10)))
+      (< 0 skill-diff) (* skill-diff (+ 1 (math/floor-div (- base-pv 3) 5)))
+      :else 0)))
+
+(defn pv
+  "Returns the modified PV."
+  [{:keys [unit/base-pv] :as unit}]
+  (+ base-pv (pv-mod unit)))
+
+(defn set-stacking
+  "Mark all units on the board."
+  [board units]
+  (let [b (board/set-stacking board (for [u units] [(:unit/location u) (:unit/battle-force u)]))]
+    (prn (map :stacking b))
+    b))
+
+(defn set-path
+  ([unit hex board units]
+   (movement/set-path unit hex (set-stacking board (vals units))))
+  ([unit path]
+   (assoc unit :unit/path path)))
+
+(defn move-unit
+  [unit]
+  (if (movement/can-move? unit (:unit/path unit))
+    (-> unit
+        (assoc :unit/acted? true)
+        (movement/move-unit))
+    unit))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; ATTACK ACCESS
+
+(defn print-damage
+  [unit bracket]
+  (attacks/print-damage-bracket unit :attack/regular bracket))
+
+;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
+;; Damage Access
+
+(defn take-damage
+  [{:keys [damage abilities] :as unit} damage-num crit?]
+  (assoc unit :damage (damage/take-damage damage abilities damage-num crit?)))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MAKE ATTACKS
@@ -350,7 +322,7 @@
                              (->targeting-mod "Line of sight blocked" ##Inf))
                            (woods-mod line)
                            (calculate-range-mod range))
-         damage (attacks/print-damage attacks attack range)
+         damage (attacks/print-damage attacker attacks attack range)
          targeting {:attacker attacker
                     :target target
                     :attack attack
@@ -509,13 +481,12 @@
 (defn end-phase-heat
   [unit heat overheat-used water? acted? external-heat]
   (assoc unit :heat (heat/end-phase-heat heat overheat-used water? acted? external-heat)))
-;; (count (filter #(= :fire-control %) new-crits))
+
 (defn end-turn
   "Updates damage, applies weapons crits, resets acted, and then returns the unit IF they
   are not destroyed."
   [{:keys [damage heat] :as unit}]
   (let [new-crits (damage/get-new-crits damage)
-        weapon-count (count (filter #(= :weapon %) new-crits))
         engine-crits (count (filter #(= :engine %) new-crits))
         external-heat (+ engine-crits (damage/get-heat damage))
         new-unit (-> unit

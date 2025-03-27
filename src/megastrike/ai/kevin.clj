@@ -6,6 +6,7 @@
    [com.brunobonacci.mulog :as mu]
    [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
+   [megastrike.damage :as damage]
    [megastrike.movement :as movement]
    [megastrike.utils :as utils]))
 
@@ -14,7 +15,7 @@
   (let [targeting (second (cu/->targeting attacker target board layout attack))
         target-number (cu/calculate-to-hit targeting)
         probability (get utils/probabilities target-number 0)
-        toughness (+ (cu/get-remaining-armor target) (* (cu/get-remaining-structure target) 2))
+        toughness (+ (damage/get-remaining-armor target) (* (damage/get-remaining-structure target) 2))
         damage (:damage targeting)
         damage-num (if (str/ends-with? damage "*") 0.5 (Integer/parseInt damage))
         expected-damage (/ (* probability damage-num) 100.0)]
