@@ -4,6 +4,7 @@
    [clojure.data.priority-map :as priority-map]
    [clojure.string :as str]
    [com.brunobonacci.mulog :as mu]
+   [megastrike.attacks :as attacks]
    [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
    [megastrike.damage :as damage]
@@ -12,8 +13,8 @@
 
 (defn target-info
   [attacker target board layout attack]
-  (let [targeting (second (cu/->targeting attacker target board layout attack))
-        target-number (cu/calculate-to-hit targeting)
+  (let [targeting (second (attacks/->targeting attacker target board layout attack))
+        target-number (attacks/calculate-to-hit targeting)
         probability (get utils/probabilities target-number 0)
         toughness (+ (damage/get-remaining-armor target) (* (damage/get-remaining-structure target) 2))
         damage (:damage targeting)

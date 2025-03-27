@@ -221,146 +221,6 @@
   [unit]
   (assoc unit :attacked false))
 
-(defn ->targeting-mod
-  [description value]
-  [{:desc description :value value}])
-
-(defn woods-mod
-  [line]
-  (let [woods (count (filter #(string/includes? (:terrain %) "woods") (rest line)))]
-    (cond
-      (>= woods 3) (->targeting-mod "Line of Sight blocked by woods" ##Inf)
-      (string/includes? (:terrain (last line)) "woods") (->targeting-mod "Target in woods" 1)
-      (pos? woods) (->targeting-mod "Intervening woods" 1)
-      :else (->targeting-mod "No intervening woods" 0))))
-
-(defn calculate-range-mod
-  [range]
-  (let [range-str (str "target " range " hexes away")]
-    (condp >= range
-      3  (->targeting-mod range-str 0)
-      12 (->targeting-mod range-str 2)
-      21 (->targeting-mod range-str 4)
-      30 (->targeting-mod range-str 6)
-      (->targeting-mod range-str ##Inf))))
-
-(defn height-checker
-  [origin target line]
-  (let [o-height (+ 2 (:elevation (first line)))
-        t-height (+ 2 (:elevation (last line)))]
-    (if (<= (count line) 2)
-      false
-      (loop [blocked? false
-             current (first line)
-             l (rest line)]
-        (if (or blocked? (= (count l) 1))
-          blocked?
-          (recur (cond
-                   (hex/same-hex origin current)   (>= (:elevation current) o-height)
-                   (hex/same-hex target (first l)) (>= (:elevation current) t-height)
-                   :else (and (>= (:elevation current) o-height) (>= (:elevation current) t-height)))
-                 (first l)
-                 (rest l)))))))
-
-(defn vector-subtract [v1 v2]
-  (mapv - v1 v2))
-
-(defn cross-product-2d [v1 v2]
-  (- (* (first v1) (second v2)) (* (second v1) (first v2))))
-
-(defn line-between-points? [p1 p2 cp op]
-  (let [v-line (vector-subtract p2 p1)
-        v-cp (vector-subtract cp p1)
-        v-op (vector-subtract op p1)
-        cross1 (cross-product-2d v-line v-cp)
-        cross2 (cross-product-2d v-line v-op)]
-    ;; The sign of cross2 tells us which "side" of the line op is on.
-    ;; If cross2 is 0, then op is on the line.
-    (if (< (abs cross2) 1)
-      ;; In which case, we return true.
-      true
-      ; Otherwise, check if cp and op have opposite signs (i.e. are on opposite sides of the line).
-      (not (pos? (* cross1 cross2))))))
-
-(defn is-behind?
-  "Detect if a hex is 'behind' a given hex-side."
-  [this-hex other-hex side layout]
-  (let [this-pixel (hex/hex->pixel this-hex layout)
-        points (hex/points this-hex layout)
-        points-list (get-in movement/directions [side :points])
-        p1 [(nth points (first points-list)) (nth points (second points-list))]
-        p2 [(nth points (nth points-list 2)) (nth points (nth points-list 3))]
-        other-hex (hex/hex->pixel other-hex layout)]
-    (line-between-points? p1 p2 [(:x this-pixel) (:y this-pixel)] [(:x other-hex) (:y other-hex)])))
-
-(defn amm
-  [unit]
-  (condp = (movement/selected-or-default unit)
-    :immobile (->targeting-mod "Attacker immobile" -1)
-    :stand-still (->targeting-mod "Attacker stood still" -1)
-    :jump (->targeting-mod "Attacker stood still" 2)
-    (->targeting-mod "Attacker moved" 0)))
-
-(defn targeting-tmm
-  [unit]
-  (->targeting-mod "Target movement" (movement/modified-tmm unit)))
-
-(defn ->targeting
-  ([{:keys [attacks] :as attacker} target board layout attack]
-   (let [atk-hex (board/find-hex (or (last (:unit/path attacker)) (:unit/location attacker)) board)
-         tgt-hex (board/find-hex (:unit/location target) board)
-         line (board/line atk-hex tgt-hex board)
-         range (hex/distance atk-hex tgt-hex)
-         attack-data (conj []
-                           (->targeting-mod "Pilot skill" (get-in attacker [:unit/pilot :pilot/skill]))
-                           (->targeting-mod "Fire-control damage" (* (damage/crit-count attacker :crits/fire-control) 2))
-                           (amm attacker)
-                           (targeting-tmm target)
-                           (when (not (some attack #{:physical :charge :dfa}))
-                             (->targeting-mod "Attacker heat" (:unit/current-heat attacker)))
-                           (when (height-checker attacker target line)
-                             (->targeting-mod "Line of sight blocked" ##Inf))
-                           (woods-mod line)
-                           (calculate-range-mod range))
-         damage (attacks/print-damage attacker attacks attack range)
-         targeting {:attacker attacker
-                    :target target
-                    :attack attack
-                    :attack-data attack-data
-                    :range range
-                    :rear-attack? (is-behind? (:unit/location target) (or (last (:unit/path attacker)) (:unit/location attacker)) (movement/rear target) layout)
-                    :damage damage}]
-     [attack targeting]))
-  ([{:keys [atk-type] :as attacker} target board layout]
-   (->targeting attacker target board layout atk-type)))
-
-(defn calculate-to-hit
-  [{:keys [attack-data]}]
-  (let [data (reduce + (map #(get (first %) :value 0) attack-data))]
-    data))
-
-(defn attack-roll-parser
-  [[m]]
-  (if (neg? (:value m 0))
-    (str "- " (abs (:value m 0)) " (" (:desc m) ") ")
-    (str "+ " (:value m 0) " (" (:desc m) ") ")))
-
-(defn print-attack-roll
-  ([attack-roll]
-   (print-attack-roll attack-roll true))
-  ([{:keys [attack-data] :as attack-roll} detailed?]
-   (if-let [failed (some #(= ##Inf (:value (first %))) attack-data)]
-     (:desc failed)
-     (let [to-hit (calculate-to-hit attack-roll)
-           to-hit-str (str "To Hit: " to-hit " (" (get utils/probabilities to-hit) "%)")]
-       (if detailed?
-         (string/trim (str to-hit-str ": " (reduce str (map attack-roll-parser attack-data))))
-         (string/trim to-hit-str))))))
-
-(defn attack-confirmation-choices
-  [attacker target board layout]
-  (map #(->targeting attacker target board layout %) (keys (:unit/attacks attacker))))
-
 (defn set-attacked
   [unit]
   (-> unit
@@ -376,7 +236,7 @@
 
 (defn dfa-attack
   [{:keys [attacker target rear-attack?] :as targeting} to-hit]
-  (let [hit? (<= (calculate-to-hit targeting) to-hit)
+  (let [hit? (<= (attacks/calculate-to-hit targeting) to-hit)
         attacker (set-attacked attacker)
         attacker-tmm (movement/modified-tmm attacker)
         attacker-damage (attacks/roll-damage (:attacks attacker) (if hit? :self-dfa :missed-dfa) attacker-tmm (:unit/size attacker) rear-attack?)
@@ -402,7 +262,7 @@
 
 (defn charge-attack
   [{:keys [attacker target rear-attack?] :as targeting} to-hit]
-  (let [hit? (<= (calculate-to-hit targeting) to-hit)
+  (let [hit? (<= (attacks/calculate-to-hit targeting) to-hit)
         attacker (set-attacked attacker)
         attacker-tmm (movement/modified-tmm attacker)
         attacker-damage (attacks/roll-damage (:attacks attacker) :self-charge attacker-tmm (:unit/size target) rear-attack?)
@@ -430,7 +290,7 @@
   [{:keys [attacker target attack distance rear-attack?] :as atk-data} to-hit]
   (let [damage (attacks/roll-damage (:attacks attacker) attack distance rear-attack?)
         result {(:unit/id attacker) (set-attacked attacker)
-                (:unit/id target) (if (<= (calculate-to-hit atk-data) to-hit)
+                (:unit/id target) (if (<= (attacks/calculate-to-hit atk-data) to-hit)
                                     (take-damage target damage (= to-hit 12))
                                     target)}]
     {:targeting-data atk-data
@@ -442,7 +302,7 @@
   [{:keys [attacker target attack distance rear-attack?] :as atk-data} to-hit]
   (let [damage (attacks/roll-damage (:attacks attacker) attack distance rear-attack?)
         result {(:unit/id attacker) (set-attacked attacker)
-                (:unit/id target) (if (<= (calculate-to-hit atk-data) to-hit)
+                (:unit/id target) (if (<= (attacks/calculate-to-hit atk-data) to-hit)
                                     (assoc target :damage (damage/heat-damage target damage))
                                     target)}]
     {:targeting-data atk-data

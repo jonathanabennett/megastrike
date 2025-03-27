@@ -37,7 +37,7 @@
 ;; Movement definitions
 
 (s/def :movement/modes #{:move/walk :move/jump :move/h :move/n :move/s :move/t :move/v :move/w :move/wb
-                         :move/wm :move/g :move/f :move/j :move/m})
+                         :move/wm :move/g :move/f :move/j :move/m :move/immobilized :move/stand-still})
 
 (s/def :unit/move-modes map?)
 (s/def :unit/tmm int?)
@@ -52,6 +52,23 @@
 (s/def :ability/output string?)
 (s/def :ability/record (s/keys :req [:ability/output]))
 (s/def :unit/abilities (s/map-of keyword? :ability/record))
+
+;; Targeting definitions
+(s/def :targeting/value (s/or
+                         :targeting/possible int?
+                         :targeting/imposible (s/double-in :infinite? true)))
+(s/def :targeting/description string?)
+(s/def :targeting/modifier (s/keys :req [:targeting/value :targeting/description]))
+(s/def :targeting/attacker :unit/id)
+(s/def :targeting/target :unit/id)
+(s/def :targeting/attack-type :attack/type)
+(s/def :targeting/mods (s/coll-of :targeting/modifier))
+(s/def :targeting/distance nat-int?)
+(s/def :targeting/rear-attack? boolean?)
+(s/def :targeting/damage string?)
+(s/def :targeting/firing-solution
+  (s/keys :req [:targeting/attacker :targeting/target :targeting/attack-type :targeting/mods :targeting/distance
+                :targeting/rear-attack? :targeting/damage]))
 
 ;Attack/damage definitions
 (s/def :attack/s nat-int?)
@@ -73,7 +90,8 @@
                       :attack/l :attack/l*
                       :attack/e :attack/e*])
         :attack/physical
-        (s/keys :req [:attack/damage
+        (s/keys :req [:attack/type
+                      :attack/damage
                       :attack/self])))
 (s/def :unit/attacks (s/map-of :attack/type :attack/record))
 (s/def :toughness/current nat-int?)

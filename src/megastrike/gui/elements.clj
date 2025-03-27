@@ -3,6 +3,7 @@
    [cljfx.api :as fx]
    [clojure.string :as str]
    [megastrike.abilities :as abilities]
+   [megastrike.attacks :as attacks]
    [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
    [megastrike.damage :as damage]
@@ -374,7 +375,7 @@
                                (and (= phase :combat) (not= range 1)) (contains? #{:physical :charge :dfa} attack)
                                :else (contains? #{:charge :dfa} attack))]
                ((comp vec flatten conj) ret {:fx/type :button
-                                             :text (str (name (:attack atk-data)) ": " (cu/print-attack-roll atk-data false))
+                                             :text (str (name (:attack atk-data)) ": " (attacks/print-attack-roll atk-data false))
                                              :disable disabled?
                                              :on-action {:event-type ::events/close-attack-selection  :unit unit :selected atk-data :fx/sync true}}))
              (rest attacks)))))

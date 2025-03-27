@@ -2,6 +2,7 @@
   (:require
    [com.brunobonacci.mulog :as mu]
    [megastrike.ai.kevin :as ai]
+   [megastrike.attacks :as attacks]
    [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
    [megastrike.damage :as damage]
@@ -17,7 +18,7 @@
         crit (damage/get-new-crits target)
         arm (damage/get-current target :armor)
         penetration (- target-damage arm)
-        target-num (cu/calculate-to-hit targeting-data)]
+        target-num (attacks/calculate-to-hit targeting-data)]
     (str atk-id " attacks " tgt-id ". Needs a " target-num ".\n"
          "Rolled a " to-hit "\n"
          (if (<= target-num to-hit)
@@ -109,7 +110,7 @@
                :else :none)]
     (if (not= kind :none)
       (update-in game-state [:internal :attack-dialog] assoc :showing true
-                 :items (cu/attack-confirmation-choices unit target game-board layout)
+                 :items (attacks/attack-confirmation-choices unit target game-board layout)
                  :phase :movement
                  :unit unit)
       game-state)))
@@ -127,7 +128,7 @@
       (and (= current-phase :combat) (not (in-active-force? unit turn-order)))
       (update-in game-state [:internal :attack-dialog] assoc
                  :showing true
-                 :items (cu/attack-confirmation-choices (get units active-unit) unit game-board layout)
+                 :items (attacks/attack-confirmation-choices (get units active-unit) unit game-board layout)
                  :unit unit)
       :else game-state)))
 
@@ -228,7 +229,7 @@
 (defn resolve-physical-attacks
   [{:keys [units game-board layout turn-order] :as game-state}]
   (let [attackers (filter #(and (contains? #{:charge :dfa} (get % :atk-type false)) (in-active-force? units turn-order)) (vals units))
-        targeting-list (map #(cu/->targeting % (get units (:target %)) game-board layout) attackers)]
+        targeting-list (map #(attacks/->targeting % (get units (:target %)) game-board layout) attackers)]
     (make-attacks game-state targeting-list)))
 
 (defn advance-turn
