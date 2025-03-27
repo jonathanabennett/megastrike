@@ -77,7 +77,6 @@
                       :attack/self
                       :attack/type])))
 (s/def :unit/attacks (s/map-of :attack/type :attack/record))
-(s/def :unit/attacks map?)
 (s/def :toughness/current nat-int?)
 (s/def :toughness/maximum nat-int?)
 (s/def :toughness/unapplied nat-int?)
