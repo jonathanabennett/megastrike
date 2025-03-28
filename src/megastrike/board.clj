@@ -108,9 +108,9 @@
 
 (defn lerp
   [hex1 hex2 step]
-  {:p (linear-interpolation (:p hex1) (:p hex2) step)
-   :q (linear-interpolation (:q hex1) (:q hex2) step)
-   :r (linear-interpolation (:r hex1) (:r hex2) step)})
+  {:hex/p (linear-interpolation (:hex/p hex1) (:hex/p hex2) step)
+   :hex/q (linear-interpolation (:hex/q hex1) (:hex/q hex2) step)
+   :hex/r (linear-interpolation (:hex/r hex1) (:hex/r hex2) step)})
 
 (defn line
   [hex1 hex2 board]

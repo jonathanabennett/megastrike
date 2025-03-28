@@ -7,6 +7,7 @@
    [megastrike.hexagons.hex :as hex]))
 
 (def board (board/create-board "data/boards/AGoAC Maps/16x17 Grassland 2.board"))
+(def layout (hex/create-layout))
 (def attacker1 (cu/->combat-unit (cu/get-unit "Wolfhound WLF-2")
                                  {:pilot/full-name "Lieutenant Ciro Ramirez" :pilot/skill 4 :pilot/kills 0}
                                  :direction/n {:hex/p 1 :hex/q 1 :hex/r -2} :1stsomersetstrikers 0))
@@ -19,15 +20,12 @@
 (def blinded-attacker (cu/->combat-unit (cu/get-unit "Wolfhound WLF-2")
                                         {:pilot/full-name "Lieutenant Ciro Ramirez" :pilot/skill 4 :pilot/kills 0}
                                         :direction/n {:hex/p 3 :hex/q 4 :hex/r -7} :1stsomersetstrikers 0))
-; (def blinded-attacker (cu/create-element (cu/get-unit "Wolfhound WLF-2") {:id "Wolfhound WLF-2" :path [] :p 3 :q 4 :r -7 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s}))
 (def blinded-target (cu/->combat-unit (cu/get-unit "Wolfhound WLF-2")
                                       {:pilot/full-name "Lieutenant Ciro Ramirez" :pilot/skill 4 :pilot/kills 0}
                                       :direction/n {:hex/p 7 :hex/q 2 :hex/r -9} :1stsomersetstrikers 0))
-; (def blinded-target (cu/create-element (cu/get-unit "Wolfhound WLF-2") {:id "Wolfhound WLF-2" :path [] :p 7 :q 2 :r -9 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 0 :current-armor 4 :movement-mode :walk :direction :s}))
-(def heated-attacker (cu/->combat-unit (cu/get-unit "Wolfhound WLF-2")
-                                       {:pilot/full-name "Lieutenant Ciro Ramirez" :pilot/skill 4 :pilot/kills 0}
-                                       :direction/n {:hex/p 1 :hex/q 1 :hex/r -2} :1stsomersetstrikers 0))
-; (def heated-attacker (cu/create-element (cu/get-unit "Wolfhound WLF-2") {:id "Wolfhound WLF-2" :path [] :p 1 :q 1 :r -2 :force :1stsomersetstrikers :pilot {:name " Lieutenant Ciro Ramirez", :skill 4} :acted nil :crits [] :current-structure 3 :current-heat 1 :current-armor 4 :movement-mode :walk :direction :s}))
+(def heated-attacker (assoc (cu/->combat-unit (cu/get-unit "Wolfhound WLF-2")
+                                              {:pilot/full-name "Lieutenant Ciro Ramirez" :pilot/skill 4 :pilot/kills 0}
+                                              :direction/n {:hex/p 1 :hex/q 1 :hex/r -2} :1stsomersetstrikers 0) :unit/current-heat 1))
 
 (t/deftest woods-mod-test
   (let [woods-hex {:p 8, :q 6, :r -14, :elevation 0, :terrain "woods:1:20;ground_fluff:1:2;foliage_elev:2", :palette "grass"}
@@ -62,67 +60,69 @@
     (t/is (= (sut/calculate-distance-mod 30) {:targeting/description "Target 30 hexes away" :targeting/value 6}))
     (t/is (= (sut/calculate-distance-mod 31) {:targeting/description "Target 31 hexes away" :targeting/value ##Inf}))))
 
-; (t/deftest produce-attack-roll-test
-;   (t/testing "Testing attack rolls"
-;     (t/is (= (sut/produce-attack-roll attacker1 target1 board :regular)
-;              {:targeting [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] nil [{:desc "clear line of sight", :value 0}] [{:desc "no intervening woods", :value 0}] [{:desc "target 1 hexes away", :value 0}]]
-;               :damage "3"}))
-;     (t/is (= (sut/produce-attack-roll heated-attacker target1 board :regular)
-;              {:targeting [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] [{:desc "attacker heat", :value 1}] [{:desc "clear line of sight", :value 0}] [{:desc "no intervening woods", :value 0}] [{:desc "target 1 hexes away", :value 0}]]
-;               :damage "3"}))
-;     (t/is (= (sut/produce-attack-roll wooded-unit target1 board :regular)
-;              {:targeting [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] nil [{:desc "clear line of sight", :value 0}] [{:desc "no intervening woods", :value 0}] [{:desc "target 2 hexes away", :value 0}]]
-;               :damage "3"}))
-;     (t/is (= (sut/produce-attack-roll attacker1 wooded-unit board :regular)
-;              {:targeting [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] nil [{:desc "clear line of sight", :value 0}] [{:desc "target in woods", :value 1}] [{:desc "target 3 hexes away", :value 0}]]
-;               :damage "3"}))
-;     (t/is (= (sut/produce-attack-roll target1 attacker1 board :regular)
-;              {:targeting [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] nil [{:desc "clear line of sight", :value 0}] [{:desc "no intervening woods", :value 0}] [{:desc "target 1 hexes away", :value 0}]]
-;               :damage "3"}))
-;     (t/is (= (sut/produce-attack-roll blinded-attacker blinded-target board :regular)
-;              {:targeting [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] nil [{:desc "Line of Sight Blocked", :value ##Inf}] [{:desc "no intervening woods", :value 0}] [{:desc "target 4 hexes away", :value 2}]]
-;               :damage "3"}))
-;     (t/is (= (sut/produce-attack-roll blinded-target blinded-attacker board :regular)
-;              {:targeting [[{:desc "pilot skill", :value 4}] [{:desc "0 fire control hits", :value 0}] [{:desc "attacker moved", :value 0}] [{:desc "target moved", :value 2}] nil [{:desc "Line of Sight Blocked", :value ##Inf}] [{:desc "no intervening woods", :value 0}] [{:desc "target 4 hexes away", :value 2}]]
-;               :damage "3"}))))
-;
-; (t/deftest calculate-to-hit-test
-;   (t/testing "return to-hit numbers for attacks"
-;     (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll attacker1 target1 board :regular)) 6))
-;     (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll heated-attacker target1 board :regular)) 7))
-;     (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll wooded-unit target1 board :regular)) 6))
-;     (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll attacker1 wooded-unit board :regular)) 7))
-;     (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll target1 attacker1 board :regular)) 6))
-;     (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll blinded-attacker blinded-target board :regular)) ##Inf))
-;     (t/is (= (sut/calculate-to-hit (sut/produce-attack-roll blinded-target blinded-attacker board :regular)) ##Inf))))
-;
-; (t/deftest print-attack-roll
-;   (t/testing "Return minimum attack roll result"
-;     (t/is (= (sut/print-attack-roll (sut/produce-attack-roll attacker1 target1 board :regular) false) "To Hit: 6 (72%)"))
-;     (t/is (= (sut/print-attack-roll (sut/produce-attack-roll heated-attacker target1 board :regular) false) "To Hit: 7 (58%)"))
-;     (t/is (= (sut/print-attack-roll (sut/produce-attack-roll wooded-unit target1 board :regular) false) "To Hit: 6 (72%)"))
-;     (t/is (= (sut/print-attack-roll (sut/produce-attack-roll attacker1 wooded-unit board :regular) false) "To Hit: 7 (58%)"))
-;     (t/is (= (sut/print-attack-roll (sut/produce-attack-roll target1 attacker1 board :regular) false) "To Hit: 6 (72%)"))
-;     (t/is (= (sut/print-attack-roll (sut/produce-attack-roll blinded-attacker blinded-target board :regular) false)
-;              "Line of Sight Blocked"))
-;     (t/is (= (sut/print-attack-roll (sut/produce-attack-roll blinded-target blinded-attacker board :regular) false)
-;              "Line of Sight Blocked")))
-;   (t/testing "Return full attack roll result"
-;     (t/is (= (sut/print-attack-roll (sut/produce-attack-roll attacker1 target1 board :regular) true)
-;              "To Hit: 6 (72%): + 4 (pilot skill) + 0 (0 fire control hits) + 0 (attacker moved) + 2 (target moved) + 0 () + 0 (clear line of sight) + 0 (no intervening woods) + 0 (target 1 hexes away)"))
-;     (t/is (= (sut/print-attack-roll (sut/produce-attack-roll heated-attacker target1 board :regular) true)
-;              "To Hit: 7 (58%): + 4 (pilot skill) + 0 (0 fire control hits) + 0 (attacker moved) + 2 (target moved) + 1 (attacker heat) + 0 (clear line of sight) + 0 (no intervening woods) + 0 (target 1 hexes away)"))
-;     (t/is (= (sut/print-attack-roll (sut/produce-attack-roll wooded-unit target1 board :regular) true)
-;              "To Hit: 6 (72%): + 4 (pilot skill) + 0 (0 fire control hits) + 0 (attacker moved) + 2 (target moved) + 0 () + 0 (clear line of sight) + 0 (no intervening woods) + 0 (target 2 hexes away)"))
-;     (t/is (= (sut/print-attack-roll (sut/produce-attack-roll attacker1 wooded-unit board :regular) true)
-;              "To Hit: 7 (58%): + 4 (pilot skill) + 0 (0 fire control hits) + 0 (attacker moved) + 2 (target moved) + 0 () + 0 (clear line of sight) + 1 (target in woods) + 0 (target 3 hexes away)"))
-;     (t/is (= (sut/print-attack-roll (sut/produce-attack-roll target1 attacker1 board :regular) true)
-;              "To Hit: 6 (72%): + 4 (pilot skill) + 0 (0 fire control hits) + 0 (attacker moved) + 2 (target moved) + 0 () + 0 (clear line of sight) + 0 (no intervening woods) + 0 (target 1 hexes away)"))
-;     (t/is (= (sut/print-attack-roll (sut/produce-attack-roll blinded-attacker blinded-target board :regular) true)
-;              "Line of Sight Blocked"))
-;     (t/is (= (sut/print-attack-roll (sut/produce-attack-roll blinded-target blinded-attacker board :regular) true)
-;              "Line of Sight Blocked"))))
-;
+(t/deftest ->targeting-test
+  (t/testing "Testing attack rolls"
+    (t/is (= (sut/->targeting attacker1 target1 board layout :attack/regular)
+             {:attack/regular {:targeting/attack-data {:targeting/amm {:targeting/description "Attacker moved", :targeting/value 0}, :targeting/fc-damage {:targeting/description "Fire-control damage", :targeting/value 0}, :targeting/heat {:targeting/description "Attacker heat", :targeting/value 0}, :targeting/los {:targeting/description "Clear line of sight", :targeting/value 0}, :targeting/range-mod {:targeting/description "Target 1 hexes away", :targeting/value 0}, :targeting/skill {:targeting/description "Pilot skill", :targeting/value 4}, :targeting/tmm {:targeting/description "Target movement", :targeting/value 2}, :targeting/woods {:targeting/description "No intervening woods", :targeting/value 0}}, :targeting/attack-type :attack/regular, :targeting/attacker "Wolfhound WLF-2", :targeting/damage "3", :targeting/distance 1, :targeting/rear-attack? false, :targeting/target "Wolfhound WLF-2"}}) "Attacker1 -> Target1")
+    (t/is (= (sut/->targeting heated-attacker target1 board layout :attack/regular)
+             {:attack/regular {:targeting/attack-data {:targeting/amm {:targeting/description "Attacker moved", :targeting/value 0}, :targeting/fc-damage {:targeting/description "Fire-control damage", :targeting/value 0}, :targeting/heat {:targeting/description "Attacker heat", :targeting/value 1}, :targeting/los {:targeting/description "Clear line of sight", :targeting/value 0}, :targeting/range-mod {:targeting/description "Target 1 hexes away", :targeting/value 0}, :targeting/skill {:targeting/description "Pilot skill", :targeting/value 4}, :targeting/tmm {:targeting/description "Target movement", :targeting/value 2}, :targeting/woods {:targeting/description "No intervening woods", :targeting/value 0}}, :targeting/attack-type :attack/regular, :targeting/attacker "Wolfhound WLF-2", :targeting/damage "3", :targeting/distance 1, :targeting/rear-attack? false, :targeting/target "Wolfhound WLF-2"}}) "Heated attacker -> target 1")
+    (t/is (= (sut/->targeting wooded-unit target1 board layout :attack/regular)
+             {:attack/regular {:targeting/attack-data {:targeting/amm {:targeting/description "Attacker moved", :targeting/value 0}, :targeting/fc-damage {:targeting/description "Fire-control damage", :targeting/value 0}, :targeting/heat {:targeting/description "Attacker heat", :targeting/value 0}, :targeting/los {:targeting/description "Clear line of sight", :targeting/value 0}, :targeting/range-mod {:targeting/description "Target 2 hexes away", :targeting/value 0}, :targeting/skill {:targeting/description "Pilot skill", :targeting/value 4}, :targeting/tmm {:targeting/description "Target movement", :targeting/value 2}, :targeting/woods {:targeting/description "No intervening woods", :targeting/value 0}}, :targeting/attack-type :attack/regular, :targeting/attacker "Wolfhound WLF-2", :targeting/damage "3", :targeting/distance 2, :targeting/rear-attack? false, :targeting/target "Wolfhound WLF-2"}}) "Wooded attacker -> target 1")
+    (t/is (= (sut/->targeting attacker1 wooded-unit board layout :attack/regular)
+             {:attack/regular {:targeting/attack-data {:targeting/amm {:targeting/description "Attacker moved", :targeting/value 0}, :targeting/fc-damage {:targeting/description "Fire-control damage", :targeting/value 0}, :targeting/heat {:targeting/description "Attacker heat", :targeting/value 0}, :targeting/los {:targeting/description "Clear line of sight", :targeting/value 0}, :targeting/range-mod {:targeting/description "Target 3 hexes away", :targeting/value 0}, :targeting/skill {:targeting/description "Pilot skill", :targeting/value 4}, :targeting/tmm {:targeting/description "Target movement", :targeting/value 2}, :targeting/woods {:targeting/description "Target in woods", :targeting/value 1}}, :targeting/attack-type :attack/regular, :targeting/attacker "Wolfhound WLF-2", :targeting/damage "3", :targeting/distance 3, :targeting/rear-attack? false, :targeting/target "Wolfhound WLF-2"}}) "Attacker1 -> Wooded unit")
+    (t/is (= (sut/->targeting target1 attacker1 board layout :attack/regular)
+             {:attack/regular {:targeting/attack-data {:targeting/amm {:targeting/description "Attacker moved", :targeting/value 0}, :targeting/fc-damage {:targeting/description "Fire-control damage", :targeting/value 0}, :targeting/heat {:targeting/description "Attacker heat", :targeting/value 0}, :targeting/los {:targeting/description "Clear line of sight", :targeting/value 0}, :targeting/range-mod {:targeting/description "Target 1 hexes away", :targeting/value 0}, :targeting/skill {:targeting/description "Pilot skill", :targeting/value 4}, :targeting/tmm {:targeting/description "Target movement", :targeting/value 2}, :targeting/woods {:targeting/description "No intervening woods", :targeting/value 0}}, :targeting/attack-type :attack/regular, :targeting/attacker "Wolfhound WLF-2", :targeting/damage "3", :targeting/distance 1, :targeting/rear-attack? true, :targeting/target "Wolfhound WLF-2"}}) "Target 1 -> Attacker 1")
+    (t/is (= (sut/->targeting blinded-attacker blinded-target board layout :attack/regular)
+             {:attack/regular {:targeting/attack-data {:targeting/amm {:targeting/description "Attacker moved", :targeting/value 0}, :targeting/fc-damage {:targeting/description "Fire-control damage", :targeting/value 0}, :targeting/heat {:targeting/description "Attacker heat", :targeting/value 0}, :targeting/los {:targeting/description "Line of sight blocked", :targeting/value ##Inf}, :targeting/range-mod {:targeting/description "Target 4 hexes away", :targeting/value 2}, :targeting/skill {:targeting/description "Pilot skill", :targeting/value 4}, :targeting/tmm {:targeting/description "Target movement", :targeting/value 2}, :targeting/woods {:targeting/description "No intervening woods", :targeting/value 0}}, :targeting/attack-type :attack/regular, :targeting/attacker "Wolfhound WLF-2", :targeting/damage "3", :targeting/distance 4, :targeting/rear-attack? false, :targeting/target "Wolfhound WLF-2"}}) "Blinded attacker -> Blinded target")
+    (t/is (= (sut/->targeting blinded-target blinded-attacker board layout :attack/regular)
+             {:attack/regular {:targeting/attack-data {:targeting/amm {:targeting/description "Attacker moved", :targeting/value 0}, :targeting/fc-damage {:targeting/description "Fire-control damage", :targeting/value 0}, :targeting/heat {:targeting/description "Attacker heat", :targeting/value 0}, :targeting/los {:targeting/description "Line of sight blocked", :targeting/value ##Inf}, :targeting/range-mod {:targeting/description "Target 4 hexes away", :targeting/value 2}, :targeting/skill {:targeting/description "Pilot skill", :targeting/value 4}, :targeting/tmm {:targeting/description "Target movement", :targeting/value 2}, :targeting/woods {:targeting/description "No intervening woods", :targeting/value 0}}, :targeting/attack-type :attack/regular, :targeting/attacker "Wolfhound WLF-2", :targeting/damage "3", :targeting/distance 4, :targeting/rear-attack? false, :targeting/target "Wolfhound WLF-2"}}) "Blinded Target -> Blinded Attacker")))
+
+(t/deftest calculate-to-hit-test
+  (t/testing "return to-hit numbers for attacks"
+    (t/is (= (sut/calculate-to-hit (:attack/regular (sut/->targeting attacker1 target1 board layout :attack/regular))) 6) "Attacker1 -> Target1")
+    (t/is (= (sut/calculate-to-hit (:attack/regular (sut/->targeting heated-attacker target1 board layout :attack/regular))) 7) "Heated-attacker -> Target1")
+    (t/is (= (sut/calculate-to-hit (:attack/regular (sut/->targeting wooded-unit target1 board layout :attack/regular))) 6) "Wooded attacker -> Target1")
+    (t/is (= (sut/calculate-to-hit (:attack/regular (sut/->targeting attacker1 wooded-unit board layout :attack/regular))) 7) "Attacker1 -> Wooded target")
+    (t/is (= (sut/calculate-to-hit (:attack/regular (sut/->targeting target1 attacker1 board layout :attack/regular))) 6) "Target 1 -> Attacker 1")
+    (t/is (= (sut/calculate-to-hit (:attack/regular (sut/->targeting blinded-attacker blinded-target board layout :attack/regular))) ##Inf) "Blinded attacker -> Blinded target")
+    (t/is (= (sut/calculate-to-hit (:attack/regular (sut/->targeting blinded-target blinded-attacker board layout :attack/regular))) ##Inf) "Blinded target -> Blinded Attacker")))
+
+(t/deftest print-attack-roll
+  (t/testing "Return minimum attack roll result"
+    (t/is (= (sut/print-attack-roll (:attack/regular (sut/->targeting attacker1 target1 board layout :attack/regular)) false) "To Hit: 6 (72%)"))
+    (t/is (= (sut/print-attack-roll (:attack/regular (sut/->targeting heated-attacker target1 board layout :attack/regular)) false) "To Hit: 7 (58%)"))
+    (t/is (= (sut/print-attack-roll (:attack/regular (sut/->targeting wooded-unit target1 board layout :attack/regular)) false) "To Hit: 6 (72%)"))
+    (t/is (= (sut/print-attack-roll (:attack/regular (sut/->targeting attacker1 wooded-unit board layout :attack/regular)) false) "To Hit: 7 (58%)"))
+    (t/is (= (sut/print-attack-roll (:attack/regular (sut/->targeting target1 attacker1 board layout :attack/regular)) false) "To Hit: 6 (72%)"))
+    (:attack/regular (t/is (= (sut/print-attack-roll (:attack/regular (sut/->targeting blinded-attacker blinded-target board layout :attack/regular)) false)
+                              "Line of sight blocked")))
+    (t/is (= (sut/print-attack-roll (:attack/regular (sut/->targeting blinded-target blinded-attacker board layout :attack/regular)) false)
+             "Line of sight blocked")))
+  (t/testing "Return full attack roll result"
+    (t/is (= (sut/print-attack-roll (:attack/regular (sut/->targeting attacker1 target1 board layout :attack/regular)) true)
+             "To Hit: 6 (72%): + 4 (Pilot skill) + 0 (Fire-control damage) + 0 (Attacker moved) + 2 (Target movement) + 0 (Attacker heat) + 0 (Clear line of sight) + 0 (No intervening woods) + 0 (Target 1 hexes away)"))
+    (t/is (= (sut/print-attack-roll (:attack/regular (sut/->targeting heated-attacker target1 board layout :attack/regular)) true)
+             "To Hit: 7 (58%): + 4 (Pilot skill) + 0 (Fire-control damage) + 0 (Attacker moved) + 2 (Target movement) + 1 (Attacker heat) + 0 (Clear line of sight) + 0 (No intervening woods) + 0 (Target 1 hexes away)"))
+    (t/is (= (sut/print-attack-roll (:attack/regular (sut/->targeting wooded-unit target1 board layout :attack/regular)) true)
+             "To Hit: 6 (72%): + 4 (Pilot skill) + 0 (Fire-control damage) + 0 (Attacker moved) + 2 (Target movement) + 0 (Attacker heat) + 0 (Clear line of sight) + 0 (No intervening woods) + 0 (Target 2 hexes away)"))
+    (t/is (= (sut/print-attack-roll (:attack/regular (sut/->targeting attacker1 wooded-unit board layout :attack/regular)) true)
+             "To Hit: 7 (58%): + 4 (Pilot skill) + 0 (Fire-control damage) + 0 (Attacker moved) + 2 (Target movement) + 0 (Attacker heat) + 0 (Clear line of sight) + 1 (Target in woods) + 0 (Target 3 hexes away)"))
+    (t/is (= (sut/print-attack-roll (:attack/regular (sut/->targeting target1 attacker1 board layout :attack/regular)) true)
+             "To Hit: 6 (72%): + 4 (Pilot skill) + 0 (Fire-control damage) + 0 (Attacker moved) + 2 (Target movement) + 0 (Attacker heat) + 0 (Clear line of sight) + 0 (No intervening woods) + 0 (Target 1 hexes away)"))
+    (t/is (= (sut/print-attack-roll (:attack/regular (sut/->targeting blinded-attacker blinded-target board layout :attack/regular)) true)
+             "Line of sight blocked"))
+    (t/is (= (sut/print-attack-roll (:attack/regular (sut/->targeting blinded-target blinded-attacker board layout :attack/regular)) true)
+             "Line of sight blocked"))))
+
+(t/deftest test-attack-confirmation-choices
+  (t/testing "Tests attacks"
+    (t/is (= (sut/attack-confirmation-choices attacker1 target1 board layout)
+             {:attack/charge
+              {:targeting/attack-data {:targeting/amm {:targeting/description "Attacker moved", :targeting/value 0}, :targeting/fc-damage {:targeting/description "Fire-control damage", :targeting/value 0}, :targeting/heat {:targeting/description "No heat applied", :targeting/value 0}, :targeting/los {:targeting/description "Clear line of sight", :targeting/value 0}, :targeting/range-mod {:targeting/description "Target 1 hexes away", :targeting/value 0}, :targeting/skill {:targeting/description "Pilot skill", :targeting/value 4}, :targeting/tmm {:targeting/description "Target movement", :targeting/value 2}, :targeting/woods {:targeting/description "No intervening woods", :targeting/value 0}}, :targeting/attack-type :attack/charge, :targeting/attacker "Wolfhound WLF-2", :targeting/damage "1", :targeting/distance 1, :targeting/rear-attack? false, :targeting/target "Wolfhound WLF-2"},
+              :attack/physical {:targeting/attack-data {:targeting/amm {:targeting/description "Attacker moved", :targeting/value 0}, :targeting/fc-damage {:targeting/description "Fire-control damage", :targeting/value 0}, :targeting/heat {:targeting/description "No heat applied", :targeting/value 0}, :targeting/los {:targeting/description "Clear line of sight", :targeting/value 0}, :targeting/range-mod {:targeting/description "Target 1 hexes away", :targeting/value 0}, :targeting/skill {:targeting/description "Pilot skill", :targeting/value 4}, :targeting/tmm {:targeting/description "Target movement", :targeting/value 2}, :targeting/woods {:targeting/description "No intervening woods", :targeting/value 0}}, :targeting/attack-type :attack/physical, :targeting/attacker "Wolfhound WLF-2", :targeting/damage "1", :targeting/distance 1, :targeting/rear-attack? false, :targeting/target "Wolfhound WLF-2"},
+              :attack/rear {:targeting/attack-data {:targeting/amm {:targeting/description "Attacker moved", :targeting/value 0}, :targeting/fc-damage {:targeting/description "Fire-control damage", :targeting/value 0}, :targeting/heat {:targeting/description "Attacker heat", :targeting/value 0}, :targeting/los {:targeting/description "Clear line of sight", :targeting/value 0}, :targeting/range-mod {:targeting/description "Target 1 hexes away", :targeting/value 0}, :targeting/skill {:targeting/description "Pilot skill", :targeting/value 4}, :targeting/tmm {:targeting/description "Target movement", :targeting/value 2}, :targeting/woods {:targeting/description "No intervening woods", :targeting/value 0}}, :targeting/attack-type :attack/rear, :targeting/attacker "Wolfhound WLF-2", :targeting/damage "1", :targeting/distance 1, :targeting/rear-attack? false, :targeting/target "Wolfhound WLF-2"},
+              :attack/regular {:targeting/attack-data {:targeting/amm {:targeting/description "Attacker moved", :targeting/value 0}, :targeting/fc-damage {:targeting/description "Fire-control damage", :targeting/value 0}, :targeting/heat {:targeting/description "Attacker heat", :targeting/value 0}, :targeting/los {:targeting/description "Clear line of sight", :targeting/value 0}, :targeting/range-mod {:targeting/description "Target 1 hexes away", :targeting/value 0}, :targeting/skill {:targeting/description "Pilot skill", :targeting/value 4}, :targeting/tmm {:targeting/description "Target movement", :targeting/value 2}, :targeting/woods {:targeting/description "No intervening woods", :targeting/value 0}}, :targeting/attack-type :attack/regular, :targeting/attacker "Wolfhound WLF-2", :targeting/damage "3", :targeting/distance 1, :targeting/rear-attack? false, :targeting/target "Wolfhound WLF-2"}}))))
+
 ; (t/deftest test-take-damage
 ;   (t/testing "Test armor only damage."
 ;     (t/is (= (sut/take-damage attacker1 2)

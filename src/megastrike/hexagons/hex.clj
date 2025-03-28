@@ -1,6 +1,7 @@
 (ns megastrike.hexagons.hex
   (:require
    [clojure.math :as math]
+   [clojure.spec.alpha :as s]
    [com.brunobonacci.mulog :as mu]))
 
 (defn hexagon
@@ -8,8 +9,7 @@
   ([p q]
    (hexagon p q (* (+ p q) -1)))
   ([p q r]
-   (let [hex {:p p :q q :r r}]
-     hex)))
+   (s/assert :hex/location {:hex/p p :hex/q q :hex/r r})))
 
 (defn offset->hex
   "Calculates a hex based on an 'offset' hex address. The input in in the format of [x y]."
@@ -23,14 +23,14 @@
 
 (defn hex->offset
   "Calculates an offset address (x,y) based on a 3D address."
-  [{:keys [p q]}]
+  [{:keys [hex/p hex/q]}]
   (let [row (int (+ q (math/floor (/ (+ p (* (mod (abs p) 2) -1)) 2))))
         col p]
     {:x col :y row}))
 
 (defn same-hex
   "A hex is the same if the p,q, and r addresses are the same."
-  [{q1 :q p1 :p r1 :r} {q2 :q p2 :p r2 :r}]
+  [{q1 :hex/q p1 :hex/p r1 :hex/r} {q2 :hex/q p2 :hex/p r2 :hex/r}]
   (and (= p1 p2)
        (= q1 q2)
        (= r1 r2)))
@@ -39,7 +39,7 @@
   "Use Cartesian addition to add two hexagons together."
   [hex1 hex2]
   (try
-    (hexagon (+ (:p hex1) (:p hex2)) (+ (:q hex1) (:q hex2)) (+ (:r hex1) (:r hex2)))
+    (hexagon (+ (:hex/p hex1) (:hex/p hex2)) (+ (:hex/q hex1) (:hex/q hex2)) (+ (:hex/r hex1) (:hex/r hex2)))
     (catch Exception e
       (mu/log ::hex-addition-failed
               :hex1 hex1
@@ -50,7 +50,7 @@
   "Use Cartesian subtraction to add two hexagons together."
   [hex1 hex2]
   (try
-    (hexagon (- (:p hex1) (:p hex2)) (- (:q hex1) (:q hex2)) (- (:r hex1) (:r hex2)))
+    (hexagon (- (:hex/p hex1) (:hex/p hex2)) (- (:hex/q hex1) (:hex/q hex2)) (- (:hex/r hex1) (:hex/r hex2)))
     (catch  Exception e
       (mu/log ::hex-subtraction-failed
               :hex1 hex1
@@ -59,23 +59,23 @@
 
 (defn multiplication
   "Use Cartesian multiplication to multipy a hex by a value x."
-  [{:keys [p q r]} x]
+  [{:keys [hex/p hex/q hex/r]} x]
   (hexagon (* p x) (* q x) (* r x)))
 
 (defn distance
   "The distance between two hexes using 3d addresses is half of the sum of the differences of the address hexes."
   [hex1 hex2]
-  (let [{:keys [p q r]} (subtraction hex1 hex2)]
+  (let [{:keys [hex/p hex/q hex/r]} (subtraction hex1 hex2)]
     (/ (+ (abs p) (abs q) (abs r)) 2)))
 
 (def ordinals
   "Defines the neighbors in each direction."
-  (list {:p 1  :q 0  :r -1}
-        {:p 1  :q -1 :r 0}
-        {:p 0  :q -1 :r 1}
-        {:p -1 :q 0  :r 1}
-        {:p -1 :q 1  :r 0}
-        {:p 0  :q 1  :r -1}))
+  (list {:hex/p 1  :hex/q 0  :hex/r -1}
+        {:hex/p 1  :hex/q -1 :hex/r 0}
+        {:hex/p 0  :hex/q -1 :hex/r 1}
+        {:hex/p -1 :hex/q 0  :hex/r 1}
+        {:hex/p -1 :hex/q 1  :hex/r 0}
+        {:hex/p 0  :hex/q 1  :hex/r -1}))
 
 (defn direction
   "Returns the coordinate transformation to select a hex in a given direction"
@@ -106,7 +106,7 @@
 
 (defn hex->pixel
   "Converts a given hex address to the pixel at the center of the hex."
-  [{:keys [p q]} {:keys [hex-to-pixel-matrix x-size scale x-origin y-size y-origin]}]
+  [{:keys [hex/p hex/q]} {:keys [hex-to-pixel-matrix x-size scale x-origin y-size y-origin]}]
   {:x (+ (* (+ (* (get hex-to-pixel-matrix 0) p)
                (* (get hex-to-pixel-matrix 1) q))
             x-size
@@ -134,7 +134,7 @@
     (flatten (map #(find-hex-corner center % layout) (list 0 1 2 3 4 5)))))
 
 (defn round
-  [{:keys [p q r]}]
+  [{:keys [hex/p hex/q hex/r]}]
   (let [p-int (math/round p)
         q-int (math/round q)
         r-int (math/round r)
@@ -157,13 +157,13 @@
   (let [origin (hex->pixel o layout)
         angle (math/to-degrees (math/atan2 (- (:x destination) (:x origin)) (- (:y destination) (:y origin))))]
     (cond
-      (<= 150 (abs angle))  :n
-      (and (> 150 angle)  (>= angle 90))  :ne
-      (and (> 90 angle)  (>= angle 30)) :se
-      (and (> 30 angle) (>= angle -30)) :s
-      (and (> -30 angle) (>= angle -90)) :sw
-      (and (> -90 angle) (>= angle -150)) :nw
-      :else :n)))
+      (<= 150 (abs angle))  :direction/n
+      (and (> 150 angle)  (>= angle 90))  :direction/ne
+      (and (> 90 angle)  (>= angle 30)) :direction/se
+      (and (> 30 angle) (>= angle -30)) :direction/s
+      (and (> -30 angle) (>= angle -90)) :direction/sw
+      (and (> -90 angle) (>= angle -150)) :direction/nw
+      :else :direction/n)))
 
 ;; Commented out in case I need it later. I believe that cljfx
 ;; has given me this feature for "free" when I added a click event

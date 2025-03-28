@@ -17,7 +17,7 @@
 
 (defn crit-count
   [unit crit-type]
-  (count (filter #(= crit-type %) (get-in unit [:unit/criticals :crits/taken]))))
+  (or (count (filter #(= crit-type %) (get-in unit [:unit/criticals :crits/taken]))) 0))
 
 (defn ->damage
   [{:keys [armor structure damage crits] :or {crits []}}]

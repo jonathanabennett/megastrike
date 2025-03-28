@@ -21,30 +21,30 @@
 ;; Schemas and variable definitions
 
 (def directions
-  {:n  {:angle 0
-        :ordinal 2
-        :points [8 9 10 11]
-        :rear :s}
-   :ne {:angle 60
-        :ordinal 1
-        :points [10 11 0 1]
-        :rear :sw}
-   :se {:angle 120
-        :ordinal 0
-        :points [0 1 2 3]
-        :rear :nw}
-   :s  {:angle 180
-        :ordinal 5
-        :points [2 3 4 5]
-        :rear :n}
-   :sw {:angle 240
-        :ordinal 4
-        :points [4 5 6 7]
-        :rear :ne}
-   :nw {:angle 300
-        :ordinal 3
-        :points [6 7 8 9]
-        :rear :se}})
+  {:direction/n  {:angle 0
+                  :ordinal 2
+                  :points [8 9 10 11]
+                  :rear :direction/s}
+   :direction/ne {:angle 60
+                  :ordinal 1
+                  :points [10 11 0 1]
+                  :rear :direction/sw}
+   :direction/se {:angle 120
+                  :ordinal 0
+                  :points [0 1 2 3]
+                  :rear :direction/nw}
+   :direction/s  {:angle 180
+                  :ordinal 5
+                  :points [2 3 4 5]
+                  :rear :direction/n}
+   :direction/sw {:angle 240
+                  :ordinal 4
+                  :points [4 5 6 7]
+                  :rear :direction/ne}
+   :direction/nw {:angle 300
+                  :ordinal 3
+                  :points [6 7 8 9]
+                  :rear :direction/se}})
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MV and TMM methods
@@ -55,6 +55,11 @@
 
 (defn selected-or-default [unit]
   (or (:move/selected unit) (:move/default unit)))
+
+(defn destination-or-location [{:keys [unit/path unit/location]}]
+  (if (pos? (count path))
+    (last path)
+    location))
 
 (defn available-mv
   ([u mv-type]
@@ -131,10 +136,10 @@
   (some #(not= (get % :stacking false) unit-force) path))
 
 (defn set-location [u hex]
-  (assoc u :unit/location (select-keys hex [:p :q :r])))
+  (assoc u :unit/location (select-keys hex [:hex/p :hex/q :hex/r])))
 
 (defn deployed? [u]
-  (get-in u [u :unit/location :q] false))
+  (get-in u [u :unit/location :hex/q] false))
 
 (defn facing [u]
   (get directions (:unit/facing u)))
@@ -179,7 +184,7 @@
 (defn can-move?
   ([u path]
    (cond
-     (not (hex/same-hex (first path) (:location u)))
+     (not (hex/same-hex (first path) (:unit/location u)))
      (do (mu/log ::move-failed
                  :reason "Path doesn't start at unit's location.")
          false)

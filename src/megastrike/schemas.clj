@@ -53,23 +53,6 @@
 (s/def :ability/record (s/keys :req [:ability/output]))
 (s/def :unit/abilities (s/map-of keyword? :ability/record))
 
-;; Targeting definitions
-(s/def :targeting/value (s/or
-                         :targeting/possible int?
-                         :targeting/imposible (s/double-in :infinite? true)))
-(s/def :targeting/description string?)
-(s/def :targeting/modifier (s/keys :req [:targeting/value :targeting/description]))
-(s/def :targeting/attacker :unit/id)
-(s/def :targeting/target :unit/id)
-(s/def :targeting/attack-type :attack/type)
-(s/def :targeting/mods (s/coll-of :targeting/modifier))
-(s/def :targeting/distance nat-int?)
-(s/def :targeting/rear-attack? boolean?)
-(s/def :targeting/damage string?)
-(s/def :targeting/firing-solution
-  (s/keys :req [:targeting/attacker :targeting/target :targeting/attack-type :targeting/mods :targeting/distance
-                :targeting/rear-attack? :targeting/damage]))
-
 ;Attack/damage definitions
 (s/def :attack/s nat-int?)
 (s/def :attack/s* boolean?)
@@ -81,6 +64,7 @@
 (s/def :attack/e* boolean?)
 (s/def :attack/damage nat-int?)
 (s/def :attack/self boolean?)
+(s/def :attack/physicals #{:attack/physical :attack/charge :attack/dfa})
 (s/def :attack/type
   #{:attack/regular :attack/physical :attack/charge :attack/dfa :attack/ht :attack/rear :attack/lrm :attack/srm :attack/ac})
 (s/def :attack/record
@@ -112,6 +96,31 @@
 (s/def :unit/criticals
   (s/keys :req [:crits/taken
                 :crits/unapplied]))
+
+;; Targeting definitions
+(s/def :targeting/value (s/or
+                         :targeting/possible int?
+                         :targeting/imposible (s/double-in :infinite? true)))
+(s/def :targeting/description string?)
+(s/def :targeting/modifier (s/keys :req [:targeting/value :targeting/description]))
+(s/def :targeting/skill :targeting/modifier)
+(s/def :targeting/fc-damage :targeting/modifier)
+(s/def :targeting/amm :targeting/modifier)
+(s/def :targeting/tmm :targeting/modifier)
+(s/def :targeting/heat :targeting/modifier)
+(s/def :targeting/los :targeting/modifier)
+(s/def :targeting/woods :targeting/modifier)
+(s/def :targeting/range-mod :targeting/modifier)
+(s/def :targeting/attack-type :attack/type)
+(s/def :targeting/attack-data
+  (s/keys :req [:targeting/skill :targeting/fc-damage :targeting/amm :targeting/tmm :targeting/heat :targeting/los :targeting/woods
+                :targeting/range-mod]))
+(s/def :targeting/distance nat-int?)
+(s/def :targeting/rear-attack? boolean?)
+(s/def :targeting/damage string?)
+(s/def :targeting/firing-solution
+  (s/keys :req [:targeting/attacker :targeting/target :targeting/attack-type :targeting/attack-data :targeting/distance
+                :targeting/rear-attack? :targeting/damage]))
 
 ;; Heat definitions
 (s/def :unit/current-heat (s/int-in 0 5))

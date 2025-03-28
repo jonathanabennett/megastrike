@@ -3,7 +3,6 @@
   attack options for the GUI to consume."
   (:require
    [clojure.spec.alpha :as s]
-   [clojure.string :as str]
    [clojure.string :as string]
    [megastrike.abilities :as abilities]
    [megastrike.board :as board]
@@ -84,10 +83,10 @@
 
 (defn physical-damage
   [unit attack]
-  ((condp = (:attack/type attack)
-     :attack/charge (calc-charge-damage unit)
-     :attack/dfa (calc-dfa-damage unit)
-     (:unit/size unit))))
+  (str (condp = (get-in unit [:unit/attacks attack :attack/attack-type])
+         :attack/charge (calc-charge-damage unit)
+         :attack/dfa (calc-dfa-damage unit)
+         (:unit/size unit))))
 
 (defn print-damage-bracket
   [attack bracket dmg]
@@ -103,11 +102,11 @@
   (let [atk (get (:unit/attacks unit) attack)
         dmg (damage/crit-count unit :crits/weapon)]
     (cond
-      (and (= distance 1) (or (= attack :attacks/physical) (= attack :attacks/charge) (= attack :attacks/dfa))) (physical-damage unit attack)
-      (<= distance 3) (print-damage-bracket atk :attacks/s dmg)
-      (<= distance 12) (print-damage-bracket atk :attacks/m dmg)
-      (<= distance 21) (print-damage-bracket atk :attacks/l dmg)
-      (<= distance 30) (print-damage-bracket atk :attacks/e dmg)
+      (and (= distance 1) (s/valid? :attack/physicals attack)) (physical-damage unit attack)
+      (<= distance 3) (print-damage-bracket atk :attack/s dmg)
+      (<= distance 12) (print-damage-bracket atk :attack/m dmg)
+      (<= distance 21) (print-damage-bracket atk :attack/l dmg)
+      (<= distance 30) (print-damage-bracket atk :attack/e dmg)
       :else 0)))
 
 (defn ->targeting-mod
@@ -197,65 +196,68 @@
   (->targeting-mod "Target movement" (movement/modified-tmm unit)))
 
 (defn ->targeting
-  ([{:keys [attacks] :as attacker} target board layout attack]
-   (let [atk-hex (board/find-hex (or (last (:unit/path attacker)) (:unit/location attacker)) board)
+  ([attacker target board layout attack]
+   (let [atk-hex (board/find-hex (movement/destination-or-location attacker) board)
          tgt-hex (board/find-hex (:unit/location target) board)
          line (board/line atk-hex tgt-hex board)
          distance (hex/distance atk-hex tgt-hex)
-         attack-data (conj []
-                           (->targeting-mod "Pilot skill" (get-in attacker [:unit/pilot :pilot/skill]))
-                           (->targeting-mod "Fire-control damage" (* (damage/crit-count attacker :crits/fire-control) 2))
-                           (amm attacker)
-                           (targeting-tmm target)
-                           (when (not (some attack #{:attack/physical :attack/charge :attack/dfa}))
-                             (->targeting-mod "Attacker heat" (:unit/current-heat attacker)))
-                           (when (height-checker attacker target line)
-                             (->targeting-mod "Line of sight blocked" ##Inf))
-                           (woods-mod line)
-                           (calculate-distance-mod distance))
-         damage (print-damage attacker attacks attack range)
-         targeting {:attacker attacker
-                    :target target
-                    :attack attack
-                    :attack-data attack-data
-                    :range distance
-                    :rear-attack? (is-behind? (:unit/location target) (or (last (:unit/path attacker)) (:unit/location attacker)) (movement/rear target) layout)
-                    :damage damage}]
-     [attack targeting]))
+         attack-data (s/assert :targeting/attack-data
+                               {:targeting/skill (->targeting-mod "Pilot skill" (get-in attacker [:unit/pilot :pilot/skill]))
+                                :targeting/fc-damage (->targeting-mod "Fire-control damage" (* (damage/crit-count attacker :crits/fire-control) 2))
+                                :targeting/amm (amm attacker)
+                                :targeting/tmm (targeting-tmm target)
+                                :targeting/heat (if (s/valid? :attack/physicals attack)
+                                                  (->targeting-mod "No heat applied" 0)
+                                                  (->targeting-mod "Attacker heat" (:unit/current-heat attacker)))
+                                :targeting/los (if (height-checker attacker target line)
+                                                 (->targeting-mod "Line of sight blocked" ##Inf)
+                                                 (->targeting-mod "Clear line of sight" 0))
+                                :targeting/woods (woods-mod line)
+                                :targeting/range-mod (calculate-distance-mod distance)})
+         damage (print-damage attacker attack distance)
+         firing-solution (s/assert :targeting/firing-solution
+                                   {:targeting/attacker (:unit/id attacker)
+                                    :targeting/target (:unit/id target)
+                                    :targeting/attack-type attack
+                                    :targeting/attack-data attack-data
+                                    :targeting/distance distance
+                                    :targeting/rear-attack? (is-behind? tgt-hex atk-hex (movement/rear target) layout)
+                                    :targeting/damage damage})]
+     {attack firing-solution}))
   ([{:keys [atk-type] :as attacker} target board layout]
    (->targeting attacker target board layout atk-type)))
 
 (defn calculate-to-hit
-  [{:keys [attack-data]}]
-  (let [data (reduce + (map #(get (first %) :value 0) attack-data))]
+  [{:keys [targeting/attack-data]}]
+  (let [data (reduce + (map #(get % :targeting/value 0) (vals attack-data)))]
     data))
 
 (defn attack-roll-parser
-  [[m]]
-  (if (neg? (:value m 0))
-    (str "- " (abs (:value m 0)) " (" (:desc m) ") ")
-    (str "+ " (:value m 0) " (" (:desc m) ") ")))
+  [m]
+  (if (neg? (:targeting/value m 0))
+    (str "- " (abs (:targeting/value m 0)) " (" (:targeting/description m) ") ")
+    (str "+ " (:targeting/value m 0) " (" (:targeting/description m) ") ")))
 
 (defn print-attack-roll
   ([attack-roll]
    (print-attack-roll attack-roll true))
-  ([{:keys [attack-data] :as attack-roll} detailed?]
-   (if-let [failed (some #(= ##Inf (:value (first %))) attack-data)]
-     (:desc failed)
+  ([{:keys [targeting/attack-data] :as attack-roll} detailed?]
+   (if-let [failed (first (filter #(= ##Inf (:targeting/value %)) (vals attack-data)))]
+     (:targeting/description failed)
      (let [to-hit (calculate-to-hit attack-roll)
            to-hit-str (str "To Hit: " to-hit " (" (get utils/probabilities to-hit) "%)")]
        (if detailed?
-         (string/trim (str to-hit-str ": " (reduce str (map attack-roll-parser attack-data))))
+         (string/trim (str to-hit-str ": " (reduce str (map attack-roll-parser (vals attack-data)))))
          (string/trim to-hit-str))))))
 
 (defn attack-confirmation-choices
   [attacker target board layout]
-  (map #(->targeting attacker target board layout %) (keys (:unit/attacks attacker))))
+  (into {} (map #(->targeting attacker target board layout %) (keys (:unit/attacks attacker)))))
 
 (defn roll-damage
   ([unit attack range rear-attack?]
    (let [damage-str (print-damage unit attack range)
-         damage (if (and (str/ends-with? damage-str "*") (<= 4 (utils/roll-die)))
+         damage (if (and (string/ends-with? damage-str "*") (<= 4 (utils/roll-die)))
                   1
                   (Integer/parseInt damage-str))]
      (if rear-attack?
@@ -271,3 +273,5 @@
      (if rear-attack?
        (inc dmg)
        dmg))))
+
+
