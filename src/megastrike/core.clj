@@ -11,8 +11,7 @@
    [megastrike.combat-unit :as cu]
    [megastrike.gui.events :as events]
    [megastrike.gui.views :as views]
-   [megastrike.hexagons.hex :as hex]
-   [megastrike.schemas :as schemas])
+   [megastrike.hexagons.hex :as hex])
   (:import
    (javafx.application Platform)))
 
