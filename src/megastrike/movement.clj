@@ -64,7 +64,8 @@
 (defn available-mv
   ([u mv-type]
    (let [base-move (mv-type (:unit/move-modes u))
-         mv-hits (damage/crit-count u :crit/mv)]
+         mv-hits (damage/crit-count u :crits/mv)]
+     (prn mv-hits)
      (loop [mv base-move
             n 0]
        (if (= n mv-hits)
@@ -79,9 +80,9 @@
   "Consumes a vector containing a move type as a keyword and a distance and prints it for human consumption."
   [unit mv-vec]
   (cond
-    (= (first mv-vec) :walk) (available-mv (first mv-vec))
-    (= (first mv-vec) :jump) (str (available-mv (first mv-vec)) "j")
-    :else (str (available-mv unit (first mv-vec)) (name (first mv-vec)))))
+    (= (first mv-vec) :move/walk) (available-mv unit :move/walk)
+    (= (first mv-vec) :move/jump) (str (available-mv unit :move/jump) "j")
+    :else (str (available-mv unit (first mv-vec)) (first mv-vec))))
 
 (defn print-movement
   "Loops over all movements a unit has a pretty prints them."
@@ -98,6 +99,8 @@
 
 (defn astar
   [origin destination board heuristic mv-type unit-force]
+  (prn origin)
+  (prn (board/find-hex destination board))
   (let [guess-goal-dist #(heuristic % destination)
         tiles (board/tiles board)
         neighbors #(board/neighbors board %)
@@ -129,7 +132,7 @@
 (defn move-cost
   [{:keys [unit/selected unit/default unit/path unit/battle-force]}]
   (let [movement-mode (or selected default)]
-    (board/path-cost path movement-mode battle-force)))
+    (reduce + (board/path-cost path movement-mode battle-force))))
 
 (defn unblocked-path?
   [path unit-force]
@@ -183,6 +186,8 @@
 
 (defn can-move?
   ([u path]
+   (prn u)
+   (prn path)
    (cond
      (not (hex/same-hex (first path) (:unit/location u)))
      (do (mu/log ::move-failed
@@ -202,22 +207,26 @@
                        :path path)
                false)))
   ([u]
-   (can-move? u (:path u))))
+   (can-move? u (:unit/path u))))
 
 (defn find-path
   [u destination board]
-  (loop [path (astar (:unit/location u) destination board hex/distance (selected-or-default u) (:unit/battle-force u))]
+  (loop [path (astar (board/find-hex (:unit/location u) board) (board/find-hex destination board) board hex/distance (selected-or-default u) (:unit/battle-force u))]
+    (prn path)
     (if (or (empty? path) (can-move? u path))
       path
-      (recur (butlast path)))))
+      (do
+        (prn path)
+        (recur (into [] (butlast path)))))))
 
 (defn set-path
   [u destination board]
   (let [moving-unit (if (:unit/selected u) u (assoc u :unit/selected (:unit/default u)))
         path (find-path u destination board)]
-    (if (seq? path)
-      (assoc moving-unit :unit/path path)
-      u)))
+    (prn path)
+    (if (empty? path)
+      u
+      (assoc moving-unit :unit/path path))))
 
 (defn move-unit
   [u]

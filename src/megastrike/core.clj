@@ -23,7 +23,7 @@
 (def *state
   (atom
    (fx/create-context
-    {:mul (cu/filter-units cu/mul :type schemas/ground-units)
+    {:mul (cu/filter-units cu/mul :type :mul/ground-units)
      :mul-search-term ""
      :display :lobby
      :title "Megastrike"

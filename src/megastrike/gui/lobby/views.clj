@@ -27,27 +27,27 @@
    :alignment :top-center
    :children [{:fx/type filter-button
                :field :type
-               :values schemas/ground-units
+               :values :mul/ground-units
                :text "All Ground Units"}
               {:fx/type filter-button
                :field :type
-               :values schemas/bm-units
+               :values :mul/bm
                :text "Battlemechs"}
               {:fx/type filter-button
                :field :type
-               :values schemas/mech-units
+               :values :mul/mechs
                :text "All Mechs"}
               {:fx/type filter-button
                :field :type
-               :values schemas/conventional-units
+               :values :mul/conventional
                :text "All Conventional Units"}
               {:fx/type filter-button
                :field :type
-               :values schemas/vehicle-units
+               :values :mul/vehicle
                :text "All vehicles"}
               {:fx/type filter-button
                :field :type
-               :values schemas/infantry-units
+               :values :mul/infantry
                :text "All Infantry"}]})
 
 (defn mul-table [{:keys [fx/context]}]
@@ -366,4 +366,3 @@
               {:fx/type :button
                :text "Launch Game"
                :on-action {:event-type ::lobby-events/launch-game :fx/sync true :view :game}}]})
-

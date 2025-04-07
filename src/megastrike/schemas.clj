@@ -2,14 +2,14 @@
   (:require
    [clojure.spec.alpha :as s]))
 
-(def bm-units #{:bm})
-(def mech-units #{:bm :im :pm})
-(def vehicle-units #{:sv :cv})
-(def infantry-units #{:ba :ci})
-(def conventional-units (into #{} (concat vehicle-units infantry-units)))
-(def ground-units (into #{} (concat mech-units conventional-units)))
-(def aero-units #{:ss :ws :js :ds :da :sc :cf :af})
-(def all-types (into #{} (concat ground-units aero-units)))
+(s/def :mul/bm #{:type/bm})
+(s/def :mul/mechs #{:type/bm :type/im :type/pm})
+(s/def :mul/vehicle #{:type/sv :type/cv})
+(s/def :mul/infantry #{:type/ba :type/ci})
+(s/def :mul/conventional #{:type/sv :type/cv :type/ba :type/ci})
+(s/def :mul/ground-units #{:type/bm :type/im :type/pm :type/sv :type/cv :type/ba :type/ci})
+(s/def :mul/aero #{:type/ss :type/ws :type/js :type/ds :type/da :type/sc :type/cf :type/af})
+(s/def :mul/all #{:type/bm :type/im :type/pm :type/sv :type/cv :type/ba :type/ci :type/ss :type/ws :type/js :type/ds :type/da :type/sc :type/cf :type/af})
 
 (s/def :hex/p int?)
 (s/def :hex/q int?)
@@ -30,8 +30,7 @@
                     :role/attack-fighter :role/dogfighter :role/fast-dogfighter :role/fire-support :role/interceptor
                     :role/transport ; Aero roles
                     :role/none :role/undetermined}) ;unknown roles
-(s/def :unit/type #{:type/bm :type/im :type/pm :type/sv :type/cv :type/ba :type/ci
-                    :type/sc :type/ss :type/ws :type/js :type/ds :type/da :type/cf :type/af})
+(s/def :unit/type :mul/all)
 (s/def :unit/size (s/int-in 1 5))
 
 ;; Movement definitions
@@ -64,19 +63,20 @@
 (s/def :attack/e* boolean?)
 (s/def :attack/damage nat-int?)
 (s/def :attack/self boolean?)
-(s/def :attack/physicals #{:attack/physical :attack/charge :attack/dfa})
-(s/def :attack/type
-  #{:attack/regular :attack/physical :attack/charge :attack/dfa :attack/ht :attack/rear :attack/lrm :attack/srm :attack/ac})
+(s/def :attack/melee-types #{:attack/physical :attack/charge :attack/dfa})
+(s/def :attack/type #{:attack/regular :attack/physical :attack/charge :attack/dfa :attack/ht :attack/rear :attack/lrm :attack/srm :attack/ac})
+(s/def :attack/ranged-info
+  (s/keys :req [:attack/s :attack/s*
+                :attack/m :attack/m*
+                :attack/l :attack/l*
+                :attack/e :attack/e*]))
+(s/def :attack/melee-info
+  (s/keys :req [:attack/type
+                :attack/damage
+                :attack/self]))
 (s/def :attack/record
-  (s/or :attack/ranged
-        (s/keys :req [:attack/s :attack/s*
-                      :attack/m :attack/m*
-                      :attack/l :attack/l*
-                      :attack/e :attack/e*])
-        :attack/physical
-        (s/keys :req [:attack/type
-                      :attack/damage
-                      :attack/self])))
+  (s/or :record/ranged :attack/ranged-info
+        :record/melee :attack/melee-info))
 (s/def :unit/attacks (s/map-of :attack/type :attack/record))
 (s/def :toughness/current nat-int?)
 (s/def :toughness/maximum nat-int?)
