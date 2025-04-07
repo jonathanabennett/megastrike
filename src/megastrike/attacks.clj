@@ -31,7 +31,7 @@
 (defn add-special-attacks
   [abilities]
   (loop [attacks {}
-         atk-abilities (filter #(s/valid? :attack/type (first %)) abilities)]
+         atk-abilities (filter #(contains? #{:attack/ht :attack/rear :attack/lrm :attack/srm :attack/ac} (first %)) abilities)]
     (if (empty? atk-abilities)
       attacks
       (recur (let [atk (first atk-abilities)]
@@ -95,14 +95,14 @@
       (if (pos? dmg)
         "0*"
         0)
-      (str (max (- (get attack bracket) dmg) 0)))))
+      (str (max (- (get attack bracket 0) dmg) 0)))))
 
 (defn print-damage
   [unit attack distance]
   (let [atk (get (:unit/attacks unit) attack)
         dmg (damage/crit-count unit :crits/weapon)]
     (cond
-      (and (= distance 1) (s/valid? :attack/physicals attack)) (physical-damage unit attack)
+      (and (= distance 1) (s/valid? :attack/melee-info atk)) (physical-damage unit attack)
       (<= distance 3) (print-damage-bracket atk :attack/s dmg)
       (<= distance 12) (print-damage-bracket atk :attack/m dmg)
       (<= distance 21) (print-damage-bracket atk :attack/l dmg)
@@ -206,7 +206,7 @@
                                 :targeting/fc-damage (->targeting-mod "Fire-control damage" (* (damage/crit-count attacker :crits/fire-control) 2))
                                 :targeting/amm (amm attacker)
                                 :targeting/tmm (targeting-tmm target)
-                                :targeting/heat (if (s/valid? :attack/physicals attack)
+                                :targeting/heat (if (s/valid? :attack/melee-types attack)
                                                   (->targeting-mod "No heat applied" 0)
                                                   (->targeting-mod "Attacker heat" (:unit/current-heat attacker)))
                                 :targeting/los (if (height-checker attacker target line)
