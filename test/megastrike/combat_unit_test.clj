@@ -5,6 +5,25 @@
    [clojure.test :as t]
    [megastrike.combat-unit :as sut]))
 
+(def test-bm {:unit/abilities {:if {:value 2, :value* false, :ability/output "IF2"}},
+              :unit/attacks {:attack/charge {:attack/damage 0, :attack/self true, :attack/type :attack/charge},
+                             :attack/physical {:attack/damage 3, :attack/self false, :attack/type :attack/physical},
+                             :attack/regular {:attack/e 0, :attack/e* false, :attack/l 2, :attack/l* false, :attack/m 2, :attack/m* false, :attack/s 2, :attack/s* false}},
+              :unit/base-pv 34,
+              :unit/chassis "Archer",
+              :unit/full-name "Archer ARC-2K",
+              :unit/model "ARC-2K",
+              :unit/move-modes {:move/walk 4},
+              :unit/mul-id 73,
+              :unit/overheat 2,
+              :unit/role :role/missile-boat,
+              :unit/size 3,
+              :unit/armor {:toughness/current 6, :toughness/maximum 6, :toughness/unapplied 0},
+              :unit/structure {:toughness/current 6, :toughness/maximum 6, :toughness/unapplied 0},
+              :unit/threshold -1,
+              :unit/tmm 1,
+              :unit/type :type/bm})
+
 (t/deftest test-move-parser
   (t/testing "Valid Mv Strings"
     (t/is (= (sut/parse-movement "8\\\"") {:move/walk 4}))
@@ -22,7 +41,24 @@
         ba-test "952	Elemental Battle Armor	(Headhunter)(Sqd4)	Ambusher	BA	1	6\\\"j	1	1	2	-1	1	FALSE	0	FALSE	0	FALSE	0	FALSE	0	15	AM, CAR4, MEC, RCN, RSD1				"]
     (t/testing "Sample MUL rows"
       (t/is (= (sut/parse-row (first (csv/parse-csv bm-test :delimiter \tab)))
-               {:unit/abilities {:if {:value 2, :value* false, :ability/output "IF2"}}, :unit/armor {:toughness/current 6, :toughness/maximum 6, :toughness/unapplied 0}, :unit/attacks {:attack/charge {:attack/damage 0, :attack/self true, :attack/type :attack/charge}, :attack/physical {:attack/damage 3, :attack/self false, :attack/type :attack/physical}, :attack/regular {:attack/e 0, :attack/e* false, :attack/l 2, :attack/l* false, :attack/m 2, :attack/m* false, :attack/s 2, :attack/s* false}}, :unit/base-pv 34, :unit/chassis "Archer", :unit/full-name "Archer ARC-2K", :unit/model "ARC-2K", :unit/move-modes {:move/walk 4}, :unit/mul-id 73, :unit/overheat 2, :unit/role :role/missile-boat, :unit/size 3, :unit/structure {:toughness/current 6, :toughness/maximum 6, :toughness/unapplied 0}, :unit/threshold -1, :unit/tmm 1, :unit/type :type/bm}))
+               {:unit/abilities {:if {:value 2, :value* false, :ability/output "IF2"}},
+                :unit/attacks {:attack/charge {:attack/damage 0, :attack/self true, :attack/type :attack/charge},
+                               :attack/physical {:attack/damage 3, :attack/self false, :attack/type :attack/physical},
+                               :attack/regular {:attack/e 0, :attack/e* false, :attack/l 2, :attack/l* false, :attack/m 2, :attack/m* false, :attack/s 2, :attack/s* false}},
+                :unit/base-pv 34,
+                :unit/chassis "Archer",
+                :unit/full-name "Archer ARC-2K",
+                :unit/model "ARC-2K",
+                :unit/move-modes {:move/walk 4},
+                :unit/mul-id 73,
+                :unit/overheat 2,
+                :unit/role :role/missile-boat,
+                :unit/size 3,
+                :unit/armor {:toughness/current 6, :toughness/maximum 6, :toughness/unapplied 0},
+                :unit/structure {:toughness/current 6, :toughness/maximum 6, :toughness/unapplied 0},
+                :unit/threshold -1,
+                :unit/tmm 1,
+                :unit/type :type/bm}))
       (t/is (= (sut/parse-row (first (csv/parse-csv cv-test :delimiter \tab)))
                {:unit/abilities {:if {:value 2, :value* false, :ability/output "IF2"}, :srch {:ability/output "SRCH"}, :tur {:ability/output "TUR(1/1/1)"}, :attack/lrm {:l 2, :l* false, :m 2, :m* false, :s 1, :s* false, :ability/output "LRM1/2/2"}, :attack/rear {:l 0, :l* false, :m 0, :m* false, :s 1, :s* false, :ability/output "REAR1/-/-"}}, :unit/armor {:toughness/current 6, :toughness/maximum 6, :toughness/unapplied 0}, :unit/attacks {:attack/charge {:attack/damage 0, :attack/self true, :attack/type :attack/charge}, :attack/lrm {:attack/e 0, :attack/e* false, :attack/l 2, :attack/l* false, :attack/m 2, :attack/m* false, :attack/s 1, :attack/s* false}, :attack/physical {:attack/damage 4, :attack/self false, :attack/type :attack/physical}, :attack/rear {:attack/e 0, :attack/e* false, :attack/l 0, :attack/l* false, :attack/m 0, :attack/m* false, :attack/s 1, :attack/s* false}, :attack/regular {:attack/e 0, :attack/e* false, :attack/l 3, :attack/l* false, :attack/m 5, :attack/m* false, :attack/s 4, :attack/s* false}}, :unit/base-pv 37, :unit/chassis "Puma Assault Tank", :unit/full-name "Puma Assault Tank PAT-001", :unit/model "PAT-001", :unit/move-modes {:move/t 3}, :unit/mul-id 4879, :unit/overheat 0, :unit/role :role/none, :unit/size 4, :unit/structure {:toughness/current 6, :toughness/maximum 6, :toughness/unapplied 0}, :unit/threshold -1, :unit/tmm 1, :unit/type :type/cv}))
       (t/is (= (sut/parse-row (first (csv/parse-csv sv-test :delimiter \tab)))
