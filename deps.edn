@@ -10,6 +10,18 @@
  :aliases
  {;; Run with clj -T:build function-in-build
   :run {:main-opts ["-m" "megastrike.core"]}
+  :test/cloverage {:extra-paths ["test"]
+                   :extra-deps {lambdaisland/kaocha {:mvn/version "1.77.1236"}
+                                lambdaisland/kaocha-cloverage {:mvn/version "1.1.89"}}
+                   :exec-fn kaocha.runner/exec-fn
+                   :exec-args {:fail-fast? false
+                               :randomize? false
+                               :plugins [:kaocha.plugin/cloverage]
+                               :cloverage/opts {:output "target/cloverage"
+                                                :low-watermark 65
+                                                :high-watermark 85
+                                                :html? true
+                                                :summary? true}}}
   :build {:deps {io.github.clojure/tools.build {:git/tag "v0.10.5" :git/sha "2a21b7a"}}
           :ns-default build
           :jvm-opts ["-Dcljfx.skip-javafx-initialization=true"]}}}
