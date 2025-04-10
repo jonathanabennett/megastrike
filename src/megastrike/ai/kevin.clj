@@ -16,7 +16,7 @@
   (let [targeting (second (attacks/->targeting attacker target board layout attack))
         target-number (attacks/calculate-to-hit targeting)
         probability (get utils/probabilities target-number 0)
-        toughness (+ (damage/get-remaining-armor target) (* (damage/get-remaining-structure target) 2))
+        toughness (+ (damage/remaining-armor target) (* (damage/remaining-structure target) 2))
         damage (:damage targeting)
         damage-num (if (str/ends-with? damage "*") 0.5 (Integer/parseInt damage))
         expected-damage (/ (* probability damage-num) 100.0)]

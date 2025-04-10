@@ -19,82 +19,18 @@
   [unit crit-type]
   (or (count (filter #(= crit-type %) (get-in unit [:unit/criticals :crits/taken]))) 0))
 
-(defn ->damage
-  [{:keys [armor structure damage crits] :or {crits []}}]
-  (let [arm (if (= (type armor) java.lang.String)
-              (Integer/parseInt armor)
-              (:current armor))
-        struct-int (if (= (type structure) java.lang.String)
-                     (Integer/parseInt structure)
-                     (:current structure))
-        damage (if damage
-                 damage
-                 {:armor arm
-                  :structure struct-int
-                  :crits []})]
-    {:armor (if (= (type armor) java.lang.String)
-              {:current arm
-               :maximum arm}
-              armor)
-     :structure (if (= (type structure) java.lang.String)
-                  {:current struct-int
-                   :maximum struct-int}
-                  structure)
-     :changes damage
-     :crits crits}))
+(defn remaining-structure
+  [unit]
+  (- (get-in unit [:unit/structure :toughness/current]) (get-in unit [:unit/structure :toughness/unapplied])))
 
-(defn get-max
-  [combat kind]
-  (get-in combat [kind :maximum]))
-
-(defn get-current
-  [combat kind]
-  (get-in combat [kind :current]))
-
-(defn get-remaining-armor
-  [{:keys [changes]}]
-  (:armor changes))
-
-(defn get-remaining-structure
-  [{:keys [changes]}]
-  (:structure changes))
-
-(defn get-new-crits
-  [{:keys [changes]}]
-  (:crits changes))
-
-(defn get-crits
-  [{:keys [crits] :as combat}]
-  (concat crits (get-new-crits combat)))
-
-(defn get-heat
-  [{:keys [changes]}]
-  (get changes :heat 0))
-
-(defn destroyed?
-  [combat]
-  (or (:destroyed? combat) (not (pos? (get-current combat :structure)))))
-
-(defn apply-damage
-  [damage]
-  (let [armor (get-remaining-armor damage)
-        structure (get-remaining-structure damage)
-        crits (get-crits damage)
-        destroyed? (get-in damage [:changes :destroyed?] false)]
-    (-> damage
-        (assoc-in [:armor :current] armor)
-        (assoc-in [:structure :current] structure)
-        (assoc :crits crits)
-        (assoc :destroyed? destroyed?)
-        (assoc :changes {:armor armor
-                         :structure structure
-                         :crits []
-                         :destroyed? destroyed?}))))
+(defn remaining-armor
+  [unit]
+  (- (get-in unit [:unit/armor :toughness/current]) (get-in unit [:unit/armor :toughness/unapplied])))
 
 (defn roll-crits
-  [tac penetration]
+  [penetration tac]
   (let [tac-crit (if tac (get criticals (utils/roll2d) nil) nil)
-        pen-crit (if (pos? penetration) (get criticals (utils/roll2d) nil) nil)]
+        pen-crit (if penetration (get criticals (utils/roll2d) nil) nil)]
     (mu/log ::roll-crits
             :tac-crit tac-crit
             :penetration penetration
@@ -103,77 +39,84 @@
 
 (declare take-damage)
 
-(defn add-crit
-  [damage crit]
-  (update-in damage [:changes :crits] conj crit))
-
 (defn destroyed-by-crit
-  [damage crit]
-  (-> damage
-      (add-crit crit)
-      (assoc-in [:changes :destroyed?] true)))
+  [unit crit]
+  (-> unit
+      (update-in unit [:unit/criticals :crits/taken] conj crit)
+      (assoc :unit/destroyed? true)))
 
 (defn ammo-crit
-  [damage abilities]
-  (let [case-ability (abilities/has? abilities :case)
-        case2 (abilities/has? abilities :caseii)
-        ene (abilities/has? abilities :ene)]
-    (cond (or case2 ene) damage
-          case-ability (take-damage (add-crit damage :ammo) abilities 1)
-          :else (destroyed-by-crit damage :ammo))))
+  [unit]
+  (let [case-ability (abilities/has? unit :case)
+        case2 (abilities/has? unit :caseii)
+        ene (abilities/has? unit :ene)]
+    (cond (or case2 ene) unit
+          case-ability (-> unit
+                           (update-in [:unit/criticals :crits/taken] conj :crits/ammo)
+                           (take-damage 1))
+
+          :else (destroyed-by-crit unit :crits/ammo))))
 
 (defn engine-crit
-  [damage]
-  (if (some #(= % :engine) (get-crits damage))
-    (destroyed-by-crit damage :engine)
-    (add-crit damage :engine)))
+  [unit]
+  (if (pos? (crit-count unit :crits/engine))
+    (destroyed-by-crit unit :crits/engine)
+    (update-in unit [:unit/criticals :crits/taken] conj :crits/engine)))
 
 (defn take-crit
-  [damage abilities crit]
+  [unit crit]
   (condp = crit
-    :ammo (ammo-crit damage abilities)
-    :engine (engine-crit damage)
-    :fire-control (add-crit damage :fire-control)
-    :weapon (add-crit damage :weapon)
-    :mv (add-crit damage :mv)
-    :destroyed? (destroyed-by-crit damage :destroyed)
-    damage))
+    :crits/ammo (ammo-crit unit)
+    :crits/engine (engine-crit unit)
+    :crits/fire-control (update-in unit [:unit/criticals :crits/taken] conj :crits/fire-control)
+    :crits/weapon (update-in unit [:unit/criticals :crits/taken] conj :crits/weapon)
+    :crits/mv (update-in unit [:unit/criticals :crits/taken] conj :crits/mv)
+    :crits/destroyed (destroyed-by-crit unit :crits/destroyed)
+    unit))
 
 (defn take-crits
-  [damage abilities crits]
-  (loop [damage damage
-         crits crits]
+  [unit]
+  (loop [unit unit
+         crits (get-in unit [:unit/criticals :crits/unapplied])]
     (if (empty? crits)
-      damage
+      unit
       (recur
        (do
          (mu/log ::taking-crit
-                 :damage damage
-                 :crit (first crits)) (take-crit damage abilities (first crits)))
+                 :damage unit
+                 :crit (first crits))
+         (take-crit unit (first crits)))
        (rest crits)))))
 
+(defn apply-damage
+  [unit]
+  (-> unit
+      (update-in [:unit/armor :toughness/current] - (get-in unit [:unit/armor :toughness/unapplied] 0))
+      (assoc-in [:unit/armor :toughness/unapplied] 0)
+      (update-in [:unit/structure :toughness/current] - (get-in unit [:unit/structure :toughness/unapplied] 0))
+      (assoc-in [:unit/structure :toughness/unapplied] 0)
+      (take-crits)))
+
 (defn heat-damage
-  [damage damage-num]
-  (let [ext-heat (get-in damage [:changes :external-heat] 0)]
-    (assoc-in damage [:changes :external-heat] (min (+ ext-heat damage-num) 2))))
+  [unit new-heat]
+  (let [unapplied-heat (get unit :unit/unapplied-heat 0)]
+    (assoc unit :unit/unapplied-heat (min (+ unapplied-heat new-heat) 2))))
 
 (defn take-damage
-  ([damage abilities damage-num]
-   (take-damage damage abilities damage-num false))
-  ([damage abilities damage-num tac]
-   (if (zero? damage-num)
-     damage
-     (let [armor (max (- (get-remaining-armor damage) damage-num) 0)
-           penetration (- damage-num (get-remaining-armor damage))
-           structure (if (zero? armor)
-                       (- (get-remaining-structure damage) penetration)
-                       (get-remaining-structure damage))
-           crits (roll-crits tac penetration)
-           damage-applied (update-in damage [:changes] merge {:armor armor :structure structure})]
-       (mu/log ::take-damage
-               :damage-applied damage-applied
-               :crits crits)
-       (if crits
-         (take-crits damage-applied abilities crits)
-         damage-applied)))))
+  ([unit damage]
+   (take-damage unit damage false))
+  ([unit damage tac]
+   (if (zero? damage)
+     unit
+     ;; Check how much damage should be applied to armor
+     ;; Check how much damage should be applied to structure
+     ;; Generate the appropriate number of criticals
+     ;; Thread unit through updating the unapplied values.
+     (let [armor-damage (min (remaining-armor unit) damage)
+           penetration (- damage armor-damage)
+           crits (roll-crits (pos? penetration) tac)]
+       (-> unit
+           (update-in [:unit/armor :toughness/unapplied] + armor-damage)
+           (update-in [:unit/structure :toughness/unapplied] + penetration)
+           (update-in [:unit/criticals :crits/unapplied] merge crits))))))
 

@@ -3,7 +3,6 @@
    [com.brunobonacci.mulog :as mu]
    [megastrike.ai.kevin :as ai]
    [megastrike.attacks :as attacks]
-   [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
    [megastrike.damage :as damage]
    [megastrike.hexagons.hex :as hex]
@@ -15,8 +14,8 @@
   (let [atk-id (get-in targeting-data [:attacker :id])
         tgt-id (get-in targeting-data [:target :id])
         target (get result tgt-id)
-        crit (damage/get-new-crits target)
-        arm (damage/get-current target :armor)
+        crit (get-in target [:unit/criticals :crits/unapplied])
+        arm (get-in target [:unit/armor :toughness/current])
         penetration (- target-damage arm)
         target-num (attacks/calculate-to-hit targeting-data)]
     (str atk-id " attacks " tgt-id ". Needs a " target-num ".\n"
@@ -24,7 +23,7 @@
          (if (<= target-num to-hit)
            (str "Attack hits for " target-damage " damage against " arm " armor.\n"
                 (when (pos? penetration)
-                  (str penetration " damage penetrates. " (damage/get-current target :structure) " structure remaining.\n"))
+                  (str penetration " damage penetrates. " (get-in target [:unit/structure :toughness/current]) " structure remaining.\n"))
                 (when (or (= to-hit 12) (pos? penetration))
                   (str "Possible Critical: Rolled " (if crit (str crit) "no critical") " on the critical hits table.\n")))
            "Attack misses.\n")
@@ -134,7 +133,7 @@
 
 (defn make-attack
   [{:keys [units round-report] :as game-state} targeting]
-  (let [attack-result (cu/make-attack targeting)
+  (let [attack-result (attacks/make-attack targeting)
         units (merge units (:result attack-result))
         report (str round-report (parse-attack-data attack-result))]
     (assoc game-state :units units :round-report report)))
@@ -205,9 +204,9 @@
   (let [next-force (get forces (first turn-order))]
     (cond
       (= next-force nil) game-state
-      (and (= current-phase :combat) (= (battle-force/get-player next-force) :kevin))
+      (and (= current-phase :combat) (= (:unit-group/player next-force) :kevin))
       (ai-attacks game-state)
-      (and (= current-phase :movement) (= (battle-force/get-player next-force) :kevin))
+      (and (= current-phase :movement) (= (:unit-group/player next-force) :kevin))
       (ai-moves game-state)
       :else game-state)))
 

@@ -69,7 +69,6 @@
                              :toughness/unapplied 0}
                 :unit/tmm (Integer/parseInt (:tmm mul-row))
                 :unit/attacks (attacks/->attacks mul-row modes abilities)
-                :unit/damage (damage/->damage mul-row)
                 :unit/overheat (Integer/parseInt (:overheat mul-row))
                 :unit/abilities abilities
                 :unit/base-pv (Integer/parseInt (:point-value mul-row))}))))

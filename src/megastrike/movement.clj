@@ -65,7 +65,6 @@
   ([u mv-type]
    (let [base-move (mv-type (:unit/move-modes u))
          mv-hits (damage/crit-count u :crits/mv)]
-     (prn mv-hits)
      (loop [mv base-move
             n 0]
        (if (= n mv-hits)
