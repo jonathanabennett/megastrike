@@ -13,10 +13,10 @@
   (t/testing "Basic movement."
     (t/is (= (sut/print-movement attacker1) "6"))
     (t/is (= (sut/print-movement {:role "Test Jumper" :unit/move-modes {:move/jump 4 :move/walk 4} :unit/current-heat 0 :unit/criticals {:crits/taken [] :crits/unapplied []}}) "4j/4"))
-    (t/is (= (sut/print-movement {:role "Test Weak Jumper" :unit/move-modes {:move/jump 6 :move/walk 4} :unit/current-heat 0 :unit/criticals {:crits/taken [] :crits/unapplied []}}) "6j/4"))
-    (t/is (= (sut/print-movement {:role "Test Strong Jumper" :unit/move-modes {:move/jump 2 :move/walk 4} :unit/current-heat 0 :unit/criticals {:crits/taken [] :crits/unapplied []}}) "2j/4")))
+    (t/is (= (sut/print-movement {:role "Test Strong Jumper" :unit/move-modes {:move/jump 6 :move/walk 4} :unit/current-heat 0 :unit/criticals {:crits/taken [] :crits/unapplied []}}) "6j/4"))
+    (t/is (= (sut/print-movement {:role "Test Weak Jumper" :unit/move-modes {:move/jump 2 :move/walk 4} :unit/current-heat 0 :unit/criticals {:crits/taken [] :crits/unapplied []}}) "2j/4")))
   (t/testing "Damaged movement."
-    (t/is (= (sut/print-movement {:role "Missile Boat", :tmm 1, :e* false, :unit/move-modes {:move/walk 4}, :mul-id 73, :l* false, :m 2, :type "BM", :abilities "IF2", :e 0, :s 2, :threshold -1, :l 2, :size 3, :m* false, :point-value 34, :overheat 2, :chassis "Archer", :structure 6, :full-name "Archer ARC-2K", :armor 6, :s* false, :model "ARC-2K" :unit/criticals {:crits/taken [:crits/mv] :crits/unapplied []} :unit/current-heat 0}) "2"))
+    (t/is (= (sut/print-movement {:role "1 MV hit", :e* false, :unit/move-modes {:move/walk 4}, :mul-id 73, :l* false, :m 2, :type "BM", :abilities "IF2", :e 0, :s 2, :threshold -1, :l 2, :size 3, :m* false, :point-value 34, :overheat 2, :chassis "Archer", :structure 6, :full-name "Archer ARC-2K", :armor 6, :s* false, :model "ARC-2K" :unit/criticals {:crits/taken [:crits/mv] :crits/unapplied []} :unit/current-heat 0}) "2"))
     (t/is (= (sut/print-movement {:role "Missile Boat", :tmm 1, :e* false, :unit/move-modes {:move/walk 4}, :mul-id 73, :l* false, :m 2, :type "BM", :abilities "IF2", :e 0, :s 2, :threshold -1, :l 2, :size 3, :m* false, :point-value 34, :overheat 2, :chassis "Archer", :structure 6, :full-name "Archer ARC-2K", :armor 6, :s* false, :model "ARC-2K" :unit/criticals {:crits/taken [:crits/mv :crits/fire-control] :crits/unapplied []} :unit/current-heat 0}) "2"))
     (t/is (= (sut/print-movement {:role "Missile Boat", :tmm 1, :e* false, :unit/move-modes {:move/walk 4}, :mul-id 73, :l* false, :m 2, :type "BM", :abilities "IF2", :e 0, :s 2, :threshold -1, :l 2, :size 3, :m* false, :point-value 34, :overheat 2, :chassis "Archer", :structure 6, :full-name "Archer ARC-2K", :armor 6, :s* false, :model "ARC-2K" :unit/criticals {:crits/taken [:crits/mv :crits/mv :crits/fire-control] :crits/unapplied []} :unit/current-heat 0}) "1"))
     (t/is (= (sut/print-movement {:role "Missile Boat", :tmm 1, :e* false, :unit/move-modes {:move/walk 4}, :mul-id 73, :l* false, :m 2, :type "BM", :abilities "IF2", :e 0, :s 2, :threshold -1, :l 2, :size 3, :m* false, :point-value 34, :overheat 2, :chassis "Archer", :structure 6, :full-name "Archer ARC-2K", :armor 6, :s* false, :model "ARC-2K" :unit/criticals {:crits/taken [:crits/mv :crits/mv :crits/mv :crits/fire-control] :crits/unapplied []} :unit/current-heat 0}) "0"))
@@ -77,10 +77,6 @@
               :unit/chassis "Wolfhound",
               :unit/criticals {:crits/taken [], :crits/unapplied []},
               :unit/current-heat 0,
-              :unit/damage {:armor {:current 4, :maximum 4},
-                            :changes {:armor 4, :crits [], :structure 3},
-                            :crits [],
-                            :structure {:current 3, :maximum 3}},
               :unit/facing :direction/n,
               :unit/full-name "Wolfhound WLF-2",
               :unit/id "Wolfhound WLF-2",
