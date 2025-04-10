@@ -27,6 +27,10 @@
                                               {:pilot/full-name "Lieutenant Ciro Ramirez" :pilot/skill 4 :pilot/kills 0}
                                               :direction/n {:hex/p 1 :hex/q 1 :hex/r -2} :1stsomersetstrikers 0) :unit/current-heat 1))
 
+(t/deftest print-damage
+  (t/testing "Printing regular damage"
+    (t/is (= (sut/print-damage attacker1 :attack/regular 0) "3"))))
+
 (t/deftest woods-mod-test
   (let [woods-hex {:p 8, :q 6, :r -14, :elevation 0, :terrain "woods:1:20;ground_fluff:1:2;foliage_elev:2", :palette "grass"}
         empty-hex {:p 12, :q 4, :r -16, :elevation 0, :terrain "", :palette "grass"}

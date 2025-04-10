@@ -4,6 +4,7 @@
   (:require
    [clojure.spec.alpha :as s]
    [clojure.string :as string]
+   [com.brunobonacci.mulog :as mu]
    [megastrike.abilities :as abilities]
    [megastrike.board :as board]
    [megastrike.damage :as damage]
@@ -102,6 +103,7 @@
   (let [atk (get (:unit/attacks unit) attack)
         dmg (damage/crit-count unit :crits/weapon)]
     (cond
+      (keyword? distance) (print-damage-bracket atk distance dmg)
       (and (= distance 1) (s/valid? :attack/melee-info atk)) (physical-damage unit attack)
       (<= distance 3) (print-damage-bracket atk :attack/s dmg)
       (<= distance 12) (print-damage-bracket atk :attack/m dmg)
@@ -274,4 +276,96 @@
        (inc dmg)
        dmg))))
 
+(defn dfa-attack
+  [{:keys [attacker target rear-attack?] :as targeting} to-hit]
+  (let [hit? (<= (calculate-to-hit targeting) to-hit)
+        attacker (assoc attacker :unit/attacked? true)
+        attacker-tmm (movement/modified-tmm attacker)
+        attacker-damage (roll-damage (:attacks attacker) (if hit? :self-dfa :missed-dfa) attacker-tmm (:unit/size attacker) rear-attack?)
+        target-damage (roll-damage (:attacks attacker) :dfa attacker-tmm (:unit/size target) rear-attack?)
+        result {(:unit/id attacker) (damage/take-damage attacker attacker-damage false)
+                (:unit/id target) (if hit? (damage/take-damage target target-damage (= to-hit 12)) target)}]
+    (mu/log ::dfa-attack
+            :hit? hit?
+            :targeting-data targeting
+            :to-hit to-hit
+            :attacker (:unit/id attacker)
+            :attacker-damage attacker-damage
+            :target-damage target-damage
+            :target (:unit/id target)
+            :result result)
+    {:targeting-data targeting
+     :to-hit to-hit
+     :attacker attacker
+     :target-damage target-damage
+     :attacker-damage attacker-damage
+     :target target
+     :result result}))
+
+(defn charge-attack
+  [{:keys [attacker target rear-attack?] :as targeting} to-hit]
+  (let [hit? (<= (calculate-to-hit targeting) to-hit)
+        attacker (assoc attacker :unit/attacked? true)
+        attacker-tmm (movement/modified-tmm attacker)
+        attacker-damage (roll-damage (:attacks attacker) :self-charge attacker-tmm (:unit/size target) rear-attack?)
+        target-damage (roll-damage (:attacks attacker) :charge attacker-tmm (:unit/size target) rear-attack?)
+        result {(:id attacker) (if hit? (damage/take-damage attacker attacker-damage false) attacker)
+                (:id target) (if hit? (damage/take-damage target target-damage (= to-hit 12)) target)}]
+    (mu/log ::charge-attack
+            :hit? hit?
+            :targeting-data targeting
+            :to-hit to-hit
+            :attacker (:unit/id attacker)
+            :attacker-damage attacker-damage
+            :target-damage target-damage
+            :target (:unit/id target)
+            :result result)
+    {:targeting-data targeting
+     :to-hit to-hit
+     :attacker attacker
+     :target-damage target-damage
+     :attacker-damage attacker-damage
+     :target target
+     :result result}))
+
+(defn basic-attack
+  [{:keys [attacker target attack distance rear-attack?] :as atk-data} to-hit]
+  (let [damage (roll-damage (:attacks attacker) attack distance rear-attack?)
+        result {(:unit/id attacker) (assoc attacker :unit/attacked? true)
+                (:unit/id target) (if (<= (calculate-to-hit atk-data) to-hit)
+                                    (damage/take-damage target damage (= to-hit 12))
+                                    target)}]
+    {:targeting-data atk-data
+     :to-hit to-hit
+     :target-damage damage
+     :result result}))
+
+(defn heat-attack
+  [{:keys [attacker target attack distance rear-attack?] :as atk-data} to-hit]
+  (let [damage (roll-damage (:attacks attacker) attack distance rear-attack?)
+        result {(:unit/id attacker) (assoc attacker :unit/attacked? true)
+                (:unit/id target) (if (<= (calculate-to-hit atk-data) to-hit)
+                                    (assoc target :damage (damage/heat-damage target damage))
+                                    target)}]
+    {:targeting-data atk-data
+     :to-hit to-hit
+     :target-damage damage
+     :result result}))
+
+(defn make-attack
+  ([{:keys [attack] :as atk-data} to-hit]
+   (mu/log ::making-attack
+           :atk-data atk-data)
+   (condp = attack
+     :charge (charge-attack atk-data to-hit)
+     :dfa (dfa-attack atk-data to-hit)
+     :heat (heat-attack atk-data to-hit)
+     (basic-attack atk-data to-hit)))
+  ([attack-data]
+   (make-attack attack-data (utils/roll2d))))
+
+(defn can-charge?
+  "You can charge a unit if they have acted, you have moved, and they are adjacent to you."
+  [attacker target]
+  (and (:unit/acted? target) (pos? (count (:unit/path attacker))) (= (hex/distance (last (:unit/path attacker)) (:unit/location target)) 1)))
 
