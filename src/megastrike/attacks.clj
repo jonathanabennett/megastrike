@@ -364,8 +364,3 @@
   ([attack-data]
    (make-attack attack-data (utils/roll2d))))
 
-(defn can-charge?
-  "You can charge a unit if they have acted, you have moved, and they are adjacent to you."
-  [attacker target]
-  (and (:unit/acted? target) (pos? (count (:unit/path attacker))) (= (hex/distance (last (:unit/path attacker)) (:unit/location target)) 1)))
-
