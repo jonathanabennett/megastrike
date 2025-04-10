@@ -2,23 +2,20 @@
   (:require
    [cljfx.api :as fx]
    [cljfx.ext.table-view :as tables]
-   [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
    [megastrike.damage :as damage]
    [megastrike.gui.elements :as elements]
    [megastrike.gui.lobby.events :as lobby-events]
    [megastrike.gui.subs :as subs]
    [megastrike.movement :as movement]
-   [megastrike.pilot :as pilot]
-   [megastrike.schemas :as schemas]))
+   [megastrike.pilot :as pilot]))
 
 (defn filter-button
-  [{:keys [field values text]}]
+  [{:keys [values text]}]
   {:fx/type :button
    :text text
    :on-action {:event-type ::lobby-events/filter-changed
                :fx/sync true
-               :field field
                :values values}})
 
 (def mul-filter-buttons
@@ -26,27 +23,27 @@
    :spacing 5
    :alignment :top-center
    :children [{:fx/type filter-button
-               :field :type
+               :field :unit/type
                :values :mul/ground-units
                :text "All Ground Units"}
               {:fx/type filter-button
-               :field :type
+               :field :unit/type
                :values :mul/bm
                :text "Battlemechs"}
               {:fx/type filter-button
-               :field :type
+               :field :unit/type
                :values :mul/mechs
                :text "All Mechs"}
               {:fx/type filter-button
-               :field :type
+               :field :unit/type
                :values :mul/conventional
                :text "All Conventional Units"}
               {:fx/type filter-button
-               :field :type
+               :field :unit/type
                :values :mul/vehicle
                :text "All vehicles"}
               {:fx/type filter-button
-               :field :type
+               :field :unit/type
                :values :mul/infantry
                :text "All Infantry"}]})
 
@@ -62,22 +59,22 @@
                        :text "Unit Name"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (:full-name x)})}}
+                                      :describe (fn [x] {:text (str (:unit/full-name x))})}}
                       {:fx/type :table-column
                        :text "Type"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (:type x)})}}
+                                      :describe (fn [x] {:text (str (:unit/type x))})}}
                       {:fx/type :table-column
                        :text "PV"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (pr-str (:point-value x))})}}
+                                      :describe (fn [x] {:text (str (:point-value x))})}}
                       {:fx/type :table-column
                        :text "Size"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (pr-str (:unit/size x))})}}
+                                      :describe (fn [x] {:text (str (:unit/size x))})}}
                       {:fx/type :table-column
                        :text "Movement"
                        :cell-value-factory identity
@@ -92,12 +89,12 @@
                        :text "Armor"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (pr-str (damage/get-current x :armor))})}}
+                                      :describe (fn [x] {:text (str (get-in x [:unit/armor :toughness/current]))})}}
                       {:fx/type :table-column
                        :text "Structure"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (pr-str (damage/get-current x :structure))})}}
+                                      :describe (fn [x] {:text (str (get-in x [:unit/structure :toughness/current]))})}}
                 ;; {:fx/type :table-column
                 ;;  :text "Threshold"
                 ;;  :cell-value-factory identity
@@ -132,7 +129,7 @@
                        :text "Abilities"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (:abilities x)})}}]
+                                      :describe (fn [x] {:text (str (:unit/abilities x))})}}]
             :items mul}}))
 
 (def mul-chassis-search
@@ -144,7 +141,7 @@
                :key :mul-search-term}
               {:fx/type :button
                :text "Search by name"
-               :on-action {:event-type ::lobby-events/filter-mul :fx/sync true :field :full-name}}]})
+               :on-action {:event-type ::lobby-events/filter-mul :fx/sync true :field :unit/full-name}}]})
 
 (defn new-unit-buttons
   [{:keys [fx/context]}]
@@ -154,7 +151,7 @@
      :spacing 5
      :alignment :top-center
      :children [{:fx/type :label
-                 :text (if battle-force (battle-force/to-str battle-force) "")}
+                 :text (if battle-force (:unit-group/name battle-force) "")}
                 {:fx/type :h-box
                  :spacing 5
                  :alignment :top-center
@@ -201,17 +198,17 @@
                          :text "Name"
                          :cell-value-factory identity
                          :cell-factory {:fx/cell-type :table-cell
-                                        :describe (fn [x] {:text (battle-force/to-str x)})}}
+                                        :describe (fn [x] {:text (:unit-group/name x)})}}
                         {:fx/type :table-column
                          :text "Player"
                          :cell-value-factory identity
                          :cell-factory {:fx/cell-type :table-cell
-                                        :describe (fn [x] {:text (name (or (battle-force/get-player x) :none))})}}
+                                        :describe (fn [x] {:text (name (or (:unit-group/player x) :none))})}}
                         {:fx/type :table-column
                          :text "Deployment"
                          :cell-value-factory identity
                          :cell-factory {:fx/cell-type :table-cell
-                                        :describe (fn [x] {:text (or (battle-force/get-deployment x) (name :none))})}}
+                                        :describe (fn [x] {:text (or (name (:unit-group/deployment x)) (name :none))})}}
                         ; {:fx/type :table-column
                         ;  :text "Unit Count"
                         ;  :cell-value-factory identity

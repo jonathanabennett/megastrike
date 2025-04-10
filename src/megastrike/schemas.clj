@@ -2,6 +2,13 @@
   (:require
    [clojure.spec.alpha :as s]))
 
+;; Hexagon Definitions
+(s/def :hex/p int?)
+(s/def :hex/q int?)
+(s/def :hex/r int?)
+(s/def :hex/location (s/keys :req [:hex/p :hex/q :hex/r]))
+
+;; Unit Type definitions
 (s/def :mul/bm #{:type/bm})
 (s/def :mul/mechs #{:type/bm :type/im :type/pm})
 (s/def :mul/vehicle #{:type/sv :type/cv})
@@ -11,13 +18,18 @@
 (s/def :mul/aero #{:type/ss :type/ws :type/js :type/ds :type/da :type/sc :type/cf :type/af})
 (s/def :mul/all #{:type/bm :type/im :type/pm :type/sv :type/cv :type/ba :type/ci :type/ss :type/ws :type/js :type/ds :type/da :type/sc :type/cf :type/af})
 
-(s/def :hex/p int?)
-(s/def :hex/q int?)
-(s/def :hex/r int?)
-(s/def :hex/location (s/keys :req [:hex/p :hex/q :hex/r]))
+;; Battle Force Definitions
+(s/def :unit-group/keyword keyword?)
+(s/def :unit-group/name string?)
+(s/def :unit-group/deployment #{:deployment/n :deployment/ne :deployment/e :deployment/se
+                                :deployment/s :deployment/sw :deployment/w :deployment/nw})
+(s/def :unit-group/camo keyword?)
+(s/def :unit-group/parent keyword?) ;; Used to denote parent formations or organizations
+(s/def :unit-group/player keyword?)
+(s/def :unit-group/battleforce (s/keys :req [:unit-group/keyword :unit-group/name :unit-group/deployment
+                                             :unit-group/camo :unit-group/parent :unit-group/player]))
 
 ;; "General" definitions
-(s/check-asserts true)
 (s/def :unit/id string?)
 (s/def :unit/full-name string?)
 (s/def :unit/chassis string?)
@@ -34,7 +46,6 @@
 (s/def :unit/size (s/int-in 1 5))
 
 ;; Movement definitions
-
 (s/def :movement/modes #{:move/walk :move/jump :move/h :move/n :move/s :move/t :move/v :move/w :move/wb
                          :move/wm :move/g :move/f :move/j :move/m :move/immobilized :move/stand-still})
 
@@ -97,6 +108,30 @@
   (s/keys :req [:crits/taken
                 :crits/unapplied]))
 
+;; Heat definitions
+(s/def :unit/current-heat (s/int-in 0 5))
+(s/def :unit/overheat int?)
+(s/def :unit/overheat-used (s/int-in 0 5))
+(s/def :unit/unapplied-heat (s/int-in 0 2))
+
+;; Pilot Definitions
+(s/def :pilot/full-name string?)
+(s/def :pilot/skill (s/int-in 0 9))
+(s/def :pilot/kills nat-int?)
+;; Combat Unit definitions
+(s/def :unit/battle-force keyword?)
+(s/def :unit/pilot (s/keys :req [:pilot/full-name :pilot/skill :pilot/kills]))
+(s/def :unit/acted? boolean?)
+(s/def :unit/mul (s/keys :req [:unit/full-name :unit/chassis :unit/model :unit/mul-id :unit/threshold
+                               :unit/base-pv :unit/role :unit/type :unit/abilities :unit/move-modes :unit/tmm
+                               :unit/size :unit/attacks :unit/overheat :unit/armor :unit/structure]))
+
+(s/def :unit/combat-unit (s/merge :unit/mul
+                                  (s/keys :req [:unit/id :unit/pilot :unit/battle-force :unit/acted?
+                                                :move/selected :move/default :unit/location :unit/path :unit/facing
+                                                :unit/current-heat :unit/overheat-used
+                                                :unit/criticals])))
+
 ;; Targeting definitions
 (s/def :targeting/value (s/or
                          :targeting/possible int?
@@ -122,25 +157,3 @@
   (s/keys :req [:targeting/attacker :targeting/target :targeting/attack-type :targeting/attack-data :targeting/distance
                 :targeting/rear-attack? :targeting/damage]))
 
-;; Heat definitions
-(s/def :unit/current-heat (s/int-in 0 5))
-(s/def :unit/overheat int?)
-(s/def :unit/overheat-used (s/int-in 0 5))
-
-;; Pilot Definitions
-(s/def :pilot/full-name string?)
-(s/def :pilot/skill (s/int-in 0 9))
-(s/def :pilot/kills nat-int?)
-;; Combat Unit definitions
-(s/def :unit/battle-force keyword?)
-(s/def :unit/pilot (s/keys :req [:pilot/full-name :pilot/skill :pilot/kills]))
-(s/def :unit/acted? boolean?)
-(s/def :unit/mul (s/keys :req [:unit/full-name :unit/chassis :unit/model :unit/mul-id :unit/threshold
-                               :unit/base-pv :unit/role :unit/type :unit/abilities :unit/move-modes :unit/tmm
-                               :unit/size :unit/attacks :unit/overheat :unit/armor :unit/structure]))
-
-(s/def :unit/combat-unit (s/merge :unit/mul
-                                  (s/keys :req [:unit/id :unit/pilot :unit/battle-force :unit/acted?
-                                                :move/selected :move/default :unit/location :unit/path :unit/facing
-                                                :unit/current-heat :unit/overheat-used
-                                                :unit/criticals])))

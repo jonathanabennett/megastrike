@@ -129,14 +129,15 @@
                      :unit/current-heat 0
                      :unit/sprite (find-sprite mul-unit)})))
   ([{:keys [units mul-unit pilot battle-force facing location] :or {facing :direction/none location {}}}]
-   (->combat-unit mul-unit pilot battle-force facing location (count (filter #(= (:unit/full-name %) (:unit/full-name mul-unit)) units)))))
+   (->combat-unit mul-unit pilot facing location battle-force (count (filter #(= (:unit/full-name %) (:unit/full-name mul-unit)) units)))))
 
 (defn filter-membership-helper
   "Returns true if a unit matches one of the types."
   ([unit]
    unit)
   ([unit field values]
-   (some #(= (field unit) %) values)))
+   (prn (field unit))
+   (contains? values (field unit))))
 
 (defn filter-units
   "Filters units based on either a string or a seq of unit type."
@@ -145,7 +146,10 @@
   ([units field value comparison]
    (filter #(when (comparison (field %) value) %) units))
   ([units field values]
-   (filter #(filter-membership-helper % field values) units)))
+   (filter #(filter-membership-helper % field values) units))
+  ([units unit-type]
+   (prn unit-type)
+   (filter #(s/valid? unit-type (:unit/type %)) units)))
 
 (defn get-unit
   ([s]
@@ -196,35 +200,11 @@
     unit))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; ATTACK ACCESS
+;; Attacks and Damage
 
 (defn print-damage
   [unit bracket]
-  (attacks/print-damage-bracket unit :attack/regular bracket))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Damage Access
-
-(defn take-damage
-  [{:keys [damage abilities] :as unit} damage-num crit?]
-  (assoc unit :damage (damage/take-damage damage abilities damage-num crit?)))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; MAKE ATTACKS
-
-(defn attacked?
-  [unit]
-  (:attacked? unit))
-
-(defn clear-attacked
-  [unit]
-  (assoc unit :attacked false))
-
-(defn set-attacked
-  [unit]
-  (-> unit
-      (assoc :unit/acted? true)
-      (assoc :targeting false)))
+  (attacks/print-damage unit :attack/regular bracket))
 
 (defn declare-special-attack
   [unit targeting]
@@ -232,94 +212,6 @@
       (assoc :target (:unit/id (:target targeting)))
       (assoc :atk-type (:attack targeting))
       (move-unit)))
-
-(defn dfa-attack
-  [{:keys [attacker target rear-attack?] :as targeting} to-hit]
-  (let [hit? (<= (attacks/calculate-to-hit targeting) to-hit)
-        attacker (set-attacked attacker)
-        attacker-tmm (movement/modified-tmm attacker)
-        attacker-damage (attacks/roll-damage (:attacks attacker) (if hit? :self-dfa :missed-dfa) attacker-tmm (:unit/size attacker) rear-attack?)
-        target-damage (attacks/roll-damage (:attacks attacker) :dfa attacker-tmm (:unit/size target) rear-attack?)
-        result {(:id attacker) (take-damage attacker attacker-damage false)
-                (:id target) (if hit? (take-damage target target-damage (= to-hit 12)) target)}]
-    (mu/log ::dfa-attack
-            :hit? hit?
-            :targeting-data targeting
-            :to-hit to-hit
-            :attacker (:unit/id attacker)
-            :attacker-damage attacker-damage
-            :target-damage target-damage
-            :target (:unit/id target)
-            :result result)
-    {:targeting-data targeting
-     :to-hit to-hit
-     :attacker attacker
-     :target-damage target-damage
-     :attacker-damage attacker-damage
-     :target target
-     :result result}))
-
-(defn charge-attack
-  [{:keys [attacker target rear-attack?] :as targeting} to-hit]
-  (let [hit? (<= (attacks/calculate-to-hit targeting) to-hit)
-        attacker (set-attacked attacker)
-        attacker-tmm (movement/modified-tmm attacker)
-        attacker-damage (attacks/roll-damage (:attacks attacker) :self-charge attacker-tmm (:unit/size target) rear-attack?)
-        target-damage (attacks/roll-damage (:attacks attacker) :charge attacker-tmm (:unit/size target) rear-attack?)
-        result {(:id attacker) (if hit? (take-damage attacker attacker-damage false) attacker)
-                (:id target) (if hit? (take-damage target target-damage (= to-hit 12)) target)}]
-    (mu/log ::charge-attack
-            :hit? hit?
-            :targeting-data targeting
-            :to-hit to-hit
-            :attacker (:unit/id attacker)
-            :attacker-damage attacker-damage
-            :target-damage target-damage
-            :target (:unit/id target)
-            :result result)
-    {:targeting-data targeting
-     :to-hit to-hit
-     :attacker attacker
-     :target-damage target-damage
-     :attacker-damage attacker-damage
-     :target target
-     :result result}))
-
-(defn basic-attack
-  [{:keys [attacker target attack distance rear-attack?] :as atk-data} to-hit]
-  (let [damage (attacks/roll-damage (:attacks attacker) attack distance rear-attack?)
-        result {(:unit/id attacker) (set-attacked attacker)
-                (:unit/id target) (if (<= (attacks/calculate-to-hit atk-data) to-hit)
-                                    (take-damage target damage (= to-hit 12))
-                                    target)}]
-    {:targeting-data atk-data
-     :to-hit to-hit
-     :target-damage damage
-     :result result}))
-
-(defn heat-attack
-  [{:keys [attacker target attack distance rear-attack?] :as atk-data} to-hit]
-  (let [damage (attacks/roll-damage (:attacks attacker) attack distance rear-attack?)
-        result {(:unit/id attacker) (set-attacked attacker)
-                (:unit/id target) (if (<= (attacks/calculate-to-hit atk-data) to-hit)
-                                    (assoc target :damage (damage/heat-damage target damage))
-                                    target)}]
-    {:targeting-data atk-data
-     :to-hit to-hit
-     :target-damage damage
-     :result result}))
-
-(defn make-attack
-  ([{:keys [attack] :as atk-data} to-hit]
-   (mu/log ::making-attack
-           :atk-data atk-data)
-   (condp = attack
-     :charge (charge-attack atk-data to-hit)
-     :dfa (dfa-attack atk-data to-hit)
-     :heat (heat-attack atk-data to-hit)
-     (basic-attack atk-data to-hit)))
-  ([attack-data]
-   (make-attack attack-data (utils/roll2d))))
 
 (defn can-charge?
   "You can charge a unit if they have acted, you have moved, and they are adjacent to you."
@@ -329,29 +221,18 @@
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; End of Phase and end of turn functions
 
-(defn apply-damage
-  [{:keys [damage] :as unit}]
-  (assoc unit :damage (damage/apply-damage damage)))
-
 (defn end-phase
   [unit]
-  (assoc unit :acted false))
-
-(defn end-phase-heat
-  [unit heat overheat-used water? acted? external-heat]
-  (assoc unit :heat (heat/end-phase-heat heat overheat-used water? acted? external-heat)))
+  (assoc unit :unit/acted? false))
 
 (defn end-turn
   "Updates damage, applies weapons crits, resets acted, and then returns the unit IF they
   are not destroyed."
-  [{:keys [damage heat] :as unit}]
-  (let [new-crits (damage/get-new-crits damage)
-        engine-crits (count (filter #(= :engine %) new-crits))
-        external-heat (+ engine-crits (damage/get-heat damage))
-        new-unit (-> unit
+  [unit]
+  (let [new-unit (-> unit
                      (assoc :unit/selected nil)
-                     (apply-damage)
-                     (end-phase-heat heat 0 false (attacked? unit) external-heat)
-                     (clear-attacked))]
-    (when-not (damage/destroyed? (:damage new-unit))
+                     (damage/apply-damage)
+                     (heat/end-phase-heat false)
+                     (assoc :unit/attacked? false))]
+    (when-not (:unit/destroyed? unit)
       {(:unit/id new-unit) new-unit})))

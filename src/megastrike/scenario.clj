@@ -16,31 +16,28 @@
          names (str/split forces #",")]
     (if (empty? names)
       force-map
-      (recur (merge force-map {(utils/keyword-maker (first names)) (battle-force/create-force (first names) nil nil i :player)})
+      (recur (merge force-map {(keyword (utils/keyword-maker (first names))) (battle-force/->battle-force (first names) nil nil i :player)})
              (inc i)
              (rest names)))))
 
 (defn extract-name [input]
   (let [pattern #"_(.*?)="]
-    (utils/keyword-maker (str (second (re-find pattern input))))))
-
-(defn update-force
-  [state line fn v]
-  (let [force-name (extract-name line)
-        bf (fn (get (:forces state) force-name) v)]
-    (assoc-in state [:forces force-name] bf)))
+    (keyword (utils/keyword-maker (str (second (re-find pattern input)))))))
 
 (defn set-location
   [state line value]
-  (update-force state line battle-force/set-deployment value))
+  (let [force-name (extract-name line)]
+    (assoc-in state [:forces force-name :unit-group/deployment] (keyword "direction" (utils/keyword-maker value)))))
 
 (defn set-team
   [state line value]
-  (update-force state line battle-force/set-team (Integer/parseInt value)))
+  (let [force-name (extract-name line)]
+    (assoc-in state [:forces force-name :unit-group/parent] (Integer/parseInt value))))
 
 (defn set-camo
   [state line value]
-  (update-force state line battle-force/set-camo value))
+  (let [force-name (extract-name line)]
+    (assoc-in state [:forces force-name :unit-group/camo] value)))
 
 (defn parse-unit-string [s]
   (let [[_ faction number data] (re-matches #"Unit_(\w+)_(\d+)[=_](.+)" s)]
@@ -54,8 +51,8 @@
           [unit pilot pskill gskill direction x y] (str/split data #",")
           loc (if (and x y) (hex/offset->hex (Integer/parseInt (str/trim x)) (Integer/parseInt (str/trim y))) {})
           skill (int (math/floor (/ (+ (Integer/parseInt pskill) (Integer/parseInt gskill)) 2)))
-          mul (cu/get-unit unit)]
-      (cu/->combat-unit units mul {:name pilot :skill skill} (if direction (utils/keyword-maker direction) :n) loc (utils/keyword-maker faction)))
+          mul (cu/->combat-unit {:units units :mul-unit (cu/get-unit unit) :pilot {:pilot/full-name pilot :pilot/skill skill :pilot/kills 0} :battle-force (keyword (utils/keyword-maker faction)) :facing (keyword "direction" (if direction (utils/keyword-maker direction) :n)) :location loc})]
+      (assoc units (:unit/id mul) mul))
     (:units state)))
 
 (defn set-map-dirs

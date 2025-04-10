@@ -48,8 +48,8 @@
       {:context (fx/swap-context context assoc :map-boards (assoc boards id (board/create-mapsheet (str "file:" (.getPath board)))))})))
 
 (defmethod e/event-handler ::filter-changed
-  [{:keys [fx/context field values]}]
-  {:context (fx/swap-context context assoc :mul (cu/filter-units cu/mul field values))})
+  [{:keys [fx/context values]}]
+  {:context (fx/swap-context context assoc :mul (cu/filter-units cu/mul values))})
 
 (defmethod e/event-handler ::launch-game
   [{:keys [fx/context]}]
@@ -87,8 +87,8 @@
         camo (fx/sub-val context :force-camo)
         team (inc (count (subs/forces context)))
         player (fx/sub-val context :player)
-        new-force (battle-force/create-force force-name deploy camo team player)
-        new-forces (merge (subs/forces context) {(battle-force/id new-force) new-force})]
+        new-force (battle-force/->battle-force force-name deploy camo team player)
+        new-forces (merge (subs/forces context) {(:unit-group/keyword new-force) new-force})]
     {:context (fx/swap-context context assoc :forces new-forces :force-camo nil)
      :dispatch {:event-type ::e/close-dialog :dialog :force-creation-dialog}}))
 
@@ -113,12 +113,12 @@
 
 (defmethod e/event-handler ::force-selection-changed
   [{:keys [fx/context fx/event]}]
+  (prn event)
   {:context (fx/swap-context context assoc
-                             :active-force (battle-force/id event)
-                             :active-force-record event
-                             :force-name (battle-force/to-str event)
-                             :force-zone (battle-force/get-deployment event)
-                             :force-camo (battle-force/get-camo event))})
+                             :active-force (:unit-group/keyword event)
+                             :force-name (:unit-group/name event)
+                             :force-zone (str (:unit-group/deployment event))
+                             :force-camo (:unit-group/camo event))})
 
 (defmethod e/event-handler ::unit-selection-changed
   [{:keys [fx/context fx/event]}]

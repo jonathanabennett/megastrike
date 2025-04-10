@@ -4,7 +4,6 @@
    [clojure.string :as str]
    [megastrike.abilities :as abilities]
    [megastrike.attacks :as attacks]
-   [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
    [megastrike.damage :as damage]
    [megastrike.gui.events :as events]
@@ -57,7 +56,7 @@
 (defn draw-sprite
   "Draws a sprite. Used for both the map and the lobby."
   [{:keys [unit bf x y shift direction]}]
-  (let [camo (battle-force/get-camo bf)
+  (let [camo (:unit-group/camo bf)
         color "#FFFFFF"
         img (cu/find-sprite unit)]
     {:fx/type :image-view
@@ -254,27 +253,27 @@
   (let [active (subs/active-id context)
         bf (get (subs/forces context) (:unit/battle-force unit))]
     {:fx/type :titled-pane
-     :on-mouse-clicked {:event-type ::events/stats-clicked :fx/sync true :unit (:id unit)}
-     :text (if (:acted unit) (str (:id unit) " (done)") (:id unit))
+     :on-mouse-clicked {:event-type ::events/stats-clicked :fx/sync true :unit (:unit/id unit)}
+     :text (if (:unit/acted? unit) (str (:unit/id unit) " (done)") (:unit/id unit))
      :border {:strokes [{:stroke :black :style :solid :width 2}]}
      :padding 5
      :content {:fx/type :v-box
                :style (cond
-                        (= (:id unit) active) "-fx-background-color: #BBBBBB;"
-                        (not (:acted unit)) "-fx-background-color: 999999"
+                        (= (:unit/id unit) active) "-fx-background-color: #BBBBBB;"
+                        (not (:unit/acted? unit)) "-fx-background-color: 999999"
                         :else "-fx-background-color: #DDDDDD;")
                :spacing 5
                :children [{:fx/type :h-box
                            :spacing 5
                            :children [{:fx/type prop-label
                                        :label "Unit: "
-                                       :value (:id unit)}
+                                       :value (:unit/id unit)}
                                       {:fx/type prop-label
                                        :label "Force: "
-                                       :value (battle-force/to-str bf)}
+                                       :value (:unit-group/name bf)}
                                       {:fx/type prop-label
                                        :label "Type: "
-                                       :value (:type unit)}
+                                       :value (str (:unit/type unit))}
                                       {:fx/type prop-label
                                        :label "Mv: "
                                        :value (movement/print-movement unit)}]}
@@ -282,7 +281,7 @@
                            :spacing 5
                            :children [{:fx/type prop-label
                                        :label "Role: "
-                                       :value (:role unit)}
+                                       :value (str (:unit/role unit))}
                                       {:fx/type prop-label
                                        :label "Size: "
                                        :value (str (:unit/size unit))}
@@ -295,15 +294,15 @@
                           {:fx/type attack-table
                            :unit unit}
                           {:fx/type draw-pips
-                           :text (str "Armor: " (damage/get-current unit :armor) "/" (damage/get-max unit :armor))
-                           :filled (damage/get-current unit :armor)
-                           :max (damage/get-max unit :armor)
+                           :text (str "Armor: " (get-in unit [:unit/armor :toughness/current]) "/" (get-in unit [:unit/armor :toughness/maximum]))
+                           :filled (get-in unit [:unit/armor :toughness/current])
+                           :max (get-in unit [:unit/armor :toughness/maximum])
                            :fill-one :green
                            :fill-two :transparent}
                           {:fx/type draw-pips
-                           :text (str "Structure: " (damage/get-current unit :structure) "/" (damage/get-max unit :structure))
-                           :filled (damage/get-current unit :structure)
-                           :max (damage/get-max unit :structure)
+                           :text (str "Structure: " (get-in unit [:unit/structure :toughness/current]) "/" (get-in unit [:unit/structure :toughness/maximum]))
+                           :filled (get-in unit [:unit/structure :toughness/current])
+                           :max (get-in unit [:unit/structure :toughness/maximum])
                            :fill-one :green
                            :fill-two :transparent}
                           {:fx/type draw-pips
@@ -314,25 +313,25 @@
                            :fill-two :aliceblue}
                           {:fx/type prop-label
                            :label "Abilities: "
-                           :value (abilities/print-abilities (:abilities unit))}
+                           :value (abilities/print-abilities (:unit/abilities unit))}
                           {:fx/type prop-label
                            :label "Criticals: "
-                           :value (damage/get-crits unit)}
+                           :value (str (get-in unit [:unit/criticals :crits/taken]))}
                           {:fx/type draw-pips
-                           :text (str "Remaining Armor: " (damage/get-remaining-armor unit) "/" (damage/get-max unit :armor))
-                           :filled (damage/get-remaining-armor unit)
-                           :max (damage/get-max unit :armor)
+                           :text (str "Remaining Armor: " (damage/remaining-armor unit) "/" (get-in unit [:unit/armor :toughness/maximum]))
+                           :filled (damage/remaining-armor unit)
+                           :max (get-in unit [:unit/armor :toughness/maximum])
                            :fill-one :green
                            :fill-two :transparent}
                           {:fx/type draw-pips
-                           :text (str "Remaining structure " (damage/get-remaining-structure unit) "/" (damage/get-max unit :structure))
-                           :filled (damage/get-remaining-structure unit)
-                           :max (damage/get-max unit :structure)
+                           :text (str "Remaining structure " (damage/remaining-structure unit) "/" (get-in unit [:unit/structure :toughness/maximum]))
+                           :filled (damage/remaining-structure unit)
+                           :max (get-in unit [:unit/structure :toughness/maximum])
                            :fill-one :green
                            :fill-two :transparent}
                           {:fx/type prop-label
                            :label "Unapplied Criticals: "
-                           :value (str (damage/get-new-crits unit))}]}}))
+                           :value (str (get-in unit [:unit/criticals :crits/unapplied]))}]}}))
 
 (defn force-block
   [{:keys [fx/context units]}]
@@ -340,9 +339,9 @@
         bf ((:unit/battle-force (first units)) forces)]
     {:fx/type :v-box
      :spacing 5
-     :border {:strokes [{:image (battle-force/get-camo bf) :width 5}]}
+     :border {:strokes [{:image (:unit-group/camo bf) :width 5}]}
      :children [{:fx/type :label
-                 :text (battle-force/to-str bf)}
+                 :text (:unit-group/name bf)}
                 {:fx/type :accordion
                  :panes (for [u units]
                           {:fx/type unit-stat-block :unit u})}]}))
