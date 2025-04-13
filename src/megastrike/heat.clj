@@ -20,7 +20,16 @@
 (defn shutdown?
   "If current heat is 4 or greater, shutdown the mech."
   [unit]
-  (<= 4 (:unit/current-heat unit)))
+  (>= (:unit/current-heat unit) 4))
+
+(defn change-heat
+  "Applies delta to heat and then ensures that it is in a valid range from 0-4."
+  [heat delta]
+  (let [new-heat (+ heat delta)]
+    (cond
+      (< new-heat 0) 0
+      (< 4 new-heat) 4
+      :else new-heat)))
 
 (defn end-phase-heat
   "Applies heat effects in correct order. First, if the unit was shut down, automatically 
@@ -28,18 +37,19 @@
   overheat used. If they are standing in water. Reduce heat by 1. If they made no attack 
   at all this round, reset their heat to zero. Finally, apply any external heat or engine heat."
   [unit water?]
-  (if (or (not (:unit/attacked? unit)) (shutdown? unit))
+  (prn unit)
+  (if (shutdown? unit)
     (assoc unit :unit/current-heat 0)
     (cond-> unit
       ;; If the unit used overheat, add it
-      (pos? (:unit/overheat-used unit)) (update :unit/current-heat + (:unit/overheat-used unit))
+      (pos? (:unit/overheat-used unit)) (update :unit/current-heat change-heat (:unit/overheat-used unit))
       ;; If the unit stood in water, subtract 1
-      water? (update :unit/current-heat dec)
+      water? (update :unit/current-heat change-heat -1)
       ;; If the unit didn't attack, reset to 0
       (not (:unit/attacked? unit)) (assoc :unit/current-heat 0)
       ;; If the unit has engine damage, add 1
-      (damage/crit-count unit :crits/engine) (update :unit/current-heat inc)
+      (pos? (damage/crit-count unit :crits/engine)) (update :unit/current-heat change-heat 1)
       ;; If the unit has unapplied heat damage, ddd it
-      (pos? (get unit :unit/unapplied-heat 0)) (update :unit/current-heat + (:unit/unapplied-heat unit))
+      (pos? (get unit :unit/unapplied-heat 0)) (update :unit/current-heat change-heat (:unit/unapplied-heat unit))
       ;; Always reset the unapplied heat to 0
       true (assoc :unit/unapplied-heat 0))))
