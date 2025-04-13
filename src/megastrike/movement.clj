@@ -98,8 +98,6 @@
 
 (defn astar
   [origin destination board heuristic mv-type unit-force]
-  (prn origin)
-  (prn (board/find-hex destination board))
   (let [guess-goal-dist #(heuristic % destination)
         tiles (board/tiles board)
         neighbors #(board/neighbors board %)
@@ -185,8 +183,6 @@
 
 (defn can-move?
   ([u path]
-   (prn u)
-   (prn path)
    (cond
      (not (hex/same-hex (first path) (:unit/location u)))
      (do (mu/log ::move-failed
@@ -211,18 +207,14 @@
 (defn find-path
   [u destination board]
   (loop [path (astar (board/find-hex (:unit/location u) board) (board/find-hex destination board) board hex/distance (selected-or-default u) (:unit/battle-force u))]
-    (prn path)
     (if (or (empty? path) (can-move? u path))
       path
-      (do
-        (prn path)
-        (recur (into [] (butlast path)))))))
+      (recur (into [] (butlast path))))))
 
 (defn set-path
   [u destination board]
   (let [moving-unit (if (:unit/selected u) u (assoc u :unit/selected (:unit/default u)))
         path (find-path u destination board)]
-    (prn path)
     (if (empty? path)
       u
       (assoc moving-unit :unit/path path))))

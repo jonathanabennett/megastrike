@@ -136,7 +136,6 @@
   ([unit]
    unit)
   ([unit field values]
-   (prn (field unit))
    (contains? values (field unit))))
 
 (defn filter-units
@@ -148,7 +147,6 @@
   ([units field values]
    (filter #(filter-membership-helper % field values) units))
   ([units unit-type]
-   (prn unit-type)
    (filter #(s/valid? unit-type (:unit/type %)) units)))
 
 (defn get-unit

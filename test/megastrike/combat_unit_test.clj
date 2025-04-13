@@ -59,7 +59,6 @@
   (t/testing "Filter by name"
     (t/is (= (:unit/base-pv (first (sut/filter-units sut/mul :unit/full-name "Archer ARC-2K" =))) 34)))
   (t/testing "Filter by unit type"
-    (prn (sut/filter-units sut/mul :mul/ground-units))
     (t/is (s/valid? :mul/mechs (:unit/type (first (sut/filter-units sut/mul :mul/bm)))))
     (t/is (s/valid? :mul/bm (:unit/type (first (sut/filter-units sut/mul :mul/mechs)))))
     (t/is (s/valid? :mul/vehicle (:unit/type (first (sut/filter-units sut/mul :mul/vehicle)))))

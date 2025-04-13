@@ -125,9 +125,6 @@
   (let [hex (hex/points (:unit/location unit) layout)
         forces (subs/forces context)
         bf (get forces (:unit/battle-force unit))]
-    (prn hex)
-    (prn layout)
-    (prn bf)
     {:fx/type :group
      :on-mouse-clicked {:event-type ::events/unit-clicked :unit unit :fx/sync true}
      :children [{:fx/type draw-sprite

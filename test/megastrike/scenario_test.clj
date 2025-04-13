@@ -9,7 +9,6 @@
 (def test-scenarios (file-seq scenario-folder))
 (def test-data (sut/parse-scenario-file test-scenario-path))
 
-(prn test-scenarios)
 (t/deftest parse-scenario-file
   (t/testing "Tests all scenario files"
     (t/is (= (count (:units test-data)) 5))

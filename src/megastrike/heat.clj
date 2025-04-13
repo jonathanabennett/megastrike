@@ -37,7 +37,6 @@
   overheat used. If they are standing in water. Reduce heat by 1. If they made no attack 
   at all this round, reset their heat to zero. Finally, apply any external heat or engine heat."
   [unit water?]
-  (prn unit)
   (if (shutdown? unit)
     (assoc unit :unit/current-heat 0)
     (cond-> unit
