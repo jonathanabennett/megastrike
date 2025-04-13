@@ -73,7 +73,7 @@
         round-string (str "Deployment Phase\n" "Deployment order: " (reduce str (map #(str % ", ") turn-order)) "\n\n----------\n")
         report (str round-report round-string)]
     (mu/log ::begin-deployment-phase
-            :deployable-units (map :id deployable-units)
+            :deployable-units (map :unit/id deployable-units)
             :turn-order turn-order
             :current-phase "Deployment"
             :instrumentation :player)

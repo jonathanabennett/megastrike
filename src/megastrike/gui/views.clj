@@ -54,7 +54,8 @@
   [{:keys [fx/context]}]
   (let [gb (subs/tiles context)
         layout (subs/layout context)
-        unit-locations (subs/deployed-units context)
+        units (vals (subs/units context))
+        unit-locations (filter movement/deployed? units)
         destinations (filter #(pos? (count (:unit/path %))) (vals (subs/units context)))]
     {:fx/type :scroll-pane
      :content {:fx/type :group

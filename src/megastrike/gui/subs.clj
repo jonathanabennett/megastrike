@@ -30,10 +30,6 @@
   [context]
   (get (units context) (active-id context)))
 
-(defn deployed-units
-  [context]
-  (filter movement/deployed? (vals (units context))))
-
 (defn forces
   [context]
   (fx/sub-val context :forces))

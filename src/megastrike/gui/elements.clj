@@ -125,6 +125,9 @@
   (let [hex (hex/points (:unit/location unit) layout)
         forces (subs/forces context)
         bf (get forces (:unit/battle-force unit))]
+    (prn hex)
+    (prn layout)
+    (prn bf)
     {:fx/type :group
      :on-mouse-clicked {:event-type ::events/unit-clicked :unit unit :fx/sync true}
      :children [{:fx/type draw-sprite
@@ -132,10 +135,10 @@
                  :bf bf
                  :x (nth hex 8)
                  :y (nth hex 9)
-                 :direction (:unit/facing unit)
+                 :direction (movement/facing unit)
                  :shift (/ (* (layout :y-size) (:scale layout)) 3)}
                 {:fx/type :label
-                 :text (unit :full-name)
+                 :text (unit :unit/full-name)
                  :layout-x (nth hex 8)
                  :layout-y (nth hex 9)
                  :font 16
@@ -348,7 +351,7 @@
 
 (defn stat-blocks
   [{:keys [fx/context]}]
-  (let [units (group-by :force (vals (subs/units context)))]
+  (let [units (group-by :unit/battle-force (vals (subs/units context)))]
     {:fx/type :scroll-pane
      :min-width :use-pref-size
      :content {:fx/type :v-box

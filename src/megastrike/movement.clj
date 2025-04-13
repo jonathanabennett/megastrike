@@ -131,7 +131,7 @@
 (defn move-cost
   [{:keys [unit/selected unit/default unit/path unit/battle-force]}]
   (let [movement-mode (or selected default)]
-    (reduce + (board/path-cost path movement-mode battle-force))))
+    (board/path-cost path movement-mode battle-force)))
 
 (defn unblocked-path?
   [path unit-force]
@@ -141,7 +141,7 @@
   (assoc u :unit/location (select-keys hex [:hex/p :hex/q :hex/r])))
 
 (defn deployed? [u]
-  (get-in u [u :unit/location :hex/q] false))
+  (get-in u [:unit/location :hex/q] false))
 
 (defn facing [u]
   (get directions (:unit/facing u)))
