@@ -41,24 +41,7 @@
         ba-test "952	Elemental Battle Armor	(Headhunter)(Sqd4)	Ambusher	BA	1	6\\\"j	1	1	2	-1	1	FALSE	0	FALSE	0	FALSE	0	FALSE	0	15	AM, CAR4, MEC, RCN, RSD1				"]
     (t/testing "Sample MUL rows"
       (t/is (= (sut/parse-row (first (csv/parse-csv bm-test :delimiter \tab)))
-               {:unit/abilities {:if {:value 2, :value* false, :ability/output "IF2"}},
-                :unit/attacks {:attack/charge {:attack/damage 0, :attack/self true, :attack/type :attack/charge},
-                               :attack/physical {:attack/damage 3, :attack/self false, :attack/type :attack/physical},
-                               :attack/regular {:attack/e 0, :attack/e* false, :attack/l 2, :attack/l* false, :attack/m 2, :attack/m* false, :attack/s 2, :attack/s* false}},
-                :unit/base-pv 34,
-                :unit/chassis "Archer",
-                :unit/full-name "Archer ARC-2K",
-                :unit/model "ARC-2K",
-                :unit/move-modes {:move/walk 4},
-                :unit/mul-id 73,
-                :unit/overheat 2,
-                :unit/role :role/missile-boat,
-                :unit/size 3,
-                :unit/armor {:toughness/current 6, :toughness/maximum 6, :toughness/unapplied 0},
-                :unit/structure {:toughness/current 6, :toughness/maximum 6, :toughness/unapplied 0},
-                :unit/threshold -1,
-                :unit/tmm 1,
-                :unit/type :type/bm}))
+               test-bm))
       (t/is (= (sut/parse-row (first (csv/parse-csv cv-test :delimiter \tab)))
                {:unit/abilities {:if {:value 2, :value* false, :ability/output "IF2"}, :srch {:ability/output "SRCH"}, :tur {:ability/output "TUR(1/1/1)"}, :attack/lrm {:l 2, :l* false, :m 2, :m* false, :s 1, :s* false, :ability/output "LRM1/2/2"}, :attack/rear {:l 0, :l* false, :m 0, :m* false, :s 1, :s* false, :ability/output "REAR1/-/-"}}, :unit/armor {:toughness/current 6, :toughness/maximum 6, :toughness/unapplied 0}, :unit/attacks {:attack/charge {:attack/damage 0, :attack/self true, :attack/type :attack/charge}, :attack/lrm {:attack/e 0, :attack/e* false, :attack/l 2, :attack/l* false, :attack/m 2, :attack/m* false, :attack/s 1, :attack/s* false}, :attack/physical {:attack/damage 4, :attack/self false, :attack/type :attack/physical}, :attack/rear {:attack/e 0, :attack/e* false, :attack/l 0, :attack/l* false, :attack/m 0, :attack/m* false, :attack/s 1, :attack/s* false}, :attack/regular {:attack/e 0, :attack/e* false, :attack/l 3, :attack/l* false, :attack/m 5, :attack/m* false, :attack/s 4, :attack/s* false}}, :unit/base-pv 37, :unit/chassis "Puma Assault Tank", :unit/full-name "Puma Assault Tank PAT-001", :unit/model "PAT-001", :unit/move-modes {:move/t 3}, :unit/mul-id 4879, :unit/overheat 0, :unit/role :role/none, :unit/size 4, :unit/structure {:toughness/current 6, :toughness/maximum 6, :toughness/unapplied 0}, :unit/threshold -1, :unit/tmm 1, :unit/type :type/cv}))
       (t/is (= (sut/parse-row (first (csv/parse-csv sv-test :delimiter \tab)))
@@ -105,9 +88,11 @@
 
 (t/deftest test-create-element
   (t/testing "Verify new keys merged."
-    (t/is (= (:unit/pilot (sut/->combat-unit (first (sut/filter-units sut/mul :unit/full-name "Archer ARC-2K" =))
-                                             {:pilot/full-name "Bobby McSkillface" :pilot/skill 4 :pilot/kills 0} :direction/n
-                                             {:hex/p 2 :hex/q 0 :hex/r -2} :davion 0)) {:pilot/full-name "Bobby McSkillface" :pilot/skill 4 :pilot/kills 0}))))
+    (let [test-element (sut/->combat-unit (first (sut/filter-units sut/mul :unit/full-name "Archer ARC-2K" =))
+                                          {:pilot/full-name "Bobby McSkillface" :pilot/skill 4 :pilot/kills 0} :direction/n
+                                          {:hex/p 2 :hex/q 0 :hex/r -2} :davion 0)]
+      (t/is (= (:unit/pilot test-element) {:pilot/full-name "Bobby McSkillface" :pilot/skill 4 :pilot/kills 0}))
+      (t/is (= (:unit/battle-force test-element) :davion)))))
 
 (t/deftest test-pv-mod-calculation
   (t/testing "Check PV Mod calculation."
@@ -136,31 +121,3 @@
     ;; (t/is (= (sut/get-unit "Gnome Battle Armor (Standard)") 0))
     ;; (t/is (= (sut/get-unit "Clan Foot Point (Laser)") {:role "Ambusher", :tmm 0, :left-arc "", :e* false, :movement {:f 1}, :right-arc "", :mul-id 603, :l* false, :m 1, :type "CI", :front-arc "", :abilities "AM, CAR3", :e 0, :s 1, :threshold -1, :l 0, :size 1, :m* false, :rear-arc "", :point-value 11, :overheat 0, :chassis "Clan Foot Point", :structure 1, :full-name "Clan Foot Point (Laser)", :armor 3, :s* false, :model "(Laser)"}))
     ))
-;
-; (t/deftest test-calculate-damage
-;   (t/testing "Test damage without a *."
-;     (t/is (= (sut/calculate-damage {:id "Unit 1" :s 4} 2 false) 4))
-;     (t/is (= (sut/calculate-damage {:id "Unit 1" :m 4} 4 false) 4))
-;     (t/is (= (sut/calculate-damage {:id "Unit 1" :l 4} 13 false) 4))
-;     (t/is (= (sut/calculate-damage {:id "Unit 1" :e 4} 22 false) 4))
-;     (t/is (= (sut/calculate-damage {:id "Unit 1" :s 4} 2 true) 5))
-;     (t/is (= (sut/calculate-damage {:id "Unit 1" :m 4} 4 true) 5))
-;     (t/is (= (sut/calculate-damage {:id "Unit 1" :l 4} 13 true) 5))
-;     (t/is (= (sut/calculate-damage {:id "Unit 1" :e 4} 22 true) 5)))
-;   (t/testing "Test Damage with a *."
-;     (let [s-damage (sut/calculate-damage {:id "Unit 1" :s 0 :s* true} 2 false)
-;           m-damage (sut/calculate-damage {:id "Unit 1" :m 0 :m* true} 9 false)
-;           l-damage (sut/calculate-damage {:id "Unit 1" :l 0 :l* true} 13 false)
-;           e-damage (sut/calculate-damage {:id "Unit 1" :e 0 :e* true} 22 false)
-;           sr-damage (sut/calculate-damage {:id "Unit 1" :s 0 :s* true} 2 true)
-;           mr-damage (sut/calculate-damage {:id "Unit 1" :m 0 :m* true} 9 true)
-;           lr-damage (sut/calculate-damage {:id "Unit 1" :l 0 :l* true} 13 true)
-;           er-damage (sut/calculate-damage {:id "Unit 1" :e 0 :e* true} 22 true)]
-;       (t/is (or (= s-damage 0) (= s-damage 1)))
-;       (t/is (or (= m-damage 0) (= m-damage 1)))
-;       (t/is (or (= l-damage 0) (= l-damage 1)))
-;       (t/is (or (= e-damage 0) (= e-damage 1)))
-;       (t/is (or (= sr-damage 1) (= sr-damage 2)))
-;       (t/is (or (= mr-damage 1) (= mr-damage 2)))
-;       (t/is (or (= lr-damage 1) (= lr-damage 2)))
-;       (t/is (or (= er-damage 1) (= er-damage 2))))))
