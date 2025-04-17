@@ -17,7 +17,7 @@
         target-number (attacks/calculate-to-hit targeting)
         probability (get utils/probabilities target-number 0)
         toughness (+ (damage/remaining-armor target) (* (damage/remaining-structure target) 2))
-        damage (:damage targeting)
+        damage (:targeting/damage targeting)
         damage-num (if (str/ends-with? damage "*") 0.5 (Integer/parseInt damage))
         expected-damage (/ (* probability damage-num) 100.0)]
     (mu/log ::targeting-info
