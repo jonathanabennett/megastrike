@@ -114,8 +114,6 @@
 
 (defn line
   [hex1 hex2 board]
-  (prn hex1)
-  (prn hex2)
   (let [distance (hex/distance hex1 hex2)]
     (loop [result []
            step 0]

@@ -140,9 +140,6 @@
   [origin target line]
   (let [o-height (+ 2 (:elevation (first line)))
         t-height (+ 2 (:elevation (last line)))]
-    (prn origin)
-    (prn target)
-    (prn line)
     (if (<= (count line) 2)
       false
       (loop [blocked? false
@@ -221,8 +218,8 @@
                                 :targeting/range-mod (calculate-distance-mod distance)})
          damage (print-damage attacker attack distance)
          firing-solution (s/assert :targeting/firing-solution
-                                   {:targeting/attacker (:unit/id attacker)
-                                    :targeting/target (:unit/id target)
+                                   {:targeting/attacker attacker
+                                    :targeting/target target
                                     :targeting/attack-type attack
                                     :targeting/attack-data attack-data
                                     :targeting/distance distance
@@ -260,11 +257,10 @@
   (into {} (map #(->targeting attacker target board layout %) (keys (:unit/attacks attacker)))))
 
 (defn roll-damage
-  ([unit attack range rear-attack?]
-   (let [damage-str (print-damage unit attack range)
-         damage (if (and (string/ends-with? damage-str "*") (<= 4 (utils/roll-die)))
+  ([damage rear-attack?]
+   (let [damage (if (and (string/ends-with? damage "*") (<= 4 (utils/roll-die)))
                   1
-                  (Integer/parseInt damage-str))]
+                  (Integer/parseInt damage))]
      (if rear-attack?
        (inc damage)
        damage)))
@@ -332,9 +328,9 @@
      :result result}))
 
 (defn basic-attack
-  [{:keys [attacker target attack distance rear-attack?] :as atk-data} to-hit]
-  (let [damage (roll-damage (:attacks attacker) attack distance rear-attack?)
-        result {(:unit/id attacker) (assoc attacker :unit/attacked? true)
+  [{:keys [targeting/attacker targeting/target targeting/damage targeting/rear-attack?] :as atk-data} to-hit]
+  (let [damage (roll-damage damage rear-attack?)
+        result {(:unit/id attacker) (assoc attacker :unit/attacked? true :unit/acted? true)
                 (:unit/id target) (if (<= (calculate-to-hit atk-data) to-hit)
                                     (damage/take-damage target damage (= to-hit 12))
                                     target)}]
@@ -356,7 +352,7 @@
      :result result}))
 
 (defn make-attack
-  ([{:keys [attack] :as atk-data} to-hit]
+  ([{:keys [targeting/attack] :as atk-data} to-hit]
    (mu/log ::making-attack
            :atk-data atk-data)
    (condp = attack

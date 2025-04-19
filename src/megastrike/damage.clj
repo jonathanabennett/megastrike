@@ -118,5 +118,5 @@
        (-> unit
            (update-in [:unit/armor :toughness/unapplied] + armor-damage)
            (update-in [:unit/structure :toughness/unapplied] + penetration)
-           (update-in [:unit/criticals :crits/unapplied] merge crits))))))
+           (update-in [:unit/criticals :crits/unapplied] (comp vec flatten conj) (remove nil? crits)))))))
 
