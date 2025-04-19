@@ -340,8 +340,8 @@
      :result result}))
 
 (defn heat-attack
-  [{:keys [attacker target attack distance rear-attack?] :as atk-data} to-hit]
-  (let [damage (roll-damage (:attacks attacker) attack distance rear-attack?)
+  [{:keys [targeting/attacker targeting/target targeting/damage targeting/rear-attack?] :as atk-data} to-hit]
+  (let [damage (roll-damage damage rear-attack?)
         result {(:unit/id attacker) (assoc attacker :unit/attacked? true)
                 (:unit/id target) (if (<= (calculate-to-hit atk-data) to-hit)
                                     (assoc target :damage (damage/heat-damage target damage))
