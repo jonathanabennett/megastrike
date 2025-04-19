@@ -42,9 +42,6 @@
                               (:unit/location unit))
               facing (hex/facing unit-location click-location layout)
               units (update units active-unit movement/change-facing facing)]
-          (prn unit-location)
-          (prn facing)
-          (prn (active-unit units))
           (assoc game-state :units units :turn-flag nil))
 
         (and (= current-phase :deployment) (not (:unit/acted? unit)))
