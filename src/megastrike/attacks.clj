@@ -140,6 +140,9 @@
   [origin target line]
   (let [o-height (+ 2 (:elevation (first line)))
         t-height (+ 2 (:elevation (last line)))]
+    (prn origin)
+    (prn target)
+    (prn line)
     (if (<= (count line) 2)
       false
       (loop [blocked? false
@@ -357,9 +360,9 @@
    (mu/log ::making-attack
            :atk-data atk-data)
    (condp = attack
-     :charge (charge-attack atk-data to-hit)
-     :dfa (dfa-attack atk-data to-hit)
-     :heat (heat-attack atk-data to-hit)
+     :attack/charge (charge-attack atk-data to-hit)
+     :attack/dfa (dfa-attack atk-data to-hit)
+     :attack/heat (heat-attack atk-data to-hit)
      (basic-attack atk-data to-hit)))
   ([attack-data]
    (make-attack attack-data (utils/roll2d))))
