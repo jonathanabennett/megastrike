@@ -16,7 +16,8 @@
 (s/def :mul/conventional #{:type/sv :type/cv :type/ba :type/ci})
 (s/def :mul/ground-units #{:type/bm :type/im :type/pm :type/sv :type/cv :type/ba :type/ci})
 (s/def :mul/aero #{:type/ss :type/ws :type/js :type/ds :type/da :type/sc :type/cf :type/af})
-(s/def :mul/all #{:type/bm :type/im :type/pm :type/sv :type/cv :type/ba :type/ci :type/ss :type/ws :type/js :type/ds :type/da :type/sc :type/cf :type/af})
+(s/def :mul/all #{:type/bm :type/im :type/pm :type/sv :type/cv :type/ba :type/ci :type/ss
+                  :type/ws :type/js :type/ds :type/da :type/sc :type/cf :type/af})
 
 ;; Battle Force Definitions
 (s/def :unit-group/keyword keyword?)
@@ -63,7 +64,7 @@
 (s/def :ability/record (s/keys :req [:ability/output]))
 (s/def :unit/abilities (s/map-of keyword? :ability/record))
 
-;Attack/damage definitions
+;; Attack definitions
 (s/def :attack/s nat-int?)
 (s/def :attack/s* boolean?)
 (s/def :attack/m nat-int?)
@@ -75,7 +76,8 @@
 (s/def :attack/damage nat-int?)
 (s/def :attack/self boolean?)
 (s/def :attack/melee-types #{:attack/physical :attack/charge :attack/dfa})
-(s/def :attack/type #{:attack/regular :attack/physical :attack/charge :attack/dfa :attack/ht :attack/rear :attack/lrm :attack/srm :attack/ac})
+(s/def :attack/type #{:attack/regular :attack/physical :attack/charge :attack/dfa
+                      :attack/ht :attack/rear :attack/lrm :attack/srm :attack/ac})
 (s/def :attack/ranged-info
   (s/keys :req [:attack/s :attack/s*
                 :attack/m :attack/m*
@@ -89,6 +91,8 @@
   (s/or :record/ranged :attack/ranged-info
         :record/melee :attack/melee-info))
 (s/def :unit/attacks (s/map-of :attack/type :attack/record))
+
+;; Damage definitions
 (s/def :toughness/current nat-int?)
 (s/def :toughness/maximum nat-int?)
 (s/def :toughness/unapplied nat-int?)
@@ -118,10 +122,13 @@
 (s/def :pilot/full-name string?)
 (s/def :pilot/skill (s/int-in 0 9))
 (s/def :pilot/kills nat-int?)
+
 ;; Combat Unit definitions
 (s/def :unit/battle-force keyword?)
 (s/def :unit/pilot (s/keys :req [:pilot/full-name :pilot/skill :pilot/kills]))
 (s/def :unit/acted? boolean?)
+
+;; An MUL is a unit entry from MasterUnitList. They do not have pilots, locations, or damage.
 (s/def :unit/mul (s/keys :req [:unit/full-name :unit/chassis :unit/model :unit/mul-id :unit/threshold
                                :unit/base-pv :unit/role :unit/type :unit/abilities :unit/move-modes :unit/tmm
                                :unit/size :unit/attacks :unit/overheat :unit/armor :unit/structure]))
@@ -148,12 +155,22 @@
 (s/def :targeting/range-mod :targeting/modifier)
 (s/def :targeting/attack-type :attack/type)
 (s/def :targeting/attack-data
-  (s/keys :req [:targeting/skill :targeting/fc-damage :targeting/amm :targeting/tmm :targeting/heat :targeting/los :targeting/woods
-                :targeting/range-mod]))
+  (s/keys :req [:targeting/skill :targeting/fc-damage :targeting/amm :targeting/tmm
+                :targeting/heat :targeting/los :targeting/woods :targeting/range-mod]))
 (s/def :targeting/distance nat-int?)
 (s/def :targeting/rear-attack? boolean?)
 (s/def :targeting/damage string?)
 (s/def :targeting/firing-solution
-  (s/keys :req [:targeting/attacker :targeting/target :targeting/attack-type :targeting/attack-data :targeting/distance
-                :targeting/rear-attack? :targeting/damage]))
+  (s/keys :req [:targeting/attacker :targeting/target :targeting/attack-type :targeting/attack-data
+                :targeting/distance :targeting/rear-attack? :targeting/damage]))
 
+;; Combat Resolution definitions
+(s/def :combat-result/attack :attack/type)
+(s/def :combat-result/target-number nat-int?)
+(s/def :combat-result/roll nat-int?)
+(s/def :combat-result/damage nat-int?)
+(s/def :combat-result/crits seq?)
+(s/def :combat-result/changes (s/map-of :unit/id map?))
+(s/def :combat-result/report
+  (s/keys :req [:combat-result/attack :combat-result/target-number :combat-result/roll
+                :combat-result/damage :combat-result/crits :combat-result/changes]))
