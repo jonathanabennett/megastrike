@@ -9,6 +9,10 @@
    [megastrike.movement :as movement]
    [megastrike.phases :as phases]))
 
+(defn update-unit
+  [game-state unit updates]
+  (update-in game-state [:units unit] merge updates))
+
 (defn parse-attack-data
   [{:keys [targeting-data to-hit target-damage result]}]
   (let [atk-id (get-in targeting-data [:attacker :id])
