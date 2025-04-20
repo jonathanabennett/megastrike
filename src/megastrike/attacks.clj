@@ -330,14 +330,19 @@
 (defn basic-attack
   [{:keys [targeting/attacker targeting/target targeting/damage targeting/rear-attack?] :as atk-data} to-hit]
   (let [damage (roll-damage damage rear-attack?)
-        result {(:unit/id attacker) (assoc attacker :unit/attacked? true :unit/acted? true)
-                (:unit/id target) (if (<= (calculate-to-hit atk-data) to-hit)
-                                    (damage/take-damage target damage (= to-hit 12))
-                                    target)}]
-    {:targeting-data atk-data
-     :to-hit to-hit
-     :target-damage damage
-     :result result}))
+        target-number (calculate-to-hit atk-data)
+        damage-result (damage/take-damage target damage (= to-hit 12))
+        combat-result {:combat-result/attack (:targeting/attack-type atk-data)
+                       :combat-result/target-number target-number
+                       :combat-result/roll to-hit
+                       :combat-result/damage damage}]
+    (if (<= target-number to-hit)
+      (merge combat-result
+             {:combat-result/crits (:crits damage-result)
+              :combat-result/changes {(:unit/id attacker) {:unit/acted? true :unit/attacked? true}
+                                      (:unit/id target) (:result damage-result)}})
+      (merge combat-result
+             {:combat-result/changes {(:unit/id attacker) {:unit/acted? true :unit/attacked? true}}}))))
 
 (defn heat-attack
   [{:keys [targeting/attacker targeting/target targeting/damage targeting/rear-attack?] :as atk-data} to-hit]

@@ -112,11 +112,14 @@
      ;; Check how much damage should be applied to structure
      ;; Generate the appropriate number of criticals
      ;; Thread unit through updating the unapplied values.
-     (let [armor-damage (min (remaining-armor unit) damage)
+     (let [unapplied-armor (get-in unit [:unit/armor :toughness/unapplied] 0)
+           unapplied-structure (get-in unit [:unit/structure :toughness/unapplied] 0)
+           unapplied-crits (get-in unit [:unit/criticals :crits/unapplied] [])
+           armor-damage (min (remaining-armor unit) damage)
            penetration (- damage armor-damage)
            crits (roll-crits (pos? penetration) tac)]
-       (-> unit
-           (update-in [:unit/armor :toughness/unapplied] + armor-damage)
-           (update-in [:unit/structure :toughness/unapplied] + penetration)
-           (update-in [:unit/criticals :crits/unapplied] (comp vec flatten conj) (remove nil? crits)))))))
+       {:crits crits
+        :result {:unit/armor {:toughness/unapplied (+ unapplied-armor armor-damage)}
+                 :unit/structure {:toughness/unapplied (+ unapplied-structure penetration)}
+                 :unit/criticals {:crits/unapplied ((comp vec flatten conj) unapplied-crits (remove nil? crits))}}}))))
 

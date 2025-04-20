@@ -18,9 +18,17 @@ data that looks approximately like this:
 Then, `update-unit` simply calls `(update-in game-state [:units unit-id] merge changes)`
 We can add an `update-units` method which loops through multiple units and applies `update-unit` to it.
 
-Here is a worked example of what attacks might have:
+***NOTE***: The above will not work! becuase of how merge works. Instead, I will look into a vec of vecs that looks
+more like this:
+```clojure
+[[["Wolfhound WLF-2 #2" :unit/armor :toughness/unapplied] 1]
+ [["Wolfhound WLF-2 #2" :unit/structure :toughness/unapplied] 2]
+ [["Wolfhound WLF-2 #2" :unit/crits :crits/unapplied] [:crit/engine]]
+ [["Wolfhound WLF-2" :unit/acted?] true]
+ [["Wolfhound WLF-2" :unit/attacked?] true]]
+```
 
-
+Update unit then maps over the outer vector calling `(assoc-in game-state [:units %1] %2)`.
 
 # Adding bars to unit displays.
 I want to add a health bar and a heat bar to the unit displays. I need to decide where/how they go
