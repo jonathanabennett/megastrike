@@ -105,8 +105,7 @@
 (s/def :crits/taken (s/nilable (s/coll-of :crits/type)))
 (s/def :crits/unapplied (s/nilable (s/coll-of :crits/type)))
 (s/def :unit/criticals
-  (s/keys :req [:crits/taken
-                :crits/unapplied]))
+  (s/keys :req [:crits/taken :crits/unapplied]))
 
 ;; Heat definitions
 (s/def :unit/current-heat (s/int-in 0 5))
