@@ -147,7 +147,7 @@
   ([units field values]
    (filter #(filter-membership-helper % field values) units))
   ([units unit-type]
-   (filter #(s/valid? unit-type (:unit/type %)) units)))
+   (filter #(isa? (:unit/type %) unit-type) units)))
 
 (defn get-unit
   ([s]

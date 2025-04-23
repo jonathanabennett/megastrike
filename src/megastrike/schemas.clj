@@ -9,15 +9,21 @@
 (s/def :hex/location (s/keys :req [:hex/p :hex/q :hex/r]))
 
 ;; Unit Type definitions
-(s/def :mul/bm #{:type/bm})
-(s/def :mul/mechs #{:type/bm :type/im :type/pm})
-(s/def :mul/vehicle #{:type/sv :type/cv})
-(s/def :mul/infantry #{:type/ba :type/ci})
-(s/def :mul/conventional #{:type/sv :type/cv :type/ba :type/ci})
-(s/def :mul/ground-units #{:type/bm :type/im :type/pm :type/sv :type/cv :type/ba :type/ci})
-(s/def :mul/aero #{:type/ss :type/ws :type/js :type/ds :type/da :type/sc :type/cf :type/af})
-(s/def :mul/all #{:type/bm :type/im :type/pm :type/sv :type/cv :type/ba :type/ci :type/ss
-                  :type/ws :type/js :type/ds :type/da :type/sc :type/cf :type/af})
+(derive :type/bm :mul/mechs)
+(doseq [x [:type/bm :type/im :type/pm]]
+  (derive x :mul/mechs))
+(doseq [x [:type/sv :type/cv]]
+  (derive x :mul/vehicle))
+(doseq [x [:type/ba :type/ci]]
+  (derive x :mul/infantry))
+(doseq [x [:mul/infantry :mul/vehicle]]
+  (derive x :mul/conventional))
+(doseq [x [:mul/mechs :mul/conventional]]
+  (derive x :mul/ground-units))
+(doseq [x [:type/ss :type/ws :type/js :type/ds :type/da :type/sc :type/cf :type/af]]
+  (derive x :mul/aero))
+(doseq [x [:mul/ground-units :mul/aero]]
+  (derive x :mul/all))
 
 ;; Battle Force Definitions
 (s/def :unit-group/keyword keyword?)
@@ -43,7 +49,7 @@
                     :role/attack-fighter :role/dogfighter :role/fast-dogfighter :role/fire-support :role/interceptor
                     :role/transport ; Aero roles
                     :role/none :role/undetermined}) ;unknown roles
-(s/def :unit/type :mul/all)
+(s/def :unit/type (descendants :mul/all))
 (s/def :unit/size (s/int-in 1 5))
 
 ;; Movement definitions

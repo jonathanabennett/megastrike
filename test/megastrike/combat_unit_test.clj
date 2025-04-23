@@ -59,13 +59,13 @@
   (t/testing "Filter by name"
     (t/is (= (:unit/base-pv (first (sut/filter-units sut/mul :unit/full-name "Archer ARC-2K" =))) 34)))
   (t/testing "Filter by unit type"
-    (t/is (s/valid? :mul/mechs (:unit/type (first (sut/filter-units sut/mul :mul/bm)))))
-    (t/is (s/valid? :mul/bm (:unit/type (first (sut/filter-units sut/mul :mul/mechs)))))
-    (t/is (s/valid? :mul/vehicle (:unit/type (first (sut/filter-units sut/mul :mul/vehicle)))))
-    (t/is (s/valid? :mul/conventional (:unit/type (first (sut/filter-units sut/mul :mul/conventional)))))
-    (t/is (s/valid? :mul/ground-units (:unit/type (first (sut/filter-units sut/mul :mul/ground-units)))))
-    (t/is (s/valid? :mul/aero (:unit/type (first (sut/filter-units sut/mul :mul/aero)))))
-    (t/is (= (:unit/type (first (sut/filter-units sut/mul :mul/bm))) :type/bm)))
+    (t/is (isa? (:unit/type (first (sut/filter-units sut/mul :type/bm))) :mul/mechs))
+    (t/is (isa? (:unit/type (first (sut/filter-units sut/mul :mul/mechs))) :type/bm))
+    (t/is (isa? (:unit/type (first (sut/filter-units sut/mul :mul/vehicle))) :mul/vehicle))
+    (t/is (isa? (:unit/type (first (sut/filter-units sut/mul :mul/conventional))) :mul/conventional))
+    (t/is (isa? (:unit/type (first (sut/filter-units sut/mul :mul/ground-units))) :mul/ground-units))
+    (t/is (isa? (:unit/type (first (sut/filter-units sut/mul :mul/aero))) :mul/aero))
+    (t/is (= (:unit/type (first (sut/filter-units sut/mul :type/bm))) :type/bm)))
   (t/testing "Empty filters return unaltered lists."
     (t/is (= (sut/filter-units sut/mul) sut/mul))))
 
