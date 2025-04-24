@@ -10,8 +10,11 @@
    [megastrike.phases :as phases]))
 
 (defn update-unit
-  [game-state unit updates]
-  (update-in game-state [:units unit] merge updates))
+  [game-state updates]
+  (reduce (fn [current-state [path value]]
+            (assoc-in current-state path value))
+          game-state
+          updates))
 
 (defn parse-attack-data
   [{:keys [targeting-data to-hit target-damage result]}]

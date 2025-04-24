@@ -275,6 +275,11 @@
        (inc dmg)
        dmg))))
 
+(defn change-concat-helper
+  "This function exists to make concating changes work as expected"
+  [base-changes new-changes]
+  (into [] (concat base-changes new-changes)))
+
 (defn dfa-attack
   [{:keys [attacker target rear-attack?] :as targeting} to-hit]
   (let [hit? (<= (calculate-to-hit targeting) to-hit)
@@ -335,14 +340,14 @@
         combat-result {:combat-result/attack (:targeting/attack-type atk-data)
                        :combat-result/target-number target-number
                        :combat-result/roll to-hit
-                       :combat-result/damage damage}]
+                       :combat-result/damage damage
+                       :combat-result/changes [[[:units (:unit/id attacker) :unit/acted?] true]
+                                               [[:units (:unit/id attacker) :unit/attacked?] true]]}]
     (if (<= target-number to-hit)
-      (merge combat-result
-             {:combat-result/crits (:crits damage-result)
-              :combat-result/changes {(:unit/id attacker) {:unit/acted? true :unit/attacked? true}
-                                      (:unit/id target) (:result damage-result)}})
-      (merge combat-result
-             {:combat-result/changes {(:unit/id attacker) {:unit/acted? true :unit/attacked? true}}}))))
+      (-> combat-result
+          (assoc :combat-result/crits (:crits damage-result))
+          (update :combat-result/changes change-concat-helper (:result damage-result)))
+      combat-result)))
 
 (defn heat-attack
   [{:keys [targeting/attacker targeting/target targeting/damage targeting/rear-attack?] :as atk-data} to-hit]
