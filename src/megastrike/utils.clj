@@ -62,3 +62,6 @@
    (+ (roll-die) (roll-die) mods))
   ([]
    (roll2d 0)))
+
+(defn concatv [& xs]
+  (vec (apply concat xs)))

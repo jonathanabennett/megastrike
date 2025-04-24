@@ -275,11 +275,6 @@
        (inc dmg)
        dmg))))
 
-(defn change-concat-helper
-  "This function exists to make concating changes work as expected"
-  [base-changes new-changes]
-  (into [] (concat base-changes new-changes)))
-
 (defn dfa-attack
   [{:keys [attacker target rear-attack?] :as targeting} to-hit]
   (let [hit? (<= (calculate-to-hit targeting) to-hit)
@@ -346,7 +341,7 @@
     (if (<= target-number to-hit)
       (-> combat-result
           (assoc :combat-result/crits (:crits damage-result))
-          (update :combat-result/changes change-concat-helper (:result damage-result)))
+          (update :combat-result/changes utils/concatv (:result damage-result)))
       combat-result)))
 
 (defn heat-attack
