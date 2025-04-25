@@ -119,8 +119,10 @@
            penetration (- damage armor-damage)
            crits (roll-crits (pos? penetration) tac)]
        {:crits crits
-        :result [[[:unit (:unit/id unit) :unit/armor :toughness/unapplied] (+ unapplied-armor armor-damage)]
-                 [[:unit (:unit/id unit) :unit/structure :toughness/unapplied] (+ unapplied-structure penetration)]
-                 [[:unit (:unit/id unit) :unit/criticals :crits/unapplied]
+        :armor-damage armor-damage
+        :penetration penetration
+        :result [[[:units (:unit/id unit) :unit/armor :toughness/unapplied] (+ unapplied-armor armor-damage)]
+                 [[:units (:unit/id unit) :unit/structure :toughness/unapplied] (+ unapplied-structure penetration)]
+                 [[:units (:unit/id unit) :unit/criticals :crits/unapplied]
                   ((comp vec flatten conj) unapplied-crits (remove nil? crits))]]}))))
 

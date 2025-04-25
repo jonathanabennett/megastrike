@@ -338,6 +338,8 @@
         target-number (calculate-to-hit atk-data)
         damage-result (damage/take-damage target damage (= to-hit 12))
         combat-result {:combat-result/attack (:targeting/attack-type atk-data)
+                       :combat-result/attacker (:unit/id attacker)
+                       :combat-result/target (:unit/id target)
                        :combat-result/target-number target-number
                        :combat-result/roll to-hit
                        :combat-result/damage damage
@@ -346,6 +348,8 @@
     (if (<= target-number to-hit)
       (-> combat-result
           (assoc :combat-result/crits (:crits damage-result))
+          (assoc :combat-result/armor-damage (:armor-damage damage-result))
+          (assoc :combat-result/penetration (:penetration damage-result))
           (update :combat-result/changes change-concat-helper (:result damage-result)))
       combat-result)))
 

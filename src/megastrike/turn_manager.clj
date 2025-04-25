@@ -9,7 +9,7 @@
    [megastrike.movement :as movement]
    [megastrike.phases :as phases]))
 
-(defn update-unit
+(defn unit-updates
   [game-state updates]
   (reduce (fn [current-state [path value]]
             (assoc-in current-state path value))
@@ -17,24 +17,18 @@
           updates))
 
 (defn parse-attack-data
-  [{:keys [targeting-data to-hit target-damage result]}]
-  (let [atk-id (get-in targeting-data [:attacker :id])
-        tgt-id (get-in targeting-data [:target :id])
-        target (get result tgt-id)
-        crit (get-in target [:unit/criticals :crits/unapplied])
-        arm (get-in target [:unit/armor :toughness/current])
-        penetration (- target-damage arm)
-        target-num (attacks/calculate-to-hit targeting-data)]
-    (str atk-id " attacks " tgt-id ". Needs a " target-num ".\n"
-         "Rolled a " to-hit "\n"
-         (if (<= target-num to-hit)
-           (str "Attack hits for " target-damage " damage against " arm " armor.\n"
-                (when (pos? penetration)
-                  (str penetration " damage penetrates. " (get-in target [:unit/structure :toughness/current]) " structure remaining.\n"))
-                (when (or (= to-hit 12) (pos? penetration))
-                  (str "Possible Critical: Rolled " (if crit (str crit) "no critical") " on the critical hits table.\n")))
-           "Attack misses.\n")
-         \newline \newline \newline)))
+  [{:keys [combat-result/attacker combat-result/target combat-result/attack
+           combat-result/target-number combat-result/crits combat-result/roll
+           combat-result/damage combat-result/armor-damage combat-result/penetration]}]
+  (str attacker " attacks " target ". Using a " attack " attack. Needs a " target-number ".\n"
+       "Rolled a " roll "\n"
+       (if (<= target-number roll)
+         (str "Attack hits for " damage " damage.\n" armor-damage " damage to armor."
+              (when (pos? penetration) (str penetration " damage penetrates the armor. \n"))
+              (when (or (= roll 12) (pos? penetration))
+                (str "Possible Critical: Rolled " (if crits (str crits) "no critical") " on the critical hits table.\n")))
+         "Attack misses.\n")
+       \newline \newline \newline))
 
 (defn hex-clicked
   [{:keys [current-phase active-unit units game-board turn-flag layout] :as game-state} hex click-location]
@@ -139,11 +133,12 @@
       :else game-state)))
 
 (defn make-attack
-  [{:keys [units round-report] :as game-state} targeting]
-  (let [attack-result (attacks/make-attack targeting)
-        units (merge units (:result attack-result))
-        report (str round-report (parse-attack-data attack-result))]
-    (assoc game-state :units units :round-report report)))
+  [{:keys [round-report] :as game-state} targeting]
+  (let [result (attacks/make-attack targeting)
+        report (str round-report (parse-attack-data result))]
+    (-> game-state
+        (assoc :round-report report)
+        (unit-updates (:combat-results/changes result)))))
 
 (declare take-turn)
 

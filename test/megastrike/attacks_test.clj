@@ -1780,14 +1780,18 @@
 (t/deftest test-make-attack
   (t/testing "Test attack that hits"
     (t/is (= (normalize-for-testing (sut/make-attack (first (vals (sut/->targeting attacker1 target1 board layout :attack/regular))) 8))
-             {:combat-result/attack :attack/regular,
-   :combat-result/changes [[[:units "Wolfhound WLF-2" :unit/acted?] true]
-                           [[:units "Wolfhound WLF-2" :unit/attacked?] true]
-                           [[:unit "Wolfhound WLF-2 #2" :unit/armor :toughness/unapplied] 3]
-                           [[:unit "Wolfhound WLF-2 #2" :unit/structure :toughness/unapplied] 0]
-                           [[:unit "Wolfhound WLF-2 #2" :unit/criticals :crits/unapplied] []]],
-   :combat-result/crits [nil nil],
-   :combat-result/damage 3,
-   :combat-result/roll 8,
-   :combat-result/target-number 6}))))
+             {:combat-result/armor-damage 3,
+              :combat-result/attack :attack/regular,
+              :combat-result/attacker "Wolfhound WLF-2",
+              :combat-result/changes [[[:units "Wolfhound WLF-2" :unit/acted?] true]
+                                      [[:units "Wolfhound WLF-2" :unit/attacked?] true]
+                                      [[:units "Wolfhound WLF-2 #2" :unit/armor :toughness/unapplied] 3]
+                                      [[:units "Wolfhound WLF-2 #2" :unit/structure :toughness/unapplied] 0]
+                                      [[:units "Wolfhound WLF-2 #2" :unit/criticals :crits/unapplied] []]],
+              :combat-result/crits [nil nil],
+              :combat-result/damage 3,
+              :combat-result/penetration 0,
+              :combat-result/roll 8,
+              :combat-result/target "Wolfhound WLF-2 #2",
+              :combat-result/target-number 6}))))
 
