@@ -1,7 +1,6 @@
 (ns megastrike.combat-unit-test
   (:require
    [clojure-csv.core :as csv]
-   [clojure.spec.alpha :as s]
    [clojure.test :as t]
    [megastrike.combat-unit :as sut]))
 
