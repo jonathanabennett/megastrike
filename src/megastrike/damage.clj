@@ -100,7 +100,7 @@
 (defn heat-damage
   [unit new-heat]
   (let [unapplied-heat (get unit :unit/unapplied-heat 0)]
-    (assoc unit :unit/unapplied-heat (min (+ unapplied-heat new-heat) 2))))
+    [[:units (:unit/id unit) :unit/unapplied-heat] (min (+ unapplied-heat new-heat) 2)]))
 
 (defn take-damage
   ([unit damage]
@@ -124,5 +124,5 @@
         :result [[[:units (:unit/id unit) :unit/armor :toughness/unapplied] (+ unapplied-armor armor-damage)]
                  [[:units (:unit/id unit) :unit/structure :toughness/unapplied] (+ unapplied-structure penetration)]
                  [[:units (:unit/id unit) :unit/criticals :crits/unapplied]
-                  ((comp vec flatten conj) unapplied-crits (remove nil? crits))]]}))))
+                  (utils/concatv unapplied-crits (remove nil? crits))]]}))))
 
