@@ -149,7 +149,7 @@
 
 (defn change-facing [u new-facing]
   (when (s/assert :unit/facing new-facing)
-    (assoc u :facing new-facing)))
+    (assoc u :unit/facing new-facing)))
 
 (defn immobilize [u]
   (assoc u :unit/move-modes {:move/immobilized 0} :default :immobilized))
@@ -213,8 +213,8 @@
 
 (defn set-path
   [u destination board]
-  (let [moving-unit (if (:unit/selected u) u (assoc u :unit/selected (:unit/default u)))
-        path (find-path u destination board)]
+  (let [moving-unit (if (:move/selected u) u (assoc u :move/selected (:move/default u)))
+        path (find-path moving-unit destination board)]
     (if (empty? path)
       u
       (assoc moving-unit :unit/path path))))

@@ -1,13 +1,32 @@
 (ns megastrike.movement-test
-  (:require [clojure.test :as t]
-            [megastrike.board :as board]
-            [megastrike.combat-unit :as cu]
-            [megastrike.movement :as sut]))
+  (:require
+   [clojure.test :as t]
+   [clojure.walk :as walk]
+   [megastrike.board :as board]
+   [megastrike.combat-unit :as cu]
+   [megastrike.movement :as sut]))
+
+(defn normalize-for-testing
+  "Java File paths are tested elsewhere, we do not need to check them here so we are simply nilling them out."
+  [data]
+  (walk/postwalk
+   (fn [x]
+     (cond
+       ;; Convert File objects to string paths
+       (instance? java.io.File x) nil
+       ;; Handle other problematic types here if needed
+       :else x))
+   data))
 
 (def board (board/create-board "data/boards/AGoAC Maps/16x17 Grassland 2.board"))
-(def attacker1 (cu/->combat-unit (cu/get-unit "Wolfhound WLF-2")
-                                 {:pilot/full-name "Lieutenant Ciro Ramirez" :pilot/skill 4 :pilot/kills 0}
-                                 :direction/n {:hex/p 1 :hex/q 1 :hex/r -2} :1stsomersetstrikers 0))
+(def attacker1 (normalize-for-testing
+                (cu/->combat-unit (cu/get-unit "Wolfhound WLF-2")
+                                  {:pilot/full-name "Lieutenant Ciro Ramirez" :pilot/skill 4 :pilot/kills 0}
+                                  :direction/n {:hex/p 1 :hex/q 1 :hex/r -2} :1stsomersetstrikers 0)))
+
+(t/deftest test-change-facing
+  (t/testing "Testing each facing."
+    (t/is (= (:unit/facing (sut/change-facing attacker1 :direction/se)) :direction/se))))
 
 (t/deftest test-print-movement
   (t/testing "Basic movement."
@@ -41,7 +60,7 @@
   (t/testing "Finding a path within range"
     (t/is (= (sut/set-path attacker1 {:hex/p 6 :hex/q -2 :hex/r -4} board)
              {:move/default :move/walk,
-              :move/selected nil,
+              :move/selected :move/walk,
               :unit/abilities {:ene {:ability/output "ENE"},
                                :attack/rear {:l 0,
                                              :l* false,
@@ -109,9 +128,8 @@
                           {:elevation 0, :palette "grass", :terrain "", :hex/p 6, :hex/q -2, :hex/r -4}],
               :unit/pilot {:pilot/full-name "Lieutenant Ciro Ramirez", :pilot/kills 0, :pilot/skill 4},
               :unit/role :role/striker,
-              :unit/selected nil,
               :unit/size 1,
-              :unit/sprite (cu/find-sprite attacker1)
+              :unit/sprite nil
               :unit/structure {:toughness/current 4, :toughness/maximum 4, :toughness/unapplied 0},
               :unit/threshold -1,
               :unit/tmm 2,

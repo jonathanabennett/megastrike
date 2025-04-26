@@ -46,7 +46,7 @@
           (assoc game-state :units units :turn-flag nil))
 
         (and (= current-phase :deployment) (not (:unit/acted? unit)))
-        (update-in game-state [:units active-unit] movement/set-location (select-keys hex [:p :q :r]))
+        (update-in game-state [:units active-unit] movement/set-location (select-keys hex [:hex/p :hex/q :hex/r]))
 
         (and (= current-phase :movement) (not (:unit/acted? unit)))
         (update-in game-state [:units active-unit] cu/set-path hex game-board units)

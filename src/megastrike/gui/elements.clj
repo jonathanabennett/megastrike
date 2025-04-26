@@ -374,7 +374,7 @@
                                (and (= phase :combat) (not= range 1)) (contains? #{:physical :charge :dfa} attack)
                                :else (contains? #{:charge :dfa} attack))]
                ((comp vec flatten conj) ret {:fx/type :button
-                                             :text (str (name (:attack atk-data)) ": " (attacks/print-attack-roll atk-data false))
+                                             :text (str (name (:targeting/attack-type atk-data)) ": " (attacks/print-attack-roll atk-data false))
                                              :disable disabled?
                                              :on-action {:event-type ::events/close-attack-selection  :unit unit :selected atk-data :fx/sync true}}))
              (rest attacks)))))
@@ -395,20 +395,20 @@
 (defn move-buttons
   [unit]
   (let [movement (:unit/move-modes unit)
-        buttons (if (contains? movement :jump)
+        buttons (if (contains? movement :move/jump)
                   [{:fx/type :button
                     :text "Walk"
-                    :on-action {:event-type ::events/set-movement-mode :mode :walk :unit unit :fx/sync true}}
+                    :on-action {:event-type ::events/set-movement-mode :mode :move/walk :unit unit :fx/sync true}}
                    {:fx/type :button
                     :text "Jump"
-                    :on-action {:event-type ::events/set-movement-mode :mode :jump :unit unit :fx/sync true}}]
+                    :on-action {:event-type ::events/set-movement-mode :mode :move/jump :unit unit :fx/sync true}}]
                   [{:fx/type :button
                     :text "Walk"
-                    :on-action {:event-type ::events/set-movement-mode :mode :walk :unit unit :fx/sync true}}])]
+                    :on-action {:event-type ::events/set-movement-mode :mode :move/walk :unit unit :fx/sync true}}])]
     ((comp vec flatten vector)
      [{:fx/type :button
        :text "Stand Still"
-       :on-action {:event-type ::events/set-movement-mode :mode :stand-still :unit unit :fx/sync true}}
+       :on-action {:event-type ::events/set-movement-mode :mode :move/stand-still :unit unit :fx/sync true}}
       {:fx/type :button
        :text "Turn"
        :on-action {:event-type ::events/turn-button-clicked :fx/sync true}}]
