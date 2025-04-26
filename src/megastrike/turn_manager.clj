@@ -20,7 +20,7 @@
   [{:keys [combat-result/attacker combat-result/target combat-result/attack
            combat-result/target-number combat-result/crits combat-result/roll
            combat-result/damage combat-result/armor-damage combat-result/penetration]}]
-  (str attacker " attacks " target ". Using a " attack " attack. Needs a " target-number ".\n"
+  (str attacker " attacks " target ". Using a " (name attack) " attack. Needs a " target-number ".\n"
        "Rolled a " roll "\n"
        (if (<= target-number roll)
          (str "Attack hits for " damage " damage.\n" armor-damage " damage to armor."

@@ -177,4 +177,21 @@
                                      :combat-result/penetration 0,
                                      :combat-result/roll 8,
                                      :combat-result/target "Wolfhound WLF-2 #2",
-                                     :combat-result/target-number 6}) "Wolfhound WLF-2 attacks Wolfhound WLF-2 #2. Using a :attack/regular attack. Needs a 6.\nRolled a 8\nAttack hits for 3 damage.\n3 damage to armor.\n\n\n"))))
+                                     :combat-result/target-number 6})
+             "Wolfhound WLF-2 attacks Wolfhound WLF-2 #2. Using a regular attack. Needs a 6.\nRolled a 8\nAttack hits for 3 damage.\n3 damage to armor.\n\n\n")))
+  (t/testing "Unsuccessful attack")
+  (t/is (= (sut/parse-attack-data {:combat-result/armor-damage 3,
+                                   :combat-result/attack :attack/regular,
+                                   :combat-result/attacker "Wolfhound WLF-2",
+                                   :combat-result/changes [[[:units "Wolfhound WLF-2" :unit/acted?] true]
+                                                           [[:units "Wolfhound WLF-2" :unit/attacked?] true]
+                                                           [[:units "Wolfhound WLF-2 #2" :unit/armor :toughness/unapplied] 3]
+                                                           [[:units "Wolfhound WLF-2 #2" :unit/structure :toughness/unapplied] 0]
+                                                           [[:units "Wolfhound WLF-2 #2" :unit/criticals :crits/unapplied] []]],
+                                   :combat-result/crits [nil nil],
+                                   :combat-result/damage 3,
+                                   :combat-result/penetration 0,
+                                   :combat-result/roll 4,
+                                   :combat-result/target "Wolfhound WLF-2 #2",
+                                   :combat-result/target-number 6})
+           "Wolfhound WLF-2 attacks Wolfhound WLF-2 #2. Using a regular attack. Needs a 6.\nRolled a 4\nAttack misses.\n\n\n\n")))
