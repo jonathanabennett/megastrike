@@ -157,13 +157,13 @@
 (defn base-tmm
   [u]
   (let  [ret (loop [value (:unit/tmm u)
-                    n 0]
-               (if (= n (damage/crit-count u :crit/mv))
+                    n (damage/crit-count u :crit/mv)]
+               (if (= n 0)
                  value
                  (recur (let [new-tmm (math/round (/ value 2.0))]
                           (if (>= (- value new-tmm) 1) new-tmm 0))
-                        (inc n))))]
-    (if (<= 2 (:unit/current-heat u))
+                        (dec n))))]
+    (if (<= 2 (get u :unit/current-heat 0))
       (dec ret)
       ret)))
 
