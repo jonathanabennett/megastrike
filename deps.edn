@@ -21,6 +21,7 @@
                                                 :low-watermark 65
                                                 :high-watermark 85
                                                 :html? true
+                                                :ns-exclude-regex ["megastrike.gui.*"]
                                                 :summary? true}}}
   :build {:deps {io.github.clojure/tools.build {:git/tag "v0.10.5" :git/sha "2a21b7a"}}
           :ns-default build
