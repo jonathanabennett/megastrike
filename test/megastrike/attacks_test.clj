@@ -1811,8 +1811,7 @@
               :combat-result/crits [nil nil],
               :combat-result/damage 1,
               :combat-result/roll 8,
-              :combat-result/target-number 6}))
-    )
+              :combat-result/target-number 6})))
   (t/testing "Test Attacks that miss"
     (t/is (= (normalize-for-testing (sut/make-attack (first (vals (sut/->targeting attacker1 target1 board layout :attack/physical))) 4))
              {:combat-result/attack :attack/physical,
@@ -1836,4 +1835,3 @@
    :combat-result/roll 4,
    :combat-result/target-number 6}))
     ))
-
