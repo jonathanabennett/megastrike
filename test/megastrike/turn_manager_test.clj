@@ -2,8 +2,11 @@
   (:require
    [clojure.test :as t]
    [clojure.walk :as walk]
-   [megastrike.turn-manager :as sut]
-   [megastrike.combat-unit :as cu]))
+   [megastrike.attacks :as attacks]
+   [megastrike.board :as board]
+   [megastrike.combat-unit :as cu]
+   [megastrike.hexagons.hex :as hex]
+   [megastrike.turn-manager :as sut]))
 
 (defn normalize-for-testing
   "Java File paths are tested elsewhere, we do not need to check them here so we are simply nilling them out."
@@ -17,6 +20,7 @@
        :else x))
    data))
 
+(def board (board/create-board "data/boards/AGoAC Maps/16x17 Grassland 2.board"))
 (def simple-game-state
   {:units {"Wolfhound WLF-2"
            (normalize-for-testing (cu/->combat-unit (cu/get-unit "Wolfhound WLF-2")
@@ -25,7 +29,9 @@
            "Wolfhound WLF-2 #2"
            (normalize-for-testing (assoc (cu/->combat-unit (cu/get-unit "Wolfhound WLF-2")
                                                            {:pilot/full-name "Lieutenant Ciro Ramirez" :pilot/skill 4 :pilot/kills 0}
-                                                           :direction/n {:hex/p 2 :hex/q 1 :hex/r -3} :1stsomersetstrikers 0) :unit/id "Wolfhound WLF-2 #2"))}})
+                                                           :direction/n {:hex/p 2 :hex/q 1 :hex/r -3} :1stsomersetstrikers 0) :unit/id "Wolfhound WLF-2 #2"))}
+   :round-report ""
+   :board board})
 
 (t/deftest test-unit-updates
   (t/testing "Valid attack"
@@ -195,3 +201,12 @@
                                    :combat-result/target "Wolfhound WLF-2 #2",
                                    :combat-result/target-number 6})
            "Wolfhound WLF-2 attacks Wolfhound WLF-2 #2. Using a regular attack. Needs a 6.\nRolled a 4\nAttack misses.\n\n\n\n")))
+
+(t/deftest test-make-attack
+  (t/testing "Roll regular attack."
+    (t/is (= (:round-report (sut/make-attack simple-game-state (first (vals (attacks/->targeting (get-in simple-game-state [:units "Wolfhound WLF-2"])
+                                                                                                 (get-in simple-game-state [:units "Wolfhound WLF-2 #2"])
+                                                                                                 (:board simple-game-state)
+                                                                                                 (hex/create-layout)
+                                                                                                 :attack/regular))))) ""))))
+
