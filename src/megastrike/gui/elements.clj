@@ -141,8 +141,8 @@
                  :font 16
                  :translate-y (/ (* (layout :y-size) (:scale layout)) 3)}
                 {:fx/type :label
-                 :text (if (:unit/selected unit)
-                         (name (:unit/selected unit))
+                 :text (if (:move/selected unit)
+                         (name (:move/selected unit))
                          "Did not move")
                  :layout-x (nth hex 4)
                  :layout-y (nth hex 5)

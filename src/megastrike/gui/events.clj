@@ -141,10 +141,10 @@
   [{:keys [fx/context selected]}]
   (let [ctx (get-in context [:internal :attack-dialog])]
     (cond
-      (= (:attack selected) nil)
+      (= (:targeting/attack-type selected) nil)
       {:context (fx/swap-context context assoc-in [:internal :attack-dialog] (assoc ctx :showing false :items []))}
 
-      (contains? #{:charge :dfa} (:attack selected))
+      (contains? #{:attack/charge :attack/dfa} (:attack selected))
       {:context (fx/swap-context context assoc-in [:internal :attack-dialog] (assoc ctx :showing false :items []))
        :dispatch {:event-type ::set-attack :targeting selected}}
 
