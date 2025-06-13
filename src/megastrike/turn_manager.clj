@@ -138,7 +138,7 @@
         report (str round-report (parse-attack-data result))]
     (-> game-state
         (assoc :round-report report)
-        (unit-updates (:combat-results/changes result)))))
+        (unit-updates (:combat-result/changes result)))))
 
 (declare take-turn)
 
@@ -238,3 +238,5 @@
   (if (empty? turn-order)
     (take-turn (phases/next-phase game-state))
     (take-turn (assoc game-state :turn-order (rest turn-order)))))
+
+
