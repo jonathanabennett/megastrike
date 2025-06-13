@@ -135,7 +135,7 @@
                 :neighbor neighbor
                 :mv-type mv-type)))
     (cond
-      (= mv-type :jump) 1
+      (= mv-type :move/jump) 1
       (and (get neighbor :stacking false) (not= (get neighbor :stacking false) unit-force)) ##Inf
       (> lvl-change 2) ##Inf
       (str/includes? terrain "woods") (+ (abs lvl-change) 2)

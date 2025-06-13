@@ -57,7 +57,7 @@
 
 (defn set-movement-mode
   [game-state unit mode]
-  (assoc-in game-state [:units (:unit/id unit) :unit/selected] mode))
+  (assoc-in game-state [:units (:unit/id unit) :move/selected] mode))
 
 (defn cancel-move
   [game-state unit]

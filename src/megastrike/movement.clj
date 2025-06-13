@@ -127,7 +127,7 @@
                    (into path closer-paths))))))))
 
 (defn move-cost
-  [{:keys [unit/selected unit/default unit/path unit/battle-force]}]
+  [{:keys [move/selected move/default unit/path unit/battle-force]}]
   (let [movement-mode (or selected default)]
     (board/path-cost path movement-mode battle-force)))
 
