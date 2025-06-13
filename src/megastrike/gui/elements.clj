@@ -203,28 +203,28 @@
                            :children [{:fx/type :label
                                        :text "S(+0)"}
                                       {:fx/type :label
-                                       :text (cu/print-damage unit :s)}]}
+                                       :text (cu/print-damage unit :attack/s)}]}
                           {:fx/type :v-box
                            :border {:strokes [{:stroke :black :style :solid :widths 1}]}
                            :padding {:left 5 :right 5}
                            :children [{:fx/type :label
                                        :text "M(+2)"}
                                       {:fx/type :label
-                                       :text (cu/print-damage unit :m)}]}
+                                       :text (cu/print-damage unit :attack/m)}]}
                           {:fx/type :v-box
                            :border {:strokes [{:stroke :black :style :solid :widths 1}]}
                            :padding {:left 5 :right 5}
                            :children [{:fx/type :label
                                        :text "L(+4)"}
                                       {:fx/type :label
-                                       :text (cu/print-damage unit :l)}]}
+                                       :text (cu/print-damage unit :attack/l)}]}
                           {:fx/type :v-box
                            :border {:strokes [{:stroke :black :style :solid :widths 1}]}
                            :padding {:left 5 :right 5}
                            :children [{:fx/type :label
                                        :text "E(+6)"}
                                       {:fx/type :label
-                                       :text (cu/print-damage unit :e)}]}]}]})
+                                       :text (cu/print-damage unit :attack/e)}]}]}]})
 
 (defn draw-pips
   "Helper Function for drawing a series of pips."
