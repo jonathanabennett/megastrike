@@ -155,14 +155,15 @@
 (defn get-unit
   ([s]
    (let [non-standard (string/replace s #" \(Standard\)" "")
-         matching-muls (filter-units mul :unit/full-name s =)
+         matching-muls (filter-units mul :unit/full-name s string/includes?)
          non-standard-mul (regex-units mul :unit/full-name (utils/regex-maker non-standard))
          edge-cases (regex-units mul :unit/full-name (utils/regex-maker (string/replace s #"Standard " "")))]
      (cond
        (first matching-muls) (first matching-muls)
+       (first (filter #(= (:unit/chassis %) (:unit/full-name %)) non-standard-mul)) (first (filter #(= (:unit/chassis %) (:unit/full-name %)) non-standard-mul))
        (first non-standard-mul) (first non-standard-mul)
        (first edge-cases) (first edge-cases)
-       :else s))))
+       :else (prn s)))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MUL/Core

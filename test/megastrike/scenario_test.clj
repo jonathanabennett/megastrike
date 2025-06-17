@@ -13,6 +13,7 @@
   (t/testing "Tests all scenario files"
     (run! #(t/is (not (nil? (sut/parse-scenario-file %)))) test-scenarios)
     (t/is (= (count (:units test-data)) 5))
+    (t/is (some #{"Hunchback IIC"} (mapv :unit/full-name (vals (:units test-data)))))
     (t/is (= (:forces test-data) {:1stsomersetstrikers {:unit-group/camo nil,
                                                         :unit-group/deployment :direction/n,
                                                         :unit-group/keyword :1stsomersetstrikers,

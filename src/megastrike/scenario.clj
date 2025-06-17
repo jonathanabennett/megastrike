@@ -32,7 +32,6 @@
 (defn set-team
   [state line value]
   (let [force-name (extract-name line)]
-    (prn line)
     (assoc-in state [:forces force-name :unit-group/parent] (Integer/parseInt value))))
 
 (defn set-camo
@@ -46,7 +45,6 @@
 
 (defn configure-unit
   [state line]
-  (prn line)
   (if (re-find #"\d+=" line)
     (let [units (get state :units {})
           [faction _ data] (parse-unit-string line)
