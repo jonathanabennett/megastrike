@@ -65,3 +65,10 @@
 
 (defn concatv [& xs]
   (vec (apply concat xs)))
+
+(defn regex-maker
+  "Unit names frequently have parens in them, this is problematic for searching with 
+  regexes so they can be case-insensitive. This sanitizes strings and converts them 
+  into patterns."
+  [s]
+  (re-pattern (str "(?i)\\Q" s "\\E")))

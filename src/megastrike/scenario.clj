@@ -32,6 +32,7 @@
 (defn set-team
   [state line value]
   (let [force-name (extract-name line)]
+    (prn line)
     (assoc-in state [:forces force-name :unit-group/parent] (Integer/parseInt value))))
 
 (defn set-camo
@@ -45,13 +46,19 @@
 
 (defn configure-unit
   [state line]
+  (prn line)
   (if (re-find #"\d+=" line)
     (let [units (get state :units {})
           [faction _ data] (parse-unit-string line)
           [unit pilot pskill gskill direction x y] (str/split data #",")
           loc (if (and x y) (hex/offset->hex (Integer/parseInt (str/trim x)) (Integer/parseInt (str/trim y))) {})
           skill (int (math/floor (/ (+ (Integer/parseInt pskill) (Integer/parseInt gskill)) 2)))
-          mul (cu/->combat-unit {:units units :mul-unit (cu/get-unit unit) :pilot {:pilot/full-name pilot :pilot/skill skill :pilot/kills 0} :battle-force (keyword (utils/keyword-maker faction)) :facing (keyword "direction" (if direction (utils/keyword-maker direction) :n)) :location loc})]
+          mul (cu/->combat-unit {:units units
+                                 :mul-unit (cu/get-unit unit)
+                                 :pilot {:pilot/full-name pilot :pilot/skill skill :pilot/kills 0}
+                                 :battle-force (keyword (utils/keyword-maker faction))
+                                 :facing (keyword "direction" (if direction (utils/keyword-maker direction) "n"))
+                                 :location loc})]
       (assoc units (:unit/id mul) mul))
     (:units state)))
 
@@ -70,9 +77,10 @@
       (str/includes? line "RandomDirs") (merge state {:map-dirs (set-map-dirs value)})
       (str/includes? line "Maps") (merge state {:maps (str/split value #",")})
       (str/includes? line "Factions") (merge state {:forces (initialize-forces value)})
-      (str/includes? line "Location") (set-location state line value)
-      (str/includes? line "Team") (set-team state line value)
+      (str/starts-with? line "Location") (set-location state line value)
+      (str/starts-with? line "Team") (set-team state line value)
       (str/includes? line "Camo") (set-camo state line value)
+      (str/includes? line "Damage") state
       (str/includes? line "Unit") (assoc state :units (configure-unit state line))
       :else state)))
 ;; Use helper methods where if we see "Camo" or "Unit" or the other player

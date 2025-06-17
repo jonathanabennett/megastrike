@@ -6,11 +6,12 @@
 
 (def scenario-folder (io/file "data/scenarios"))
 (def test-scenario-path "data/scenarios/1stSomersetStrikers/1-ClashInTheCanyon.mms")
-(def test-scenarios (file-seq scenario-folder))
+(def test-scenarios (filter #(.isFile %) (file-seq scenario-folder)))
 (def test-data (sut/parse-scenario-file test-scenario-path))
 
 (t/deftest parse-scenario-file
   (t/testing "Tests all scenario files"
+    (run! #(t/is (not (nil? (sut/parse-scenario-file %)))) test-scenarios)
     (t/is (= (count (:units test-data)) 5))
     (t/is (= (:forces test-data) {:1stsomersetstrikers {:unit-group/camo nil,
                                                         :unit-group/deployment :direction/n,

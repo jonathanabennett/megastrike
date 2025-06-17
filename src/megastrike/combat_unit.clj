@@ -56,7 +56,7 @@
                 :unit/role (keyword "role" (utils/keyword-maker (:role mul-row)))
                 :unit/type (keyword "type" (utils/keyword-maker (:type mul-row)))
                 :unit/threshold (Integer/parseInt (:threshold mul-row))
-                :unit/full-name (str (:chassis mul-row) " " (:model mul-row))
+                :unit/full-name (string/trim (str (:chassis mul-row) " " (:model mul-row)))
                 :unit/mul-id (Integer/parseInt (:mul-id mul-row))
                 :unit/size (Integer/parseInt (:size mul-row))
                 :unit/move-modes modes
@@ -148,15 +148,21 @@
   ([units unit-type]
    (filter #(isa? (:unit/type %) unit-type) units)))
 
+(defn regex-units
+  [units field search-term]
+  (filter #(when (re-find search-term (field %)) %) units))
+
 (defn get-unit
   ([s]
-   (let [non-standard (string/replace s #"\(Standard\)" "")
+   (let [non-standard (string/replace s #" \(Standard\)" "")
          matching-muls (filter-units mul :unit/full-name s =)
-
-         non-standard-mul (filter-units mul :unit/full-name non-standard =)]
-     (if (first matching-muls)
-       (first matching-muls)
-       (first non-standard-mul)))))
+         non-standard-mul (regex-units mul :unit/full-name (utils/regex-maker non-standard))
+         edge-cases (regex-units mul :unit/full-name (utils/regex-maker (string/replace s #"Standard " "")))]
+     (cond
+       (first matching-muls) (first matching-muls)
+       (first non-standard-mul) (first non-standard-mul)
+       (first edge-cases) (first edge-cases)
+       :else s))))
 
 ;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
 ;; MUL/Core
@@ -222,14 +228,18 @@
   [unit]
   (assoc unit :unit/acted? false))
 
+(defn destroyed?
+  [unit]
+  (or (not (pos? (get-in unit [:unit/structure :toughness/current]))) (contains? (get-in unit [:unit/criticals :crits/taken]) :crits/destroyed)))
+
 (defn end-turn
   "Updates damage, applies weapons crits, resets acted, and then returns the unit IF they
   are not destroyed."
   [unit]
   (let [new-unit (-> unit
-                     (assoc :unit/selected nil)
+                     (assoc :move/selected nil)
                      (damage/apply-damage)
                      (heat/end-phase-heat false)
                      (assoc :unit/attacked? false))]
-    (when-not (:unit/destroyed? unit)
+    (when-not (destroyed? unit)
       {(:unit/id new-unit) new-unit})))
