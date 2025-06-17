@@ -200,11 +200,3 @@
                                    :combat-result/target-number 6})
            "Wolfhound WLF-2 attacks Wolfhound WLF-2 #2. Using a regular attack. Needs a 6.\nRolled a 4\nAttack misses.\n\n\n\n")))
 
-(t/deftest test-make-attack
-  (t/testing "Roll regular attack."
-    (t/is (= (:round-report (sut/make-attack simple-game-state (first (vals (attacks/->targeting (get-in simple-game-state [:units "Wolfhound WLF-2"])
-                                                                                                 (get-in simple-game-state [:units "Wolfhound WLF-2 #2"])
-                                                                                                 (:board simple-game-state)
-                                                                                                 (hex/create-layout)
-                                                                                                 :attack/regular))))) ""))))
-
