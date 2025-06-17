@@ -2,10 +2,8 @@
   (:require
    [clojure.test :as t]
    [clojure.walk :as walk]
-   [megastrike.attacks :as attacks]
    [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
-   [megastrike.hexagons.hex :as hex]
    [megastrike.turn-manager :as sut]))
 
 (defn normalize-for-testing
