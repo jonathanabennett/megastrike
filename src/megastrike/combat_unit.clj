@@ -242,5 +242,5 @@
                      (damage/apply-damage)
                      (heat/end-phase-heat false)
                      (assoc :unit/attacked? false))]
-    (when-not (destroyed? unit)
+    (when-not (destroyed? new-unit)
       {(:unit/id new-unit) new-unit})))
