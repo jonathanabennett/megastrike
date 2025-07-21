@@ -169,7 +169,8 @@
 
 (defn modified-tmm
   [u]
-  (let [jump-mod (:value (or (abilities/has? (:unit/abilities u) :jmpw) (abilities/has? (:unit/abilities u) :jmps)) {:value 0})
+  (let [jump-ability (or (abilities/has? (:unit/abilities u) :jmpw) (abilities/has? (:unit/abilities u) :jmps))
+        jump-mod (inc (get jump-ability :value 0))
         move-mode (selected-or-default u)]
     (condp = move-mode
       :move/immobilized -4
