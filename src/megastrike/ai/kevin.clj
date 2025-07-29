@@ -19,8 +19,6 @@
         damage (:targeting/damage targeting)
         damage-num (if (str/ends-with? damage "*") 0.5 (Integer/parseInt damage))
         expected-damage (/ (* probability damage-num) 100.0)]
-    (mu/log ::targeting-info
-            :targeting targeting)
     [(:unit/acted? target)
      {:firing-solution targeting
       :toughness toughness
@@ -36,8 +34,6 @@
   (let [counter-attacks (map #(target-info % unit board layout :regular) units)
         counter-damage (map #(get (second %) :expected-damage 0) counter-attacks)
         total (/ (reduce + counter-damage) (count counter-attacks))]
-    (mu/log ::defensive-value
-            :total total)
     total))
 
 (defn calculate-offensive-value
@@ -45,8 +41,6 @@
   (let [attacks (map #(target-info unit % board layout :regular) units)
         expected-damage (map #(get (second %) :expected-damage 0) attacks)
         total (/ (reduce + expected-damage) (count expected-damage))]
-    (mu/log ::offensive-value
-            :total total)
     total))
 
 (defn create-movement-option
@@ -77,6 +71,8 @@
         paths (into (priority-map/priority-map-by >)
                     (map #(create-movement-option % unit hostiles updated-board layout mv-type)
                          (movement/astar unit-loc false updated-board zero-weight mv-type (:unit/battle-force unit))))]
+    (mu/log ::top-5-choices
+            :options (take 5 paths))
     (first (rand-nth (take 5 paths)))))
 
 (defn naive-target-selection
