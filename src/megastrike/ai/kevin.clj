@@ -12,18 +12,18 @@
 
 (defn target-info
   [attacker target board layout attack]
-  (let [targeting (second (attacks/->targeting attacker target board layout attack))
+  (let [targeting (attack (attacks/->targeting attacker target board layout attack))
         target-number (attacks/calculate-to-hit targeting)
         probability (get utils/probabilities target-number 0)
         toughness (+ (damage/remaining-armor target) (* (damage/remaining-structure target) 2))
-        damage (:targeting/damage targeting)
-        damage-num (if (str/ends-with? damage "*") 0.5 (Integer/parseInt damage))
-        expected-damage (/ (* probability damage-num) 100.0)]
+        expected-damage (/ (* (Integer/parseInt (:targeting/damage targeting)) probability) 100)
+        percentage (/ expected-damage toughness)]
     [(:unit/acted? target)
      {:firing-solution targeting
       :toughness toughness
       :expected-damage expected-damage
-      :percentage damage-num}]))
+      :percentage percentage
+      :probability probability}]))
 
 (defn targeting-options
   [unit units board layout]
@@ -31,14 +31,14 @@
 
 (defn calculate-defensive-value
   [unit units board layout]
-  (let [counter-attacks (map #(target-info % unit board layout :regular) units)
+  (let [counter-attacks (map #(target-info % unit board layout :attack/regular) units)
         counter-damage (map #(get (second %) :expected-damage 0) counter-attacks)
         total (/ (reduce + counter-damage) (count counter-attacks))]
     total))
 
 (defn calculate-offensive-value
   [unit units board layout]
-  (let [attacks (map #(target-info unit % board layout :regular) units)
+  (let [attacks (map #(target-info unit % board layout :attack/regular) units)
         expected-damage (map #(get (second %) :expected-damage 0) attacks)
         total (/ (reduce + expected-damage) (count expected-damage))]
     total))
