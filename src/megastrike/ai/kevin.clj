@@ -2,7 +2,6 @@
   "This is Kevin. He's our basic Computer Player."
   (:require
    [clojure.data.priority-map :as priority-map]
-   [clojure.string :as str]
    [com.brunobonacci.mulog :as mu]
    [megastrike.attacks :as attacks]
    [megastrike.board :as board]
