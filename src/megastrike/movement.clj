@@ -185,6 +185,7 @@
 (defn can-move?
   ([u path]
    (cond
+     (and (contains? {:move/stand-still :move/immobilized} (selected-or-default u)) (empty? path)) true
      (not (hex/same-hex (first path) (:unit/location u)))
      (do (mu/log ::move-failed
                  :reason "Path doesn't start at unit's location.")
@@ -194,7 +195,6 @@
                  :reason "Path ends in an occupied hex.")
          false)
 
-     (and (contains? {:move/stand-still :move/immobilized} (selected-or-default u)) (empty? path)) true
      (pos? (count path)) (<= (reduce + (board/path-cost path (selected-or-default u) (:unit/battle-force u)))
                              (available-mv u))
      :else (do (mu/log ::move-failed
