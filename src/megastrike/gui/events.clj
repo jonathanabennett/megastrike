@@ -113,7 +113,8 @@
 
 (defmethod event-handler ::turn-button-clicked
   [{:keys [fx/context]}]
-  {:context (fx/swap-context context assoc :turn-flag true)})
+  (prn "Turn button clicked.")
+  {:context (fx/swap-context context update :turn-flag not)})
 
 (defmethod event-handler ::set-movement-mode
   [{:keys [fx/context unit mode]}]
