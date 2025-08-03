@@ -7,6 +7,7 @@
    [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
    [megastrike.damage :as damage]
+   [megastrike.hexagons.hex :as hex]
    [megastrike.movement :as movement]
    [megastrike.utils :as utils]))
 
@@ -45,6 +46,8 @@
 
 (defn max-dealable-damage
   [targets]
+  ;; (mu/log ::targeting?
+  ;;         :targets targets)
   (->> targets
        (map second)
        (apply max-key :percentage)))
@@ -54,12 +57,18 @@
   (let [toughness (damage/health-percentage unit)
         targets (targeting-options unit hostiles board layout)
         best-target (max-dealable-damage targets)]
-
+    (mu/log ::unit-state-score
+            :best-target best-target)
     (cond
-      (> 30 toughness) (* (calculate-defensive-value unit hostiles board layout) -1)
-      (< 70 (:percentage best-target)) (* (:percentage best-target) 2)
-      (pos? (:percentage best-target)) (:percentage best-target)
-      :else (- (calculate-offensive-value unit hostiles board layout) (calculate-defensive-value unit hostiles board layout)))))
+      (> 0.30 toughness) (* (calculate-defensive-value unit hostiles board layout) -1)
+      (< 0.70 (:percentage best-target)) (do (mu/log ::unit-state-aggro)
+                                             (* (:percentage best-target) 2))
+      (pos? (:percentage best-target)) (do (mu/log ::unit-state-can-attack
+                                                   :value (:percentage best-target))
+                                           (:percentage best-target))
+      :else (do (mu/log ::unit-state-default
+                        :value (* (hex/distance (:unit/location unit) (:unit/location (first hostiles))) -1))
+                (* (hex/distance (:unit/location unit) (:unit/location (first hostiles))) -1)))))
 
 (defn create-movement-option
   [path unit units board layout mv-type]
@@ -104,4 +113,4 @@
 
 (defn select-target
   [options]
-  (:firing-solution (second (deadly-target-selection options))))
+  (:firing-solution (deadly-target-selection options)))
