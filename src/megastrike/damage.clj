@@ -27,6 +27,14 @@
   [unit]
   (- (get-in unit [:unit/armor :toughness/current]) (get-in unit [:unit/armor :toughness/unapplied])))
 
+(defn health
+  [unit]
+  (+ (remaining-armor unit) (* (remaining-structure unit) 2)))
+
+(defn health-percentage
+  [unit]
+  (* (/ (health unit) (+ (get-in unit [:unit/armor :toughness/maximum]) (* (get-in unit [:unit/structure :toughness/maximum]) 2)))))
+
 (defn roll-crits
   [penetration tac]
   (let [tac-crit (if tac (get criticals (utils/roll2d) nil) nil)
