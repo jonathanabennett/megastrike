@@ -195,7 +195,7 @@
         move-options (ai/move-options unit (vals units) game-board layout)
         upd (-> unit
                 (cu/set-path (:path move-options))
-                (assoc :unit/selected (if (empty? (:path move-options)) :move/stand-still (:unit/default unit))))]
+                (assoc :move/selected (if (empty? (:path move-options)) :move/stand-still (:move/default unit))))]
     (-> game-state
         (assoc-in [:units (:unit/id upd)] upd)
         (assoc :active-unit (:unit/id upd))

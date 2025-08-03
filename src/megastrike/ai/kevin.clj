@@ -15,7 +15,7 @@
   (let [targeting (attack (attacks/->targeting attacker target board layout attack))
         target-number (attacks/calculate-to-hit targeting)
         probability (get utils/probabilities target-number 0)
-        toughness (+ (damage/remaining-armor target) (* (damage/remaining-structure target) 2))
+        toughness (damage/health target)
         expected-damage (/ (* (Integer/parseInt (:targeting/damage targeting)) probability) 100)
         percentage (/ expected-damage toughness)]
     [(:unit/acted? target)
@@ -43,6 +43,24 @@
         total (/ (reduce + expected-damage) (count expected-damage))]
     total))
 
+(defn max-dealable-damage
+  [targets]
+  (->> targets
+       (map second)
+       (apply max-key :percentage)))
+
+(defn unit-state-score
+  [unit hostiles board layout]
+  (let [toughness (damage/health-percentage unit)
+        targets (targeting-options unit hostiles board layout)
+        best-target (max-dealable-damage targets)]
+
+    (cond
+      (> 30 toughness) (* (calculate-defensive-value unit hostiles board layout) -1)
+      (< 70 (:percentage best-target)) (* (:percentage best-target) 2)
+      (pos? (:percentage best-target)) (:percentage best-target)
+      :else (- (calculate-offensive-value unit hostiles board layout) (calculate-defensive-value unit hostiles board layout)))))
+
 (defn create-movement-option
   [path unit units board layout mv-type]
   (let [temp-unit (-> unit
@@ -54,7 +72,7 @@
                      :path (second path)
                      :cost (reduce + (board/path-cost (second path) mv-type units))}]
     (if (<= cost (movement/available-mv unit mv-type))
-      [move-option (- (calculate-offensive-value temp-unit units board layout) (calculate-defensive-value temp-unit units board layout))]
+      [move-option (unit-state-score temp-unit units board layout)]
       [move-option ##-Inf])))
 
 (defn zero-weight
@@ -69,8 +87,9 @@
         updated-board (cu/set-stacking board units)
         hostiles (filter #(not= (:unit/battle-force %) (:unit/battle-force unit)) units)
         paths (into (priority-map/priority-map-by >)
-                    (map #(create-movement-option % unit hostiles updated-board layout mv-type)
-                         (movement/astar unit-loc false updated-board zero-weight mv-type (:unit/battle-force unit))))]
+                    (->> (movement/astar unit-loc false updated-board zero-weight mv-type (:unit/battle-force unit))
+                         (map #(create-movement-option % unit hostiles updated-board layout mv-type))
+                         (filter #(not (infinite? (second %))))))]
     (mu/log ::top-5-choices
             :options (take 5 paths))
     (first (rand-nth (take 5 paths)))))
@@ -79,6 +98,10 @@
   [options]
   (rand-nth options))
 
+(defn deadly-target-selection
+  [options]
+  (max-dealable-damage options))
+
 (defn select-target
   [options]
-  (:firing-solution (second (naive-target-selection options))))
+  (:firing-solution (second (deadly-target-selection options))))
