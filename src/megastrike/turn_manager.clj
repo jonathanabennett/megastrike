@@ -134,6 +134,9 @@
 
 (defn make-attack
   [{:keys [round-report] :as game-state} targeting]
+  (mu/log ::make-attack
+          :round-report round-report
+          :targeting targeting)
   (let [result (attacks/make-attack targeting)
         report (str round-report (parse-attack-data result))]
     (-> game-state
