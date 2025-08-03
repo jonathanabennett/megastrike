@@ -182,10 +182,14 @@
   [u]
   (assoc u :unit/path [] :unit/selected false))
 
+(defn stood-still
+  [u]
+  (contains? {:move/stand-still :move/immobilized} (selected-or-default u)))
+
 (defn can-move?
   ([u path]
    (cond
-     (and (contains? {:move/stand-still :move/immobilized} (selected-or-default u)) (empty? path)) true
+     (and (stood-still u) (empty? path)) true
      (not (hex/same-hex (first path) (:unit/location u)))
      (do (mu/log ::move-failed
                  :reason "Path doesn't start at unit's location.")
@@ -223,7 +227,7 @@
 (defn move-unit
   [u]
   (let [moving-unit (if (:unit/selected u) u (assoc u :unit/selected (:unit/default u)))]
-    (if (can-move? moving-unit)
-      (assoc moving-unit :unit/location (last (:unit/path moving-unit)) :unit/path [] :unit/acted? true)
-      u)))
+    (if (stood-still moving-unit)
+      (assoc moving-unit :unit/acted? true)
+      (assoc moving-unit :unit/location (last (:unit/path moving-unit)) :unit/path [] :unit/acted? true))))
 
