@@ -2,8 +2,8 @@
   (:require
    [cljfx.api :as fx]
    [cljfx.ext.table-view :as tables]
+   [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
-   [megastrike.damage :as damage]
    [megastrike.gui.elements :as elements]
    [megastrike.gui.lobby.events :as lobby-events]
    [megastrike.gui.subs :as subs]
@@ -185,6 +185,7 @@
   [{:keys [fx/context]}]
   (let [forces (subs/forces context)
         selected (fx/sub-val context :active-force)
+        units (subs/units context)
         counts (fx/sub-ctx context subs/units-by-force)]
     (if (empty? forces)
       {:fx/type :label
@@ -209,17 +210,17 @@
                          :cell-value-factory identity
                          :cell-factory {:fx/cell-type :table-cell
                                         :describe (fn [x] {:text (or (name (:unit-group/deployment x)) (name :none))})}}
-                        ; {:fx/type :table-column
-                        ;  :text "Unit Count"
-                        ;  :cell-value-factory identity
-                        ;  :cell-factory {:fx/cell-type :table-cell
-                        ;                 :describe (fn [x] {:text (prn-str (count ((battle-force/id x) counts)))})}}
-                        ; {:fx/type :table-column
-                        ;  :text "Total PV"
-                        ;  :cell-value-factory identity
-                        ;  :cell-factory {:fx/cell-type :table-cell
-                        ;                 :describe (fn [x] {:text (prn-str (reduce + (map #(cu/pv %) ((battle-force/id x) counts))))})}}
-                        ]
+                        {:fx/type :table-column
+                         :text "Unit Count"
+                         :cell-value-factory identity
+                         :cell-factory {:fx/cell-type :table-cell
+                                        :describe (fn [x] {:text (prn-str (or (count (battle-force/force-units x units)) 0))})}}
+                        {:fx/type :table-column
+                         :text "Total PV"
+                         :cell-value-factory identity
+                         :cell-factory {:fx/cell-type :table-cell
+                                        :describe (fn [x] {:text (prn-str (or (battle-force/force-pv x units) 0))})}}]
+
               :items (vals forces)}})))
 
 (defn force-creation-dialog
