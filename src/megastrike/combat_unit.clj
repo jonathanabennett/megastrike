@@ -31,11 +31,13 @@
 (defn parse-movement
   "Parses a string like 8\"/5\"j into a map of all the possible movement modes the unit has and their distance in hexes."
   [mv-string]
-  (let [strings (re-seq #"(\d+)\\+\"([a-zA-Z]?)" mv-string)
-        mv-map (into {} (map #(vector (move-keyword (nth % 2)) (/ (Integer/parseInt (second %)) 2)) strings))]
-    (if (and (= (count mv-map) 1) (= (key (first mv-map)) :move/jump))
-      (merge mv-map {:move/walk (val (first mv-map))})
-      mv-map)))
+  (if (string/includes? mv-string "\"")
+    (let [strings (re-seq #"(\d+)\\+\"([a-zA-Z]?)" mv-string)
+          mv-map (into {} (map #(vector (move-keyword (nth % 2)) (/ (Integer/parseInt (second %)) 2)) strings))]
+      (if (and (= (count mv-map) 1) (= (key (first mv-map)) :move/jump))
+        (merge mv-map {:move/walk (val (first mv-map))})
+        mv-map))
+    (:move/space 0)))
 
 (def header-row
   "Defines the header row which will serve as the keys for the creation of combat units."
@@ -155,7 +157,7 @@
 (defn get-unit
   ([s]
    (let [non-standard (string/replace s #" \(Standard\)" "")
-         matching-muls (filter-units mul :unit/full-name s string/includes?)
+         matching-muls (sort-by :unit/full-name (filter-units mul :unit/full-name s string/includes?))
          non-standard-mul (regex-units mul :unit/full-name (utils/regex-maker non-standard))
          edge-cases (regex-units mul :unit/full-name (utils/regex-maker (string/replace s #"Standard " "")))]
      (cond

@@ -68,7 +68,7 @@
      (loop [mv base-move
             n 0]
        (if (= n mv-hits)
-         (max (- mv (:unit/current-heat u)) 0)
+         (max (- mv (get u :unit/current-heat 0)) 0)
          (recur (let [new-mv (math/round (/ mv 2.0))]
                   (if (>= (- mv new-mv) 1) new-mv 0))
                 (inc n))))))
