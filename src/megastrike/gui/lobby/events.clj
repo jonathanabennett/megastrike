@@ -69,12 +69,11 @@
                                response)
      :dispatch {:event-type ::e/open-round-dialog}}))
 
-; (defmethod e/event-handler ::load-save
-;   [{:keys [fx/context]}]
-;   (let [save-data (edn/read-string
-;                    {:readers {'megastrike.movement.MechMovement movement/map->MechMovement
-;                               'megastrike.battle_force.BattleForce battle-force/map->BattleForce}} (slurp (utils/load-resource :data "save.edn")))]
-;     {:context (fx/swap-context context merge save-data)}))
+(defmethod e/event-handler ::load-save
+  [{:keys [fx/context]}]
+  (let [save-data (edn/read-string
+                   (slurp (utils/load-resource :data "save.edn")))]
+    {:context (fx/swap-context context merge save-data)}))
 
 (defmethod e/event-handler ::change-player
   [{:keys [fx/context fx/event]}]

@@ -2,6 +2,7 @@
   (:require
    [cljfx.api :as fx]
    [cljfx.ext.table-view :as tables]
+   [com.brunobonacci.mulog :as mu]
    [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
    [megastrike.gui.elements :as elements]
@@ -28,7 +29,7 @@
                :text "All Ground Units"}
               {:fx/type filter-button
                :field :unit/type
-               :values :mul/bm
+               :values :type/bm
                :text "Battlemechs"}
               {:fx/type filter-button
                :field :unit/type
@@ -47,6 +48,26 @@
                :values :mul/infantry
                :text "All Infantry"}]})
 
+(defn name-factory
+  [unit]
+  {:text (str (:unit/full-name unit))})
+
+(defn movement-factory
+  [unit]
+  (let [mv-string (movement/print-movement unit)]
+    (if (string? mv-string)
+      {:text mv-string}
+      {:text "No movement"})))
+
+(defn tmm-factory
+  [unit]
+  (let [tmm-string (str (movement/base-tmm unit))]
+    (if (string? tmm-string)
+      {:text tmm-string}
+      (do (mu/log ::invalid-tmm?
+                  :tmm tmm-string)
+          {:text "No tmm"}))))
+
 (defn mul-table [{:keys [fx/context]}]
   (let [mul (fx/sub-val context :mul)
         selected (fx/sub-val context :active-mul)]
@@ -59,7 +80,7 @@
                        :text "Unit Name"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (str (:unit/full-name x))})}}
+                                      :describe name-factory}}
                       {:fx/type :table-column
                        :text "Type"
                        :cell-value-factory identity
@@ -69,7 +90,7 @@
                        :text "PV"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (str (:point-value x))})}}
+                                      :describe (fn [x] {:text (str (:unit/base-pv x))})}}
                       {:fx/type :table-column
                        :text "Size"
                        :cell-value-factory identity
@@ -79,12 +100,12 @@
                        :text "Movement"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (movement/print-movement x)})}}
+                                      :describe movement-factory}}
                       {:fx/type :table-column
                        :text "TMM"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (str (movement/base-tmm x))})}}
+                                      :describe tmm-factory}}
                       {:fx/type :table-column
                        :text "Armor"
                        :cell-value-factory identity
@@ -104,22 +125,22 @@
                        :text "S"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (cu/print-damage x :s)})}}
+                                      :describe (fn [x] {:text (cu/print-damage x :attack/s)})}}
                       {:fx/type :table-column
                        :text "M"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (cu/print-damage x :m)})}}
+                                      :describe (fn [x] {:text (cu/print-damage x :attack/m)})}}
                       {:fx/type :table-column
                        :text "L"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (cu/print-damage x :l)})}}
+                                      :describe (fn [x] {:text (cu/print-damage x :attack/l)})}}
                       {:fx/type :table-column
                        :text "E"
                        :cell-value-factory identity
                        :cell-factory {:fx/cell-type :table-cell
-                                      :describe (fn [x] {:text (cu/print-damage x :e)})}}
+                                      :describe (fn [x] {:text (cu/print-damage x :attack/e)})}}
                       {:fx/type :table-column
                        :text "OV"
                        :cell-value-factory identity
@@ -355,9 +376,9 @@
                :label "Map Height (in boards)"
                :key :map-height}
               {:fx/type map-grid}
-              {:fx/type :button
-               :text "Load Test Game"
-               :on-action {:event-type ::lobby-events/load-save :fx/sync true}}
+              ;; {:fx/type :button
+              ;;  :text "Load Test Game"
+              ;;  :on-action {:event-type ::lobby-events/load-save :fx/sync true}}
               {:fx/type :button
                :text "Load Scenario"
                :on-action {:event-type ::lobby-events/load-scenario :fx/sync true}}
