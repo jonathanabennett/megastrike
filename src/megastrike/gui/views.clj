@@ -7,18 +7,7 @@
    [megastrike.gui.subs :as subs]
    [megastrike.movement :as movement])
   (:import
-   [javafx.scene.control Dialog DialogEvent]
-   [javafx.stage Screen]))
-
-(def height
-  (-> (Screen/getPrimary)
-      .getBounds
-      .getHeight))
-
-(def width
-  (-> (Screen/getPrimary)
-      .getBounds
-      .getWidth))
+   [javafx.scene.control Dialog DialogEvent]))
 
 (defn attack-dialog
   [{:keys [fx/context]}]
@@ -89,8 +78,6 @@
   [{:keys [fx/context]}]
   {:fx/type :stage
    :showing (fx/sub-val context :game)
-   :width width
-   :height height
    :title (subs/title-string context)
    :scene {:fx/type :scene
            :accelerators {[:minus] {:event-type ::events/change-size :direction :minus :fx/sync true}
@@ -116,8 +103,6 @@
   {:fx/type :stage
    :showing (fx/sub-val context :lobby)
    :title (subs/title-string context)
-   :width width
-   :height height
    :scene {:fx/type :scene
            :root {:fx/type :grid-pane
                   :children [lobby/force-pane
