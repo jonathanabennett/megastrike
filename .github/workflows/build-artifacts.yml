@@ -11,7 +11,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Download jar file
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: megastrike_linux
       - run: ls -R
@@ -31,8 +31,8 @@ jobs:
     runs-on: macos-latest
     steps:
       - name: Download jar
-        uses: actions/download-artifact@v3 
-        with: 
+        uses: actions/download-artifact@v4
+        with:
           name: megastrike_macos
       - uses: actions/upload-release-asset@v3
         env:
@@ -50,7 +50,7 @@ jobs:
     runs-on: windows-latest
     steps:
       - name: Download jar
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: megastrike_win
       - uses: actions/upload-release-asset@v3
