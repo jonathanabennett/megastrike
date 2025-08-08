@@ -134,14 +134,16 @@
 
 (defn make-attack
   [{:keys [round-report] :as game-state} targeting]
-  (mu/log ::make-attack
-          :round-report round-report
-          :targeting targeting)
-  (let [result (attacks/make-attack targeting)
-        report (str round-report (parse-attack-data result))]
-    (-> game-state
-        (assoc :round-report report)
-        (unit-updates (:combat-result/changes result)))))
+  (if (not (:unit/acted? (:targeting/attacker targeting)))
+    (let [result (attacks/make-attack targeting)
+          report (str round-report (parse-attack-data result))]
+      (mu/log ::make-attack
+              :round-report round-report
+              :targeting targeting)
+      (-> game-state
+          (assoc :round-report report)
+          (unit-updates (:combat-result/changes result))))
+    game-state))
 
 (declare take-turn)
 
