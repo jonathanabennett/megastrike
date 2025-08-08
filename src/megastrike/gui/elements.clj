@@ -2,12 +2,15 @@
   (:require
    [cljfx.api :as fx]
    [clojure.string :as str]
-   [megastrike.battle-force :as battle-force]
+   [megastrike.abilities :as abilities]
+   [megastrike.attacks :as attacks]
    [megastrike.combat-unit :as cu]
+   [megastrike.damage :as damage]
    [megastrike.gui.events :as events]
    [megastrike.gui.subs :as subs]
    [megastrike.hexagons.hex :as hex]
-   [megastrike.mul :as mul]))
+   [megastrike.movement :as movement]
+   [megastrike.pilot :as pilot]))
 
 ;; Common GUI Widgets
 (defn prop-label
@@ -53,9 +56,9 @@
 (defn draw-sprite
   "Draws a sprite. Used for both the map and the lobby."
   [{:keys [unit bf x y shift direction]}]
-  (let [camo (battle-force/get-camo bf)
+  (let [camo (:unit-group/camo bf)
         color "#FFFFFF"
-        img (mul/find-sprite unit)]
+        img (cu/find-sprite unit)]
     {:fx/type :image-view
      :image (str "file:" (.getPath img))
      :effect {:fx/type :blend
@@ -66,7 +69,7 @@
                             :paint color
                             :x 0 :y 0 :width 100 :height 100})
               :bottom-input {:fx/type :image-input
-                             :source (str (.toURI (mul/find-sprite unit)))}
+                             :source (str (.toURI (cu/find-sprite unit)))}
               :mode :src-atop
               :opacity 0.5}
      :rotate (if direction
@@ -119,9 +122,9 @@
 
 (defn draw-unit
   [{:keys [fx/context unit layout]}]
-  (let [hex (hex/points (cu/get-location unit) layout)
+  (let [hex (hex/points (:unit/location unit) layout)
         forces (subs/forces context)
-        bf (get forces (cu/get-force unit))]
+        bf (get forces (:unit/battle-force unit))]
     {:fx/type :group
      :on-mouse-clicked {:event-type ::events/unit-clicked :unit unit :fx/sync true}
      :children [{:fx/type draw-sprite
@@ -129,17 +132,17 @@
                  :bf bf
                  :x (nth hex 8)
                  :y (nth hex 9)
-                 :direction (cu/get-facing unit)
+                 :direction (movement/facing unit)
                  :shift (/ (* (layout :y-size) (:scale layout)) 3)}
                 {:fx/type :label
-                 :text (unit :full-name)
+                 :text (unit :unit/full-name)
                  :layout-x (nth hex 8)
                  :layout-y (nth hex 9)
                  :font 16
                  :translate-y (/ (* (layout :y-size) (:scale layout)) 3)}
                 {:fx/type :label
-                 :text (if (cu/get-selected-movement unit false)
-                         (name (cu/get-selected-movement unit false))
+                 :text (if (:move/selected unit)
+                         (name (:move/selected unit))
                          "Did not move")
                  :layout-x (nth hex 4)
                  :layout-y (nth hex 5)
@@ -164,14 +167,14 @@
 
 (defn draw-movement-path
   [{:keys [unit layout]}]
-  (let [origin (cu/get-location unit)
-        costs (cu/get-movement-cost unit)]
+  (let [origin (:unit/location unit)
+        costs (movement/move-cost unit)]
     {:fx/type :group
      :children (loop [total 0
                       costs costs
                       o origin
                       sprites []
-                      path (cu/get-path unit)]
+                      path (:unit/path unit)]
                  (if (empty? path)
                    sprites
                    (recur (+ total (or (first costs) 0))
@@ -200,28 +203,28 @@
                            :children [{:fx/type :label
                                        :text "S(+0)"}
                                       {:fx/type :label
-                                       :text (cu/print-damage unit :s)}]}
+                                       :text (cu/print-damage unit :attack/s)}]}
                           {:fx/type :v-box
                            :border {:strokes [{:stroke :black :style :solid :widths 1}]}
                            :padding {:left 5 :right 5}
                            :children [{:fx/type :label
                                        :text "M(+2)"}
                                       {:fx/type :label
-                                       :text (cu/print-damage unit :m)}]}
+                                       :text (cu/print-damage unit :attack/m)}]}
                           {:fx/type :v-box
                            :border {:strokes [{:stroke :black :style :solid :widths 1}]}
                            :padding {:left 5 :right 5}
                            :children [{:fx/type :label
                                        :text "L(+4)"}
                                       {:fx/type :label
-                                       :text (cu/print-damage unit :l)}]}
+                                       :text (cu/print-damage unit :attack/l)}]}
                           {:fx/type :v-box
                            :border {:strokes [{:stroke :black :style :solid :widths 1}]}
                            :padding {:left 5 :right 5}
                            :children [{:fx/type :label
                                        :text "E(+6)"}
                                       {:fx/type :label
-                                       :text (cu/print-damage unit :e)}]}]}]})
+                                       :text (cu/print-damage unit :attack/e)}]}]}]})
 
 (defn draw-pips
   "Helper Function for drawing a series of pips."
@@ -248,104 +251,104 @@
 (defn unit-stat-block
   [{:keys [fx/context unit]}]
   (let [active (subs/active-id context)
-        bf (get (subs/forces context) (cu/get-force unit))]
+        bf (get (subs/forces context) (:unit/battle-force unit))]
     {:fx/type :titled-pane
-     :on-mouse-clicked {:event-type ::events/stats-clicked :fx/sync true :unit (:id unit)}
-     :text (if (:acted unit) (str (:id unit) " (done)") (:id unit))
+     :on-mouse-clicked {:event-type ::events/stats-clicked :fx/sync true :unit (:unit/id unit)}
+     :text (if (:unit/acted? unit) (str (:unit/id unit) " (done)") (:unit/id unit))
      :border {:strokes [{:stroke :black :style :solid :width 2}]}
      :padding 5
      :content {:fx/type :v-box
                :style (cond
-                        (= (:id unit) active) "-fx-background-color: #BBBBBB;"
-                        (not (:acted unit)) "-fx-background-color: 999999"
+                        (= (:unit/id unit) active) "-fx-background-color: #BBBBBB;"
+                        (not (:unit/acted? unit)) "-fx-background-color: 999999"
                         :else "-fx-background-color: #DDDDDD;")
                :spacing 5
                :children [{:fx/type :h-box
                            :spacing 5
                            :children [{:fx/type prop-label
                                        :label "Unit: "
-                                       :value (:id unit)}
+                                       :value (:unit/id unit)}
                                       {:fx/type prop-label
                                        :label "Force: "
-                                       :value (battle-force/to-str bf)}
+                                       :value (:unit-group/name bf)}
                                       {:fx/type prop-label
                                        :label "Type: "
-                                       :value (:type unit)}
+                                       :value (str (:unit/type unit))}
                                       {:fx/type prop-label
                                        :label "Mv: "
-                                       :value (cu/print-movement unit)}]}
+                                       :value (movement/print-movement unit)}]}
                           {:fx/type :h-box
                            :spacing 5
                            :children [{:fx/type prop-label
                                        :label "Role: "
-                                       :value (:role unit)}
+                                       :value (str (:unit/role unit))}
                                       {:fx/type prop-label
                                        :label "Size: "
-                                       :value (str (cu/get-size unit))}
+                                       :value (str (:unit/size unit))}
                                       {:fx/type prop-label
                                        :label "TMM: "
-                                       :value (str (cu/tmm unit))}]}
+                                       :value (str (movement/base-tmm unit))}]}
                           {:fx/type prop-label
                            :label "Pilot (skill): "
-                           :value (cu/display-pilot unit)}
+                           :value (pilot/display (:unit/pilot unit))}
                           {:fx/type attack-table
                            :unit unit}
                           {:fx/type draw-pips
-                           :text (str "Armor: " (cu/get-current unit :armor) "/" (cu/get-max unit :armor))
-                           :filled (cu/get-current unit :armor)
-                           :max (cu/get-max unit :armor)
+                           :text (str "Armor: " (get-in unit [:unit/armor :toughness/current]) "/" (get-in unit [:unit/armor :toughness/maximum]))
+                           :filled (get-in unit [:unit/armor :toughness/current])
+                           :max (get-in unit [:unit/armor :toughness/maximum])
                            :fill-one :green
                            :fill-two :transparent}
                           {:fx/type draw-pips
-                           :text (str "Structure: " (cu/get-current unit :structure) "/" (cu/get-max unit :structure))
-                           :filled (cu/get-current unit :structure)
-                           :max (cu/get-max unit :structure)
+                           :text (str "Structure: " (get-in unit [:unit/structure :toughness/current]) "/" (get-in unit [:unit/structure :toughness/maximum]))
+                           :filled (get-in unit [:unit/structure :toughness/current])
+                           :max (get-in unit [:unit/structure :toughness/maximum])
                            :fill-one :green
                            :fill-two :transparent}
                           {:fx/type draw-pips
-                           :text (str "Heat: " (cu/get-heat unit) "/" 4)
-                           :filled (cu/get-heat unit)
+                           :text (str "Heat: " (:unit/current-heat unit) "/" 4)
+                           :filled (:unit/current-heat unit)
                            :max 4
                            :fill-one :red
                            :fill-two :aliceblue}
                           {:fx/type prop-label
                            :label "Abilities: "
-                           :value (cu/print-abilities unit)}
+                           :value (abilities/print-abilities (:unit/abilities unit))}
                           {:fx/type prop-label
                            :label "Criticals: "
-                           :value (cu/get-crits unit)}
+                           :value (str (get-in unit [:unit/criticals :crits/taken]))}
                           {:fx/type draw-pips
-                           :text (str "Remaining Armor: " (cu/get-remaining-armor unit) "/" (cu/get-max unit :armor))
-                           :filled (cu/get-remaining-armor unit)
-                           :max (cu/get-max unit :armor)
+                           :text (str "Remaining Armor: " (damage/remaining-armor unit) "/" (get-in unit [:unit/armor :toughness/maximum]))
+                           :filled (damage/remaining-armor unit)
+                           :max (get-in unit [:unit/armor :toughness/maximum])
                            :fill-one :green
                            :fill-two :transparent}
                           {:fx/type draw-pips
-                           :text (str "Remaining structure " (cu/get-remaining-structure unit) "/" (cu/get-max unit :structure))
-                           :filled (cu/get-remaining-structure unit)
-                           :max (cu/get-max unit :structure)
+                           :text (str "Remaining structure " (damage/remaining-structure unit) "/" (get-in unit [:unit/structure :toughness/maximum]))
+                           :filled (damage/remaining-structure unit)
+                           :max (get-in unit [:unit/structure :toughness/maximum])
                            :fill-one :green
                            :fill-two :transparent}
                           {:fx/type prop-label
                            :label "Unapplied Criticals: "
-                           :value (str (cu/get-new-crits unit))}]}}))
+                           :value (str (get-in unit [:unit/criticals :crits/unapplied]))}]}}))
 
 (defn force-block
   [{:keys [fx/context units]}]
   (let [forces (subs/forces context)
-        bf ((:force (first units)) forces)]
+        bf ((:unit/battle-force (first units)) forces)]
     {:fx/type :v-box
      :spacing 5
-     :border {:strokes [{:image (battle-force/get-camo bf) :width 5}]}
+     :border {:strokes [{:image (:unit-group/camo bf) :width 5}]}
      :children [{:fx/type :label
-                 :text (battle-force/to-str bf)}
+                 :text (:unit-group/name bf)}
                 {:fx/type :accordion
                  :panes (for [u units]
                           {:fx/type unit-stat-block :unit u})}]}))
 
 (defn stat-blocks
   [{:keys [fx/context]}]
-  (let [units (group-by :force (vals (subs/units context)))]
+  (let [units (group-by :unit/battle-force (vals (subs/units context)))]
     {:fx/type :scroll-pane
      :min-width :use-pref-size
      :content {:fx/type :v-box
@@ -371,7 +374,7 @@
                                (and (= phase :combat) (not= range 1)) (contains? #{:physical :charge :dfa} attack)
                                :else (contains? #{:charge :dfa} attack))]
                ((comp vec flatten conj) ret {:fx/type :button
-                                             :text (str (name (:attack atk-data)) ": " (cu/print-attack-roll atk-data false))
+                                             :text (str (name (:targeting/attack-type atk-data)) ": " (attacks/print-attack-roll atk-data false))
                                              :disable disabled?
                                              :on-action {:event-type ::events/close-attack-selection  :unit unit :selected atk-data :fx/sync true}}))
              (rest attacks)))))
@@ -391,21 +394,21 @@
 
 (defn move-buttons
   [unit]
-  (let [movement (cu/get-movement-modes unit)
-        buttons (if (contains? movement :jump)
+  (let [movement (:unit/move-modes unit)
+        buttons (if (contains? movement :move/jump)
                   [{:fx/type :button
                     :text "Walk"
-                    :on-action {:event-type ::events/set-movement-mode :mode :walk :unit unit :fx/sync true}}
+                    :on-action {:event-type ::events/set-movement-mode :mode :move/walk :unit unit :fx/sync true}}
                    {:fx/type :button
                     :text "Jump"
-                    :on-action {:event-type ::events/set-movement-mode :mode :jump :unit unit :fx/sync true}}]
+                    :on-action {:event-type ::events/set-movement-mode :mode :move/jump :unit unit :fx/sync true}}]
                   [{:fx/type :button
                     :text "Walk"
-                    :on-action {:event-type ::events/set-movement-mode :mode :walk :unit unit :fx/sync true}}])]
+                    :on-action {:event-type ::events/set-movement-mode :mode :move/walk :unit unit :fx/sync true}}])]
     ((comp vec flatten vector)
      [{:fx/type :button
        :text "Stand Still"
-       :on-action {:event-type ::events/set-movement-mode :mode :stand-still :unit unit :fx/sync true}}
+       :on-action {:event-type ::events/set-movement-mode :mode :move/stand-still :unit unit :fx/sync true}}
       {:fx/type :button
        :text "Turn"
        :on-action {:event-type ::events/turn-button-clicked :fx/sync true}}]

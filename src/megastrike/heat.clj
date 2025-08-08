@@ -12,75 +12,43 @@
   `shutdown?` returns true if the unit is shut down from heat.
 
   `reset-heat` sets the current heat to zero after a round of inaction.
-  ")
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Schemas
-
-(defn within-heat-range?
-  "Heat must be between 0 and 4."
-  [n]
-  (<= 0 n 4))
-
-(def HeatSchema
-  [:map [:current {:min 0 :max 4} number?] [:overheat {:min 0 :max 4} number?]])
-
-(defn ->heat
-  [{:keys [current overheat] :or {current 0 overheat 0}}]
-  {:current (min current 4)
-   :overheat overheat})
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Manipulating heat
-
-(defn add
-  "Returns a heat data object with up to `n` heat added.
-  Checks to ensure that it will not exceed 4 heat when adding."
-  ([{:keys [current] :as heat} n]
-   (let [h (+ current n)
-         new-heat (assoc heat :current h)]
-     (if (within-heat-range? h)
-       new-heat
-       (add heat (dec n)))))
-  ([heat]
-   (add heat 1)))
-
-(defn set-heat
-  [heat n]
-  (assoc heat :current n))
-
-(defn reset-heat
-  "Resetting heat sets the current heat to zero."
-  [heat]
-  (assoc heat :current 0))
-
-;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;;
-;; Querying heat and its effects
-
-(defn current
-  "Returns the current heat (or zero if there is no current heat)."
-  [heat]
-  (get heat :current 0))
-
-(defn overheat
-  "Returns the amount of overheat a unit can add to its attack."
-  [heat]
-  (get heat :overheat 0))
+  "
+  (:require
+   [clojure.core :as c]
+   [megastrike.damage :as damage]))
 
 (defn shutdown?
   "If current heat is 4 or greater, shutdown the mech."
-  [heat]
-  (<= 4 (:current heat)))
+  [unit]
+  (>= (:unit/current-heat unit) 4))
+
+(defn change-heat
+  "Applies delta to heat and then ensures that it is in a valid range from 0-4."
+  [heat delta]
+  (let [new-heat (+ heat delta)]
+    (cond
+      (< new-heat 0) 0
+      (< 4 new-heat) 4
+      :else new-heat)))
 
 (defn end-phase-heat
   "Applies heat effects in correct order. First, if the unit was shut down, automatically 
   reset the heat to zero. If the unit wasn't shut down, increase heat by the amount of 
   overheat used. If they are standing in water. Reduce heat by 1. If they made no attack 
   at all this round, reset their heat to zero. Finally, apply any external heat or engine heat."
-  [heat overheat-used water? no-attack? external-heat]
-  (if (or no-attack? (shutdown? heat))
-    (reset-heat heat)
-    (set-heat heat (cond-> (current heat)
-                     (pos? overheat-used) (+ overheat-used)
-                     water? (dec)
-                     (pos? external-heat) (+ external-heat)))))
+  [unit water?]
+  (if (shutdown? unit)
+    (assoc unit :unit/current-heat 0)
+    (cond-> unit
+      ;; If the unit used overheat, add it
+      (pos? (:unit/overheat-used unit)) (update :unit/current-heat change-heat (:unit/overheat-used unit))
+      ;; If the unit stood in water, subtract 1
+      water? (update :unit/current-heat change-heat -1)
+      ;; If the unit didn't attack, reset to 0
+      (not (:unit/attacked? unit)) (assoc :unit/current-heat 0)
+      ;; If the unit has engine damage, add 1
+      (pos? (damage/crit-count unit :crits/engine)) (update :unit/current-heat change-heat 1)
+      ;; If the unit has unapplied heat damage, ddd it
+      (pos? (get unit :unit/unapplied-heat 0)) (update :unit/current-heat change-heat (:unit/unapplied-heat unit))
+      ;; Always reset the unapplied heat to 0
+      true (assoc :unit/unapplied-heat 0))))

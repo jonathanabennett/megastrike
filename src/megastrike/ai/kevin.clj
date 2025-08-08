@@ -2,29 +2,29 @@
   "This is Kevin. He's our basic Computer Player."
   (:require
    [clojure.data.priority-map :as priority-map]
-   [clojure.string :as str]
    [com.brunobonacci.mulog :as mu]
+   [megastrike.attacks :as attacks]
    [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
+   [megastrike.damage :as damage]
+   [megastrike.hexagons.hex :as hex]
    [megastrike.movement :as movement]
    [megastrike.utils :as utils]))
 
 (defn target-info
   [attacker target board layout attack]
-  (let [targeting (second (cu/->targeting attacker target board layout attack))
-        target-number (cu/calculate-to-hit targeting)
+  (let [targeting (attack (attacks/->targeting attacker target board layout attack))
+        target-number (attacks/calculate-to-hit targeting)
         probability (get utils/probabilities target-number 0)
-        toughness (+ (cu/get-remaining-armor target) (* (cu/get-remaining-structure target) 2))
-        damage (:damage targeting)
-        damage-num (if (str/ends-with? damage "*") 0.5 (Integer/parseInt damage))
-        expected-damage (/ (* probability damage-num) 100.0)]
-    (mu/log ::targeting-info
-            :targeting targeting)
-    [(cu/id target)
+        toughness (damage/health target)
+        expected-damage (/ (* (Integer/parseInt (:targeting/damage targeting)) probability) 100)
+        percentage (/ expected-damage toughness)]
+    [(:unit/acted? target)
      {:firing-solution targeting
       :toughness toughness
       :expected-damage expected-damage
-      :percentage damage-num}]))
+      :percentage percentage
+      :probability probability}]))
 
 (defn targeting-options
   [unit units board layout]
@@ -32,34 +32,56 @@
 
 (defn calculate-defensive-value
   [unit units board layout]
-  (let [counter-attacks (map #(target-info % unit board layout :regular) units)
+  (let [counter-attacks (map #(target-info % unit board layout :attack/regular) units)
         counter-damage (map #(get (second %) :expected-damage 0) counter-attacks)
         total (/ (reduce + counter-damage) (count counter-attacks))]
-    (mu/log ::defensive-value
-            :total total)
     total))
 
 (defn calculate-offensive-value
   [unit units board layout]
-  (let [attacks (map #(target-info unit % board layout :regular) units)
+  (let [attacks (map #(target-info unit % board layout :attack/regular) units)
         expected-damage (map #(get (second %) :expected-damage 0) attacks)
         total (/ (reduce + expected-damage) (count expected-damage))]
-    (mu/log ::offensive-value
-            :total total)
     total))
+
+(defn max-dealable-damage
+  [targets]
+  ;; (mu/log ::targeting?
+  ;;         :targets targets)
+  (->> targets
+       (map second)
+       (apply max-key :percentage)))
+
+(defn unit-state-score
+  [unit hostiles board layout]
+  (let [toughness (damage/health-percentage unit)
+        targets (targeting-options unit hostiles board layout)
+        best-target (max-dealable-damage targets)]
+    (mu/log ::unit-state-score
+            :best-target best-target)
+    (cond
+      (> 0.30 toughness) (* (calculate-defensive-value unit hostiles board layout) -1)
+      (< 0.70 (:percentage best-target)) (do (mu/log ::unit-state-aggro)
+                                             (* (:percentage best-target) 2))
+      (pos? (:percentage best-target)) (do (mu/log ::unit-state-can-attack
+                                                   :value (:percentage best-target))
+                                           (:percentage best-target))
+      :else (do (mu/log ::unit-state-default
+                        :value (* (hex/distance (:unit/location unit) (:unit/location (first hostiles))) -1))
+                (* (hex/distance (:unit/location unit) (:unit/location (first hostiles))) -1)))))
 
 (defn create-movement-option
   [path unit units board layout mv-type]
   (let [temp-unit (-> unit
                       (cu/set-path (second path))
-                      (cu/set-movement-mode mv-type)
+                      (assoc :unit/selected mv-type)
                       (cu/move-unit))
         cost (reduce + (board/path-cost (second path) mv-type units))
         move-option {:destination (first path)
                      :path (second path)
                      :cost (reduce + (board/path-cost (second path) mv-type units))}]
-    (if (<= cost (cu/get-mv unit mv-type))
-      [move-option (- (calculate-offensive-value temp-unit units board layout) (calculate-defensive-value temp-unit units board layout))]
+    (if (<= cost (movement/available-mv unit mv-type))
+      [move-option (unit-state-score temp-unit units board layout)]
       [move-option ##-Inf])))
 
 (defn zero-weight
@@ -69,19 +91,26 @@
 
 (defn move-options
   [unit units board layout]
-  (let [mv-type (cu/get-selected-movement unit true)
-        unit-loc (board/find-hex (cu/get-location unit) board)
+  (let [mv-type (movement/selected-or-default unit)
+        unit-loc (board/find-hex (:unit/location unit) board)
         updated-board (cu/set-stacking board units)
-        hostiles (filter #(not= (cu/get-force %) (cu/get-force unit)) units)
+        hostiles (filter #(not= (:unit/battle-force %) (:unit/battle-force unit)) units)
         paths (into (priority-map/priority-map-by >)
-                    (map #(create-movement-option % unit hostiles updated-board layout mv-type)
-                         (movement/astar unit-loc false updated-board zero-weight mv-type (cu/get-force unit))))]
+                    (->> (movement/astar unit-loc false updated-board zero-weight mv-type (:unit/battle-force unit))
+                         (map #(create-movement-option % unit hostiles updated-board layout mv-type))
+                         (filter #(not (infinite? (second %))))))]
+    (mu/log ::top-5-choices
+            :options (take 5 paths))
     (first (rand-nth (take 5 paths)))))
 
 (defn naive-target-selection
   [options]
   (rand-nth options))
 
+(defn deadly-target-selection
+  [options]
+  (max-dealable-damage options))
+
 (defn select-target
   [options]
-  (:firing-solution (second (naive-target-selection options))))
+  (:firing-solution (deadly-target-selection options)))

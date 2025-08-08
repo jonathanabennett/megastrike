@@ -2,8 +2,8 @@
   (:require
    [clojure.math :as math]
    [com.brunobonacci.mulog :as mu]
-   [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
+   [megastrike.movement :as movement]
    [megastrike.utils :as utils]))
 
 (defn roll-initiative
@@ -26,7 +26,7 @@
            forces force-list]
       (if (empty? forces)
         ret
-        (let [f (battle-force/id (first forces))]
+        (let [f (:unit-group/keyword (first forces))]
           (recur (assoc ret f (max 1 (math/floor-div (f unit-count) smallest-count)))
                  (rest forces)))))))
 
@@ -35,7 +35,7 @@
   ([forces units]
    (let [forces (sort-by :initiative (vals forces))]
      (loop [turn-order []
-            unit-totals (frequencies (map cu/get-force units))]
+            unit-totals (frequencies (map :unit/battle-force units))]
        (if (= (reduce + (vals unit-totals)) 0)
          (flatten turn-order)
          (let [unit-pairs (move-generator unit-totals forces)]
@@ -45,14 +45,14 @@
    (->> forces
         (vals)
         (sort-by :initiative)
-        (map #(battle-force/id %))
+        (map #(:unit-group/keyword %))
         (into []))))
 
 (defn start-initiative-phase
   "Reroll the initiative, increment the turn number, save the new forces (with their initiative), but do not generate a turn order."
   [{:keys [turn-number forces units] :as game-state}]
   (let [forces (roll-initiative forces)
-        initiative-report (reduce str (map #(str (battle-force/to-str %) " rolled a " (:initiative %) "\n") (vals forces)))
+        initiative-report (reduce str (map #(str (:unit-group/name %) " rolled a " (:initiative %) "\n") (vals forces)))
         turn-num (inc turn-number)
         turn-string (str "Turn: " turn-num)
         move-list (str "Turn Order: " (reduce str (map #(str % ", ") (generate-turn-order forces (vals units)))))
@@ -68,12 +68,12 @@
 (defn start-deployment-phase
   "Generates the turn order based on the number of units who haven't been deployed yet."
   [{:keys [forces units round-report] :as game-state}]
-  (let [deployable-units (remove (fn [unit] (cu/deployed? unit)) (vals units))
+  (let [deployable-units (remove (fn [unit] (movement/deployed? unit)) (vals units))
         turn-order (generate-turn-order forces deployable-units)
         round-string (str "Deployment Phase\n" "Deployment order: " (reduce str (map #(str % ", ") turn-order)) "\n\n----------\n")
         report (str round-report round-string)]
     (mu/log ::begin-deployment-phase
-            :deployable-units (map :id deployable-units)
+            :deployable-units (map :unit/id deployable-units)
             :turn-order turn-order
             :current-phase "Deployment"
             :instrumentation :player)

@@ -1,13 +1,24 @@
 (ns megastrike.gui.views
   (:require
    [cljfx.api :as fx]
-   [megastrike.combat-unit :as cu]
    [megastrike.gui.elements :as elements]
    [megastrike.gui.events :as events]
    [megastrike.gui.lobby.views :as lobby]
-   [megastrike.gui.subs :as subs])
+   [megastrike.gui.subs :as subs]
+   [megastrike.movement :as movement])
   (:import
-   [javafx.scene.control Dialog DialogEvent]))
+   [javafx.scene.control Dialog DialogEvent]
+   [javafx.stage Screen]))
+
+(def height
+  (-> (Screen/getPrimary)
+      .getBounds
+      .getHeight))
+
+(def width
+  (-> (Screen/getPrimary)
+      .getBounds
+      .getWidth))
 
 (defn attack-dialog
   [{:keys [fx/context]}]
@@ -15,7 +26,7 @@
         attacks (fx/sub-val context get-in [:internal :attack-dialog :items])
         phase (subs/phase context)
         active (subs/active-unit context)
-        mv-type (if active (cu/get-selected-movement active true) :walk)]
+        mv-type (if active (movement/selected-or-default active) :walk)]
     {:fx/type :dialog
      :showing (fx/sub-val context get-in [:internal :attack-dialog :showing] false)
      :on-close-request (fn [^DialogEvent event]
@@ -54,8 +65,9 @@
   [{:keys [fx/context]}]
   (let [gb (subs/tiles context)
         layout (subs/layout context)
-        unit-locations (subs/deployed-units context)
-        destinations (filter #(pos? (count (cu/get-path %))) (vals (subs/units context)))]
+        units (vals (subs/units context))
+        unit-locations (filter movement/deployed? units)
+        destinations (filter #(pos? (count (:unit/path %))) (vals (subs/units context)))]
     {:fx/type :scroll-pane
      :content {:fx/type :group
                :children (concat
@@ -77,6 +89,8 @@
   [{:keys [fx/context]}]
   {:fx/type :stage
    :showing (fx/sub-val context :game)
+   :width width
+   :height height
    :title (subs/title-string context)
    :scene {:fx/type :scene
            :accelerators {[:minus] {:event-type ::events/change-size :direction :minus :fx/sync true}
@@ -102,8 +116,8 @@
   {:fx/type :stage
    :showing (fx/sub-val context :lobby)
    :title (subs/title-string context)
-   :width 800
-   :height 600
+   :width width
+   :height height
    :scene {:fx/type :scene
            :root {:fx/type :grid-pane
                   :children [lobby/force-pane

@@ -2,35 +2,18 @@
   "Handles all attack data. Calculates damage numbers, prints damage brackets, calculates to-hit rolls, and produces
   attack options for the GUI to consume."
   (:require
-   [clojure.string :as str]
+   [clojure.spec.alpha :as s]
+   [clojure.string :as string]
+   [com.brunobonacci.mulog :as mu]
    [megastrike.abilities :as abilities]
+   [megastrike.board :as board]
+   [megastrike.damage :as damage]
+   [megastrike.hexagons.hex :as hex]
    [megastrike.movement :as movement]
    [megastrike.utils :as utils]))
 
-; <<<<<<< Updated upstream
-; =======
-; ; (defprotocol MakesAttacks
-; ;   (size [this])
-; ;   (attacks [this])
-; ;   (add-attack [this new-attack])
-; ;   (get-attack [this atk])
-; ;   (fc-damage [this])
-; ;   (take-fc-damage [this])
-; ;   (take-weaps-hit [this])
-; ;   (generate-firing-solution [this target board layout] [this target board layout attack])
-; ;   (declare-special-attack [this firing-solution])
-; ;   (make-dfa-attack [this to-hit])
-; ;   (make-charge-attack [this to-hit])
-; ;   (make-basic-attack [this firing-solution to-hit])
-; ;   (make-heat-attack [this firing-solution to-hit]))
-;
-; (defn ->targeting-mod
-;   [description value]
-;   [{:desc description :value value}])
-;
-; >>>>>>> Stashed changes
-(defn ->attack
-  [{:keys [kind s s* m m* l l* e e* value self] :or {kind :regular s 0 s* false m 0 m* false l 0 l* false e 0 e* false value 0 self 0}}]
+(defn ->ranged-attack
+  [{:keys [atk-type s s* m m* l l* e e*] :or {atk-type :regular s 0 s* false m 0 m* false l 0 l* false e 0 e* false}}]
   (let [s (if (= (type s) java.lang.String) (Integer/parseInt s) s)
         s* (if (= (type s*) java.lang.String) (= "True" s*) s*)
         m (if (= (type m) java.lang.String) (Integer/parseInt m) m)
@@ -39,136 +22,353 @@
         l* (if (= (type l*) java.lang.String) (= "True" l*) l*)
         e (if (= (type e) java.lang.String) (Integer/parseInt e) e)
         e* (if (= (type e*) java.lang.String) (= "True" e*) e*)]
-    {kind {:s (if (not= value 0) value s) :s* s* :m m :m* m* :l l :l* l* :e e :e* e* :self self}}))
+    {atk-type {:attack/s s :attack/s* s* :attack/m m :attack/m* m* :attack/l l :attack/l* l*
+               :attack/e e :attack/e* e*}}))
 
-(defn add-attack
-  [attacks attack]
-  (merge attacks (->attack attack)))
+(defn ->physical-attack
+  [{:keys [atk-type damage self]}]
+  {atk-type {:attack/type atk-type :attack/damage damage :attack/self self}})
 
 (defn add-special-attacks
-  [attacks abilities]
-  (loop [attacks attacks
-         atk-abilities (filter #(some #{:ht :ac :lrm :srm :if} %) abilities)]
+  [abilities]
+  (loop [attacks {}
+         atk-abilities (filter #(contains? #{:attack/ht :attack/rear :attack/lrm :attack/srm :attack/ac} (first %)) abilities)]
     (if (empty? atk-abilities)
       attacks
       (recur (let [atk (first atk-abilities)]
-               (add-attack attacks (merge (second atk) {:kind (first atk)})))
+               (merge attacks (->ranged-attack (merge (second atk) {:atk-type (first atk)}))))
              (rest atk-abilities)))))
 
-(defn add-dfa
-  [attacks movement]
-  (if (movement/has-mode? movement :jump)
-    (add-attack attacks {:kind :dfa})
-    attacks))
-
 (defn ->attacks
-  [{:keys [size s s* m m* l l* e e*]} movement abilities]
-  {:fc-mod 0
-   :size (Integer/parseInt size)
-   :attacks (-> {}
-                (add-attack {:kind :regular
-                             :s s :s* s*
-                             :m m :m* m*
-                             :l l :l* l*
-                             :e e :e* e*})
-                (add-attack {:kind :physical
-                             :s (if (abilities/has? abilities :mel)
-                                  (inc (Integer/parseInt size))
-                                  (Integer/parseInt size))})
-                (add-attack {:kind :charge})
-                (add-dfa movement)
-                (add-special-attacks abilities))})
-
-(defn get-size
-  [attacks]
-  (:size attacks))
-
-(defn get-attack
-  [attacks attack]
-  (get-in attacks [:attacks attack]))
-
-(defn get-attacks
-  [attacks]
-  (:attacks attacks))
-
-(defn take-fc-hit
-  [attacks]
-  (assoc attacks :fc-mod (+ (:fc-mod attacks) 2)))
-
-(defn fc-hits
-  [{:keys [fc-mod]}]
-  fc-mod)
-
-(defn print-damage-bracket
-  [attack bracket]
-  (let [bracket* (keyword (str (name bracket) "*"))]
-    (if (get attack bracket*)
-      "0*"
-      (str (get attack bracket)))))
-
-(defn print-damage
-  [attacks attack range]
-  (let [atk (get-attack attacks attack)]
-    (cond
-      (and (= range 1) (or (= attack :physical) (= attack :charge) (= attack :dfa))) (print-damage-bracket atk :s)
-      (<= range 3) (print-damage-bracket atk :s)
-      (<= range 12) (print-damage-bracket atk :m)
-      (<= range 21) (print-damage-bracket atk :l)
-      (<= range 30) (print-damage-bracket atk :e)
-      :else 0)))
-
-(defn weaps-hit-helper
-  [kind data]
-  (if (some #{kind} [:regular :ht :srm :lrm :if])
-    [kind (assoc data
-                 :s (max (dec (:s data)) 0)
-                 :s* false
-                 :m (max (dec (:m data)) 0)
-                 :m* false
-                 :l (max (dec (:l data)) 0)
-                 :l* false
-                 :e (max (dec (:e data)) 0)
-                 :e* false)]
-    [kind data]))
-
-(defn take-weaps-hit
-  [attacks]
-  (into {} (for [[k v] attacks] (weaps-hit-helper k v))))
-
-(defn calc-charge-damage
-  [{:keys [size]} tmm]
-  (int (Math/floor (+ size (double (/ tmm 2))))))
-
-(defn calc-dfa-damage
-  [attacks tmm]
-  (inc (calc-charge-damage attacks tmm)))
+  [{:keys [size s s* m m* l l* e e*]} mv-modes abilities]
+  (let [size (Integer/parseInt size)]
+    (cond-> {}
+      true (merge (->ranged-attack {:atk-type :attack/regular
+                                    :s s :s* s*
+                                    :m m :m* m*
+                                    :l l :l* l*
+                                    :e e :e* e*}))
+      true (merge (->physical-attack
+                   {:atk-type :attack/physical
+                    :damage (if (abilities/has? abilities :mel)
+                              (inc size)
+                              size)
+                    :self false}))
+      true (merge (->physical-attack
+                   {:atk-type :attack/charge
+                    :damage 0
+                    :self true}))
+      true (merge (add-special-attacks abilities))
+      (movement/has-mode? mv-modes :jump) (merge (->physical-attack
+                                                  {:atk-type :attack/dfa
+                                                   :damage 0
+                                                   :self true})))))
 
 (defn calc-self-charge
   [tmm target-size]
-  (int (+ (Math/floor (/ tmm 2)) (if (>= target-size 3) 1 0))))
+  (int (+ (Math/floor tmm) (if (>= target-size 3) 1 0))))
 
 (defn calc-self-dfa
-  [attacks atk-type]
-  (condp = atk-type
-    :self-dfa (get-size attacks)
-    :missed-dfa (inc (get-size attacks))))
+  [size success?]
+  (if success?
+    size
+    (inc size)))
+
+(defn calc-charge-damage
+  [size tmm]
+  (int (Math/floor (+ size (double (/ tmm 2))))))
+
+(defn calc-dfa-damage
+  [size tmm]
+  (inc (calc-charge-damage size tmm)))
+
+(defn physical-damage
+  [unit attack]
+  (str (condp = (get-in unit [:unit/attacks attack :attack/attack-type])
+         :attack/charge (calc-charge-damage (:unit/size unit) (movement/modified-tmm unit))
+         :attack/dfa (calc-dfa-damage (:unit/size unit) (movement/modified-tmm unit))
+         (:unit/size unit))))
+
+(defn print-damage-bracket
+  [attack bracket dmg]
+  (let [bracket* (keyword (str (name bracket) "*"))]
+    (if (get attack bracket*)
+      (if (pos? dmg)
+        "0*"
+        0)
+      (str (max (- (get attack bracket 0) dmg) 0)))))
+
+(defn print-damage
+  [unit attack distance]
+  (let [atk (get (:unit/attacks unit) attack)
+        dmg (damage/crit-count unit :crits/weapon)]
+    (cond
+      (keyword? distance) (print-damage-bracket atk distance dmg)
+      (and (= distance 1) (s/valid? :attack/melee-info atk)) (physical-damage unit attack)
+      (<= distance 3) (print-damage-bracket atk :attack/s dmg)
+      (<= distance 12) (print-damage-bracket atk :attack/m dmg)
+      (<= distance 21) (print-damage-bracket atk :attack/l dmg)
+      (<= distance 30) (print-damage-bracket atk :attack/e dmg)
+      :else 0)))
+
+(defn ->targeting-mod
+  [description value]
+  (s/assert :targeting/modifier
+            {:targeting/value value
+             :targeting/description description}))
+
+(defn woods-mod
+  [line]
+  (let [woods (count (filter #(string/includes? (:terrain %) "woods") (rest line)))]
+    (cond
+      (>= woods 3) (->targeting-mod "Line of Sight blocked by woods" ##Inf)
+      (string/includes? (:terrain (last line)) "woods") (->targeting-mod "Target in woods" 1)
+      (pos? woods) (->targeting-mod "Intervening woods" 1)
+      :else (->targeting-mod "No intervening woods" 0))))
+
+(defn calculate-distance-mod
+  [distance]
+  (let [distance-str (str "Target " distance " hexes away")]
+    (condp >= distance
+      3  (->targeting-mod distance-str 0)
+      12 (->targeting-mod distance-str 2)
+      21 (->targeting-mod distance-str 4)
+      30 (->targeting-mod distance-str 6)
+      (->targeting-mod distance-str ##Inf))))
+
+(defn height-checker
+  [origin target line]
+  (let [o-height (+ 2 (:elevation (first line)))
+        t-height (+ 2 (:elevation (last line)))]
+    (if (<= (count line) 2)
+      false
+      (loop [blocked? false
+             current (first line)
+             l (rest line)]
+        (if (or blocked? (= (count l) 1))
+          blocked?
+          (recur (cond
+                   (hex/same-hex origin current)   (>= (:elevation current) o-height)
+                   (hex/same-hex target (first l)) (>= (:elevation current) t-height)
+                   :else (and (>= (:elevation current) o-height) (>= (:elevation current) t-height)))
+                 (first l)
+                 (rest l)))))))
+
+(defn vector-subtract [v1 v2]
+  (mapv - v1 v2))
+
+(defn cross-product-2d [v1 v2]
+  (- (* (first v1) (second v2)) (* (second v1) (first v2))))
+
+(defn line-between-points? [p1 p2 cp op]
+  (let [v-line (vector-subtract p2 p1)
+        v-cp (vector-subtract cp p1)
+        v-op (vector-subtract op p1)
+        cross1 (cross-product-2d v-line v-cp)
+        cross2 (cross-product-2d v-line v-op)]
+    ;; The sign of cross2 tells us which "side" of the line op is on.
+    ;; If cross2 is 0, then op is on the line.
+    (if (< (abs cross2) 1)
+      ;; In which case, we return true.
+      true
+      ; Otherwise, check if cp and op have opposite signs (i.e. are on opposite sides of the line).
+      (not (pos? (* cross1 cross2))))))
+
+(defn is-behind?
+  "Detect if a hex is 'behind' a given hex-side."
+  [this-hex other-hex side layout]
+  (let [this-pixel (hex/hex->pixel this-hex layout)
+        points (hex/points this-hex layout)
+        points-list (get-in movement/directions [side :points])
+        p1 [(nth points (first points-list)) (nth points (second points-list))]
+        p2 [(nth points (nth points-list 2)) (nth points (nth points-list 3))]
+        other-hex (hex/hex->pixel other-hex layout)]
+    (line-between-points? p1 p2 [(:x this-pixel) (:y this-pixel)] [(:x other-hex) (:y other-hex)])))
+
+(defn amm
+  [unit]
+  (condp = (movement/selected-or-default unit)
+    :move/immobilized (->targeting-mod "Attacker immobile" -1)
+    :move/stand-still (->targeting-mod "Attacker stood still" -1)
+    :move/jump (->targeting-mod "Attacker stood still" 2)
+    (->targeting-mod "Attacker moved" 0)))
+
+(defn targeting-tmm
+  [unit]
+  (->targeting-mod "Target movement" (movement/modified-tmm unit)))
+
+(defn ->targeting
+  ([attacker target board layout attack]
+   (let [atk-hex (board/find-hex (movement/destination-or-location attacker) board)
+         tgt-hex (board/find-hex (:unit/location target) board)
+         line (board/line atk-hex tgt-hex board)
+         distance (hex/distance atk-hex tgt-hex)
+         attack-data (s/assert :targeting/attack-data
+                               {:targeting/skill (->targeting-mod "Pilot skill" (get-in attacker [:unit/pilot :pilot/skill]))
+                                :targeting/fc-damage (->targeting-mod "Fire-control damage" (* (damage/crit-count attacker :crits/fire-control) 2))
+                                :targeting/amm (amm attacker)
+                                :targeting/tmm (targeting-tmm target)
+                                :targeting/heat (if (s/valid? :attack/melee-types attack)
+                                                  (->targeting-mod "No heat applied" 0)
+                                                  (->targeting-mod "Attacker heat" (:unit/current-heat attacker)))
+                                :targeting/los (if (height-checker attacker target line)
+                                                 (->targeting-mod "Line of sight blocked" ##Inf)
+                                                 (->targeting-mod "Clear line of sight" 0))
+                                :targeting/woods (woods-mod line)
+                                :targeting/range-mod (calculate-distance-mod distance)})
+         damage (print-damage attacker attack distance)
+         firing-solution (s/assert :targeting/firing-solution
+                                   {:targeting/attacker attacker
+                                    :targeting/target target
+                                    :targeting/attack-type attack
+                                    :targeting/attack-data attack-data
+                                    :targeting/distance distance
+                                    :targeting/rear-attack? (is-behind? tgt-hex atk-hex (movement/rear target) layout)
+                                    :targeting/damage damage})]
+     {attack firing-solution}))
+  ([{:keys [atk-type] :as attacker} target board layout]
+   (->targeting attacker target board layout atk-type)))
+
+(defn calculate-to-hit
+  [{:keys [targeting/attack-data]}]
+  (let [data (reduce + (map #(get % :targeting/value 0) (vals attack-data)))]
+    data))
+
+(defn attack-roll-parser
+  [m]
+  (if (neg? (:targeting/value m 0))
+    (str "- " (abs (:targeting/value m 0)) " (" (:targeting/description m) ") ")
+    (str "+ " (:targeting/value m 0) " (" (:targeting/description m) ") ")))
+
+(defn print-attack-roll
+  ([attack-roll]
+   (print-attack-roll attack-roll true))
+  ([{:keys [targeting/attack-data] :as attack-roll} detailed?]
+   (if-let [failed (first (filter #(= ##Inf (:targeting/value %)) (vals attack-data)))]
+     (:targeting/description failed)
+     (let [to-hit (calculate-to-hit attack-roll)
+           to-hit-str (str "To Hit: " to-hit " (" (get utils/probabilities to-hit) "%)")]
+       (if detailed?
+         (string/trim (str to-hit-str ": " (reduce str (map attack-roll-parser (vals attack-data)))))
+         (string/trim to-hit-str))))))
+
+(defn attack-confirmation-choices
+  [attacker target board layout]
+  (into {} (map #(->targeting attacker target board layout %) (keys (:unit/attacks attacker)))))
 
 (defn roll-damage
-  ([attacks attack range rear-attack?]
-   (let [damage-str (print-damage attacks attack range)
-         damage (if (and (str/ends-with? damage-str "*") (<= 4 (utils/roll-die)))
+  ([damage rear-attack?]
+   (let [damage (if (and (string/ends-with? damage "*") (<= 4 (utils/roll-die)))
                   1
-                  (Integer/parseInt damage-str))]
+                  (Integer/parseInt damage))]
      (if rear-attack?
        (inc damage)
        damage)))
-  ([attacks attack tmm target-size rear-attack?]
+  ([unit attack tmm target-size rear-attack?]
    (let [dmg (condp = attack
-               :dfa (calc-dfa-damage attacks tmm)
-               :charge (calc-charge-damage attacks tmm)
+               :dfa (calc-dfa-damage (:unit/size unit) tmm)
+               :charge (calc-charge-damage tmm (:unit/size unit))
                :self-charge (calc-self-charge tmm target-size)
-               :self-dfa (calc-self-dfa attacks attack)
-               :missed-dfa (calc-self-dfa attacks attack))]
+               :self-dfa (calc-self-dfa (:unit/size unit) true)
+               :missed-dfa (calc-self-dfa (:unit/size unit) false))]
      (if rear-attack?
        (inc dmg)
        dmg))))
+
+(defn dfa-attack
+  [{:keys [targeting/attacker targeting/target targeting/attack-type targeting/rear-attack?] :as atk-data} to-hit]
+  (let [target-number (calculate-to-hit atk-data)
+        attacker-tmm (movement/modified-tmm attacker)
+        attacker-result (damage/take-damage attacker (roll-damage attacker (if (<= target-number to-hit) :self-dfa :missed-dfa) attacker-tmm (:unit/size attacker) false) false)
+        target-result (damage/take-damage target (roll-damage attacker :dfa attacker-tmm (:unit/size target) rear-attack?) (= to-hit 12))]
+    (mu/log ::charge-attack
+            :hit? (<= target-number 12)
+            :targeting-data atk-data
+            :to-hit to-hit
+            :attacker (:unit/id attacker)
+            :attacker-damage attacker-result
+            :target-damage target-result
+            :target (:unit/id target))
+    {:combat-result/attack-type attack-type
+     :combat-result/attacker (:unit/id attacker)
+     :combat-result/target (:unit/id target)
+     :combat-result/target-number target-number
+     :combat-result/roll to-hit
+     :combat-result/attacker-result attacker-result
+     :combat-result/target-result target-result
+     :combat-result/changes (utils/concatv
+                             [[[:units (:unit/id attacker) :unit/acted?] true]
+                              [[:units (:unit/id attacker) :unit/attacked?] true]]
+                             (:result attacker-result)
+                             (if (<= target-number to-hit) (:result target-result) []))}))
+
+(defn charge-attack
+  [{:keys [targeting/attacker targeting/target targeting/attack-type targeting/rear-attack?] :as atk-data} to-hit]
+  (let [target-number (calculate-to-hit atk-data)
+        attacker-tmm (movement/modified-tmm attacker)
+        attacker-result (damage/take-damage attacker (roll-damage attacker :self-charge attacker-tmm (:unit/size target) false) false)
+        target-result (damage/take-damage target (roll-damage attacker :charge attacker-tmm (:unit/size target) rear-attack?) (= to-hit 12))]
+    {:combat-result/attack-type attack-type
+     :combat-result/attacker (:unit/id attacker)
+     :combat-result/target (:unit/id target)
+     :combat-result/target-number target-number
+     :combat-result/roll to-hit
+     :combat-result/attacker-result attacker-result
+     :combat-result/target-result target-result
+     :combat-result/changes (utils/concatv
+                             [[[:units (:unit/id attacker) :unit/acted?] true]
+                              [[:units (:unit/id attacker) :unit/attacked?] true]]
+                             (if (<= target-number to-hit) (:result attacker-result) [])
+                             (if (<= target-number to-hit) (:result target-result) []))}))
+
+(defn basic-attack
+  [{:keys [targeting/attacker targeting/attack-type targeting/target targeting/damage targeting/rear-attack?] :as atk-data} to-hit]
+  (let [damage (roll-damage damage rear-attack?)
+        target-number (calculate-to-hit atk-data)
+        damage-result (damage/take-damage target damage (= to-hit 12))
+        combat-result {:combat-result/attack attack-type
+                       :combat-result/attacker (:unit/id attacker)
+                       :combat-result/target (:unit/id target)
+                       :combat-result/target-number target-number
+                       :combat-result/roll to-hit
+                       :combat-result/damage damage
+                       :combat-result/changes [[[:units (:unit/id attacker) :unit/acted?] true]
+                                               [[:units (:unit/id attacker) :unit/attacked?] true]]}]
+    (if (<= target-number to-hit)
+      (-> combat-result
+          (assoc :combat-result/crits (:crits damage-result))
+          (assoc :combat-result/armor-damage (:armor-damage damage-result))
+          (assoc :combat-result/penetration (:penetration damage-result))
+          (update :combat-result/changes utils/concatv (:result damage-result)))
+      combat-result)))
+
+(defn heat-attack
+  [{:keys [targeting/attacker targeting/target targeting/damage] :as atk-data} to-hit]
+  (let [damage (roll-damage damage false)
+        target-number (calculate-to-hit atk-data)
+        damage-result (damage/heat-damage target damage)
+        combat-result {:combat-result/attack (:targeting/attack-type atk-data)
+                       :combat-result/attacker (:unit/id attacker)
+                       :combat-result/target (:unit/id target)
+                       :combat-result/target-number target-number
+                       :combat-result/roll to-hit
+                       :combat-result/damage damage
+                       :combat-result/changes [[[:units (:unit/id attacker) :unit/acted?] true]
+                                               [[:units (:unit/id attacker) :unit/attacked?] true]]}]
+    (if (<= target-number to-hit)
+      (-> combat-result
+          (assoc :combat-result/crits nil)
+          (assoc :combat-result/heat-damage damage)
+          (update :combat-result/changes utils/concatv damage-result))
+      combat-result)))
+
+(defn make-attack
+  ([{:keys [targeting/attack-type] :as atk-data} to-hit]
+   (condp = attack-type
+     :attack/charge (charge-attack atk-data to-hit)
+     :attack/dfa (dfa-attack atk-data to-hit)
+     :attack/heat (heat-attack atk-data to-hit)
+     (basic-attack atk-data to-hit)))
+  ([attack-data]
+   (make-attack attack-data (utils/roll2d))))
+

@@ -13,7 +13,7 @@
 (defn parse-value
   [kword ability-str default]
   (let [[_ value] (re-matches #"(\d+)" ability-str)]
-    {kword {:value (if value (parse-double value) default) :output ability-str}}))
+    {kword {:value (if value (parse-double value) default) :ability/output ability-str}}))
 
 (defn parse-damage [range damage-str]
   {range (if (= damage-str "-") 0 (Integer/parseInt (str/replace  damage-str "*" "")))
@@ -28,181 +28,181 @@
 (defn parse-ability [ability-str]
   (cond
     (re-matches #"ECS" ability-str)
-    {:ecs {:output ability-str}}
+    {:ecs {:ability/output ability-str}}
 
     (re-matches #"QV" ability-str)
-    {:qv {:output ability-str}}
+    {:qv {:ability/output ability-str}}
 
     (re-matches #"IRA" ability-str)
-    {:ira {:output ability-str}}
+    {:ira {:ability/output ability-str}}
 
     (re-matches #"ABA" ability-str)
-    {:aba {:output ability-str}}
+    {:aba {:ability/output ability-str}}
 
     (re-matches #"RHS" ability-str)
-    {:rhs {:output ability-str}}
+    {:rhs {:ability/output ability-str}}
 
     (re-matches #"RBT" ability-str)
-    {:rbt {:output ability-str}}
+    {:rbt {:ability/output ability-str}}
 
     (re-matches #"DN" ability-str)
-    {:dn {:output ability-str}}
+    {:dn {:ability/output ability-str}}
 
     (re-matches #"ES" ability-str)
-    {:es {:output ability-str}}
+    {:es {:ability/output ability-str}}
 
     (re-matches #"MAS" ability-str)
-    {:mas {:output ability-str}}
+    {:mas {:ability/output ability-str}}
 
     (re-matches #"NOVA" ability-str)
-    {:nova {:output ability-str}}
+    {:nova {:ability/output ability-str}}
 
     (re-matches #"SHLD" ability-str)
-    {:shld {:output ability-str}}
+    {:shld {:ability/output ability-str}}
 
     (re-matches #"ARM" ability-str)
-    {:arm {:output ability-str}}
+    {:arm {:ability/output ability-str}}
 
     (re-matches #"I-TSM" ability-str)
-    {:itsm {:output ability-str}}
+    {:itsm {:ability/output ability-str}}
 
     (re-matches #"FF" ability-str)
-    {:ff {:output ability-str}}
+    {:ff {:ability/output ability-str}}
 
     (re-matches #"LMAS" ability-str)
-    {:lmas {:output ability-str}}
+    {:lmas {:ability/output ability-str}}
 
     (re-matches #"LECM" ability-str)
-    {:lecm {:output ability-str}}
+    {:lecm {:ability/output ability-str}}
 
     (re-matches #"FR" ability-str)
-    {:fr {:output ability-str}}
+    {:fr {:ability/output ability-str}}
 
     (re-matches #"MEC" ability-str)
-    {:mec {:output ability-str}}
+    {:mec {:ability/output ability-str}}
 
     (re-matches #"XMEC" ability-str)
-    {:xmec {:output ability-str}}
+    {:xmec {:ability/output ability-str}}
 
     (re-matches #"MTN" ability-str)
-    {:mtn {:output ability-str}}
+    {:mtn {:ability/output ability-str}}
 
     (re-matches #"TSI" ability-str)
-    {:tsi {:output ability-str}}
+    {:tsi {:ability/output ability-str}}
 
     (re-matches #"PAR" ability-str)
-    {:par {:output ability-str}}
+    {:par {:ability/output ability-str}}
 
     (re-matches #"TRN" ability-str)
-    {:trn {:output ability-str}}
+    {:trn {:ability/output ability-str}}
 
     (re-matches #"UMU" ability-str)
-    {:umu {:output ability-str}}
+    {:umu {:ability/output ability-str}}
 
     (re-matches #"AM" ability-str)
-    {:am {:output ability-str}}
+    {:am {:ability/output ability-str}}
 
     (re-matches #"GLD" ability-str)
-    {:gld {:output ability-str}}
+    {:gld {:ability/output ability-str}}
 
     (re-matches #"MCS" ability-str)
-    {:mcs {:output ability-str}}
+    {:mcs {:ability/output ability-str}}
 
     (re-matches #"UCS" ability-str)
-    {:ucs {:output ability-str}}
+    {:ucs {:ability/output ability-str}}
 
     (re-matches #"VSTOL" ability-str)
-    {:vstol {:output ability-str}}
+    {:vstol {:ability/output ability-str}}
 
     (re-matches #"CASEII" ability-str)
-    {:caseii {:output ability-str}}
+    {:caseii {:ability/output ability-str}}
 
     (re-matches #"CASE" ability-str)
-    {:case {:output ability-str}}
+    {:case {:ability/output ability-str}}
 
     (re-matches #"AECM" ability-str)
-    {:aecm {:output ability-str}}
+    {:aecm {:ability/output ability-str}}
 
     (re-matches #"ECM" ability-str)
-    {:ecm {:output ability-str}}
+    {:ecm {:ability/output ability-str}}
 
     (re-matches #"SAW" ability-str)
-    {:saw {:output ability-str}}
+    {:saw {:ability/output ability-str}}
 
     (re-matches #"DUN" ability-str)
-    {:dun {:output ability-str}}
+    {:dun {:ability/output ability-str}}
 
     (re-matches #"BRID" ability-str)
-    {:brid {:output ability-str}}
+    {:brid {:ability/output ability-str}}
 
     (re-matches #"BT" ability-str)
-    {:bt {:output ability-str}}
+    {:bt {:ability/output ability-str}}
 
     (re-matches #"MSW" ability-str)
-    {:msw {:output ability-str}}
+    {:msw {:ability/output ability-str}}
 
     (re-matches #"DRO" ability-str)
-    {:dro {:output ability-str}}
+    {:dro {:ability/output ability-str}}
 
     (re-matches #"WAT" ability-str)
-    {:wat {:output ability-str}}
+    {:wat {:ability/output ability-str}}
 
     (re-matches #"BRA" ability-str)
-    {:bra {:output ability-str}}
+    {:bra {:ability/output ability-str}}
 
     (re-matches #"CR" ability-str)
-    {:cr {:output ability-str}}
+    {:cr {:ability/output ability-str}}
 
     (re-matches #"RAMS" ability-str)
-    {:rams {:output ability-str}}
+    {:rams {:ability/output ability-str}}
 
     (re-matches #"RCA" ability-str)
-    {:rca {:output ability-str}}
+    {:rca {:ability/output ability-str}}
 
     (re-matches #"REL" ability-str)
-    {:rel {:output ability-str}}
+    {:rel {:ability/output ability-str}}
 
     (re-matches #"RFA" ability-str)
-    {:rfa {:output ability-str}}
+    {:rfa {:ability/output ability-str}}
 
     (re-matches #"SOA" ability-str)
-    {:soa {:output ability-str}}
+    {:soa {:ability/output ability-str}}
 
     (re-matches #"SEAL" ability-str)
-    {:seal {:output ability-str}}
+    {:seal {:ability/output ability-str}}
 
     (re-matches #"MFB" ability-str)
-    {:mfb {:output ability-str}}
+    {:mfb {:ability/output ability-str}}
 
     (re-matches #"AMP" ability-str)
-    {:amp {:output ability-str}}
+    {:amp {:ability/output ability-str}}
 
     (re-matches #"HTC" ability-str)
-    {:htc {:output ability-str}}
+    {:htc {:ability/output ability-str}}
 
     (re-matches #"HPG" ability-str)
-    {:hpg {:output ability-str}}
+    {:hpg {:ability/output ability-str}}
 
     (re-matches #"ENG" ability-str)
-    {:eng {:output ability-str}}
+    {:eng {:ability/output ability-str}}
 
     (re-matches #"LG" ability-str)
-    {:lg {:output ability-str}}
+    {:lg {:ability/output ability-str}}
 
     (re-matches #"ORO" ability-str)
-    {:oro {:output ability-str}}
+    {:oro {:ability/output ability-str}}
 
     (re-matches #"BH" ability-str)
-    {:bh {:output ability-str}}
+    {:bh {:ability/output ability-str}}
 
     (re-matches #"AFC" ability-str)
-    {:afc {:output ability-str}}
+    {:afc {:ability/output ability-str}}
 
     (re-matches #"BFC" ability-str)
-    {:bfc {:output ability-str}}
+    {:bfc {:ability/output ability-str}}
 
     (re-matches #"BAR" ability-str)
-    {:bar {:output ability-str}}
+    {:bar {:ability/output ability-str}}
 
     (re-matches #"CNARC.*?" ability-str)
     (parse-value :cnarc ability-str 1)
@@ -214,61 +214,61 @@
     (parse-value :snarc ability-str 1)
 
     (re-matches #"ATMO" ability-str)
-    {:atmo {:output ability-str}}
+    {:atmo {:ability/output ability-str}}
 
     (re-matches #"EE" ability-str)
-    {:ee {:output ability-str}}
+    {:ee {:ability/output ability-str}}
 
     (re-matches #"AMS" ability-str)
-    {:ams {:output ability-str}}
+    {:ams {:ability/output ability-str}}
 
     (re-matches #"MEL" ability-str)
-    {:mel {:output ability-str}}
+    {:mel {:ability/output ability-str}}
 
     (re-matches #"TSM" ability-str)
-    {:tsm {:output ability-str}}
+    {:tsm {:ability/output ability-str}}
 
     (re-matches #"TAG" ability-str)
-    {:tag {:output ability-str}}
+    {:tag {:ability/output ability-str}}
 
     (re-matches #"STL" ability-str)
-    {:stl {:output ability-str}}
+    {:stl {:ability/output ability-str}}
 
     (re-matches #"OMNI" ability-str)
-    {:omni {:output ability-str}}
+    {:omni {:ability/output ability-str}}
 
     (re-matches #"LPRB" ability-str)
-    {:lprb {:output ability-str}}
+    {:lprb {:ability/output ability-str}}
 
     (re-matches #"PRB" ability-str)
-    {:prb {:output ability-str}}
+    {:prb {:ability/output ability-str}}
 
     (re-matches #"RCN" ability-str)
-    {:rcn {:output ability-str}}
+    {:rcn {:ability/output ability-str}}
 
     (re-matches #"ARS" ability-str)
-    {:ars {:output ability-str}}
+    {:ars {:ability/output ability-str}}
 
     (re-matches #"FC" ability-str)
-    {:fc {:output ability-str}}
+    {:fc {:ability/output ability-str}}
 
     (re-matches #"LTAG" ability-str)
-    {:ltag {:output ability-str}}
+    {:ltag {:ability/output ability-str}}
 
     (re-matches #"ENE" ability-str)
-    {:ene {:output ability-str}}
+    {:ene {:ability/output ability-str}}
 
     (re-matches #"OVL" ability-str)
-    {:ovl {:output ability-str}}
+    {:ovl {:ability/output ability-str}}
 
     (re-matches #"SRCH" ability-str)
-    {:srch {:output ability-str}}
+    {:srch {:ability/output ability-str}}
 
     (re-matches #"BIM.*" ability-str)
-    {:bim {:output ability-str}}
+    {:bim {:ability/output ability-str}}
 
     (re-matches #"LAM.*" ability-str)
-    {:lam {:output ability-str}}
+    {:lam {:ability/output ability-str}}
 
     (re-matches #"BHJ(\d+)?" ability-str)
     (parse-value :bhj ability-str 1)
@@ -352,107 +352,107 @@
     (re-matches #"IF(\d+|\d+\*|-)" ability-str)
     (let [[_ value] (re-matches #"IF(\d+|\d+\*|-)" ability-str)
           damage (parse-damage :value value)
-          inner-map (merge {:output ability-str} damage)]
+          inner-map (merge {:ability/output ability-str} damage)]
       {:if inner-map})
 
     (re-matches #"TOR(\d+|\d+\*|-)/(\d+|\d+\*|-)/(\d+|\d+\*|-)" ability-str)
     (let [[_ s m l] (re-matches #"TOR(\d+|\d+\*|-)/(\d+|\d+\*|-)/(\d+|\d+\*|-)" ability-str)
           damage (parse-damages s m l)
-          inner-map (merge {:output ability-str} damage)]
+          inner-map (merge {:ability/output ability-str} damage)]
       {:tor inner-map})
 
     (re-matches #"HT(\d+|\d+\*|-)/(\d+|\d+\*|-)/(\d+|\d+\*|-)" ability-str)
     (let [[_ s m l] (re-matches #"HT(\d+|\d+\*|-)/(\d+|\d+\*|-)/(\d+|\d+\*|-)" ability-str)
           damage (parse-damages s m l)
-          inner-map (merge {:output ability-str} damage)]
-      {:ht inner-map})
+          inner-map (merge {:ability/output ability-str} damage)]
+      {:attack/ht inner-map})
 
     (re-matches #"AC(\d+|\d+\*|-)/(\d+|\d+\*|-)/(\d+|\d+\*|-)" ability-str)
     (let [[_ s m l] (re-matches #"AC(\d+|\d+\*|-)/(\d+|\d+\*|-)/(\d+|\d+\*|-)" ability-str)
           damage (parse-damages s m l)
-          inner-map (merge {:output ability-str} damage)]
-      {:ac inner-map})
+          inner-map (merge {:ability/output ability-str} damage)]
+      {:attack/ac inner-map})
 
     (re-matches #"FLK(\d+|\d+\*|-)/(\d+|\d+\*|-)/(\d+|\d+\*|-)" ability-str)
     (let [[_ s m l] (re-matches #"FLK(\d+|\d+\*|-)/(\d+|\d+\*|-)/(\d+|\d+\*|-)" ability-str)
           damage (parse-damages s m l)
-          inner-map (merge {:output ability-str} damage)]
-      {:flk inner-map})
+          inner-map (merge {:ability/output ability-str} damage)]
+      {:attack/flk inner-map})
 
     (re-matches #"LRM(\d+|\d+\*|-)/(\d+|\d+\*|-)/(\d+|\d+\*|-)" ability-str)
     (let [[_ s m l] (re-matches #"LRM(\d+|\d+\*|-)/(\d+|\d+\*|-)/(\d+|\d+\*|-)" ability-str)
           damage (parse-damages s m l)
-          inner-map (merge {:output ability-str} damage)]
-      {:lrm inner-map})
+          inner-map (merge {:ability/output ability-str} damage)]
+      {:attack/lrm inner-map})
 
     (re-matches #"IATM(\d+|\d+\*|-)/(\d+|\d+\*|-)/(\d+|\d+\*|-)/(\d+|\d+\*|-)?" ability-str)
-    {::type :iatm :output ability-str}
+    {::type :iatm :ability/output ability-str}
     ; (let [[_ s m l] (re-matches #"ITAM(\d+|\d+\*|-)/(\d+|\d+\*|-)/(\d+|\d+\*|-)" ability-str)]
-    ;   (merge {::type :itam :output ability-str} (parse-damages s m l)))
+    ;   (merge {::type :itam :ability/output ability-str} (parse-damages s m l)))
 
     (re-matches #"SRM(\d+|\d+\*|-)/(\d+|\d+\*|-)" ability-str)
     (let [[_ s m] (re-matches #"SRM(\d+|\d+\*|-)/(\d+|\d+\*|-)" ability-str)
           damage (parse-damages s m "0")
-          inner-map (merge {:output ability-str} damage)]
-      {:srm inner-map})
+          inner-map (merge {:ability/output ability-str} damage)]
+      {:attack/srm inner-map})
 
     (re-matches #"REAR(\d+\*?|-)/(\d+\*?|-)/(\d+\*?|-)" ability-str)
     (let [[_ s m l] (re-matches #"REAR(\d+\*?|-)/(\d+\*?|-)/(\d+\*?|-)" ability-str)
           damage (parse-damages s m l)
-          inner-map (merge {:output ability-str} damage)]
-      {:rear inner-map})
+          inner-map (merge {:ability/output ability-str} damage)]
+      {:attack/rear inner-map})
 
     (re-matches #"TUR\((.*?)\)" ability-str)
-    {:tur {:output ability-str}}
+    {:tur {:ability/output ability-str}}
     ; (let [[_ content] (re-matches #"TUR\((.*?)\)" ability-str)
     ;       [range abilities] (str/split content #", " 2)
     ;       range-map (parse-range range)]
     ;   (if abilities
-    ;     (assoc {::type :tur} :abilities (parse-ability abilities) :s (:s range-map) :m (:m range-map) :l (:l range-map) :output ability-str)
-    ;     (assoc {::type :tur} :s (:s range-map) :m (:m range-map) :l (:l range-map) :output ability-str)))
+    ;     (assoc {::type :tur} :abilities (parse-ability abilities) :s (:s range-map) :m (:m range-map) :l (:l range-map) :ability/output ability-str)
+    ;     (assoc {::type :tur} :s (:s range-map) :m (:m range-map) :l (:l range-map) :ability/output ability-str)))
 
     (re-matches #"ARTCM5-(\d+)" ability-str)
     (let [[_ value] (re-matches #"ARTCM5-(\d+)" ability-str)]
-      {:artcm5 {:value (Integer/parseInt value) :output ability-str}})
+      {:artcm5 {:value (Integer/parseInt value) :ability/output ability-str}})
 
     (re-matches #"ARTAIS-(\d+)" ability-str)
     (let [[_ value] (re-matches #"ARTAIS-(\d+)" ability-str)]
-      {:artais {:value (Integer/parseInt value) :output ability-str}})
+      {:artais {:value (Integer/parseInt value) :ability/output ability-str}})
 
     (re-matches #"ARTLT-(\d+)" ability-str)
     (let [[_ value] (re-matches #"ARTLT-(\d+)" ability-str)]
-      {:artlt {:value (Integer/parseInt value) :output ability-str}})
+      {:artlt {:value (Integer/parseInt value) :ability/output ability-str}})
 
     (re-matches #"ARTLTC-(\d+)" ability-str)
     (let [[_ value] (re-matches #"ARTLTC-(\d+)" ability-str)]
-      {:artltc {:value (Integer/parseInt value) :output ability-str}})
+      {:artltc {:value (Integer/parseInt value) :ability/output ability-str}})
 
     (re-matches #"ARTAC-(\d+)" ability-str)
     (let [[_ value] (re-matches #"ARTAC-(\d+)" ability-str)]
-      {:artac {:value (Integer/parseInt value) :output ability-str}})
+      {:artac {:value (Integer/parseInt value) :ability/output ability-str}})
 
     (re-matches #"ARTS-(\d+)" ability-str)
     (let [[_ value] (re-matches #"ARTS-(\d+)" ability-str)]
-      {:arts {:value (Integer/parseInt value) :output ability-str}})
+      {:arts {:value (Integer/parseInt value) :ability/output ability-str}})
 
     (re-matches #"ARTSC-(\d+)" ability-str)
     (let [[_ value] (re-matches #"ARTSC-(\d+)" ability-str)]
-      {:artsc {:value (Integer/parseInt value) :output ability-str}})
+      {:artsc {:value (Integer/parseInt value) :ability/output ability-str}})
 
     (re-matches #"ARTT-(\d+)" ability-str)
     (let [[_ value] (re-matches #"ARTT-(\d+)" ability-str)]
-      {:artt {:value (Integer/parseInt value) :output ability-str}})
+      {:artt {:value (Integer/parseInt value) :ability/output ability-str}})
 
     (re-matches #"ARTTC-(\d+)" ability-str)
     (let [[_ value] (re-matches #"ARTTC-(\d+)" ability-str)]
-      {:arttc {:value (Integer/parseInt value) :output ability-str}})
+      {:arttc {:value (Integer/parseInt value) :ability/output ability-str}})
 
     (re-matches #"ARTBA-(\d+)" ability-str)
     (let [[_ value] (re-matches #"ARTBA-(\d+)" ability-str)]
-      {:artba {:value (Integer/parseInt value) :output ability-str}})
+      {:artba {:value (Integer/parseInt value) :ability/output ability-str}})
 
     :else
-    {:unknown {:output ability-str}}))
+    {:unknown {:ability/output ability-str}}))
 
 (defn parse-abilities [input]
   (let [regex #",\s*(?![^()]*\))"
@@ -463,7 +463,7 @@
 
 (defn print-ability
   [abilities ability]
-  (or (:output (has? abilities ability)) "None"))
+  (str (or (:ability/output (has? abilities ability)) "None") ", "))
 
 (defn print-abilities
   [abilities]

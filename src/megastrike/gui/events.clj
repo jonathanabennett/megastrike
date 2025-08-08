@@ -1,8 +1,6 @@
 (ns megastrike.gui.events
   (:require
    [cljfx.api :as fx]
-   [clojure.java.io :as io]
-   [clojure.pprint :as pprint]
    [com.brunobonacci.mulog :as mu]
    [megastrike.gui.subs :as subs]
    [megastrike.logs :as logs]
@@ -115,7 +113,8 @@
 
 (defmethod event-handler ::turn-button-clicked
   [{:keys [fx/context]}]
-  {:context (fx/swap-context context assoc :turn-flag true)})
+  (prn "Turn button clicked.")
+  {:context (fx/swap-context context update :turn-flag not)})
 
 (defmethod event-handler ::set-movement-mode
   [{:keys [fx/context unit mode]}]
@@ -143,10 +142,10 @@
   [{:keys [fx/context selected]}]
   (let [ctx (get-in context [:internal :attack-dialog])]
     (cond
-      (= (:attack selected) nil)
+      (= (:targeting/attack-type selected) nil)
       {:context (fx/swap-context context assoc-in [:internal :attack-dialog] (assoc ctx :showing false :items []))}
 
-      (contains? #{:charge :dfa} (:attack selected))
+      (contains? #{:attack/charge :attack/dfa} (:attack selected))
       {:context (fx/swap-context context assoc-in [:internal :attack-dialog] (assoc ctx :showing false :items []))
        :dispatch {:event-type ::set-attack :targeting selected}}
 

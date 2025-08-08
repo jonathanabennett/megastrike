@@ -13,39 +13,39 @@
 
 (defn load-resource
   "Helper function to use `io/resource` to get files."
-  [location name]
+  [location fname]
   (if (= location :resources)
-    (io/resource name)
-    (io/file data-directory name)))
+    (io/resource fname)
+    (io/file data-directory fname)))
 
 (defn strip-quotes
   "Strips out stray escaped quotes."
-  [str]
-  (string/replace str #"\"" ""))
+  [s]
+  (string/replace s #"\"" ""))
 
 (defn replace-spaces
   "Replace spaces with `-'."
-  [str]
-  (string/replace str " " "-"))
+  [s]
+  (string/replace s " " "-"))
 
 (defn correct-range-brackets
   "Changes range brackets to be in a format which can be read by combat_unit.clj"
-  [str]
-  (string/replace (string/replace str "/-" "-0") "/" "-"))
+  [s]
+  (string/replace (string/replace s "/-" "-0") "/" "-"))
 
 (defn remove-parens
   "Removes all parents from a string."
-  [str]
-  (string/replace str #"[\(\)]" ""))
+  [s]
+  (string/replace s #"[\(\)]" ""))
 
 (defn keyword-maker
-  "Take a string with spaces, strips them out, and turns it into a keyword"
-  [str]
-  (let [ret (keyword (string/lower-case
-                      (remove-parens
-                       (correct-range-brackets
-                        (replace-spaces (string/trim str))))))]
-    (if (= ret (keyword ""))
+  "Take a string with spaces, strips them out, and turns it into a string suitable for keywording"
+  [s]
+  (let [ret (string/lower-case
+             (remove-parens
+              (correct-range-brackets
+               (replace-spaces (string/trim s)))))]
+    (if (= ret "")
       nil
       ret)))
 
@@ -62,3 +62,13 @@
    (+ (roll-die) (roll-die) mods))
   ([]
    (roll2d 0)))
+
+(defn concatv [& xs]
+  (vec (apply concat xs)))
+
+(defn regex-maker
+  "Unit names frequently have parens in them, this is problematic for searching with 
+  regexes so they can be case-insensitive. This sanitizes strings and converts them 
+  into patterns."
+  [s]
+  (re-pattern (str "(?i)\\Q" s "\\E")))

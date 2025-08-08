@@ -2,9 +2,8 @@
   (:require
    [cljfx.api :as fx]
    [clojure.string :as str]
-   [megastrike.battle-force :as battle-force]
    [megastrike.board :as board]
-   [megastrike.combat-unit :as cu]))
+   [megastrike.movement :as movement]))
 
 (defn title-string
   [context]
@@ -13,7 +12,7 @@
         phase (fx/sub-val context :current-phase)
         turn (fx/sub-val context :turn-number)]
     (if (and bf phase turn)
-      (str "Megastrike | " (battle-force/to-str bf) " | " (str/capitalize (name phase)) " Phase | Turn #" turn)
+      (str "Megastrike | " (:unit-group/name bf) " | " (str/capitalize (name phase)) " Phase | Turn #" turn)
       "Megastrike")))
 
 (defn units
@@ -30,10 +29,6 @@
   "Returns the actual unit which corresponds to the ID returned by `active-id'."
   [context]
   (get (units context) (active-id context)))
-
-(defn deployed-units
-  [context]
-  (filter cu/deployed? (vals (units context))))
 
 (defn forces
   [context]
@@ -57,11 +52,11 @@
 
 (defn current-forces
   [context]
-  (filter #(= (cu/get-force %) (first (turn-order context))) (vals (units context))))
+  (filter #(= (:unit/battle-force %) (first (turn-order context))) (vals (units context))))
 
 (defn units-by-force
   [context]
-  (group-by cu/get-force (vals (units context))))
+  (group-by :unit/battle-force (vals (units context))))
 
 (defn layout
   [context]

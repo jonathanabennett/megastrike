@@ -108,9 +108,9 @@
 
 (defn lerp
   [hex1 hex2 step]
-  {:p (linear-interpolation (:p hex1) (:p hex2) step)
-   :q (linear-interpolation (:q hex1) (:q hex2) step)
-   :r (linear-interpolation (:r hex1) (:r hex2) step)})
+  {:hex/p (linear-interpolation (:hex/p hex1) (:hex/p hex2) step)
+   :hex/q (linear-interpolation (:hex/q hex1) (:hex/q hex2) step)
+   :hex/r (linear-interpolation (:hex/r hex1) (:hex/r hex2) step)})
 
 (defn line
   [hex1 hex2 board]
@@ -135,7 +135,7 @@
                 :neighbor neighbor
                 :mv-type mv-type)))
     (cond
-      (= mv-type :jump) 1
+      (= mv-type :move/jump) 1
       (and (get neighbor :stacking false) (not= (get neighbor :stacking false) unit-force)) ##Inf
       (> lvl-change 2) ##Inf
       (str/includes? terrain "woods") (+ (abs lvl-change) 2)
@@ -173,3 +173,65 @@
    (let [mapsheet (create-mapsheet width height)]
      {:tiles (:tiles mapsheet)
       :mapsheets [[mapsheet]]})))
+
+(defn get-board-dimensions
+  "Extract width and height from a board's mapsheets."
+  [board]
+  (let [mapsheets (flatten (:mapsheets board))
+        first-mapsheet (first mapsheets)]
+    {:width (:width first-mapsheet)
+     :height (:height first-mapsheet)}))
+
+(defn hex-distance-to-edge
+  "Calculate the minimum distance from a hex to any board edge using offset coordinates.
+   Returns the minimum distance to North, South, East, or West edge."
+  [hex board]
+  (let [offset-coords (hex/hex->offset hex)
+        {:keys [width height]} (get-board-dimensions board)
+        x (:x offset-coords)
+        y (:y offset-coords)]
+    (min 
+     ;; Distance to North edge (y = 1)
+     (dec y)
+     ;; Distance to South edge (y = height)
+     (- height y)
+     ;; Distance to West edge (x = 1)
+     (dec x)
+     ;; Distance to East edge (x = width)
+     (- width x))))
+
+(defn within-distance-of-edge?
+  "Check if a hex is within the specified distance of any board edge."
+  [hex board distance]
+  (<= (hex-distance-to-edge hex board) distance))
+
+(defn within-3-hexes-of-edge?
+  "Check if a hex is within 3 hexes of any board edge."
+  [hex board]
+  (within-distance-of-edge? hex board 3))
+
+(defn get-edge-proximity-info
+  "Get detailed information about a hex's proximity to board edges.
+   Returns a map with distances to each edge and whether it's within the specified distance."
+  [hex board max-distance]
+  (let [offset-coords (hex/hex->offset hex)
+        {:keys [width height]} (get-board-dimensions board)
+        x (:x offset-coords)
+        y (:y offset-coords)
+        north-dist (dec y)
+        south-dist (- height y)
+        west-dist (dec x)
+        east-dist (- width x)]
+    {:hex hex
+     :offset-coords offset-coords
+     :distances {:north north-dist
+                 :south south-dist
+                 :west west-dist
+                 :east east-dist}
+     :min-distance (min north-dist south-dist west-dist east-dist)
+     :within-distance (within-distance-of-edge? hex board max-distance)
+     :closest-edges (cond-> []
+                            (<= north-dist max-distance) (conj :north)
+                            (<= south-dist max-distance) (conj :south)
+                            (<= west-dist max-distance) (conj :west)
+                            (<= east-dist max-distance) (conj :east))}))
