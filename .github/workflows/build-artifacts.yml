@@ -18,7 +18,7 @@ jobs:
       - name: Build release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: { { github.event.release.tag_name } }
+          tag_name: ${{ github.event.release.tag_name }}
           files: megastrike_linux.tar.gz
           name: megastrike_${{ github.event.release.tag_name }}_amd64
 
@@ -35,7 +35,7 @@ jobs:
       - name: Build release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: { { github.event.release.tag_name } }
+          tag_name: ${{ github.event.release.tag_name }}
           files: megastrike_macos.tar.gz
           name: megastrike_${{ github.event.release.tag_name }}_macos
 
@@ -52,6 +52,6 @@ jobs:
       - name: Build release
         uses: softprops/action-gh-release@v1
         with:
-          tag_name: { { github.event.release.tag_name } }
+          tag_name: ${{ github.event.release.tag_name }}
           files: megastrike_win.zip
           name: megastrike_${{ github.event.release.tag_name }}_win
