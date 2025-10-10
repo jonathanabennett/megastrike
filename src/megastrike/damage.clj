@@ -21,11 +21,11 @@
 
 (defn remaining-structure
   [unit]
-  (- (get-in unit [:unit/structure :toughness/current]) (get-in unit [:unit/structure :toughness/unapplied])))
+  (- (get-in unit [:unit/structure :toughness/current]) (get-in unit [:unit/structure :toughness/unapplied] 0)))
 
 (defn remaining-armor
   [unit]
-  (- (get-in unit [:unit/armor :toughness/current]) (get-in unit [:unit/armor :toughness/unapplied])))
+  (- (get-in unit [:unit/armor :toughness/current]) (get-in unit [:unit/armor :toughness/unapplied] 0)))
 
 (defn health
   [unit]
@@ -108,7 +108,7 @@
 (defn heat-damage
   [unit new-heat]
   (let [unapplied-heat (get unit :unit/unapplied-heat 0)]
-    [[:units (:unit/id unit) :unit/unapplied-heat] (min (+ unapplied-heat new-heat) 2)]))
+    {:unit/id (:unit/id unit) :unit/unapplied-heat (min (+ unapplied-heat new-heat) 2)}))
 
 (defn take-damage
   ([unit damage]
@@ -125,12 +125,12 @@
            unapplied-crits (get-in unit [:unit/criticals :crits/unapplied] [])
            armor-damage (min (remaining-armor unit) damage)
            penetration (- damage armor-damage)
-           crits (roll-crits (pos? penetration) tac)]
+           crits (remove nil? (roll-crits (pos? penetration) tac))]
        {:crits crits
         :armor-damage armor-damage
         :penetration penetration
-        :result [[[:units (:unit/id unit) :unit/armor :toughness/unapplied] (+ unapplied-armor armor-damage)]
-                 [[:units (:unit/id unit) :unit/structure :toughness/unapplied] (+ unapplied-structure penetration)]
-                 [[:units (:unit/id unit) :unit/criticals :crits/unapplied]
-                  (utils/concatv unapplied-crits (remove nil? crits))]]}))))
+        :result {:unit/id (:unit/id unit)
+                 :unit/armor {:toughness/unapplied (+ unapplied-armor armor-damage)}
+                 :unit/structure {:toughness/unapplied (+ unapplied-structure penetration)}
+                 :unit/criticals {:crits/unapplied (utils/concatv unapplied-crits crits)}}}))))
 
