@@ -23,7 +23,10 @@
   (>= (:unit/current-heat unit) 4))
 
 (defn change-heat
-  "Applies delta to heat and then ensures that it is in a valid range from 0-4."
+  "Applies delta to heat and then ensures that it is in a valid range from 0-4.
+  
+  heat: int reflecting the current heat value.
+  delta: int reflecting the value to add."
   [heat delta]
   (let [new-heat (+ heat delta)]
     (cond

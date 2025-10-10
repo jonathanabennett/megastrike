@@ -7,8 +7,13 @@
 
 (defn display
   "Formats the pilot information in the following format: 'Name(skill)'
+  Precondition: A valid pilot map containing the keys `pilot/full-name` and `pilot/skill`
+  Postcondition: A string is returned containing the pilot's full name and skill per these examples.
   Examples:
   Bob Kim(4)
-  Shooty McShootyface (2)"
+  Shooty McShootyface (2)
+ 
+  @param pilot-map: A map containing pilot information.
+  @return: A string matching the examples above."
   [{:keys [pilot/full-name pilot/skill]}]
   (str full-name " (" skill ")"))
