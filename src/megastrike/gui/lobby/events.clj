@@ -9,7 +9,6 @@
    [megastrike.combat-unit :as cu]
    [megastrike.gui.events :as e]
    [megastrike.gui.subs :as subs]
-   [megastrike.movement :as movement]
    [megastrike.phases :as phases]
    [megastrike.scenario :as scenario]
    [megastrike.utils :as utils])
@@ -18,6 +17,9 @@
    [javafx.scene Node]
    [javafx.stage FileChooser]))
 
+(def empty-game
+  {:game {:units nil :forces nil :current-phase :lobby :map-width "1" :map-height "1" :turn-number 0}})
+
 (defmethod e/event-handler ::select-camo
   [{:keys [^ActionEvent fx/context fx/event]}]
   (let [window (.getWindow (.getScene ^Node (.getTarget event)))
@@ -25,7 +27,7 @@
                   (.setTitle "Select Camo")
                   (.setInitialDirectory (io/file "data/images/camo")))]
     (when-let [camo (.showOpenDialog chooser window)]
-      {:context (fx/swap-context context assoc :force-camo (str "file:" (.getPath camo)))})))
+      {:context (fx/swap-context context assoc-in [:lobby :force-camo] (str "file:" (.getPath camo)))})))
 
 (defmethod e/event-handler ::load-scenario
   [{:keys [^ActionEvent fx/context fx/event]}]
@@ -34,8 +36,7 @@
                   (.setTitle "Select Scenario")
                   (.setInitialDirectory (io/file "data/scenarios")))]
     (when-let [s (.showOpenDialog chooser window)]
-      (let [scenario (select-keys (scenario/setup-scenario s) [:units :forces :map-boards :map-width :map-height])]
-        {:context (fx/swap-context context merge {:units nil :forces nil :map-boards nil :map-width "1" :map-height "1"} scenario)}))))
+      {:context (fx/swap-context context merge empty-game (scenario/setup-scenario s))})))
 
 (defmethod e/event-handler ::load-mapboard
   [{:keys [^ActionEvent fx/context fx/event id]}]
@@ -43,29 +44,25 @@
         chooser (doto (FileChooser.)
                   (.setTitle "Select Mapboard")
                   (.setInitialDirectory (io/file "data/boards")))
-        boards (fx/sub-val context :map-boards)]
+        boards (fx/sub-val context :game :game-board)]
     (when-let [board (.showOpenDialog chooser window)]
-      {:context (fx/swap-context context assoc :map-boards (assoc boards id (board/create-mapsheet (str "file:" (.getPath board)))))})))
+      {:context (fx/swap-context context assoc-in [:game :game-board] (assoc boards id (board/create-mapsheet (str "file:" (.getPath board)))))})))
 
 (defmethod e/event-handler ::filter-changed
   [{:keys [fx/context values]}]
-  {:context (fx/swap-context context assoc :mul (cu/filter-units cu/mul values))})
+  {:context (fx/swap-context context assoc-in [:lobby :mul] (cu/filter-units cu/mul values))})
 
 (defmethod e/event-handler ::launch-game
   [{:keys [fx/context]}]
-  (let [width (fx/sub-val context :width)
-        height (fx/sub-val context :height)
-        map-boards (fx/sub-val context :map-boards)
-        response (phases/next-phase {:current-phase (subs/phase context)
-                                     :turn-number (subs/turn-number context)
-                                     :forces (subs/forces context)
-                                     :units (subs/units context)})]
+  (let [width (fx/sub-val context :game :map-width)
+        height (fx/sub-val context :game :map-height)
+        map-boards (fx/sub-val context :game :game-board)
+        response (phases/next-phase (fx/sub-val context :game))]
     {:context (fx/swap-context context merge
                                {:game-board (if (empty? map-boards)
                                               (subs/board context)
                                               (board/create-board map-boards width height))
-                                :lobby false
-                                :game true}
+                                :display :game}
                                response)
      :dispatch {:event-type ::e/open-round-dialog}}))
 
@@ -77,48 +74,53 @@
 
 (defmethod e/event-handler ::change-player
   [{:keys [fx/context fx/event]}]
-  {:context (fx/swap-context context assoc :player event)})
+  {:context (fx/swap-context context assoc-in [:lobby :player] event)})
 
 (defmethod e/event-handler ::add-force
   [{:keys [fx/context]}]
-  (let [force-name (fx/sub-val context :force-name)
-        deploy (fx/sub-val context :force-zone)
-        camo (fx/sub-val context :force-camo)
+  (let [force-name (fx/sub-val context :lobby :force-name)
+        deploy (fx/sub-val context :lobby :force-zone)
+        camo (fx/sub-val context :lobby :force-camo)
         team (inc (count (subs/forces context)))
-        player (fx/sub-val context :player)
-        new-force (battle-force/->battle-force force-name deploy camo team player)
-        new-forces (merge (subs/forces context) {(:unit-group/keyword new-force) new-force})]
-    {:context (fx/swap-context context assoc :forces new-forces :force-camo nil)
+        player (fx/sub-val context :lobby :player)
+        new-force (battle-force/->battle-force force-name deploy camo team player [])
+        new-forces (battle-force/update-battle-force (subs/forces context) (:unit-group/keyword new-force) new-force)]
+    {:context (fx/swap-context context merge {:game {:forces new-forces} :lobby {:force-camo nil}})
      :dispatch {:event-type ::e/close-dialog :dialog :force-creation-dialog}}))
 
 (defmethod e/event-handler ::mul-selection-changed
   [{:keys [fx/context fx/event]}]
-  {:context (fx/swap-context context assoc :active-mul event)})
+  {:context (fx/swap-context context assoc :lobby :active-mul event)})
 
 (defmethod e/event-handler ::add-unit
   [{:keys [fx/context]}]
   (let [units (subs/units context)
-        mul-unit (fx/sub-val context :active-mul)
-        pilot {:name (fx/sub-val context :pilot-name)
-               :skill (Integer/parseInt (fx/sub-val context :pilot-skill))}
-        battle-force (fx/sub-val context :active-force)]
-    {:context (fx/swap-context context assoc :units (cu/->combat-unit {:units units :mul-unit mul-unit :pilot pilot :battle-force battle-force}))
+        mul-unit (fx/sub-val context :lobby :active-mul)
+        pilot {:name (fx/sub-val context :lobby :pilot-name)
+               :skill (Integer/parseInt (fx/sub-val context :lobby :pilot-skill))}
+        battle-force (fx/sub-val context :lobby :active-force)]
+    {:context
+     (fx/swap-context context assoc-in [:game :units]
+                      (cu/->combat-unit
+                       {:units units
+                        :mul-unit mul-unit
+                        :pilot pilot
+                        :battle-force battle-force}))
      :dispatch {:event-type ::e/close-dialog :dialog :mul-dialog}}))
 
 (defmethod e/event-handler ::filter-mul
   [{:keys [fx/context field]}]
-  (let [term (fx/sub-val context :mul-search-term)]
-    {:context (fx/swap-context context assoc :mul (cu/filter-units cu/mul field term str/includes?))}))
+  (let [term (fx/sub-val context :lobby :mul-search-term)]
+    {:context (fx/swap-context context assoc-in [:lobby :mul] (cu/filter-units cu/mul field term str/includes?))}))
 
 (defmethod e/event-handler ::force-selection-changed
   [{:keys [fx/context fx/event]}]
-  (prn event)
-  {:context (fx/swap-context context assoc
-                             :active-force (:unit-group/keyword event)
-                             :force-name (:unit-group/name event)
-                             :force-zone (str (:unit-group/deployment event))
-                             :force-camo (:unit-group/camo event))})
+  {:context (fx/swap-context context merge
+                             {:active-force (:unit-group/keyword event)
+                              :force-zone (str (:unit-group/deployment event))
+                              :force-camo (:unit-group/camo event)
+                              :force-name (:unit-group/name event)})})
 
 (defmethod e/event-handler ::unit-selection-changed
   [{:keys [fx/context fx/event]}]
-  {:context (fx/swap-context context assoc :active-unit (:id event))})
+  {:context (fx/swap-context context assoc-in [:lobby :active-unit] (:id event))})

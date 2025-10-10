@@ -69,8 +69,8 @@
           {:text "No tmm"}))))
 
 (defn mul-table [{:keys [fx/context]}]
-  (let [mul (fx/sub-val context :mul)
-        selected (fx/sub-val context :active-mul)]
+  (let [mul (fx/sub-val context :lobby :mul)
+        selected (fx/sub-val context :lobby :active-mul)]
     {:fx/type tables/with-selection-props
      :props {:selection-mode :single
              :on-selected-item-changed {:event-type ::lobby-events/mul-selection-changed :fx/sync true}
@@ -166,7 +166,7 @@
 
 (defn new-unit-buttons
   [{:keys [fx/context]}]
-  (let [selected (fx/sub-val context :active-force)
+  (let [selected (fx/sub-val context :lobby :active-force)
         battle-force (if selected (get (subs/forces context) selected) nil)]
     {:fx/type :v-box
      :spacing 5
@@ -205,9 +205,8 @@
 (defn forces-table
   [{:keys [fx/context]}]
   (let [forces (subs/forces context)
-        selected (fx/sub-val context :active-force)
-        units (subs/units context)
-        counts (fx/sub-ctx context subs/units-by-force)]
+        selected (fx/sub-val context :lobby :active-force)
+        units (subs/units context)]
     (if (empty? forces)
       {:fx/type :label
        :text "Add a force."}
@@ -242,7 +241,7 @@
                          :cell-factory {:fx/cell-type :table-cell
                                         :describe (fn [x] {:text (prn-str (or (battle-force/force-pv x units) 0))})}}]
 
-              :items (vals forces)}})))
+              :items forces}})))
 
 (defn force-creation-dialog
   [{:keys [fx/context]}]
@@ -268,9 +267,9 @@
                                                    :items [:player :kevin]
                                                    :value :player
                                                    :on-value-changed {:event-type ::lobby-events/change-player}}]}
-                                      (if (fx/sub-val context :force-camo)
+                                      (if (fx/sub-val context :lobby :force-camo)
                                         {:fx/type :button
-                                         :background {:images (list (fx/sub-val context :force-camo))}
+                                         :background {:images (list (fx/sub-val context :lobby :force-camo))}
                                          :text "Change Camo"
                                          :on-action {:event-type ::lobby-events/select-camo :fx/sync true}}
                                         {:fx/type :button
@@ -313,7 +312,7 @@
                          :cell-factory {:fx/cell-type :table-cell
                                         :describe (fn [x] {:graphic {:fx/type elements/draw-sprite
                                                                      :unit x
-                                                                     :bf ((:unit/battle-force x) forces)
+                                                                     :bf (battle-force/select-force forces (:unit/battle-force x))
                                                                      :x 0
                                                                      :y 0
                                                                      :shift 0}})}}
@@ -327,7 +326,7 @@
                          :cell-value-factory identity
                          :cell-factory {:fx/cell-type :table-cell
                                         :describe (fn [x] {:text (prn-str (cu/pv x))})}}]
-              :items (vals units)}})))
+              :items units}})))
 
 (def unit-pane
   {:fx/type :v-box
@@ -345,9 +344,9 @@
 
 (defn map-grid
   [{:keys [fx/context]}]
-  (let [width (Integer/parseInt (fx/sub-val context :map-width))
-        height (Integer/parseInt (fx/sub-val context :map-height))
-        boards (fx/sub-val context :map-boards)]
+  (let [width (Integer/parseInt (fx/sub-val context :game :map-width))
+        height (Integer/parseInt (fx/sub-val context :game :map-height))
+        boards (fx/sub-val context :game :game-board)]
     {:fx/type :grid-pane
      :children (for [x (range width)
                      y (range height)]

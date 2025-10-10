@@ -11,13 +11,13 @@
 
 (defn attack-dialog
   [{:keys [fx/context]}]
-  (let [unit (fx/sub-val context get-in [:internal :attack-dialog :unit])
-        attacks (fx/sub-val context get-in [:internal :attack-dialog :items])
+  (let [unit (fx/sub-val context get-in [:gui :dialogs :attack-dialog :unit])
+        attacks (fx/sub-val context get-in [:gui :dialogs :attack-dialog :items])
         phase (subs/phase context)
         active (subs/active-unit context)
         mv-type (if active (movement/selected-or-default active) :walk)]
     {:fx/type :dialog
-     :showing (fx/sub-val context get-in [:internal :attack-dialog :showing] false)
+     :showing (fx/sub-val context get-in [:gui :dialogs :attack-dialog :showing] false)
      :on-close-request (fn [^DialogEvent event]
                          (when (nil? (.getResult ^Dialog (.getSource event)))
                            (.consume event)))
@@ -36,12 +36,8 @@
   (let [round (subs/turn-number context)
         phase (name (subs/phase context))
         round-report (subs/round-report context)]
-    ; (mu/log ::round-report
-    ;         :round round
-    ;         :phase phase
-    ;         :report round-report)
     {:fx/type :dialog
-     :showing (fx/sub-val context get-in [:round-dialog :showing] false)
+     :showing (fx/sub-val context get-in [:dialogs :round-dialog :showing] false)
      :header-text (str "Turn " round " / " phase " phase")
      :on-hidden {:event-type ::events/close-round-dialog :phase-advance? false}
      :dialog-pane {:fx/type :dialog-pane
@@ -54,9 +50,9 @@
   [{:keys [fx/context]}]
   (let [gb (subs/tiles context)
         layout (subs/layout context)
-        units (vals (subs/units context))
+        units (subs/units context)
         unit-locations (filter movement/deployed? units)
-        destinations (filter #(pos? (count (:unit/path %))) (vals (subs/units context)))]
+        destinations (filter #(pos? (count (:unit/path %))) (subs/units context))]
     {:fx/type :scroll-pane
      :content {:fx/type :group
                :children (concat
@@ -77,7 +73,7 @@
 (defn game-view
   [{:keys [fx/context]}]
   {:fx/type :stage
-   :showing (fx/sub-val context :game)
+   :showing (not= (fx/sub-val context :gui :display) :lobby)
    :title (subs/title-string context)
    :scene {:fx/type :scene
            :accelerators {[:minus] {:event-type ::events/change-size :direction :minus :fx/sync true}
@@ -101,7 +97,7 @@
 (defn lobby-view
   [{:keys [fx/context]}]
   {:fx/type :stage
-   :showing (fx/sub-val context :lobby)
+   :showing (= (fx/sub-val context :gui :display) :lobby)
    :title (subs/title-string context)
    :scene {:fx/type :scene
            :root {:fx/type :grid-pane

@@ -33,8 +33,9 @@
 (s/def :unit-group/camo keyword?)
 (s/def :unit-group/parent keyword?) ;; Used to denote parent formations or organizations
 (s/def :unit-group/player keyword?)
+(s/def :unit-group/subgroups vector?)
 (s/def :unit-group/battleforce (s/keys :req [:unit-group/keyword :unit-group/name :unit-group/deployment
-                                             :unit-group/camo :unit-group/parent :unit-group/player]))
+                                             :unit-group/camo :unit-group/parent :unit-group/player :unit-group/subgroups]))
 
 ;; "General" definitions
 (s/def :unit/id string?)

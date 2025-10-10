@@ -4,6 +4,7 @@
    [clojure.string :as str]
    [megastrike.abilities :as abilities]
    [megastrike.attacks :as attacks]
+   [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
    [megastrike.damage :as damage]
    [megastrike.gui.events :as events]
@@ -26,21 +27,21 @@
 
 (defn text-input
   "Helper method to create a text input box which automatically updates the atom as the text is edited."
-  [{:keys [fx/context label key]}]
+  [{:keys [fx/context label k]}]
   {:fx/type :h-box
    :spacing 5
    :children [{:fx/type :label :text label}
               {:fx/type :text-field
                :on-text-changed {:event-type ::events/text-input
                                  :fx/sync true
-                                 :key key}
-               :text (fx/sub-val context key)}]})
+                                 :key k}
+               :text (fx/sub-val context k)}]})
 
 (defn confirmation-pane
   [{:keys [fx/context dialog-id on-confirmed button dialog-pane]}]
   {:fx/type fx/ext-let-refs
    :refs {::dialog {:fx/type :dialog
-                    :showing (fx/sub-val context get-in [:internal dialog-id :showing] false)
+                    :showing (fx/sub-val context get-in [:gui :dialogs dialog-id :showing] false)
                     :on-hidden {:event-type ::events/on-confirmation-dialog-hidden
                                 :dialog-id dialog-id
                                 :on-confirmed on-confirmed}
@@ -124,7 +125,7 @@
   [{:keys [fx/context unit layout]}]
   (let [hex (hex/points (:unit/location unit) layout)
         forces (subs/forces context)
-        bf (get forces (:unit/battle-force unit))]
+        bf (battle-force/select-force forces (:unit/battle-force unit))]
     {:fx/type :group
      :on-mouse-clicked {:event-type ::events/unit-clicked :unit unit :fx/sync true}
      :children [{:fx/type draw-sprite
@@ -251,7 +252,7 @@
 (defn unit-stat-block
   [{:keys [fx/context unit]}]
   (let [active (subs/active-id context)
-        bf (get (subs/forces context) (:unit/battle-force unit))]
+        bf (battle-force/select-force (subs/forces context) (:unit/battle-force unit))]
     {:fx/type :titled-pane
      :on-mouse-clicked {:event-type ::events/stats-clicked :fx/sync true :unit (:unit/id unit)}
      :text (if (:unit/acted? unit) (str (:unit/id unit) " (done)") (:unit/id unit))
@@ -336,7 +337,7 @@
 (defn force-block
   [{:keys [fx/context units]}]
   (let [forces (subs/forces context)
-        bf ((:unit/battle-force (first units)) forces)]
+        bf (battle-force/select-force forces (:unit/battle-force (first units)))]
     {:fx/type :v-box
      :spacing 5
      :border {:strokes [{:image (:unit-group/camo bf) :width 5}]}
@@ -348,7 +349,7 @@
 
 (defn stat-blocks
   [{:keys [fx/context]}]
-  (let [units (group-by :unit/battle-force (vals (subs/units context)))]
+  (let [units (group-by :unit/battle-force (subs/units context))]
     {:fx/type :scroll-pane
      :min-width :use-pref-size
      :content {:fx/type :v-box

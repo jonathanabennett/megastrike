@@ -10,8 +10,8 @@
    [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
    [megastrike.gui.events :as events]
-   [megastrike.gui.views :as views]
    [megastrike.schemas :as schemas]
+   [megastrike.gui.views :as views]
    [megastrike.hexagons.hex :as hex])
   (:import
    (javafx.application Platform)))
@@ -23,33 +23,31 @@
 (def *state
   (atom
    (fx/create-context
-    {:mul (cu/filter-units cu/mul :mul/ground-units)
-     :mul-search-term ""
-     :display :lobby
-     :title "Megastrike"
-     :force-name "AFFS"
-     :force-zone "N"
-     :player :player
-     :pilot-name "Bob"
-     :pilot-skill "4"
-     :forces {}
-     :units {}
-     :internal {}
-     :round-dialog {:showing false
-                    :advance-phase? false}
-     :active-mul nil
-     :active-force nil
-     :active-unit nil
-     :map-boards []
-     :round-report ""
-     :game-board (board/create-board 16 17)
-     :layout (hex/create-layout)
-     :map-width "1"
-     :map-height "1"
-     :lobby true
-     :game false
-     :current-phase :lobby
-     :turn-number 0}
+    {:lobby {:mul (cu/filter-units cu/mul :mul/ground-units)
+             :mul-search-term ""
+             :force-zone "N"
+             :player :player
+             :pilot-name "Bob"
+             :pilot-skill "4"
+             :active-mul nil
+             :force-name "AFFS"}
+     :game {:forces []
+            :units []
+            :game-board []
+            :active-unit nil
+            :current-phase :lobby
+            :map-width "1"
+            :map-height "1"
+            :round-report ""
+            :turn-order ()
+            :turn-flag false
+            :turn-number 0}
+     :gui {:display :lobby
+           :title "Megastrike"
+           :dialogs {:attack-dialog {}
+                     :round-dialog {:showing false
+                                    :advance-phase? false}}
+           :layout (hex/create-layout)}}
     cache/lru-cache-factory)))
 
 (def event-handler
