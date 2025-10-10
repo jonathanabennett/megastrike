@@ -11,6 +11,13 @@
 
 (def data-directory (io/file application-directory "data/"))
 
+(defn relative-path
+  [a]
+  (let [path-a (.toPath (io/file a))]
+    (if (.getRoot path-a)
+      (str (.relativize (.toPath (io/file (.getAbsolutePath (io/file ".")))) path-a))
+      (str (.relativize (.toPath (io/file ".")) path-a)))))
+
 (defn load-resource
   "Helper function to use `io/resource` to get files."
   [location fname]
