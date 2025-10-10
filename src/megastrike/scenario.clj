@@ -3,20 +3,56 @@
    [clojure.java.io :as io]
    [clojure.math :as math]
    [clojure.string :as str]
+   [com.brunobonacci.mulog :as mu]
+   [megastrike.battle-force :as battle-force]
    [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
    [megastrike.hexagons.hex :as hex]
-   [megastrike.battle-force :as battle-force]
    [megastrike.utils :as utils]))
+
+(defn edn-scenario-parser
+  [file]
+  ;; Verify file type is correct
+  ;; Parse mapsheets
+  ;; Parse battleforces
+  ;; Parse units
+  ;; Return state
+  file)
+
+(defn write-forces
+  [forces]
+  forces)
+
+(defn write-mapsheets
+  [sheets]
+  (mapv :name sheets))
+
+(defn units-writer
+  [units]
+  (mapv #(assoc % :unit/sprite (utils/relative-path (:unit/sprite %))) units))
+
+(defn edn-scenario-writer
+  [state]
+  (-> {}
+      (assoc :forces (write-forces (:forces state)))
+      (assoc :map-height (:map-height state))
+      (assoc :map-width (:map-width state))
+      (assoc :mapsheets (write-mapsheets (:map-boards state)))
+      (assoc :units  (units-writer (:units state)))
+      (merge (select-keys state [:current-phase :turn-number :game :lobby :round-report :round-dialog :internal]))))
+
+  ;; Write units
+  ;; Save game state
+  ;; Save file
 
 (defn initialize-forces
   [forces]
-  (loop [force-map {}
+  (loop [force-vec []
          i 1
          names (str/split forces #",")]
     (if (empty? names)
-      force-map
-      (recur (merge force-map {(keyword (utils/keyword-maker (first names))) (battle-force/->battle-force (first names) nil nil i :player)})
+      force-vec
+      (recur (conj force-vec (battle-force/->battle-force (first names) nil nil i :player []))
              (inc i)
              (rest names)))))
 
@@ -27,17 +63,35 @@
 (defn set-location
   [state line value]
   (let [force-name (extract-name line)]
-    (assoc-in state [:forces force-name :unit-group/deployment] (keyword "direction" (utils/keyword-maker value)))))
+    (assoc state
+           :forces
+           (battle-force/update-battle-force
+            (:forces state)
+            (keyword force-name)
+            :unit-group/deployment
+            (keyword "direction" (utils/keyword-maker value))))))
 
 (defn set-team
   [state line value]
   (let [force-name (extract-name line)]
-    (assoc-in state [:forces force-name :unit-group/parent] (Integer/parseInt value))))
+    (assoc state
+           :forces
+           (battle-force/update-battle-force
+            (:forces state)
+            (keyword force-name)
+            :unit-group/deployment
+            (Integer/parseInt value)))))
 
 (defn set-camo
   [state line value]
   (let [force-name (extract-name line)]
-    (assoc-in state [:forces force-name :unit-group/camo] value)))
+    (assoc state
+           :forces
+           (battle-force/update-battle-force
+            (:forces state)
+            (keyword force-name)
+            :unit-group/camo
+            value))))
 
 (defn parse-unit-string [s]
   (let [[_ faction number data] (re-matches #"Unit_(\w+)_(\d+)[=_](.+)" s)]
@@ -46,7 +100,7 @@
 (defn configure-unit
   [state line]
   (if (re-find #"\d+=" line)
-    (let [units (get state :units {})
+    (let [units (get state :units [])
           [faction _ data] (parse-unit-string line)
           [unit pilot pskill gskill direction x y] (str/split data #",")
           loc (if (and x y) (hex/offset->hex (Integer/parseInt (str/trim x)) (Integer/parseInt (str/trim y))) {})
@@ -57,7 +111,8 @@
                                  :battle-force (keyword (utils/keyword-maker faction))
                                  :facing (keyword "direction" (if direction (utils/keyword-maker direction) "n"))
                                  :location loc})]
-      (assoc units (:unit/id mul) mul))
+      mul)
+
     (:units state)))
 
 (defn set-map-dirs
@@ -137,7 +192,7 @@
 
 (defn parse-scenario-file
   [file]
-  (loop [state {:units {}}
+  (loop [state {:units []}
          f (str/split-lines (slurp (io/file file)))]
     (if (empty? f)
       state
