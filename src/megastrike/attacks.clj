@@ -279,7 +279,8 @@
   [{:keys [targeting/attacker targeting/target targeting/attack-type targeting/rear-attack?] :as atk-data} to-hit]
   (let [target-number (calculate-to-hit atk-data)
         attacker-tmm (movement/modified-tmm attacker)
-        attacker-result (damage/take-damage attacker (roll-damage attacker (if (<= target-number to-hit) :self-dfa :missed-dfa) attacker-tmm (:unit/size attacker) false) false)
+        attacker-result (merge {:unit/id (:unit/id attacker) :unit/acted? true :unit/attacked? true}
+                               (damage/take-damage attacker (roll-damage attacker (if (<= target-number to-hit) :self-dfa :missed-dfa) attacker-tmm (:unit/size attacker) false) false))
         target-result (damage/take-damage target (roll-damage attacker :dfa attacker-tmm (:unit/size target) rear-attack?) (= to-hit 12))]
     (mu/log ::charge-attack
             :hit? (<= target-number 12)
@@ -296,11 +297,8 @@
      :combat-result/roll to-hit
      :combat-result/attacker-result attacker-result
      :combat-result/target-result target-result
-     :combat-result/changes (utils/concatv
-                             [[[:units (:unit/id attacker) :unit/acted?] true]
-                              [[:units (:unit/id attacker) :unit/attacked?] true]]
-                             (:result attacker-result)
-                             (if (<= target-number to-hit) (:result target-result) []))}))
+     :combat-result/changes [(:result attacker-result)
+                             (if (<= target-number to-hit) (:result target-result) {})]}))
 
 (defn charge-attack
   [{:keys [targeting/attacker targeting/target targeting/attack-type targeting/rear-attack?] :as atk-data} to-hit]
@@ -315,11 +313,9 @@
      :combat-result/roll to-hit
      :combat-result/attacker-result attacker-result
      :combat-result/target-result target-result
-     :combat-result/changes (utils/concatv
-                             [[[:units (:unit/id attacker) :unit/acted?] true]
-                              [[:units (:unit/id attacker) :unit/attacked?] true]]
-                             (if (<= target-number to-hit) (:result attacker-result) [])
-                             (if (<= target-number to-hit) (:result target-result) []))}))
+     :combat-result/changes [{:unit/id (:unit/id attacker) :unit/acted? true :unit/attacked? true}
+                             (if (<= target-number to-hit) (:result attacker-result) {})
+                             (if (<= target-number to-hit) (:result target-result) {})]}))
 
 (defn basic-attack
   [{:keys [targeting/attacker targeting/attack-type targeting/target targeting/damage targeting/rear-attack?] :as atk-data} to-hit]
@@ -331,16 +327,15 @@
                        :combat-result/target (:unit/id target)
                        :combat-result/target-number target-number
                        :combat-result/roll to-hit
-                       :combat-result/damage damage
-                       :combat-result/changes [[[:units (:unit/id attacker) :unit/acted?] true]
-                                               [[:units (:unit/id attacker) :unit/attacked?] true]]}]
+                       :combat-result/damage damage}]
     (if (<= target-number to-hit)
       (-> combat-result
           (assoc :combat-result/crits (:crits damage-result))
           (assoc :combat-result/armor-damage (:armor-damage damage-result))
           (assoc :combat-result/penetration (:penetration damage-result))
-          (update :combat-result/changes utils/concatv (:result damage-result)))
-      combat-result)))
+          (assoc :combat-result/changes [{:unit/id (:unit/id attacker) :unit/attacked? true :unit/acted? true}
+                                         (:result damage-result)]))
+      (assoc combat-result :combat-result/changes [{:unit/id (:unit/id attacker) :unit/attacked? true :unit/acted? true}]))))
 
 (defn heat-attack
   [{:keys [targeting/attacker targeting/target targeting/damage] :as atk-data} to-hit]
@@ -352,15 +347,14 @@
                        :combat-result/target (:unit/id target)
                        :combat-result/target-number target-number
                        :combat-result/roll to-hit
-                       :combat-result/damage damage
-                       :combat-result/changes [[[:units (:unit/id attacker) :unit/acted?] true]
-                                               [[:units (:unit/id attacker) :unit/attacked?] true]]}]
+                       :combat-result/damage damage}]
     (if (<= target-number to-hit)
       (-> combat-result
           (assoc :combat-result/crits nil)
           (assoc :combat-result/heat-damage damage)
-          (update :combat-result/changes utils/concatv damage-result))
-      combat-result)))
+          (assoc :combat-result/changes [{:unit/id (:unit/id attacker) :unit/acted? true :unit/attacked? true}
+                                         damage-result]))
+      (assoc combat-result :combat-result/changes [{:unit/id (:unit/id attacker) :unit/acted? true :unit/attacked? true}]))))
 
 (defn make-attack
   ([{:keys [targeting/attack-type] :as atk-data} to-hit]

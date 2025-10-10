@@ -4,17 +4,27 @@
    [megastrike.ai.kevin :as ai]
    [megastrike.attacks :as attacks]
    [megastrike.combat-unit :as cu]
-   [megastrike.damage :as damage]
    [megastrike.hexagons.hex :as hex]
    [megastrike.movement :as movement]
-   [megastrike.phases :as phases]))
+   [megastrike.phases :as phases]
+   [megastrike.battle-force :as battle-force]))
 
-(defn unit-updates
+(defn update-units
+  "Takes a vector of updates and applies them to the units in the game-state.
+  Preconditions: game-state must contain a `units` key which is a vector of maps.
+                 updates must be a non-empty vector of maps which contain at least a `unit/id` key
+  Postcondition: All changes described in the updates vector will be applied to the units.
+  
+  @param game-state: The atom containing all the game data
+  @param updates: A vector of maps which each must contain a `unit/id` key and then any other keys which should change.
+  @return: The updated game-state"
   [game-state updates]
-  (reduce (fn [current-state [path value]]
-            (assoc-in current-state path value))
-          game-state
-          updates))
+  (loop [units (:units game-state)
+         updates updates]
+    (if (empty? updates)
+      (assoc game-state :units units)
+      (recur (cu/update-unit units (first updates))
+             (rest updates)))))
 
 (defn parse-attack-data
   [{:keys [combat-result/attacker combat-result/target combat-result/attack
@@ -23,18 +33,21 @@
   (str attacker " attacks " target ". Using a " (name attack) " attack. Needs a " target-number ".\n"
        "Rolled a " roll "\n"
        (if (<= target-number roll)
-         (str "Attack hits for " damage " damage.\n" armor-damage " damage to armor."
-              (when (pos? penetration) (str penetration " damage penetrates the armor. \n"))
-              (when (or (= roll 12) (pos? penetration))
-                (str "Possible Critical: Rolled " (if crits (str crits) "no critical") " on the critical hits table.\n")))
+         (if (pos? damage)
+           (str "Attack hits for " damage " damage.\n" armor-damage " damage to armor."
+                (when (and (int? penetration) (pos? penetration)) (str penetration " damage penetrates the armor. \n"))
+                (when (or (= roll 12) (pos? penetration))
+                  (str "Possible Critical: Rolled " (if crits (str crits) "no critical") " on the critical hits table.\n")))
+           "Attack hits for no damage.")
+
          "Attack misses.\n")
        \newline \newline \newline))
 
 (defn hex-clicked
-  [{:keys [current-phase active-unit units game-board turn-flag layout] :as game-state} hex click-location]
+  [{:keys [current-phase active-unit units game-board turn-flag] :as game-state} layout hex click-location]
   (mu/log ::turn-flag?
           :turn-flag turn-flag)
-  (let [unit (get units active-unit {})]
+  (let [unit (or (cu/select-unit units active-unit) {})]
     (if active-unit
       (cond
         (and (contains? #{:deployment :movement} current-phase) turn-flag)
@@ -42,14 +55,16 @@
                               (last (:unit/path unit))
                               (:unit/location unit))
               facing (hex/facing unit-location click-location layout)
-              units (update units active-unit movement/change-facing facing)]
+              units (cu/update-unit units (movement/change-facing unit facing))]
           (assoc game-state :units units :turn-flag nil))
 
         (and (= current-phase :deployment) (not (:unit/acted? unit)))
-        (update-in game-state [:units active-unit] movement/set-location (select-keys hex [:hex/p :hex/q :hex/r]))
+        (let [unit (movement/set-location unit (select-keys hex [:hex/p :hex/q :hex/r]))]
+          (update-units game-state [unit]))
 
         (and (= current-phase :movement) (not (:unit/acted? unit)))
-        (update-in game-state [:units active-unit] cu/set-path hex game-board units)
+        (let [unit (cu/set-path unit hex game-board units)]
+          (update-units game-state [unit]))
         :else game-state)
 
       (do (mu/log ::no-active-unit)
@@ -57,23 +72,23 @@
 
 (defn set-movement-mode
   [game-state unit mode]
-  (assoc-in game-state [:units (:unit/id unit) :move/selected] mode))
+  (update-units game-state [{:unit/id (:unit/id unit) :move/selected mode}]))
 
 (defn cancel-move
   [game-state unit]
-  (update-in game-state [:units (:unit/id unit)] movement/cancel-move))
+  (update-units game-state [{:unit/id unit :unit/path [] :unit/selected false}]))
 
 (defn deploy-unit
   [{:keys [active-unit units turn-order] :as game-state}]
-  (let [unit (get units active-unit)]
+  (let [unit (cu/select-unit units active-unit)]
     (if (movement/deployed? unit)
       (do (mu/log ::unit-deployed
                   :unit unit)
-          (assoc game-state
-                 :turn-order (rest turn-order)
-                 :units (assoc-in units [active-unit :unit/acted?] true)
-                 :active-unit nil
-                 :turn-flag false))
+          (-> game-state
+              (update-units [{:unit/id active-unit :unit/acted? true}])
+              (assoc :turn-order (rest turn-order))
+              (assoc :active-unit nil)
+              (assoc :turn-flag false)))
       (do (mu/log ::deployment-failed
                   :unit unit)
           (assoc game-state
@@ -82,7 +97,7 @@
 
 (defn undeploy-unit
   [{:keys [active-unit] :as game-state}]
-  (assoc-in game-state [:units active-unit :location] {}))
+  (update-units game-state [{:unit/id active-unit :unit/location {}}]))
 
 (defn in-active-force?
   [unit turn-order]
@@ -90,7 +105,7 @@
 
 (defn switch-unit
   [{:keys [active-unit units turn-order] :as game-state} new-active-id]
-  (let [new-active-unit (get units new-active-id)
+  (let [new-active-unit (cu/select-unit units new-active-id)
         active-id (if (and (in-active-force? new-active-unit turn-order) (not (:unit/acted? new-active-unit)))
                     new-active-id
                     active-unit)]
@@ -99,8 +114,9 @@
            :turn-flag false)))
 
 (defn charge-unit
-  [{:keys [active-unit units game-board layout] :as game-state} target]
-  (let [unit (get units active-unit)
+  [{:keys [active-unit units game-board] :as game-state}
+   {:keys [layout] :as gui} target]
+  (let [unit (cu/select-unit units active-unit)
         mv-type (movement/selected-or-default unit)
         can-charge? (cu/can-charge? unit target)
         can-dfa? (and (= mv-type :jump) (cu/can-charge? unit target))
@@ -109,52 +125,51 @@
                can-charge? :charge
                :else :none)]
     (if (not= kind :none)
-      (update-in game-state [:internal :attack-dialog] assoc :showing true
-                 :items (attacks/attack-confirmation-choices unit target game-board layout)
-                 :phase :movement
-                 :unit unit)
-      game-state)))
+      {:game game-state
+       :gui (update-in gui [:dialogs :attack-dialog] assoc
+                       :showing true
+                       :items (attacks/attack-confirmation-choices unit target game-board layout)
+                       :phase :movement
+                       :unit unit)}
+      {:game game-state :gui gui})))
 
 (defn unit-clicked
-  [{:keys [current-phase units active-unit game-board layout turn-order] :as game-state} unit]
+  [{:keys [current-phase units active-unit game-board turn-order] :as game-state}
+   {:keys [layout] :as gui} unit]
   (mu/with-context {:unit-clicked unit :phase current-phase}
     (cond
       (and (in-active-force? unit turn-order) (not (:unit/acted? unit)))
-      (switch-unit game-state (:unit/id unit))
+      {:game (switch-unit game-state (:unit/id unit)) :gui gui}
 
       (and (= current-phase :movement) (not (in-active-force? unit turn-order)))
-      (charge-unit game-state unit)
+      (charge-unit game-state gui unit)
 
       (and (= current-phase :combat) (not (in-active-force? unit turn-order)))
-      (update-in game-state [:internal :attack-dialog] assoc
-                 :showing true
-                 :items (attacks/attack-confirmation-choices (get units active-unit) unit game-board layout)
-                 :unit unit)
-      :else game-state)))
+      {:game game-state
+       :gui (update-in gui [:dialogs :attack-dialog] assoc
+                       :showing true
+                       :items (attacks/attack-confirmation-choices (cu/select-unit units active-unit) unit game-board layout)
+                       :unit unit)}
+
+      :else {:game game-state :gui gui})))
 
 (defn make-attack
   [{:keys [round-report] :as game-state} targeting]
   (if (not (:unit/acted? (:targeting/attacker targeting)))
     (let [result (attacks/make-attack targeting)
           report (str round-report (parse-attack-data result))]
-      (mu/log ::make-attack
-              :round-report round-report
-              :targeting targeting)
       (-> game-state
           (assoc :round-report report)
-          (unit-updates (:combat-result/changes result))))
+          (update-units (:combat-result/changes result))))
     game-state))
 
 (declare take-turn)
 
 (defn ai-attacks
-  [{:keys [turn-order units game-board layout] :as game-state}]
-  (let [target-units (->> units
-                          (vals)
-                          (filter #(not (in-active-force? % turn-order))))]
+  [{:keys [turn-order units game-board] :as game-state} layout]
+  (let [target-units (filter #(not (in-active-force? % turn-order)) units)]
     (loop [game-state game-state
            ai-units (->> units
-                         (vals)
                          (filter #(in-active-force? % turn-order))
                          (filter #(not (:unit/acted? %))))]
       (if (empty? ai-units)
@@ -166,8 +181,8 @@
                (rest ai-units))))))
 
 (defn confirm-move
-  [{:keys [active-unit units turn-order] :as game-state}]
-  (let [unit (get units active-unit)
+  [{:keys [active-unit units turn-order] :as game-state} layout]
+  (let [unit (cu/select-unit units active-unit)
         moved-unit (if (= (first turn-order) (:unit/battle-force unit))
                      (cu/move-unit unit)
                      unit)]
@@ -179,9 +194,9 @@
                   :instrumentation :player)
           (take-turn (assoc game-state
                             :turn-order (rest turn-order)
-                            :units (assoc units (:unit/id moved-unit) moved-unit)
+                            :units (cu/update-unit units moved-unit)
                             :turn-flag nil
-                            :active-unit nil)))
+                            :active-unit nil) layout))
       (do (mu/log ::move-failed
                   :origin (:unit/location moved-unit)
                   :force (:unit/battle-force moved-unit)
@@ -191,30 +206,29 @@
           (assoc game-state :turn-flag nil)))))
 
 (defn ai-moves
-  [{:keys [turn-order units game-board layout] :as game-state}]
+  [{:keys [turn-order units game-board] :as game-state} layout]
   (let [unit (->> units
-                  (vals)
                   (filter #(in-active-force? % turn-order))
                   (filter #(not (:unit/acted? %)))
                   (rand-nth))
-        move-options (ai/move-options unit (vals units) game-board layout)
+        move-options (ai/move-options unit units game-board layout)
         upd (-> unit
                 (cu/set-path (:path move-options))
                 (assoc :move/selected (if (empty? (:path move-options)) :move/stand-still (:move/default unit))))]
     (-> game-state
-        (assoc-in [:units (:unit/id upd)] upd)
+        (assoc :units (cu/update-unit units upd))
         (assoc :active-unit (:unit/id upd))
-        (confirm-move))))
+        (confirm-move layout))))
 
 (defn take-turn
-  [{:keys [forces current-phase turn-order] :as game-state}]
-  (let [next-force (get forces (first turn-order))]
+  [{:keys [forces current-phase turn-order] :as game-state} layout]
+  (let [next-force (battle-force/select-force forces (first turn-order))]
     (cond
       (= next-force nil) game-state
       (and (= current-phase :combat) (= (:unit-group/player next-force) :kevin))
-      (ai-attacks game-state)
+      (ai-attacks game-state layout)
       (and (= current-phase :movement) (= (:unit-group/player next-force) :kevin))
-      (ai-moves game-state)
+      (ai-moves game-state layout)
       :else game-state)))
 
 (defn set-special-attack
@@ -233,15 +247,14 @@
        (rest targeting-list)))))
 
 (defn resolve-physical-attacks
-  [{:keys [units game-board layout turn-order] :as game-state}]
+  [{:keys [units game-board turn-order] :as game-state} layout]
   (let [attackers (filter #(and (contains? #{:charge :dfa} (get % :atk-type false)) (in-active-force? units turn-order)) (vals units))
-        targeting-list (map #(attacks/->targeting % (get units (:target %)) game-board layout) attackers)]
+        targeting-list (map #(attacks/->targeting % (cu/select-unit units (:target %)) game-board layout) attackers)]
     (make-attacks game-state targeting-list)))
 
 (defn advance-turn
-  [{:keys [turn-order] :as game-state}]
+  [{:keys [turn-order] :as game-state} layout]
   (if (empty? turn-order)
-    (take-turn (phases/next-phase game-state))
-    (take-turn (assoc game-state :turn-order (rest turn-order)))))
-
+    (take-turn (phases/next-phase game-state) layout)
+    (take-turn (assoc game-state :turn-order (rest turn-order)) layout)))
 

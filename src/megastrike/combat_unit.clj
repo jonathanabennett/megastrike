@@ -4,6 +4,7 @@
    [clojure.math :as math]
    [clojure.spec.alpha :as s]
    [clojure.string :as string]
+   [com.brunobonacci.mulog :as mu]
    [megastrike.abilities :as abilities]
    [megastrike.attacks :as attacks]
    [megastrike.board :as board]
@@ -110,6 +111,36 @@
     (utils/load-resource :data (str "images/units/" (nth match-row 2)))))
 
 ;; COMBAT Units
+(defn select-unit
+  [unit-list unit-id]
+  (first (filter #(= (:unit/id %) unit-id) unit-list)))
+
+(defn deep-merge
+  "Recursively merges maps."
+  [& maps]
+  (letfn [(m [& xs]
+            (if (some #(and (map? %) (not (record? %))) xs)
+              (apply merge-with m xs)
+              (last xs)))]
+    (reduce m maps)))
+
+(defn update-unit
+  ([unit-list unit-id k new-value]
+   (into [] (map (fn [u]
+                   (if (= (:unit/id u) unit-id)
+                     (assoc u k new-value)
+                     u))
+                 unit-list)))
+  ([unit-list new-unit]
+   (let [unit-id (:unit/id new-unit)]
+     (if (select-unit unit-list unit-id)
+       (into [] (map (fn [u]
+                       (if (= (:unit/id u) unit-id)
+                         (deep-merge u new-unit)
+                         u))
+                     unit-list))
+       (conj unit-list new-unit)))))
+
 (defn ->combat-unit
   ([mul-unit pilot facing location battle-force number]
    (s/assert :unit/combat-unit
@@ -130,7 +161,9 @@
                      :unit/current-heat 0
                      :unit/sprite (find-sprite mul-unit)})))
   ([{:keys [units mul-unit pilot battle-force facing location] :or {facing :direction/none location {}}}]
-   (->combat-unit mul-unit pilot facing location battle-force (count (filter #(= (:unit/full-name %) (:unit/full-name mul-unit)) units)))))
+   (let [n (count (filter #(= (:unit/full-name %) (:unit/full-name mul-unit)) units))
+         unit (->combat-unit mul-unit pilot facing location battle-force n)]
+     (update-unit units unit))))
 
 (defn filter-membership-helper
   "Returns true if a unit matches one of the types."
@@ -184,16 +217,9 @@
   [{:keys [unit/base-pv] :as unit}]
   (+ base-pv (pv-mod unit)))
 
-(defn set-stacking
-  "Mark all units on the board."
-  [board units]
-  (let [b (board/set-stacking board (for [u units] [(:unit/location u) (:unit/battle-force u)]))]
-    (prn (map :stacking b))
-    b))
-
 (defn set-path
   ([unit hex board units]
-   (movement/set-path unit hex (set-stacking board (vals units))))
+   (movement/set-path unit hex (board/set-stacking board units)))
   ([unit path]
    (assoc unit :unit/path path)))
 
@@ -245,4 +271,4 @@
                      (heat/end-phase-heat false)
                      (assoc :unit/attacked? false))]
     (when-not (destroyed? new-unit)
-      {(:unit/id new-unit) new-unit})))
+      new-unit)))

@@ -9,13 +9,13 @@
 (defn roll-initiative
   "Rolls initiative for the units, repeating the roll until all the forces have unique rolls."
   [forces]
-  (let [rolls (zipmap (keys forces) (repeatedly utils/roll2d))]
+  (let [unit-keywords (map :unit-group/keyword forces)
+        rolls (zipmap unit-keywords (repeatedly (count unit-keywords) utils/roll2d))]
     (if-not (apply distinct? (vals rolls))
       (recur forces)
-      (->> forces
-           (map (fn [[f bf]]
-                  [f (assoc bf :initiative (f rolls))]))
-           (into {})))))
+      (map (fn [force]
+             (assoc force :initiative (get rolls (:unit-group/keyword force))))
+           forces))))
 
 (defn move-generator
   "Takes a map containing {:force-name count} pairs and returns the number which
@@ -33,7 +33,7 @@
 (defn generate-turn-order
   "Given forces with an initiative rolled and units, it generates a turn order which respects the initiative order algorithm from Alpha Strike."
   ([forces units]
-   (let [forces (sort-by :initiative (vals forces))]
+   (let [forces (sort-by :initiative forces)]
      (loop [turn-order []
             unit-totals (frequencies (map :unit/battle-force units))]
        (if (= (reduce + (vals unit-totals)) 0)
@@ -43,7 +43,6 @@
                   (into {} (map (fn [[key value]] [key (- value (get unit-pairs key))]) unit-totals))))))))
   ([forces]
    (->> forces
-        (vals)
         (sort-by :initiative)
         (map #(:unit-group/keyword %))
         (into []))))
@@ -52,10 +51,10 @@
   "Reroll the initiative, increment the turn number, save the new forces (with their initiative), but do not generate a turn order."
   [{:keys [turn-number forces units] :as game-state}]
   (let [forces (roll-initiative forces)
-        initiative-report (reduce str (map #(str (:unit-group/name %) " rolled a " (:initiative %) "\n") (vals forces)))
+        initiative-report (reduce str (map #(str (:unit-group/name %) " rolled a " (:initiative %) "\n") forces))
         turn-num (inc turn-number)
         turn-string (str "Turn: " turn-num)
-        move-list (str "Turn Order: " (reduce str (map #(str % ", ") (generate-turn-order forces (vals units)))))
+        move-list (str "Turn Order: " (reduce str (map #(str % ", ") (generate-turn-order forces units))))
         round-report (str turn-string "\n" initiative-report move-list "\n\n----------\n")]
     (assoc game-state
            :current-phase :initiative
@@ -68,12 +67,12 @@
 (defn start-deployment-phase
   "Generates the turn order based on the number of units who haven't been deployed yet."
   [{:keys [forces units round-report] :as game-state}]
-  (let [deployable-units (remove (fn [unit] (movement/deployed? unit)) (vals units))
+  (let [deployable-units (remove (fn [unit] (movement/deployed? unit)) units)
         turn-order (generate-turn-order forces deployable-units)
         round-string (str "Deployment Phase\n" "Deployment order: " (reduce str (map #(str % ", ") turn-order)) "\n\n----------\n")
         report (str round-report round-string)]
     (mu/log ::begin-deployment-phase
-            :deployable-units (map :unit/id deployable-units)
+            :deployable-units (seq? deployable-units)
             :turn-order turn-order
             :current-phase "Deployment"
             :instrumentation :player)
@@ -86,7 +85,7 @@
 (defn start-movement-phase
   "Regenerates the turn order. Nothing else special is required."
   [{:keys [forces units round-report] :as game-state}]
-  (let [turn-order (generate-turn-order forces (vals units))
+  (let [turn-order (generate-turn-order forces units)
         round-string (str "Movement Phase \n" "Movement Order: " (reduce str (map #(str % ", ") turn-order)) "\n\n----------\n")
         report (str round-report round-string)]
     (assoc game-state
@@ -110,16 +109,15 @@
 (defn start-end-phase
   "Remove all targeting as part of the end phase process."
   [{:keys [units] :as game-state}]
-  (let [units (into {} (for [[_ unit] units] (cu/end-turn unit)))]
-    (assoc game-state
-           :current-phase :end
-           :turn-order ()
-           :units units)))
+  (assoc game-state
+         :current-phase :end
+         :turn-order ()
+         :units (into [] (map cu/end-turn units))))
 
 (defn next-phase
   "Removes destroyed units and resets the acted status on every unit, then dispatches to the correct phase method."
   [{:keys [current-phase turn-number units] :as game-state}]
-  (let [game-state (assoc game-state :units (into {} (for [[k unit] units] [k (cu/end-phase unit)])))]
+  (let [game-state (assoc game-state :units (into [] (map cu/end-phase units)))]
     (mu/with-context {:turn-number turn-number}
       (cond
         (= current-phase :initiative) (start-deployment-phase game-state)
