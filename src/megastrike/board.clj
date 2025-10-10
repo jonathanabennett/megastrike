@@ -95,9 +95,9 @@
     (if (empty? units)
       board
       (recur (let [u (first units)
-                   loc (first u)
-                   force (second u)
-                   tile (assoc (find-hex loc board) :stacking force)
+                   loc (:unit/location u)
+                   battle-force (:unit/battle-force u)
+                   tile (assoc (find-hex loc board) :stacking battle-force)
                    upd (update-hex tile board)]
                upd)
              (rest units)))))
@@ -185,53 +185,29 @@
 (defn hex-distance-to-edge
   "Calculate the minimum distance from a hex to any board edge using offset coordinates.
    Returns the minimum distance to North, South, East, or West edge."
-  [hex board]
+  [hex board direction]
   (let [offset-coords (hex/hex->offset hex)
         {:keys [width height]} (get-board-dimensions board)
         x (:x offset-coords)
         y (:y offset-coords)]
-    (min 
-     ;; Distance to North edge (y = 1)
-     (dec y)
-     ;; Distance to South edge (y = height)
-     (- height y)
-     ;; Distance to West edge (x = 1)
-     (dec x)
-     ;; Distance to East edge (x = width)
-     (- width x))))
+    (mu/log ::hex-distance-to-edge
+            :width width
+            :height height
+            :hex hex
+            :x x
+            :y y)
+    (condp = direction
+      :north (dec y)
+      :east (- width x)
+      :south (- height y)
+      :west (dec x))))
 
 (defn within-distance-of-edge?
   "Check if a hex is within the specified distance of any board edge."
-  [hex board distance]
-  (<= (hex-distance-to-edge hex board) distance))
+  [hex board direction distance]
+  (<= (hex-distance-to-edge hex board direction) distance))
 
 (defn within-3-hexes-of-edge?
   "Check if a hex is within 3 hexes of any board edge."
-  [hex board]
-  (within-distance-of-edge? hex board 3))
-
-(defn get-edge-proximity-info
-  "Get detailed information about a hex's proximity to board edges.
-   Returns a map with distances to each edge and whether it's within the specified distance."
-  [hex board max-distance]
-  (let [offset-coords (hex/hex->offset hex)
-        {:keys [width height]} (get-board-dimensions board)
-        x (:x offset-coords)
-        y (:y offset-coords)
-        north-dist (dec y)
-        south-dist (- height y)
-        west-dist (dec x)
-        east-dist (- width x)]
-    {:hex hex
-     :offset-coords offset-coords
-     :distances {:north north-dist
-                 :south south-dist
-                 :west west-dist
-                 :east east-dist}
-     :min-distance (min north-dist south-dist west-dist east-dist)
-     :within-distance (within-distance-of-edge? hex board max-distance)
-     :closest-edges (cond-> []
-                            (<= north-dist max-distance) (conj :north)
-                            (<= south-dist max-distance) (conj :south)
-                            (<= west-dist max-distance) (conj :west)
-                            (<= east-dist max-distance) (conj :east))}))
+  [hex board direction]
+  (within-distance-of-edge? hex board direction 3))

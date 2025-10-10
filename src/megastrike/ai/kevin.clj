@@ -93,7 +93,7 @@
   [unit units board layout]
   (let [mv-type (movement/selected-or-default unit)
         unit-loc (board/find-hex (:unit/location unit) board)
-        updated-board (cu/set-stacking board units)
+        updated-board (board/set-stacking board units)
         hostiles (filter #(not= (:unit/battle-force %) (:unit/battle-force unit)) units)
         paths (into (priority-map/priority-map-by >)
                     (->> (movement/astar unit-loc false updated-board zero-weight mv-type (:unit/battle-force unit))
