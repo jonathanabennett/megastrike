@@ -136,7 +136,7 @@
   (some #(not= (get % :stacking false) unit-force) path))
 
 (defn set-location [u hex]
-  (assoc u :unit/location (select-keys hex [:hex/p :hex/q :hex/r])))
+  {:unit/id (:unit/id u) :unit/location (select-keys hex [:hex/p :hex/q :hex/r])})
 
 (defn deployed? [u]
   (get-in u [:unit/location :hex/q] false))
@@ -177,10 +177,6 @@
       :move/stand-still 0
       :move/jump (+ jump-mod (base-tmm u))
       (base-tmm u))))
-
-(defn cancel-move
-  [u]
-  (assoc u :unit/path [] :unit/selected false))
 
 (defn stood-still
   [u]
