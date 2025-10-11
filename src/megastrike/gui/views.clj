@@ -75,7 +75,7 @@
 (defn game-view
   [{:keys [fx/context]}]
   {:fx/type :stage
-   :showing (fx/sub-val context get-in [:gui :game-view])
+   :showing (subs/game-view context)
    :title (subs/title-string context)
    :scene {:fx/type :scene
            :accelerators {[:minus] {:event-type ::events/change-size :direction :minus :fx/sync true}
@@ -99,7 +99,7 @@
 (defn lobby-view
   [{:keys [fx/context]}]
   {:fx/type :stage
-   :showing (fx/sub-val context get-in [:gui :lobby-view])
+   :showing (subs/lobby-view context)
    :title (subs/title-string context)
    :scene {:fx/type :scene
            :root {:fx/type :grid-pane
