@@ -37,7 +37,6 @@
 
 (defmethod event-handler :default
   [{:keys [event-type] :as event}]
-  (prn "EVENT!")
   (mu/log ::unhandled-event
           :event-type event-type
           :keys (keys event)))
@@ -47,7 +46,8 @@
   [{:keys [fx/context hex fx/event]}]
   (let [e ^MouseEvent event
         click-location {:x (.getX e) :y (.getY e)}]
-    {:context (fx/swap-context context assoc :game (turn-manager/hex-clicked (subs/game context) (subs/layout context) hex click-location))}))
+    {:context (fx/swap-context context assoc :game
+                               (turn-manager/hex-clicked (subs/game context) (subs/layout context) hex click-location))}))
 
 (defmethod event-handler ::text-input
   [{:keys [fx/context ks fx/event]}]
@@ -64,7 +64,6 @@
 ;; Saving, loading, and Phases
 (defmethod event-handler ::auto-save
   [{:keys [fx/context]}]
-  (prn (scenario/edn-scenario-writer context))
   (spit "test-data.edn" (subs/game context)))
 
 (defmethod event-handler ::quit-game
@@ -86,13 +85,15 @@
 
 (defmethod event-handler ::next-phase
   [{:keys [fx/context]}]
-  {:context (fx/swap-context context assoc :game (turn-manager/advance-turn (subs/game context) (subs/layout context)))
+  {:context (fx/swap-context context assoc :game
+                             (turn-manager/advance-turn (subs/game context) (subs/layout context)))
    :dispatch {:event-type ::open-round-dialog}})
 
 ;; Unit selection
 (defmethod event-handler ::stats-clicked
   [{:keys [fx/context unit]}]
-  {:context (fx/swap-context context assoc :game (turn-manager/switch-unit (subs/game context) unit))})
+  {:context (fx/swap-context context assoc :game
+                             (turn-manager/switch-unit (subs/game context) unit))})
 
 (defmethod event-handler ::unit-clicked
   [{:keys [fx/context unit]}]
@@ -106,11 +107,13 @@
 ;; Deployment Phase
 (defmethod event-handler ::deploy-unit
   [{:keys [fx/context]}]
-  {:context (fx/swap-context context assoc :game (turn-manager/deploy-unit (subs/game context)))})
+  {:context (fx/swap-context context assoc :game
+                             (turn-manager/deploy-unit (subs/game context)))})
 
 (defmethod event-handler ::undeploy-unit
   [{:keys [fx/context]}]
-  {:context (fx/swap-context context assoc :game (turn-manager/undeploy-unit (subs/game context)))})
+  {:context (fx/swap-context context assoc :game
+                             (turn-manager/undeploy-unit (subs/game context)))})
 
 ;; Movement Phase
 
@@ -120,48 +123,58 @@
 
 (defmethod event-handler ::set-movement-mode
   [{:keys [fx/context unit mode]}]
-  {:context (fx/swap-context context assoc :game (turn-manager/set-movement-mode (subs/game context) unit mode))})
+  {:context (fx/swap-context context assoc :game
+                             (turn-manager/set-movement-mode (subs/game context) unit mode))})
 
 (defmethod event-handler ::cancel-move
   [{:keys [fx/context unit]}]
-  {:context (fx/swap-context context assoc :game (turn-manager/cancel-move (subs/game context) unit))})
+  {:context (fx/swap-context context assoc :game
+                             (turn-manager/cancel-move (subs/game context) unit))})
 
 (defmethod event-handler ::confirm-move
   [{:keys [fx/context]}]
-  {:context (fx/swap-context context assoc :game (turn-manager/confirm-move (subs/game context) (subs/layout context)))})
+  {:context (fx/swap-context context assoc :game
+                             (turn-manager/confirm-move (subs/game context) (subs/layout context)))})
 
 ;; Combat Phase
 (defmethod event-handler ::set-attack
   [{:keys [fx/context targeting]}]
-  {:context (fx/swap-context context assoc :game (turn-manager/set-special-attack (subs/game context) targeting))
+  {:context (fx/swap-context context assoc :game
+                             (turn-manager/set-special-attack (subs/game context) targeting))
    :dispatch {:event-type ::next-phase}})
 
 (defmethod event-handler ::finish-attacks
   [{:keys [fx/context]}]
-  {:context (fx/swap-context context assoc :game (turn-manager/advance-turn (subs/game context) (subs/layout context)))})
+  {:context (fx/swap-context context assoc :game
+                             (turn-manager/advance-turn (subs/game context) (subs/layout context)))})
 
 (defmethod event-handler ::close-attack-selection
   [{:keys [fx/context selected]}]
   (let [ctx (get-in context [:gui :dialogs :attack-dialog])]
     (cond
       (= (:targeting/attack-type selected) nil)
-      {:context (fx/swap-context context assoc-in [:gui :dialogs :attack-dialog] (assoc ctx :showing false :items []))}
+      {:context (fx/swap-context context assoc-in [:gui :dialogs :attack-dialog]
+                                 (assoc ctx :showing false :items []))}
 
       (contains? #{:attack/charge :attack/dfa} (:attack selected))
-      {:context (fx/swap-context context assoc-in [:gui :dialogs :attack-dialog] (assoc ctx :showing false :items []))
+      {:context (fx/swap-context context assoc-in [:gui :dialogs :attack-dialog]
+                                 (assoc ctx :showing false :items []))
        :dispatch {:event-type ::set-attack :targeting selected}}
 
       :else
-      {:context (fx/swap-context context assoc-in [:gui :dialogs :attack-dialog] (assoc ctx :showing false :items []))
+      {:context (fx/swap-context context assoc-in [:gui :dialogs :attack-dialog]
+                                 (assoc ctx :showing false :items []))
        :dispatch {:event-type ::make-attack :targeting selected}})))
 
 (defmethod event-handler ::make-attack
   [{:keys [fx/context targeting]}]
-  {:context (fx/swap-context context assoc :game (turn-manager/make-attack (subs/game context) targeting))
+  {:context (fx/swap-context context assoc :game
+                             (turn-manager/make-attack (subs/game context) targeting))
    :dispatch {:event-type ::open-round-dialog}})
 
 (defmethod event-handler ::resolve-physicals
   [{:keys [fx/context]}]
-  {:context (fx/swap-context context assoc :game (turn-manager/resolve-physical-attacks (subs/game context) (subs/layout context)))
+  {:context (fx/swap-context context assoc :game
+                             (turn-manager/resolve-physical-attacks (subs/game context) (subs/layout context)))
    :dispatch {:event-type ::open-round-dialog}})
 
