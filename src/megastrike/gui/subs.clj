@@ -14,15 +14,23 @@
   [context]
   (fx/sub-val context :gui))
 
+(defn round-dialog
+  [context]
+  (get-in (gui context) [:dialogs :round-dialog]))
+
+(defn attack-dialog
+  [context]
+  (get-in (gui context) [:dialogs :attack-dialog]))
+
 (defn units
   "Returns the vector containing all units"
   [context]
-  (fx/sub-val context :game :units))
+  (:units (game context)))
 
 (defn active-id
   "Returns the ID of the active unit. For use in lookups."
   [context]
-  (fx/sub-val context :game :active-unit))
+  (:active-unit (game context)))
 
 (defn active-unit
   "Returns the actual unit which corresponds to the ID returned by `active-id'."
@@ -31,33 +39,33 @@
 
 (defn forces
   [context]
-  (fx/sub-val context :game :forces))
-
-(defn active-force
-  [context]
-  (battle-force/select-force (forces context) (first (fx/sub-val context :turn-order))))
-
-(defn round-report
-  [context]
-  (fx/sub-val context :gui :round-report))
-
-(defn turn-number
-  [context]
-  (fx/sub-val context :game :turn-number))
-
-(defn phase
-  [context]
-  (fx/sub-val context :game :current-phase))
+  (:forces (game context)))
 
 (defn turn-order
   [context]
-  (fx/sub-val context :game :turn-order))
+  (:turn-order (game context)))
+
+(defn active-force
+  [context]
+  (battle-force/select-force (forces context) (first (turn-order context))))
+
+(defn round-report
+  [context]
+  (:round-report (gui context)))
+
+(defn turn-number
+  [context]
+  (:turn-number (game context)))
+
+(defn phase
+  [context]
+  (:current-phase (game context)))
 
 (defn title-string
   [context]
   (let [bf (active-force context)
         phase (phase context)
-        turn (turn-order context)]
+        turn (turn-number context)]
     (if (and bf phase turn)
       (str "Megastrike | " (:unit-group/name bf) " | " (str/capitalize (name phase)) " Phase | Turn #" turn)
       "Megastrike")))
@@ -68,12 +76,77 @@
 
 (defn layout
   [context]
-  (fx/sub-val context :gui :layout))
+  (:layout (gui context)))
 
 (defn board
   [context]
-  (fx/sub-val context :game :game-board))
+  (:game-board (game context)))
 
 (defn tiles
   [context]
   (board/tiles (board context)))
+
+(defn lobby
+  [context]
+  (fx/sub-val context :lobby))
+
+(defn force-name
+  [context]
+  (:force-name (lobby context)))
+
+(defn force-zone
+  [context]
+  (:force-zone (lobby context)))
+
+(defn force-camo
+  [context]
+  (:force-camo (lobby context)))
+
+(defn player-type
+  [context]
+  (:player (lobby context)))
+
+(defn active-mul
+  [context]
+  (:active-mul (lobby context)))
+
+(defn p-name
+  [context]
+  (:pilot-name (lobby context)))
+
+(defn p-skill
+  [context]
+  (:pilot-skill (lobby context)))
+
+(defn lobby-active-force
+  [context]
+  (:active-force (lobby context)))
+
+(defn mul
+  [context]
+  (:mul (lobby context)))
+
+(defn mul-search-term
+  [context]
+  (:mul-search-term (lobby context)))
+
+(defn map-height
+  [context]
+  (:map-height (game context)))
+
+(defn map-width
+  [context]
+  (:map-width (game context)))
+
+(defn lobby-view
+  [context]
+  (:lobby-view (gui context)))
+
+(defn map-boards
+  [context]
+  (:map-boards (lobby context)))
+
+(defn game-view
+  [context]
+  (:game-view (gui context)))
+

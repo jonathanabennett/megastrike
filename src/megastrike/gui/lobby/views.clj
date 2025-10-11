@@ -69,8 +69,8 @@
           {:text "No tmm"}))))
 
 (defn mul-table [{:keys [fx/context]}]
-  (let [mul (fx/sub-val context :lobby :mul)
-        selected (fx/sub-val context :lobby :active-mul)]
+  (let [mul (subs/mul context)
+        selected (subs/active-mul context)]
     {:fx/type tables/with-selection-props
      :props {:selection-mode :single
              :on-selected-item-changed {:event-type ::lobby-events/mul-selection-changed :fx/sync true}
@@ -159,14 +159,14 @@
    :alignment :top-center
    :children [{:fx/type elements/text-input
                :label "Search:"
-               :key :mul-search-term}
+               :ks [:lobby :mul-search-term]}
               {:fx/type :button
                :text "Search by name"
                :on-action {:event-type ::lobby-events/filter-mul :fx/sync true :field :unit/full-name}}]})
 
 (defn new-unit-buttons
   [{:keys [fx/context]}]
-  (let [selected (fx/sub-val context :lobby :active-force)
+  (let [selected (subs/lobby-active-force context)
         battle-force (if selected (get (subs/forces context) selected) nil)]
     {:fx/type :v-box
      :spacing 5
@@ -178,10 +178,10 @@
                  :alignment :top-center
                  :children [{:fx/type elements/text-input
                              :label "Pilot Name"
-                             :key :pilot-name}
+                             :ks [:lobby :pilot-name]}
                             {:fx/type elements/text-input
                              :label "Pilot Skill"
-                             :key :pilot-skill}]}]}))
+                             :ks [:lobby :pilot-skill]}]}]}))
 
 (def mul-pane
   {:fx/type :v-box
@@ -205,7 +205,7 @@
 (defn forces-table
   [{:keys [fx/context]}]
   (let [forces (subs/forces context)
-        selected (fx/sub-val context :lobby :active-force)
+        selected (subs/lobby-active-force context)
         units (subs/units context)]
     (if (empty? forces)
       {:fx/type :label
@@ -256,10 +256,10 @@
                            :children [{:fx/type :label :text "Add/Edit Force"}
                                       {:fx/type elements/text-input
                                        :label "Force Name"
-                                       :key :force-name}
+                                       :ks [:lobby :force-name]}
                                       {:fx/type elements/text-input
                                        :label "Force Deployment"
-                                       :key :force-zone}
+                                       :ks [:lobby :force-zone]}
                                       {:fx/type :h-box
                                        :spacing 5
                                        :children [{:fx/type :text :text "Human or AI?"}
@@ -267,9 +267,9 @@
                                                    :items [:player :kevin]
                                                    :value :player
                                                    :on-value-changed {:event-type ::lobby-events/change-player}}]}
-                                      (if (fx/sub-val context :lobby :force-camo)
+                                      (if (subs/force-camo context)
                                         {:fx/type :button
-                                         :background {:images (list (fx/sub-val context :lobby :force-camo))}
+                                         :background {:images (list (subs/force-camo context))}
                                          :text "Change Camo"
                                          :on-action {:event-type ::lobby-events/select-camo :fx/sync true}}
                                         {:fx/type :button
@@ -344,9 +344,9 @@
 
 (defn map-grid
   [{:keys [fx/context]}]
-  (let [width (Integer/parseInt (fx/sub-val context :game :map-width))
-        height (Integer/parseInt (fx/sub-val context :game :map-height))
-        boards (fx/sub-val context :game :game-board)]
+  (let [width (Integer/parseInt (subs/map-width context))
+        height (Integer/parseInt (subs/map-height context))
+        boards (or (subs/map-boards context) [])]
     {:fx/type :grid-pane
      :children (for [x (range width)
                      y (range height)]
@@ -370,10 +370,10 @@
                :text "Map Setup"}
               {:fx/type elements/text-input
                :label "Map Width (in boards)"
-               :key :map-width}
+               :ks [:game :map-width]}
               {:fx/type elements/text-input
                :label "Map Height (in boards)"
-               :key :map-height}
+               :ks [:game :map-height]}
               {:fx/type map-grid}
               ;; {:fx/type :button
               ;;  :text "Load Test Game"

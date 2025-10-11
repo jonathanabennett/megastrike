@@ -18,7 +18,7 @@
 
 (mu/set-global-context! {:app-name "MegaStrike" :version "0.5.0"})
 
-(def in-development? false)
+(def in-development? true)
 
 (def *state
   (atom
@@ -30,6 +30,7 @@
              :pilot-name "Bob"
              :pilot-skill "4"
              :active-mul nil
+             :map-boards []
              :force-name "AFFS"}
      :game {:forces []
             :units []
@@ -39,12 +40,15 @@
             :map-width "1"
             :map-height "1"
             :round-report ""
-            :turn-order ()
+            :turn-order []
             :turn-flag false
             :turn-number 0}
-     :gui {:display :lobby
+     :gui {:lobby-view true
+           :game-view false
            :title "Megastrike"
-           :dialogs {:attack-dialog {}
+           :dialogs {:attack-dialog {:showing false
+                                     :items []
+                                     :unit nil}
                      :round-dialog {:showing false
                                     :advance-phase? false}}
            :layout (hex/create-layout)}}

@@ -50,8 +50,8 @@
     {:context (fx/swap-context context assoc :game (turn-manager/hex-clicked (subs/game context) (subs/layout context) hex click-location))}))
 
 (defmethod event-handler ::text-input
-  [{:keys [fx/context key fx/event]}]
-  {:context (fx/swap-context context assoc key event)})
+  [{:keys [fx/context ks fx/event]}]
+  {:context (fx/swap-context context assoc-in ks event)})
 
 (defmethod event-handler ::change-size
   [{:keys [fx/context direction]}]

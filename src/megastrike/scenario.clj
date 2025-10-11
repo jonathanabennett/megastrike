@@ -203,4 +203,4 @@
   [file]
   (let [scenario (parse-scenario-file file)
         map-layout (set-maps scenario)]
-    (merge scenario map-layout {:map-width (str (:map-width scenario)) :map-height (str (:map-height scenario))})))
+    {:lobby map-layout :game (merge scenario {:map-width (str (:map-width scenario)) :map-height (str (:map-height scenario))})}))

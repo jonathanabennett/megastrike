@@ -36,7 +36,12 @@
                   (.setTitle "Select Scenario")
                   (.setInitialDirectory (io/file "data/scenarios")))]
     (when-let [s (.showOpenDialog chooser window)]
-      {:context (fx/swap-context context merge empty-game (scenario/setup-scenario s))})))
+      (let [response (scenario/setup-scenario s)
+            lobby (-> (subs/lobby context)
+                      (merge (:lobby response)))
+            game (-> (subs/game context)
+                     (merge empty-game (:game response)))]
+        {:context (fx/swap-context context assoc :game game :lobby lobby)}))))
 
 (defmethod e/event-handler ::load-mapboard
   [{:keys [^ActionEvent fx/context fx/event id]}]
@@ -44,9 +49,9 @@
         chooser (doto (FileChooser.)
                   (.setTitle "Select Mapboard")
                   (.setInitialDirectory (io/file "data/boards")))
-        boards (fx/sub-val context :game :game-board)]
+        boards (subs/board context)]
     (when-let [board (.showOpenDialog chooser window)]
-      {:context (fx/swap-context context assoc-in [:game :game-board] (assoc boards id (board/create-mapsheet (str "file:" (.getPath board)))))})))
+      {:context (fx/swap-context context assoc-in [:lobby :map-boards] (assoc boards id (board/create-mapsheet (str "file:" (.getPath board)))))})))
 
 (defmethod e/event-handler ::filter-changed
   [{:keys [fx/context values]}]
@@ -54,16 +59,19 @@
 
 (defmethod e/event-handler ::launch-game
   [{:keys [fx/context]}]
-  (let [width (fx/sub-val context :game :map-width)
-        height (fx/sub-val context :game :map-height)
-        map-boards (fx/sub-val context :game :game-board)
-        response (phases/next-phase (fx/sub-val context :game))]
-    {:context (fx/swap-context context merge
-                               {:game-board (if (empty? map-boards)
-                                              (subs/board context)
-                                              (board/create-board map-boards width height))
-                                :display :game}
-                               response)
+  (let [width (subs/map-width context)
+        height (subs/map-height context)
+        map-boards (if (empty? (subs/map-boards context))
+                     (subs/board context)
+                     (board/create-board (subs/map-boards context) width height))
+        game (-> (subs/game context)
+                 (assoc :game-board map-boards)
+                 (phases/next-phase))
+        gui (-> (subs/gui context)
+                (assoc :game-view true)
+                (assoc :lobby-view false))]
+    {:context (fx/swap-context context assoc
+                               :game game :gui gui)
      :dispatch {:event-type ::e/open-round-dialog}}))
 
 (defmethod e/event-handler ::load-save
@@ -78,27 +86,29 @@
 
 (defmethod e/event-handler ::add-force
   [{:keys [fx/context]}]
-  (let [force-name (fx/sub-val context :lobby :force-name)
-        deploy (fx/sub-val context :lobby :force-zone)
-        camo (fx/sub-val context :lobby :force-camo)
+  (let [fname (subs/force-name context)
+        deploy (subs/force-zone context)
+        camo (subs/force-camo context)
         team (inc (count (subs/forces context)))
-        player (fx/sub-val context :lobby :player)
-        new-force (battle-force/->battle-force force-name deploy camo team player [])
-        new-forces (battle-force/update-battle-force (subs/forces context) (:unit-group/keyword new-force) new-force)]
-    {:context (fx/swap-context context merge {:game {:forces new-forces} :lobby {:force-camo nil}})
+        player (subs/player-type context)
+        new-force (battle-force/->battle-force fname deploy camo team player [])
+        new-forces (battle-force/update-battle-force (subs/forces context) (:unit-group/keyword new-force) new-force)
+        new-game (merge (subs/game context) {:forces new-forces})
+        new-lobby (merge (subs/lobby context) {:force-camo nil})]
+    {:context (fx/swap-context context assoc :game new-game :lobby new-lobby)
      :dispatch {:event-type ::e/close-dialog :dialog :force-creation-dialog}}))
 
 (defmethod e/event-handler ::mul-selection-changed
   [{:keys [fx/context fx/event]}]
-  {:context (fx/swap-context context assoc :lobby :active-mul event)})
+  {:context (fx/swap-context context assoc-in [:lobby :active-mul] event)})
 
 (defmethod e/event-handler ::add-unit
   [{:keys [fx/context]}]
   (let [units (subs/units context)
-        mul-unit (fx/sub-val context :lobby :active-mul)
-        pilot {:name (fx/sub-val context :lobby :pilot-name)
-               :skill (Integer/parseInt (fx/sub-val context :lobby :pilot-skill))}
-        battle-force (fx/sub-val context :lobby :active-force)]
+        mul-unit (subs/active-mul context)
+        pilot {:name (subs/p-name context)
+               :skill (subs/p-skill context)}
+        battle-force (subs/lobby-active-force context)]
     {:context
      (fx/swap-context context assoc-in [:game :units]
                       (cu/->combat-unit
@@ -110,16 +120,17 @@
 
 (defmethod e/event-handler ::filter-mul
   [{:keys [fx/context field]}]
-  (let [term (fx/sub-val context :lobby :mul-search-term)]
+  (let [term (subs/mul-search-term context)]
     {:context (fx/swap-context context assoc-in [:lobby :mul] (cu/filter-units cu/mul field term str/includes?))}))
 
 (defmethod e/event-handler ::force-selection-changed
   [{:keys [fx/context fx/event]}]
-  {:context (fx/swap-context context merge
-                             {:active-force (:unit-group/keyword event)
-                              :force-zone (str (:unit-group/deployment event))
-                              :force-camo (:unit-group/camo event)
-                              :force-name (:unit-group/name event)})})
+  (let [new-lobby (merge (subs/lobby context)
+                         {:active-force (:unit-group/keyword event)
+                          :force-zone (str (:unit-group/deployment event))
+                          :force-name (:unit-group/name event)
+                          :force-camo (:unit-group/camo event)})]
+    {:context (fx/swap-context context assoc :lobby new-lobby)}))
 
 (defmethod e/event-handler ::unit-selection-changed
   [{:keys [fx/context fx/event]}]

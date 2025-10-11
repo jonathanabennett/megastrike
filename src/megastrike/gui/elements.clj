@@ -27,15 +27,16 @@
 
 (defn text-input
   "Helper method to create a text input box which automatically updates the atom as the text is edited."
-  [{:keys [fx/context label k]}]
-  {:fx/type :h-box
-   :spacing 5
-   :children [{:fx/type :label :text label}
-              {:fx/type :text-field
-               :on-text-changed {:event-type ::events/text-input
-                                 :fx/sync true
-                                 :key k}
-               :text (fx/sub-val context k)}]})
+  [{:keys [fx/context label ks]}]
+  (let [text (fx/sub-val context get-in ks)]
+    {:fx/type :h-box
+     :spacing 5
+     :children [{:fx/type :label :text label}
+                {:fx/type :text-field
+                 :on-text-changed {:event-type ::events/text-input
+                                   :fx/sync true
+                                   :ks ks}
+                 :text text}]}))
 
 (defn confirmation-pane
   [{:keys [fx/context dialog-id on-confirmed button dialog-pane]}]
@@ -58,10 +59,9 @@
   "Draws a sprite. Used for both the map and the lobby."
   [{:keys [unit bf x y shift direction]}]
   (let [camo (:unit-group/camo bf)
-        color "#FFFFFF"
-        img (cu/find-sprite unit)]
+        color "#FFFFFF"]
     {:fx/type :image-view
-     :image (str "file:" (.getPath img))
+     :image (str "file:" (.getPath (:unit/sprite unit)))
      :effect {:fx/type :blend
               :top-input (if camo
                            {:fx/type :image-input
@@ -70,7 +70,7 @@
                             :paint color
                             :x 0 :y 0 :width 100 :height 100})
               :bottom-input {:fx/type :image-input
-                             :source (str (.toURI (cu/find-sprite unit)))}
+                             :source (str (.toURI (:unit/sprite unit)))}
               :mode :src-atop
               :opacity 0.5}
      :rotate (if direction
