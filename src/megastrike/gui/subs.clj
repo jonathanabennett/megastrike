@@ -10,18 +10,6 @@
   [context]
   (fx/sub-val context :game))
 
-(defn gui
-  [context]
-  (fx/sub-val context :gui))
-
-(defn round-dialog
-  [context]
-  (get-in (gui context) [:dialogs :round-dialog]))
-
-(defn attack-dialog
-  [context]
-  (get-in (gui context) [:dialogs :attack-dialog]))
-
 (defn units
   "Returns the vector containing all units"
   [context]
@@ -49,10 +37,6 @@
   [context]
   (battle-force/select-force (forces context) (first (turn-order context))))
 
-(defn round-report
-  [context]
-  (:round-report (gui context)))
-
 (defn turn-number
   [context]
   (:turn-number (game context)))
@@ -60,6 +44,54 @@
 (defn phase
   [context]
   (:current-phase (game context)))
+
+(defn units-by-force
+  [context]
+  (group-by :unit/battle-force (units context)))
+
+(defn board
+  [context]
+  (:game-board (game context)))
+
+(defn tiles
+  [context]
+  (board/tiles (board context)))
+
+(defn map-height
+  [context]
+  (:map-height (game context)))
+
+(defn map-width
+  [context]
+  (:map-width (game context)))
+
+(defn gui
+  [context]
+  (fx/sub-val context :gui))
+
+(defn round-dialog
+  [context]
+  (get-in (gui context) [:dialogs :round-dialog]))
+
+(defn attack-dialog
+  [context]
+  (get-in (gui context) [:dialogs :attack-dialog]))
+
+(defn round-report
+  [context]
+  (:round-report (gui context)))
+
+(defn layout
+  [context]
+  (:layout (gui context)))
+
+(defn lobby-view
+  [context]
+  (:lobby-view (gui context)))
+
+(defn game-view
+  [context]
+  (:game-view (gui context)))
 
 (defn title-string
   [context]
@@ -69,22 +101,6 @@
     (if (and bf phase turn)
       (str "Megastrike | " (:unit-group/name bf) " | " (str/capitalize (name phase)) " Phase | Turn #" turn)
       "Megastrike")))
-
-(defn units-by-force
-  [context]
-  (group-by :unit/battle-force (units context)))
-
-(defn layout
-  [context]
-  (:layout (gui context)))
-
-(defn board
-  [context]
-  (:game-board (game context)))
-
-(defn tiles
-  [context]
-  (board/tiles (board context)))
 
 (defn lobby
   [context]
@@ -130,23 +146,7 @@
   [context]
   (:mul-search-term (lobby context)))
 
-(defn map-height
-  [context]
-  (:map-height (game context)))
-
-(defn map-width
-  [context]
-  (:map-width (game context)))
-
-(defn lobby-view
-  [context]
-  (:lobby-view (gui context)))
-
 (defn map-boards
   [context]
   (:map-boards (lobby context)))
-
-(defn game-view
-  [context]
-  (:game-view (gui context)))
 
