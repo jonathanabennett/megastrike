@@ -4,7 +4,7 @@
    [clojure.edn :as edn]
    [clojure.java.io :as io]
    [clojure.string :as str]
-   [megastrike.battle-force :as battle-force]
+   [megastrike.battle-force :as bf]
    [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
    [megastrike.gui.events :as e]
@@ -91,8 +91,8 @@
         camo (subs/force-camo context)
         team (inc (count (subs/forces context)))
         player (subs/player-type context)
-        new-force (battle-force/->battle-force fname deploy camo team player [])
-        new-forces (battle-force/update-battle-force (subs/forces context) (:unit-group/keyword new-force) new-force)
+        new-force (bf/->battle-force fname deploy camo team player [])
+        new-forces (bf/update-battle-force (subs/forces context) (:unit-group/keyword new-force) new-force)
         new-game (merge (subs/game context) {:forces new-forces})
         new-lobby (merge (subs/lobby context) {:force-camo nil})]
     {:context (fx/swap-context context assoc :game new-game :lobby new-lobby)
@@ -104,18 +104,15 @@
 
 (defmethod e/event-handler ::add-unit
   [{:keys [fx/context]}]
-  (let [units (subs/units context)
-        mul-unit (subs/active-mul context)
-        pilot {:name (subs/p-name context)
+  (let [pilot {:name (subs/p-name context)
                :skill (subs/p-skill context)}
-        battle-force (subs/lobby-active-force context)]
+        units (cu/->combat-unit
+               {:units (subs/units context)
+                :mul-unit (subs/active-mul context)
+                :pilot pilot
+                :battle-force (subs/lobby-active-force context)})]
     {:context
-     (fx/swap-context context assoc-in [:game :units]
-                      (cu/->combat-unit
-                       {:units units
-                        :mul-unit mul-unit
-                        :pilot pilot
-                        :battle-force battle-force}))
+     (fx/swap-context context assoc-in [:game :units] units)
      :dispatch {:event-type ::e/close-dialog :dialog :mul-dialog}}))
 
 (defmethod e/event-handler ::filter-mul
