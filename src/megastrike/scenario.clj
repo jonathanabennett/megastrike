@@ -21,11 +21,7 @@
 
 (defn write-forces
   [forces]
-  forces)
-
-(defn write-mapsheets
-  [sheets]
-  (mapv :name sheets))
+  (mapv #(assoc % :unit-group/camo (utils/relative-path (:unit-group/camo %))) forces))
 
 (defn units-writer
   [units]
@@ -33,17 +29,10 @@
 
 (defn edn-scenario-writer
   [state]
-  (-> {}
+  (-> state
       (assoc :forces (write-forces (:forces state)))
-      (assoc :map-height (:map-height state))
-      (assoc :map-width (:map-width state))
-      (assoc :mapsheets (write-mapsheets (:map-boards state)))
-      (assoc :units  (units-writer (:units state)))
-      (merge (select-keys state [:current-phase :turn-number :game :lobby :round-report :round-dialog :internal]))))
-
-  ;; Write units
-  ;; Save game state
-  ;; Save file
+      (dissoc :game-board)
+      (assoc :units  (units-writer (:units state)))))
 
 (defn initialize-forces
   [forces]
@@ -203,4 +192,4 @@
   [file]
   (let [scenario (parse-scenario-file file)
         map-layout (set-maps scenario)]
-    {:lobby map-layout :game (merge scenario {:map-width (str (:map-width scenario)) :map-height (str (:map-height scenario))})}))
+    {:lobby map-layout :game (merge scenario {:map-width (:map-width scenario) :map-height (:map-height scenario)})}))
