@@ -45,9 +45,12 @@
 (defmethod event-handler ::hex-clicked
   [{:keys [fx/context hex fx/event]}]
   (let [e ^MouseEvent event
-        click-location {:x (.getX e) :y (.getY e)}]
+        click-location {:x (.getX e) :y (.getY e)}
+        active-unit (subs/active-id context)]
     {:context (fx/swap-context context assoc :game
-                               (turn-manager/hex-clicked (subs/game context) (subs/layout context) hex click-location))}))
+                               (turn-manager/hex-clicked (subs/game context)
+                                                         (subs/layout context)
+                                                         hex click-location active-unit))}))
 
 (defmethod event-handler ::text-input
   [{:keys [fx/context ks fx/event]}]
@@ -64,7 +67,8 @@
 ;; Saving, loading, and Phases
 (defmethod event-handler ::auto-save
   [{:keys [fx/context]}]
-  (spit "test-data.edn" (subs/game context)))
+  (prn (keys (subs/game context)))
+  (spit "test-data.edn" (scenario/edn-scenario-writer (subs/game context))))
 
 (defmethod event-handler ::quit-game
   [_]
@@ -86,14 +90,16 @@
 (defmethod event-handler ::next-phase
   [{:keys [fx/context]}]
   {:context (fx/swap-context context assoc :game
-                             (turn-manager/advance-turn (subs/game context) (subs/layout context)))
+                             (turn-manager/advance-turn (subs/game context)
+                                                        (subs/gui context)
+                                                        (subs/layout context)))
    :dispatch {:event-type ::open-round-dialog}})
 
 ;; Unit selection
 (defmethod event-handler ::stats-clicked
   [{:keys [fx/context unit]}]
-  {:context (fx/swap-context context assoc :game
-                             (turn-manager/switch-unit (subs/game context) unit))})
+  {:context (fx/swap-context context assoc :gui
+                             (turn-manager/switch-unit (subs/game context) (subs/gui context) unit))})
 
 (defmethod event-handler ::unit-clicked
   [{:keys [fx/context unit]}]
@@ -108,12 +114,14 @@
 (defmethod event-handler ::deploy-unit
   [{:keys [fx/context]}]
   {:context (fx/swap-context context assoc :game
-                             (turn-manager/deploy-unit (subs/game context)))})
+                             (turn-manager/deploy-unit (subs/game context)
+                                                       (subs/gui context)))})
 
 (defmethod event-handler ::undeploy-unit
   [{:keys [fx/context]}]
   {:context (fx/swap-context context assoc :game
-                             (turn-manager/undeploy-unit (subs/game context)))})
+                             (turn-manager/undeploy-unit (subs/game context)
+                                                         (subs/gui context)))})
 
 ;; Movement Phase
 
@@ -134,19 +142,25 @@
 (defmethod event-handler ::confirm-move
   [{:keys [fx/context]}]
   {:context (fx/swap-context context assoc :game
-                             (turn-manager/confirm-move (subs/game context) (subs/layout context)))})
+                             (turn-manager/confirm-move (subs/game context)
+                                                        (subs/gui context)
+                                                        (subs/layout context)))})
 
 ;; Combat Phase
 (defmethod event-handler ::set-attack
   [{:keys [fx/context targeting]}]
   {:context (fx/swap-context context assoc :game
-                             (turn-manager/set-special-attack (subs/game context) targeting))
+                             (turn-manager/set-special-attack (subs/game context)
+                                                              (subs/gui context)
+                                                              targeting))
    :dispatch {:event-type ::next-phase}})
 
 (defmethod event-handler ::finish-attacks
   [{:keys [fx/context]}]
   {:context (fx/swap-context context assoc :game
-                             (turn-manager/advance-turn (subs/game context) (subs/layout context)))})
+                             (turn-manager/advance-turn (subs/game context)
+                                                        (subs/gui context)
+                                                        (subs/layout context)))})
 
 (defmethod event-handler ::close-attack-selection
   [{:keys [fx/context selected]}]
