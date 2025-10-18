@@ -7,7 +7,6 @@
    [cljfx.api :as fx]
    [clojure.core.cache :as cache]
    [com.brunobonacci.mulog :as mu]
-   [megastrike.board :as board]
    [megastrike.combat-unit :as cu]
    [megastrike.gui.events :as events]
    [megastrike.schemas :as schemas]
@@ -35,15 +34,15 @@
      :game {:forces []
             :units []
             :game-board []
-            :active-unit nil
             :current-phase :lobby
-            :map-width "1"
-            :map-height "1"
+            :map-width 1
+            :map-height 1
             :round-report ""
             :turn-order []
             :turn-flag false
             :turn-number 0}
      :gui {:lobby-view true
+           :active-unit nil
            :game-view false
            :title "Megastrike"
            :dialogs {:attack-dialog {:showing false
