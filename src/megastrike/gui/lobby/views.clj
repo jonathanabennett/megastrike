@@ -344,8 +344,8 @@
 
 (defn map-grid
   [{:keys [fx/context]}]
-  (let [width (Integer/parseInt (subs/map-width context))
-        height (Integer/parseInt (subs/map-height context))
+  (let [width (subs/map-width context)
+        height (subs/map-height context)
         boards (or (subs/map-boards context) [])]
     {:fx/type :grid-pane
      :children (for [x (range width)
