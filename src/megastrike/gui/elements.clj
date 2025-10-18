@@ -28,7 +28,7 @@
 (defn text-input
   "Helper method to create a text input box which automatically updates the atom as the text is edited."
   [{:keys [fx/context label ks]}]
-  (let [text (fx/sub-val context get-in ks)]
+  (let [text (str (fx/sub-val context get-in ks))]
     {:fx/type :h-box
      :spacing 5
      :children [{:fx/type :label :text label}
