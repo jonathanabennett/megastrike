@@ -32,6 +32,7 @@
 (t/deftest edn-save-file-writer
   (t/testing "Test conversion of a save file"
     (let [state (sut/edn-scenario-writer (sut/setup-scenario test-scenario-path))]
+      (prn (keys state))
       (t/is (= (:forces state)
                [{:unit-group/camo nil,
                  :unit-group/deployment :direction/n,
