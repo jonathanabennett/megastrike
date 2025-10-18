@@ -18,7 +18,7 @@
    [javafx.stage FileChooser]))
 
 (def empty-game
-  {:game {:units nil :forces nil :current-phase :lobby :map-width "1" :map-height "1" :turn-number 0}})
+  {:units nil :forces nil :current-phase :lobby :map-width "1" :map-height "1" :turn-number 0})
 
 (defmethod e/event-handler ::select-camo
   [{:keys [^ActionEvent fx/context fx/event]}]
