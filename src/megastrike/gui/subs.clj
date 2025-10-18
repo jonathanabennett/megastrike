@@ -6,6 +6,39 @@
    [megastrike.combat-unit :as cu]
    [megastrike.board :as board]))
 
+(defn gui
+  [context]
+  (fx/sub-val context :gui))
+
+(defn active-id
+  "Returns the ID of the active unit. For use in lookups."
+  [context]
+  (:active-unit (gui context)))
+
+(defn round-dialog
+  [context]
+  (get-in (gui context) [:dialogs :round-dialog]))
+
+(defn attack-dialog
+  [context]
+  (get-in (gui context) [:dialogs :attack-dialog]))
+
+(defn round-report
+  [context]
+  (:round-report (gui context)))
+
+(defn layout
+  [context]
+  (:layout (gui context)))
+
+(defn lobby-view
+  [context]
+  (:lobby-view (gui context)))
+
+(defn game-view
+  [context]
+  (:game-view (gui context)))
+
 (defn game
   [context]
   (fx/sub-val context :game))
@@ -14,11 +47,6 @@
   "Returns the vector containing all units"
   [context]
   (:units (game context)))
-
-(defn active-id
-  "Returns the ID of the active unit. For use in lookups."
-  [context]
-  (:active-unit (game context)))
 
 (defn active-unit
   "Returns the actual unit which corresponds to the ID returned by `active-id'."
@@ -64,34 +92,6 @@
 (defn map-width
   [context]
   (:map-width (game context)))
-
-(defn gui
-  [context]
-  (fx/sub-val context :gui))
-
-(defn round-dialog
-  [context]
-  (get-in (gui context) [:dialogs :round-dialog]))
-
-(defn attack-dialog
-  [context]
-  (get-in (gui context) [:dialogs :attack-dialog]))
-
-(defn round-report
-  [context]
-  (:round-report (gui context)))
-
-(defn layout
-  [context]
-  (:layout (gui context)))
-
-(defn lobby-view
-  [context]
-  (:lobby-view (gui context)))
-
-(defn game-view
-  [context]
-  (:game-view (gui context)))
 
 (defn title-string
   [context]
