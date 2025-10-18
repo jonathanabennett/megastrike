@@ -69,7 +69,19 @@
                           y (range 1 (inc height))]
                       (create-tile x y 0 "" "grass")))}))
 
-;; Why is a protocol required here, can I get by without one?
+(defn create-board
+  ([filename]
+   (let [mapsheet (create-mapsheet filename)]
+     {:tiles (:tiles mapsheet)
+      :mapsheets [[mapsheet]]}))
+  ([mapsheet-array _ _]
+   (let [tiles ((comp vec flatten vector) (for [m mapsheet-array] (:tiles m nil)))]
+     {:tiles tiles
+      :mapsheets mapsheet-array}))
+  ([width height]
+   (let [mapsheet (create-mapsheet width height)]
+     {:tiles (:tiles mapsheet)
+      :mapsheets [[mapsheet]]})))
 
 (defn tiles
   [board]
@@ -159,20 +171,6 @@
   [board node]
   (let [return (map #(find-hex % board) (hex/neighbors node))]
     (into [] (remove nil? return))))
-
-(defn create-board
-  ([filename]
-   (let [mapsheet (create-mapsheet filename)]
-     {:tiles (:tiles mapsheet)
-      :mapsheets [[mapsheet]]}))
-  ([mapsheet-array _ _]
-   (let [tiles ((comp vec flatten vector) (for [m mapsheet-array] (:tiles m nil)))]
-     {:tiles tiles
-      :mapsheets mapsheet-array}))
-  ([width height]
-   (let [mapsheet (create-mapsheet width height)]
-     {:tiles (:tiles mapsheet)
-      :mapsheets [[mapsheet]]})))
 
 (defn get-board-dimensions
   "Extract width and height from a board's mapsheets."
