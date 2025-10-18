@@ -131,4 +131,4 @@
 
 (defmethod e/event-handler ::unit-selection-changed
   [{:keys [fx/context fx/event]}]
-  {:context (fx/swap-context context assoc-in [:lobby :active-unit] (:id event))})
+  {:context (fx/swap-context context assoc-in [:gui :active-unit] (:id event))})

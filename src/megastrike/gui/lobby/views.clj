@@ -305,7 +305,7 @@
                          :text "Unit"
                          :cell-value-factory identity
                          :cell-factory {:fx/cell-type :table-cell
-                                        :describe (fn [x] {:text (:id x)})}}
+                                        :describe (fn [x] {:text (:unit/id x)})}}
                         {:fx/type :table-column
                          :text "Image"
                          :cell-value-factory identity
