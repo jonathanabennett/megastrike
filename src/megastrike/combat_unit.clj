@@ -4,7 +4,6 @@
    [clojure.math :as math]
    [clojure.spec.alpha :as s]
    [clojure.string :as string]
-   [com.brunobonacci.mulog :as mu]
    [megastrike.abilities :as abilities]
    [megastrike.attacks :as attacks]
    [megastrike.board :as board]
