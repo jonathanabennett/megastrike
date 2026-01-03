@@ -6,9 +6,41 @@
    [megastrike.combat-unit :as cu]
    [megastrike.board :as board]))
 
+(defn client
+  [context]
+  (fx/sub-val context :client))
+
+(defn connection
+  [context]
+  (:connection (client context)))
+
+(defn client-player
+  [context]
+  (:player-id (client context)))
+
 (defn gui
   [context]
   (fx/sub-val context :gui))
+
+(defn dialog
+  [context dialog]
+  (dialog (gui context)))
+
+(defn force-name
+  [context]
+  (:name (dialog context :force-creation-dialog)))
+
+(defn force-zone
+  [context]
+  (:zone (dialog context :force-creation-dialog)))
+
+(defn force-camo
+  [context]
+  (:camo (dialog context :force-creation-dialog)))
+
+(defn player-type
+  [context]
+  (:player-id (dialog context :force-creation-dialog)))
 
 (defn active-id
   "Returns the ID of the active unit. For use in lookups."
@@ -105,22 +137,6 @@
 (defn lobby
   [context]
   (fx/sub-val context :lobby))
-
-(defn force-name
-  [context]
-  (:force-name (lobby context)))
-
-(defn force-zone
-  [context]
-  (:force-zone (lobby context)))
-
-(defn force-camo
-  [context]
-  (:force-camo (lobby context)))
-
-(defn player-type
-  [context]
-  (:player (lobby context)))
 
 (defn active-mul
   [context]

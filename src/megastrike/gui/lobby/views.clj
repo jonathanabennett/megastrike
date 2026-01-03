@@ -1,12 +1,11 @@
 (ns megastrike.gui.lobby.views
   (:require
-   [cljfx.api :as fx]
    [cljfx.ext.table-view :as tables]
    [com.brunobonacci.mulog :as mu]
    [megastrike.battle-force :as battle-force]
    [megastrike.combat-unit :as cu]
    [megastrike.gui.elements :as elements]
-   [megastrike.gui.lobby.events :as lobby-events]
+   [megastrike.gui.events :as events]
    [megastrike.gui.subs :as subs]
    [megastrike.movement :as movement]
    [megastrike.pilot :as pilot]))
@@ -15,7 +14,7 @@
   [{:keys [values text]}]
   {:fx/type :button
    :text text
-   :on-action {:event-type ::lobby-events/filter-changed
+   :on-action {:event-type ::events/filter-changed
                :fx/sync true
                :values values}})
 
@@ -73,7 +72,7 @@
         selected (subs/active-mul context)]
     {:fx/type tables/with-selection-props
      :props {:selection-mode :single
-             :on-selected-item-changed {:event-type ::lobby-events/mul-selection-changed :fx/sync true}
+             :on-selected-item-changed {:event-type ::events/mul-selection-changed :fx/sync true}
              :selected-item selected}
      :desc {:fx/type :table-view
             :columns [{:fx/type :table-column
@@ -162,7 +161,7 @@
                :ks [:lobby :mul-search-term]}
               {:fx/type :button
                :text "Search by name"
-               :on-action {:event-type ::lobby-events/filter-mul :fx/sync true :field :unit/full-name}}]})
+               :on-action {:event-type ::events/filter-mul :fx/sync true :field :unit/full-name}}]})
 
 (defn new-unit-buttons
   [{:keys [fx/context]}]
@@ -198,7 +197,7 @@
   [_]
   {:fx/type elements/confirmation-pane
    :dialog-id :mul-dialog
-   :on-confirmed {:event-type ::lobby-events/add-unit}
+   :on-confirmed {:event-type ::events/add-unit}
    :button {:text "Add new unit to selected force"}
    :dialog-pane {:content mul-pane}})
 
@@ -212,7 +211,7 @@
        :text "Add a force."}
       {:fx/type tables/with-selection-props
        :props {:selection-mode :single
-               :on-selected-item-changed {:event-type ::lobby-events/force-selection-changed}
+               :on-selected-item-changed {:event-type ::events/force-selection-changed}
                :selected-item selected}
        :desc {:fx/type :table-view
               :columns [{:fx/type :table-column
@@ -247,34 +246,37 @@
   [{:keys [fx/context]}]
   {:fx/type elements/confirmation-pane
    :dialog-id :force-creation-dialog
-   :on-confirmed {:event-type ::lobby-events/add-force}
+   :on-confirmed {:event-type ::events/add-force}
    :button {:text "Add/Edit force"}
-   :dialog-pane {:content {:fx/type :v-box
-                           :spacing 5
-                           :fill-width true
-                           :alignment :top-center
-                           :children [{:fx/type :label :text "Add/Edit Force"}
-                                      {:fx/type elements/text-input
-                                       :label "Force Name"
-                                       :ks [:lobby :force-name]}
-                                      {:fx/type elements/text-input
-                                       :label "Force Deployment"
-                                       :ks [:lobby :force-zone]}
-                                      {:fx/type :h-box
-                                       :spacing 5
-                                       :children [{:fx/type :text :text "Human or AI?"}
-                                                  {:fx/type :choice-box
-                                                   :items [:player :kevin]
-                                                   :value :player
-                                                   :on-value-changed {:event-type ::lobby-events/change-player}}]}
-                                      (if (subs/force-camo context)
-                                        {:fx/type :button
-                                         :background {:images (list (subs/force-camo context))}
-                                         :text "Change Camo"
-                                         :on-action {:event-type ::lobby-events/select-camo :fx/sync true}}
-                                        {:fx/type :button
-                                         :text "Select Camo"
-                                         :on-action {:event-type ::lobby-events/select-camo :fx/sync true}})]}}})
+   :dialog-pane {:content
+                 {:fx/type :v-box
+                  :spacing 5
+                  :fill-width true
+                  :alignment :top-center
+                  :children
+                  [{:fx/type :label :text "Add/Edit Force"}
+                   {:fx/type elements/text-input
+                    :label "Force Name"
+                    :ks [:gui :force-creation-dialog :name]}
+                   {:fx/type elements/text-input
+                    :label "Force Deployment"
+                    :ks [:gui :force-creation-dialog :zone]}
+                   {:fx/type :h-box
+                    :spacing 5
+                    :children
+                    [{:fx/type :text :text "Human or AI?"}
+                     {:fx/type :choice-box
+                      :items [:local-player :kevin :remote-player]
+                      :value :local-player
+                      :on-value-changed {:event-type ::events/change-player}}]}
+                   (if (subs/force-camo context)
+                     {:fx/type :button
+                      :background {:images (list (subs/force-camo context))}
+                      :text "Change Camo"
+                      :on-action {:event-type ::events/select-camo :fx/sync true}}
+                     {:fx/type :button
+                      :text "Select Camo"
+                      :on-action {:event-type ::events/select-camo :fx/sync true}})]}}})
 
 (def force-pane
   {:fx/type :v-box
@@ -298,7 +300,7 @@
        :text "Please add a unit."}
       {:fx/type tables/with-selection-props
        :props {:selection-mode :single
-               :on-selected-item-changed {:event-type ::lobby-events/unit-selection-changed :fx/sync true}
+               :on-selected-item-changed {:event-type ::events/unit-selection-changed :fx/sync true}
                :selected-item selected}
        :desc {:fx/type :table-view
               :columns [{:fx/type :table-column
@@ -355,7 +357,7 @@
                   :grid-pane/row y
                   :text (:name (nth boards (+ (* y width) x) {:name "None"}))
                   :id (str (+ (* y width) x))
-                  :on-action {:event-type ::lobby-events/load-mapboard :id (+ (* y width) x)}})}))
+                  :on-action {:event-type ::events/load-mapboard :id (+ (* y width) x)}})}))
 
 (def map-pane
   {:fx/type :v-box
@@ -377,10 +379,16 @@
               {:fx/type map-grid}
               ;; {:fx/type :button
               ;;  :text "Load Test Game"
-              ;;  :on-action {:event-type ::lobby-events/load-save :fx/sync true}}
+              ;;  :on-action {:event-type ::events/load-save :fx/sync true}}
               {:fx/type :button
                :text "Load Scenario"
-               :on-action {:event-type ::lobby-events/load-scenario :fx/sync true}}
+               :on-action {:event-type ::events/load-scenario :fx/sync true}}
+              {:fx/type :button
+               :text "Message Server"
+               :on-action {:event-type ::events/message-server :fx/sync true}}
+              {:fx/type :button
+               :text "Kill Server"
+               :on-action {:event-type ::events/close-server :fx/sync true}}
               {:fx/type :button
                :text "Launch Game"
-               :on-action {:event-type ::lobby-events/launch-game :fx/sync true :view :game}}]})
+               :on-action {:event-type ::events/launch-game :fx/sync true :view :game}}]})
