@@ -23,6 +23,10 @@
   [forces]
   (mapv #(assoc % :unit-group/camo (utils/relative-path (:unit-group/camo %))) forces))
 
+(defn write-mapsheets
+  [sheets]
+  (mapv :name (:mapsheets sheets)))
+
 (defn units-writer
   [units]
   (mapv #(assoc % :unit/sprite (utils/relative-path (:unit/sprite %))) units))
@@ -31,6 +35,7 @@
   [state]
   (-> state
       (assoc :forces (write-forces (:forces state)))
+      (assoc :maps (write-mapsheets (:game-board state)))
       (dissoc :game-board)
       (assoc :units  (units-writer (:units state)))))
 
@@ -165,19 +170,20 @@
                  [x y])]
       {:map-boards (into [] (map #(pick-map % boards size-setter) maps))})
 
-    (let [maps (map #(map-rotator (str/trim %)) maps)
-          width (get-in (first maps) [:temp :width])
-          height (get-in (first maps) [:temp :height])
-          offsets (for [x (range map-width)
-                        y (range map-height)]
-                    [(* width x)
-                     (* height y)])]
-      (loop [ret []
-             n 0]
-        (if (= (count maps) n)
-          {:map-boards ret}
-          (recur (conj ret (board/create-mapsheet (get-in (nth maps n) [:original :board]) (first (nth offsets n)) (second (nth offsets n))))
-                 (inc n)))))))
+    (do (prn maps)
+        (let [maps (map #(map-rotator (str/trim %)) maps)
+              width (get-in (first maps) [:temp :width])
+              height (get-in (first maps) [:temp :height])
+              offsets (for [x (range map-width)
+                            y (range map-height)]
+                        [(* width x)
+                         (* height y)])]
+          (loop [ret []
+                 n 0]
+            (if (= (count maps) n)
+              {:map-boards ret}
+              (recur (conj ret (board/create-mapsheet (get-in (nth maps n) [:original :board]) (first (nth offsets n)) (second (nth offsets n))))
+                     (inc n))))))))
 
 (defn parse-scenario-file
   [file]
@@ -187,6 +193,22 @@
       state
       (recur (parse-line state (first f))
              (rest f)))))
+
+(defn server-parse-scenario
+  [data]
+  (loop [state {:units []}
+         f (str/split-lines data)]
+    (if (empty? f)
+      state
+      (do (prn f)
+          (recur (parse-line state (first f))
+                 (rest f))))))
+
+(defn server-setup-scenario
+  [data]
+  (let [scenario (server-parse-scenario data)
+        map-layout (set-maps scenario)]
+    {:lobby map-layout :game (merge scenario {:map-width (:map-width scenario) :map-height (:map-height scenario)})}))
 
 (defn setup-scenario
   [file]
