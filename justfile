@@ -2,7 +2,7 @@ run:
   clojure -M:run
 
 test:
-  clojure -X:test/run
+  clojure -X:test
 
 coverage:
   clojure -X:test/cloverage
